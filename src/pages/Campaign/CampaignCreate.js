@@ -712,21 +712,6 @@ function CampaignCreate() {
               </div>
 
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600 }}>Lokasi (bisa pilih banyak, all location)</label>
-                <select
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginTop: '6px' }}
-                  required
-                >
-                  <option value="Jakarta">Jakarta</option>
-                  <option value="Surabaya">Surabaya</option>
-                  <option value="Bandung">Bandung</option>
-                  <option value="Medan">Medan</option>
-                  <option value="Semarang">Semarang</option>
-                  <option value="All">All Location</option>
-                </select>
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
                 <label style={{ fontWeight: 600, display: 'block', marginBottom: '4px' }}>Minimal Jumlah Followers</label>
                 <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '6px' }}>
                   💡 Tentukan minimal followers yang dibutuhkan influencer (contoh: 1000, 10000, dst)
