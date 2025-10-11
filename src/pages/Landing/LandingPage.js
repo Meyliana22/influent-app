@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import logo from '../../assets/logo.svg'; // Tambahkan baris ini
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ function LandingPage() {
           alignItems: 'center'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/logo_influent.png" alt="Influent" style={{ height: '36px' }} />
+            <img src={logo} alt="Influent" style={{ height: '28px' }} />
           </div>
           <nav style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
             <a href="#tentang" style={{ color: '#333', textDecoration: 'none', fontWeight: 500 }}>Tentang</a>

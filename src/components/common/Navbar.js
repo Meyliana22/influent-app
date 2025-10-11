@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
+import logo from '../../assets/logo.svg'; // Tambahkan baris ini
 
 /**
  * Reusable Navbar Component
@@ -32,18 +33,8 @@ const Navbar = ({ userType = 'umkm', showAuth = false }) => {
     }}>
       {/* Logo and Navigation */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-        <h1 
-          style={{ 
-            margin: 0, 
-            fontSize: '1.5rem', 
-            fontWeight: 700,
-            color: COLORS.primary,
-            cursor: 'pointer',
-          }}
-          onClick={() => navigate('/')}
-        >
-          Influent
-        </h1>
+        <img src={logo} alt='Logo' style={{ height: '26px', cursor: 'pointer' }} onClick={() => navigate('/')}>
+        </img>
         <div style={{ display: 'flex', gap: '24px' }}>
           {navItems.map((item) => (
             <button
