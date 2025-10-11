@@ -1,8 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
 import campaignDB from '../../data/campaignDatabase';
+import { Button, TextField, Select, MenuItem, FormControl, InputLabel, RadioGroup, FormControlLabel, Radio, Checkbox, ListItemText, OutlinedInput, Chip, Box } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
 
 function CollapsibleSection({ title, children, status = '', defaultOpen = false, disabled = false }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -74,7 +75,8 @@ function CampaignCreate() {
 
   // Form state
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('Entertainment');
+  const [campaignCategory, setCampaignCategory] = useState('');
+  const [category, setCategory] = useState([]); // Influencer categories (multi-select)
   const [productName, setProductName] = useState('');
   const [productValue, setProductValue] = useState('');
   const [productDesc, setProductDesc] = useState('');
@@ -97,6 +99,17 @@ function CampaignCreate() {
   
   // Settings dropdown state
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+  
+  // Delete popup state
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  
+  // Alert/Notification popup state
+  const [showAlertPopup, setShowAlertPopup] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState('error'); // 'error', 'success', 'warning'
+  
+  // Wizard step state
+  const [currentStep, setCurrentStep] = useState(1);
 
   // Original data for change detection
   const [originalData, setOriginalData] = useState(null);
@@ -108,7 +121,8 @@ function CampaignCreate() {
       if (campaign) {
         const data = {
           title: campaign.title || '',
-          category: campaign.category || 'Entertainment',
+          campaignCategory: campaign.campaignCategory || '',
+          category: Array.isArray(campaign.category) ? campaign.category : (campaign.category ? [campaign.category] : []),
           productName: campaign.productName || '',
           productValue: campaign.productValue || '',
           productDesc: campaign.productDesc || '',
@@ -129,6 +143,7 @@ function CampaignCreate() {
         
         // Set form state
         setTitle(data.title);
+        setCampaignCategory(data.campaignCategory);
         setCategory(data.category);
         setProductName(data.productName);
         setProductValue(data.productValue);
@@ -156,7 +171,8 @@ function CampaignCreate() {
       // For new campaigns, set empty original data
       setOriginalData({
         title: '',
-        category: 'Entertainment',
+        campaignCategory: '',
+        category: [],
         productName: '',
         productValue: '',
         productDesc: '',
@@ -255,13 +271,13 @@ function CampaignCreate() {
   ];
 
   // Check if all required fields are filled
-  const allFilled = title && category && productName && productValue && productDesc;
+  const allFilled = title && campaignCategory && productName && productValue && productDesc;
   
   // Check if brief campaign fields are filled
   const briefFilled = startDate && endDate && contentDeadline && photoRules && captionRules;
 
   // Check if kriteria influencer fields are filled
-  const kriteriaFilled = followersCount && selectedGender && selectedAge;
+  const kriteriaFilled = category.length > 0 && followersCount && selectedGender && selectedAge;
 
   // Check if konten & anggaran fields are filled
   const kontenFilled = influencerCount && taskPrice && contentItems.length > 0;
@@ -278,17 +294,17 @@ function CampaignCreate() {
     
     // Basic validation only for required Detail Campaign fields
     if (!title.trim()) {
-      alert('Campaign title is required.');
+      showAlert('Campaign title is required.', 'error');
       return;
     }
     
     // Validate dates if they are filled
     if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
-      alert('Campaign start date cannot be later than end date.');
+      showAlert('Campaign start date cannot be later than end date.', 'error');
       return;
     }
     if (contentDeadline && endDate && new Date(contentDeadline) > new Date(endDate)) {
-      alert('Content deadline cannot be later than campaign end date.');
+      showAlert('Content deadline cannot be later than campaign end date.', 'error');
       return;
     }
     
@@ -299,6 +315,7 @@ function CampaignCreate() {
     // Prepare campaign data
     const campaignData = {
       title,
+      campaignCategory,
       category,
       productName,
       productValue,
@@ -321,10 +338,10 @@ function CampaignCreate() {
     
     if (isEditMode) {
       campaignDB.update(id, campaignData);
-      alert(`Campaign updated successfully as ${campaignStatus}!`);
+      showAlert(`Campaign updated successfully as ${campaignStatus}!`, 'success');
     } else {
       campaignDB.create(campaignData);
-      alert(`Campaign created successfully as ${campaignStatus}!`);
+      showAlert(`Campaign created successfully as ${campaignStatus}!`, 'success');
     }
     
     // Navigate back to campaign list
@@ -333,12 +350,73 @@ function CampaignCreate() {
 
   // Delete handler
   const handleDelete = () => {
-    setShowSettingsDropdown(false);
-    if (window.confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) {
-      campaignDB.delete(id);
-      alert('Campaign deleted successfully!');
+    setShowDeletePopup(true);
+  };
+
+  const confirmDelete = () => {
+    campaignDB.delete(id);
+    setShowDeletePopup(false);
+    navigate('/');
+  };
+
+  const cancelDelete = () => {
+    setShowDeletePopup(false);
+  };
+
+  // Show alert popup
+  const showAlert = (message, type = 'error') => {
+    setAlertMessage(message);
+    setAlertType(type);
+    setShowAlertPopup(true);
+  };
+
+  const closeAlert = () => {
+    setShowAlertPopup(false);
+    if (alertType === 'success') {
       navigate('/');
     }
+  };
+
+  // Step navigation handlers
+  const handleNext = () => {
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const goToStep = (step) => {
+    // In edit mode, allow jumping to any step
+    // In create mode, only allow going to completed steps or next step
+    if (isEditMode) {
+      setCurrentStep(step);
+      window.scrollTo(0, 0);
+    } else {
+      // Check if can navigate to this step
+      if (step === 1 || 
+          (step === 2 && allFilled) || 
+          (step === 3 && allFilled && kriteriaFilled) || 
+          (step === 4 && allFilled && kriteriaFilled && kontenFilled)) {
+        setCurrentStep(step);
+        window.scrollTo(0, 0);
+      }
+    }
+  };
+
+  // Check if can proceed to next step
+  const canProceed = () => {
+    if (currentStep === 1) return allFilled;
+    if (currentStep === 2) return kriteriaFilled;
+    if (currentStep === 3) return kontenFilled;
+    if (currentStep === 4) return briefFilled;
+    return false;
   };
 
   return (
@@ -355,168 +433,140 @@ function CampaignCreate() {
           >
             ← Back
           </button>
+          
+          {/* Header with Title and Buttons */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <h2 style={{ fontWeight: 600, margin: 0 }}>
                 {isEditMode ? 'Edit Campaign' : 'Create Campaign'}
               </h2>
               {isEditMode && (
-                <div style={{ position: 'relative' }} className="settings-dropdown">
-                  <button
-                    onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
-                    style={{
-                      background: 'transparent',
-                      color: '#6c757d',
-                      border: 'none',
-                      padding: '4px',
-                      fontSize: '1.2rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      borderRadius: '4px'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = '#f8f9fa';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'transparent';
-                    }}
-                  >
-                    ⚙️
-                  </button>
-                  {showSettingsDropdown && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: '0',
-                        background: '#fff',
-                        border: '1px solid #ccc',
-                        borderRadius: '6px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        zIndex: 1000,
-                        marginTop: '4px',
-                        minWidth: '150px'
-                      }}
-                    >
-                      <button
-                        onClick={handleDelete}
-                        style={{
-                          width: '100%',
-                          padding: '12px 16px',
-                          border: 'none',
-                          background: 'transparent',
-                          color: '#dc3545',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          fontSize: '0.9rem',
-                          fontWeight: '500',
-                          borderRadius: '6px'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.background = '#f8f9fa';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.background = 'transparent';
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <button
+                  onClick={handleDelete}
+                  style={{
+                    background: 'transparent',
+                    color: '#dc3545',
+                    border: 'none',
+                    padding: '6px',
+                    fontSize: '1.3rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderRadius: '6px',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = '#fee';
+                    e.target.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'transparent';
+                    e.target.style.transform = 'scale(1)';
+                  }}
+                  title="Delete Campaign"
+                >
+                  🗑️
+                </button>
               )}
             </div>
             {/* Save/Cancel buttons appear when there are changes */}
             {title.trim() && hasChanges() && (
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <button 
+                <Button 
                   onClick={handleSave} 
+                  variant="contained"
+                  color="primary"
+                  size="large"
                   style={{ 
-                    background: '#28a745', 
-                    color: 'white',
-                    border: 'none', 
-                    cursor: 'pointer', 
-                    fontSize: '0.9rem',
-                    padding: '8px 16px',
                     borderRadius: '6px',
-                    fontWeight: '500',
+                    fontWeight: 500,
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px'
                   }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = '#218838';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = '#28a745';
-                  }}
+                  startIcon={<FaCheckCircle />}
                   title={`Save Campaign as ${allFilled && kriteriaFilled && kontenFilled && briefFilled ? 'Active' : 'Draft'}`}
                 >
-                  💾 Save {allFilled && kriteriaFilled && kontenFilled && briefFilled ? 'as Active' : 'as Draft'}
-                </button>
-                <button 
-                  onClick={() => navigate('/')} 
+                  {allFilled && kriteriaFilled && kontenFilled && briefFilled ? 'Save as Active' : 'Save as Draft'}
+                </Button>
+                <Button 
+                  onClick={() => navigate('/')}
+                  variant="outlined"
+                  color="secondary"
+                  size="large"
                   style={{ 
-                    background: '#6c757d', 
-                    color: 'white',
-                    border: 'none', 
-                    cursor: 'pointer', 
-                    fontSize: '0.9rem',
-                    padding: '8px 16px',
                     borderRadius: '6px',
-                    fontWeight: '500'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = '#5a6268';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = '#6c757d';
+                    fontWeight: 500
                   }}
                   title="Cancel and return to campaign list"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             )}
           </div>
 
-          {/* Progress Indicator */}
+          {/* Step Indicator */}
           <div style={{ 
-            background: '#fff', 
+            background: '#f8f9fa', 
             borderRadius: '12px', 
-            boxShadow: '0 2px 8px #e3e3e3', 
             padding: '20px 24px', 
-            marginBottom: '24px'
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {[
-                  { name: 'Detail Campaign', completed: allFilled },
-                  { name: 'Kriteria Influencer', completed: kriteriaFilled },
-                  { name: 'Konten & Anggaran', completed: kontenFilled },
-                  { name: 'Brief Campaign', completed: briefFilled }
-                ].map((step, index) => (
-                  <React.Fragment key={step.name}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+              {[
+                { num: 1, name: 'Detail Campaign', completed: allFilled },
+                { num: 2, name: 'Kriteria Influencer', completed: kriteriaFilled },
+                { num: 3, name: 'Konten & Anggaran', completed: kontenFilled },
+                { num: 4, name: 'Brief Campaign', completed: briefFilled }
+              ].map((step, index) => {
+                const isActive = currentStep === step.num;
+                const canAccess = isEditMode || step.num === 1 || 
+                  (step.num === 2 && allFilled) || 
+                  (step.num === 3 && allFilled && kriteriaFilled) || 
+                  (step.num === 4 && allFilled && kriteriaFilled && kontenFilled);
+                
+                return (
+                  <React.Fragment key={step.num}>
+                    <div 
+                      onClick={() => canAccess && goToStep(step.num)}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px',
+                        cursor: canAccess ? 'pointer' : 'not-allowed',
+                        opacity: canAccess ? 1 : 0.5,
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (canAccess) e.currentTarget.style.transform = 'scale(1.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
                       <div style={{
-                        width: '20px',
-                        height: '20px',
+                        width: '28px',
+                        height: '28px',
                         borderRadius: '50%',
-                        background: step.completed ? '#28a745' : '#e9ecef',
-                        color: step.completed ? 'white' : '#6c757d',
+                        background: step.completed ? '#28a745' : (isActive ? '#007bff' : '#e9ecef'),
+                        color: step.completed || isActive ? 'white' : '#6c757d',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '0.7rem',
-                        fontWeight: 'bold'
+                        fontSize: '0.85rem',
+                        fontWeight: 'bold',
+                        border: isActive ? '3px solid #0056b3' : 'none'
                       }}>
-                        {step.completed ? '✓' : index + 1}
+                        {step.completed ? '✓' : step.num}
                       </div>
                       <span style={{ 
-                        fontSize: '0.75rem', 
-                        color: step.completed ? '#28a745' : '#6c757d',
-                        fontWeight: step.completed ? '600' : '400',
+                        fontSize: '0.85rem', 
+                        color: step.completed ? '#28a745' : (isActive ? '#007bff' : '#6c757d'),
+                        fontWeight: isActive ? '700' : (step.completed ? '600' : '400'),
                         whiteSpace: 'nowrap'
                       }}>
                         {step.name}
@@ -524,32 +574,22 @@ function CampaignCreate() {
                     </div>
                     {index < 3 && (
                       <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        margin: '0 4px',
-                        color: '#dee2e6',
-                        fontSize: '0.8rem'
-                      }}>
-                        →
-                      </div>
+                        width: '30px',
+                        height: '2px',
+                        background: step.completed ? '#28a745' : '#dee2e6',
+                        margin: '0 4px'
+                      }} />
                     )}
                   </React.Fragment>
-                ))}
-              </div>
-              <div style={{ 
-                fontSize: '0.75rem', 
-                color: '#6c757d',
-                fontWeight: '500',
-                marginLeft: '16px',
-                whiteSpace: 'nowrap'
-              }}>
-                Step {[allFilled, kriteriaFilled, kontenFilled, briefFilled].filter(Boolean).length} of 4
-              </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Main Card */}
-          <CollapsibleSection title="Detail Campaign" status={detailStatus} defaultOpen={true}>
+          {/* Step Content Card */}
+          {currentStep === 1 && (
+            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
+              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Detail Campaign</h3>
             <form onSubmit={handleSave}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '18px', marginTop: '6px' }}>
                 <div style={{ 
@@ -635,191 +675,226 @@ function CampaignCreate() {
                     title="Upload campaign image"
                   />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Judul Campaign"
+                <TextField
+                  label="Judul Campaign"
+                  variant="outlined"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1.1rem' }}
+                  style={{ flex: 1, marginBottom: '18px' }}
                   required
                 />
               </div>
               <div style={{ marginBottom: '18px', marginTop: '6px' }}>
-                <label style={{ fontWeight: 600 }}>Kategori</label>
-                <select
-                  value={category}
-                  onChange={e => setCategory(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginTop: '6px' }}
-                  required
-                >
-                  {categoryOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel>Kategori</InputLabel>
+                  <Select
+                    value={campaignCategory}
+                    onChange={e => setCampaignCategory(e.target.value)}
+                    label="Kategori"
+                    required
+                  >
+                    {categoryOptions.map(opt => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
+                  </Select>
+                </FormControl>
               </div>
               <div style={{ marginBottom: '18px' }}>
                 <div style={{ marginBottom: '18px' }}>
-                  <label style={{ fontWeight: 600 }}>Nama Produk</label>
-                  <input
-                    type="text"
+                  <TextField
+                    label="Nama Produk"
+                    variant="outlined"
                     placeholder="Input nama produk"
                     value={productName}
                     onChange={e => setProductName(e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginTop: '6px' }}
+                    fullWidth
                     required
                   />
                 </div>
                 <div style={{ marginBottom: '18px' }}>
-                  <label style={{ fontWeight: 600 }}>Nilai Produk</label>
-                  <input
-                    type="text"
+                  <TextField
+                    label="Nilai Produk"
+                    variant="outlined"
                     placeholder="Input nilai produk"
                     value={productValue}
                     onChange={e => setProductValue(e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginTop: '6px' }}
+                    fullWidth
                     required
                   />
                 </div>
                 <div style={{ marginBottom: '18px' }}>
-                  <label style={{ fontWeight: 600 }}>Deskripsi Produk</label>
-                  <textarea
+                  <TextField
+                    label="Deskripsi Produk"
+                    variant="outlined"
                     placeholder="Cantumkan ketentuan penggunaan produk (misalnya, apakah influencer harus memiliki produk sendiri atau produk akan dikirimkan)."
                     value={productDesc}
                     onChange={e => setProductDesc(e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginTop: '6px', minHeight: '70px', resize: 'vertical' }}
+                    fullWidth
+                    multiline
+                    rows={2}
                     required
                   />
                 </div>
               </div>
             </form>
-          </CollapsibleSection>
+            
+            {/* Navigation Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
+              <div></div>
+              <Button
+                onClick={handleNext}
+                disabled={!canProceed()}
+                variant="contained"
+                color="primary"
+                size="large"
+                style={{ 
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  padding: '12px 32px'
+                }}
+              >
+                Next →
+              </Button>
+            </div>
+          </div>
+          )}
 
-          <CollapsibleSection title="Kriteria Influencer" status={kriteriaStatus} disabled={!allFilled}>
+          {/* Step 2: Kriteria Influencer */}
+          {currentStep === 2 && (
+            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
+              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Kriteria Influencer</h3>
             <form>
               <div style={{ marginBottom: '18px', marginTop: '6px' }}>
-                <label style={{ fontWeight: 600 }}>Kategori (isi lainnya)</label>
-                <select
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginTop: '6px' }}
-                  required
-                >
-                  <option value="Entertainment">Entertainment</option>
-                  <option value="Health">Health & Sport</option>
-                  <option value="Lifestyle">Lifestyle & Travel</option>
-                  <option value="Technology">Technology</option>
-                  <option value="Family">Family & Parenting</option>
-                  <option value="Food">Food & Beverages</option>
-                  <option value="Beauty">Beauty & Fashion</option>
-                  <option value="Gaming">Gaming</option>
-                </select>
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '4px' }}>Minimal Jumlah Followers</label>
-                <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '6px' }}>
-                  💡 Tentukan minimal followers yang dibutuhkan influencer (contoh: 1000, 10000, dst)
-                </div>
-                <input
-                  type="number"
-                  placeholder="Contoh: 10000"
-                  value={followersCount}
-                  onChange={e => setFollowersCount(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc' }}
-                  required
+                <Autocomplete
+                  multiple
+                  options={[
+                    'Entertainment',
+                    'Health & Sport',
+                    'Lifestyle & Travel',
+                    'Technology',
+                    'Family & Parenting',
+                    'Food & Beverages',
+                    'Beauty & Fashion',
+                    'Gaming'
+                  ]}
+                  value={category}
+                  onChange={(event, newValue) => setCategory(newValue)}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        label={option}
+                        {...getTagProps({ index })}
+                        onDelete={() => {
+                          setCategory(category.filter((cat) => cat !== option));
+                        }}
+                        style={{
+                          backgroundColor: '#f0f0f0',
+                          border: '1px solid #ccc',
+                          borderRadius: '16px'
+                        }}
+                      />
+                    ))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      label="Kategori (isi lainnya)"
+                      placeholder="Pilih kategori"
+                    />
+                  )}
                 />
               </div>
 
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Jenis Kelamin</label>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <label style={{ position: 'relative' }}>
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="male"
-                      checked={selectedGender === 'male'}
-                      onChange={(e) => setSelectedGender(e.target.value)}
-                      style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
-                    />
-                    <span style={{ 
-                      display: 'block', 
-                      padding: '8px 16px', 
-                      border: '1px solid #ccc', 
-                      borderRadius: '8px', 
-                      cursor: 'pointer', 
-                      transition: '0.3s',
-                      background: selectedGender === 'male' ? '#007bff' : 'white',
-                      color: selectedGender === 'male' ? 'white' : 'inherit',
-                      borderColor: selectedGender === 'male' ? '#007bff' : '#ccc'
-                    }}>
-                      Laki-Laki
-                    </span>
-                  </label>
-                  <label style={{ position: 'relative' }}>
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="female"
-                      checked={selectedGender === 'female'}
-                      onChange={(e) => setSelectedGender(e.target.value)}
-                      style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
-                    />
-                    <span style={{ 
-                      display: 'block', 
-                      padding: '8px 16px', 
-                      border: '1px solid #ccc', 
-                      borderRadius: '8px', 
-                      cursor: 'pointer', 
-                      transition: '0.3s',
-                      background: selectedGender === 'female' ? '#007bff' : 'white',
-                      color: selectedGender === 'female' ? 'white' : 'inherit',
-                      borderColor: selectedGender === 'female' ? '#007bff' : '#ccc'
-                    }}>
-                      Perempuan
-                    </span>
-                  </label>
-                </div>
+                <TextField
+                  label="Minimal Jumlah Followers"
+                  variant="outlined"
+                  placeholder="Contoh: 10000"
+                  value={followersCount}
+                  onChange={e => setFollowersCount(e.target.value)}
+                  fullWidth
+                  required
+                  helperText="💡 Tentukan minimal followers yang dibutuhkan influencer (contoh: 1000, 10000, dst)"
+                />
+              </div>
+
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ fontWeight: 600, display: 'block', marginBottom: '4px' }}>Jenis Kelamin</label>
+                <RadioGroup
+                  row
+                  value={selectedGender}
+                  onChange={(e) => setSelectedGender(e.target.value)}
+                  style={{ marginBottom: '12px' }}
+                >
+                  <FormControlLabel value="male" control={<Radio />} label="Laki-Laki" />
+                  <FormControlLabel value="female" control={<Radio />} label="Perempuan" />
+                </RadioGroup>
               </div>
 
               <div style={{ marginBottom: '18px' }}>
                 <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Rentang Usia</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {['< 18 tahun', '18-24 tahun', '25-34 tahun', '35-49 tahun', '> 50 tahun'].map((age) => (
-                    <label key={age} style={{ position: 'relative' }}>
-                      <input
-                        type="radio"
-                        name="ageRange"
-                        value={age}
-                        checked={selectedAge === age}
-                        onChange={(e) => setSelectedAge(e.target.value)}
-                        style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
-                      />
-                      <span style={{ 
-                        display: 'block', 
-                        padding: '8px 16px', 
-                        border: '1px solid #ccc', 
-                        borderRadius: '8px', 
-                        cursor: 'pointer', 
-                        transition: '0.3s',
-                        background: selectedAge === age ? '#007bff' : 'white',
-                        color: selectedAge === age ? 'white' : 'inherit',
-                        borderColor: selectedAge === age ? '#007bff' : '#ccc'
-                      }}>
-                        {age}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+                <RadioGroup
+                  row
+                  value={selectedAge}
+                  onChange={(e) => setSelectedAge(e.target.value)}
+                  style={{ marginBottom: '12px' }}
+                >
+                  <FormControlLabel value="< 18 tahun" control={<Radio />} label="< 18 tahun" />
+                  <FormControlLabel value="18-24 tahun" control={<Radio />} label="18-24 tahun" />
+                  <FormControlLabel value="25-34 tahun" control={<Radio />} label="25-34 tahun" />
+                  <FormControlLabel value="35-49 tahun" control={<Radio />} label="35-49 tahun" />
+                  <FormControlLabel value="> 50 tahun" control={<Radio />} label="> 50 tahun" />
+                </RadioGroup>
               </div>
 
               <div style={{ marginBottom: '18px' }}>
                 <label style={{ fontWeight: 600 }}>Lainnya..</label>
-                <textarea
+                <TextField
                   placeholder="Tambahkan kriteria lainnya jika ada"
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginTop: '6px', minHeight: '70px', resize: 'vertical' }}
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  rows={2}
+                  style={{ marginTop: '6px' }}
                 />
               </div>
             </form>
-          </CollapsibleSection>
+            
+            {/* Navigation Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
+              <Button
+                onClick={handleBack}
+                variant="outlined"
+                size="large"
+                style={{ 
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  padding: '12px 32px'
+                }}
+              >
+                ← Back
+              </Button>
+              <Button
+                onClick={handleNext}
+                disabled={!canProceed()}
+                variant="contained"
+                color="primary"
+                size="large"
+                style={{ 
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  padding: '12px 32px'
+                }}
+              >
+                Next →
+              </Button>
+            </div>
+          </div>
+          )}
 
-          <CollapsibleSection title="Konten & Anggaran" status={kontenStatus} disabled={!allFilled || !kriteriaFilled}>
+          {/* Step 3: Konten & Anggaran */}
+          {currentStep === 3 && (
+            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
+              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Konten & Anggaran</h3>
             <form>
               <div style={{ marginBottom: '18px' }}>
                 <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Platform:</label>
@@ -829,27 +904,45 @@ function CampaignCreate() {
               <div style={{ marginBottom: '18px' }}>
                 <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Jumlah Influencer yang Dibutuhkan</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <button 
-                    type="button" 
+                  <Button 
+                    variant="outlined" 
                     onClick={() => setInfluencerCount(Math.max(1, influencerCount - 1))}
-                    style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '8px', background: 'white', cursor: 'pointer' }}
+                    style={{ 
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      flex: '0 0 auto',
+                      minWidth: '40px',
+                      height: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
                   >
                     -
-                  </button>
-                  <input
+                  </Button>
+                  <TextField
                     type="number"
                     min="1"
                     value={influencerCount}
                     onChange={(e) => setInfluencerCount(Math.max(1, parseInt(e.target.value) || 1))}
-                    style={{ width: '80px', padding: '8px', borderRadius: '8px', border: '1px solid #ccc', textAlign: 'center' }}
+                    style={{ width: '80px', padding: '8px', borderRadius: '8px', textAlign: 'center' }}
                   />
-                  <button 
-                    type="button" 
+                  <Button 
+                    variant="outlined" 
                     onClick={() => setInfluencerCount(influencerCount + 1)}
-                    style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '8px', background: 'white', cursor: 'pointer' }}
+                    style={{ 
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      flex: '0 0 auto',
+                      minWidth: '40px',
+                      height: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
                   >
                     +
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -864,75 +957,94 @@ function CampaignCreate() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <h4 style={{ margin: 0, fontWeight: 600 }}>Konten {index + 1}</h4>
                     {contentItems.length > 1 && (
-                      <button
-                        type="button"
+                      <Button
+                        variant="outlined"
                         onClick={() => removeContentItem(item.id)}
                         style={{ 
                           padding: '4px 8px',
-                          border: '1px solid #dc3545',
-                          borderRadius: '4px',
-                          background: 'white',
+                          borderColor: '#dc3545',
                           color: '#dc3545',
-                          cursor: 'pointer'
+                          borderRadius: '4px',
+                          height: '36px',
+                          minWidth: '80px'
                         }}
                       >
                         Remove
-                      </button>
+                      </Button>
                     )}
                   </div>
                   <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end' }}>
                     <div style={{ flex: '0 0 auto' }}>
                       <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Jumlah Post</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <button
-                          type="button"
+                        <Button
+                          variant="outlined"
                           onClick={() => updateContentItem(item.id, 'postCount', Math.max(1, item.postCount - 1))}
-                          style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '8px', background: 'white', cursor: 'pointer' }}
+                          style={{ 
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            flex: '0 0 auto',
+                            minWidth: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
                         >
                           -
-                        </button>
-                        <input
+                        </Button>
+                        <TextField
                           type="number"
                           min="1"
                           value={item.postCount}
                           onChange={(e) => updateContentItem(item.id, 'postCount', parseInt(e.target.value) || 1)}
-                          style={{ width: '80px', padding: '8px', borderRadius: '8px', border: '1px solid #ccc', textAlign: 'center' }}
+                          style={{ width: '80px', padding: '8px', borderRadius: '8px', textAlign: 'center' }}
                         />
-                        <button
-                          type="button"
+                        <Button
+                          variant="outlined"
                           onClick={() => updateContentItem(item.id, 'postCount', item.postCount + 1)}
-                          style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '8px', background: 'white', cursor: 'pointer' }}
+                          style={{ 
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            flex: '0 0 auto',
+                            minWidth: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
                         >
                           +
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
                     <div style={{ flex: 1 }}>
                       <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Jenis Konten</label>
-                      <select
-                        value={item.contentType}
-                        onChange={(e) => updateContentItem(item.id, 'contentType', e.target.value)}
-                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc' }}
-                      >
-                        <option value="foto">Instagram Foto</option>
-                        <option value="video">Instagram Video</option>
-                        <option value="reels">Instagram Reels</option>
-                        <option value="story">Instagram Story</option>
-                      </select>
+                      <FormControl fullWidth variant="outlined">
+                        <Select
+                          value={item.contentType}
+                          onChange={(e) => updateContentItem(item.id, 'contentType', e.target.value)}
+                          label="Jenis Konten"
+                        >
+                          <MenuItem value="foto">Instagram Foto</MenuItem>
+                          <MenuItem value="video">Instagram Video</MenuItem>
+                          <MenuItem value="reels">Instagram Reels</MenuItem>
+                          <MenuItem value="story">Instagram Story</MenuItem>
+                        </Select>
+                      </FormControl>
                     </div>
                   </div>
                 </div>
               ))}
               
               <div style={{ marginBottom: '18px' }}>
-                <button 
-                  type="button" 
+                <Button 
+                  variant="outlined" 
                   onClick={addContentItem}
                   style={{ 
                     width: '100%',
                     padding: '12px',
-                    background: '#f8f9fa',
                     border: '1px dashed #ccc',
                     borderRadius: '8px',
                     cursor: 'pointer',
@@ -941,38 +1053,20 @@ function CampaignCreate() {
                   }}
                 >
                   + Add Konten
-                </button>
+                </Button>
               </div>
 
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '4px' }}>Harga task campaign per influencer</label>
-                <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '6px' }}>
-                  💰 Tentukan budget yang akan dibayarkan per influencer untuk campaign ini
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <button 
-                    type="button" 
-                    onClick={() => setTaskPrice(Math.max(0, parseFloat(taskPrice) - 1000).toString())}
-                    style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '8px', background: 'white', cursor: 'pointer' }}
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="Contoh: 50000"
-                    value={taskPrice}
-                    onChange={e => setTaskPrice(e.target.value)}
-                    style={{ width: '150px', padding: '8px', borderRadius: '8px', border: '1px solid #ccc' }}
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setTaskPrice((parseFloat(taskPrice || 0) + 1000).toString())}
-                    style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '8px', background: 'white', cursor: 'pointer' }}
-                  >
-                    +
-                  </button>
-                </div>
+                <TextField
+                  label="Harga task campaign per influencer"
+                  variant="outlined"
+                  placeholder="Contoh: 50000"
+                  value={taskPrice}
+                  onChange={e => setTaskPrice(e.target.value)}
+                  fullWidth
+                  required
+                  helperText="💰 Tentukan budget yang akan dibayarkan per influencer untuk campaign ini"
+                />
               </div>
 
               <div style={{ marginBottom: '18px' }}>
@@ -989,134 +1083,337 @@ function CampaignCreate() {
               </div>
 
             </form>
-          </CollapsibleSection>
+            
+            {/* Navigation Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
+              <Button
+                onClick={handleBack}
+                variant="outlined"
+                size="large"
+                style={{ 
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  padding: '12px 32px'
+                }}
+              >
+                ← Back
+              </Button>
+              <Button
+                onClick={handleNext}
+                disabled={!canProceed()}
+                variant="contained"
+                color="primary"
+                size="large"
+                style={{ 
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  padding: '12px 32px'
+                }}
+              >
+                Next →
+              </Button>
+            </div>
+          </div>
+          )}
 
-          <CollapsibleSection title="Brief Campaign" status={briefStatus} defaultOpen={false} disabled={!allFilled || !kriteriaFilled || !kontenFilled}>
+          {/* Step 4: Brief Campaign */}
+          {currentStep === 4 && (
+            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
+              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Brief Campaign</h3>
             <form>
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600 }}>Tanggal Mulai Campaign</label>
-                <input
+                <TextField
+                  label="Tanggal Mulai Campaign"
                   type="date"
                   value={startDate}
                   onChange={e => setStartDate(e.target.value)}
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    borderRadius: '8px', 
-                    border: '1px solid #ccc',
-                    marginTop: '6px',
-                    fontFamily: 'inherit',
-                    fontSize: '1rem'
-                  }}
+                  fullWidth
                   required
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant="outlined"
                 />
               </div>
 
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600 }}>Tanggal Selesai Campaign</label>
-                <input
+                <TextField
+                  label="Tanggal Selesai Campaign"
                   type="date"
                   value={endDate}
                   onChange={e => setEndDate(e.target.value)}
                   min={startDate}
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    borderRadius: '8px', 
-                    border: '1px solid #ccc',
-                    marginTop: '6px',
-                    fontFamily: 'inherit',
-                    fontSize: '1rem'
-                  }}
+                  fullWidth
                   required
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant="outlined"
                 />
               </div>
 
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600 }}>Batas Waktu Pengiriman Konten</label>
-                <input
+                <TextField
+                  label="Batas Waktu Pengiriman Konten"
                   type="date"
                   value={contentDeadline}
                   onChange={e => setContentDeadline(e.target.value)}
                   min={startDate}
                   max={endDate}
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    borderRadius: '8px', 
-                    border: '1px solid #ccc',
-                    marginTop: '6px',
-                    fontFamily: 'inherit',
-                    fontSize: '1rem'
-                  }}
+                  fullWidth
                   required
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant="outlined"
                 />
               </div>
 
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600 }}>Aturan Foto/Video</label>
-                <textarea
+                <TextField
+                  label="Aturan Foto/Video"
+                  variant="outlined"
                   placeholder="misalnya: wajib ada selfie"
                   value={photoRules}
                   onChange={e => setPhotoRules(e.target.value)}
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    borderRadius: '8px', 
-                    border: '1px solid #ccc',
-                    marginTop: '6px',
-                    minHeight: '70px',
-                    resize: 'vertical',
-                    fontFamily: 'inherit',
-                    fontSize: '1rem'
-                  }}
+                  fullWidth
+                  multiline
+                  rows={2}
                   required
                 />
               </div>
 
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600 }}>Aturan Caption</label>
-                <textarea
+                <TextField
+                  label="Aturan Caption"
+                  variant="outlined"
                   placeholder="misalnya: wajib mencantumkan #hashtagbrand"
                   value={captionRules}
                   onChange={e => setCaptionRules(e.target.value)}
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    borderRadius: '8px', 
-                    border: '1px solid #ccc',
-                    marginTop: '6px',
-                    minHeight: '70px',
-                    resize: 'vertical',
-                    fontFamily: 'inherit',
-                    fontSize: '1rem'
-                  }}
+                  fullWidth
+                  multiline
+                  rows={2}
                   required
                 />
               </div>
 
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600 }}>Referensi Foto/Video</label>
-                <textarea
+                <TextField
+                  label="Referensi Foto/Video"
+                  variant="outlined"
                   value={contentReference}
                   onChange={e => setContentReference(e.target.value)}
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    borderRadius: '8px', 
-                    border: '1px solid #ccc',
-                    marginTop: '6px',
-                    minHeight: '70px',
-                    resize: 'vertical',
-                    fontFamily: 'inherit',
-                    fontSize: '1rem'
-                  }}
+                  fullWidth
+                  multiline
+                  rows={2}
                 />
               </div>
             </form>
-          </CollapsibleSection>
+            
+            {/* Navigation Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
+              <Button
+                onClick={handleBack}
+                variant="outlined"
+                size="large"
+                style={{ 
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  padding: '12px 32px'
+                }}
+              >
+                ← Back
+              </Button>
+              <Button
+                onClick={handleSave}
+                variant="contained"
+                color="primary"
+                size="large"
+                style={{ 
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  padding: '12px 32px'
+                }}
+              >
+                {allFilled && kriteriaFilled && kontenFilled && briefFilled ? 'Save as Active' : 'Save as Draft'}
+              </Button>
+            </div>
+          </div>
+          )}
         </div>
       </div>
+
+      {/* Delete Confirmation Popup */}
+      {showDeletePopup && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
+          }}
+          onClick={cancelDelete}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: '16px',
+              padding: '32px',
+              maxWidth: '450px',
+              width: '90%',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+              animation: 'slideIn 0.3s ease-out'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{ fontSize: '4rem', marginBottom: '16px' }}>🗑️</div>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '1.5rem', fontWeight: 600, color: '#333' }}>
+                Delete Campaign?
+              </h3>
+              <p style={{ margin: 0, color: '#666', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                Are you sure you want to delete this campaign? This action cannot be undone and all data will be permanently removed.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                onClick={cancelDelete}
+                style={{
+                  flex: 1,
+                  padding: '12px 24px',
+                  border: '2px solid #ddd',
+                  background: '#fff',
+                  color: '#333',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#f8f9fa';
+                  e.target.style.borderColor = '#999';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#fff';
+                  e.target.style.borderColor = '#ddd';
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                style={{
+                  flex: 1,
+                  padding: '12px 24px',
+                  border: 'none',
+                  background: '#dc3545',
+                  color: '#fff',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#c82333';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#dc3545';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Alert/Notification Popup */}
+      {showAlertPopup && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
+          }}
+          onClick={closeAlert}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: '16px',
+              padding: '32px',
+              maxWidth: '450px',
+              width: '90%',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+              animation: 'slideIn 0.3s ease-out'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{ fontSize: '4rem', marginBottom: '16px' }}>
+                {alertType === 'success' ? '✅' : alertType === 'warning' ? '⚠️' : '❌'}
+              </div>
+              <h3 style={{ 
+                margin: '0 0 12px 0', 
+                fontSize: '1.5rem', 
+                fontWeight: 600, 
+                color: alertType === 'success' ? '#28a745' : alertType === 'warning' ? '#ffc107' : '#dc3545'
+              }}>
+                {alertType === 'success' ? 'Success!' : alertType === 'warning' ? 'Warning' : 'Error'}
+              </h3>
+              <p style={{ margin: 0, color: '#666', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                {alertMessage}
+              </p>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button
+                onClick={closeAlert}
+                style={{
+                  padding: '12px 32px',
+                  border: 'none',
+                  background: alertType === 'success' ? '#28a745' : alertType === 'warning' ? '#ffc107' : '#007bff',
+                  color: '#fff',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  minWidth: '120px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

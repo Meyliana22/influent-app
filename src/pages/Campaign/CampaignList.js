@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Navbar, Button, Card } from '../../components/common';
+import { COLORS } from '../../constants/colors';
+import { formatCurrency } from '../../utils/helpers';
 import campaignDB from '../../data/campaignDatabase';
 import SearchIcon from '../../assets/search.svg';
 
@@ -70,17 +73,21 @@ function CampaignList() {
   );
 
   return (
-    <div style={{ background: '#fafafa', minHeight: '100vh', fontFamily: 'Montserrat, Arial, sans-serif' }}>
+    <div style={{ background: COLORS.background, minHeight: '100vh', fontFamily: 'Montserrat, Arial, sans-serif' }}>
+      {/* Navbar */}
+      <Navbar userType="umkm" />
+      
       <div style={{ maxWidth: '900px', margin: '0 auto', paddingTop: '48px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px' }}>
-          <button
-            style={{ background: '#6E00BE', color: '#fff', fontWeight: 600, border: 'none', padding: '8px 22px', fontSize: '1rem', marginRight: '18px', boxShadow: '0 2px 8px #e3e3e3', cursor: 'pointer' }}
+          <Button
+            variant="primary"
             onClick={() => navigate('/campaign-create')}
+            style={{ marginRight: '18px' }}
           >
             New
-          </button>
-          <h2 style={{ fontWeight: 600, fontSize: '1.5rem', margin: 0 }}>Campaign List</h2>
+          </Button>
+          <h2 style={{ fontWeight: 600, fontSize: '1.5rem', margin: 0, color: COLORS.textPrimary }}>Campaign List</h2>
         </div>
         {/* Search & Filter */}
         <div style={{ display: 'flex', gap: '18px', marginBottom: '32px' }}>
@@ -92,11 +99,11 @@ function CampaignList() {
               onChange={e => setSearch(e.target.value)}
               style={{
                 width: '85%',
-                padding: '12px 44px 12px 44px', // left padding untuk icon
+                padding: '12px 44px 12px 44px',
                 borderRadius: '12px',
-                border: '1px solid #ccc',
+                border: `1px solid ${COLORS.border}`,
                 fontSize: '1.1rem',
-                boxShadow: '0 2px 8px #e3e3e3'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
               }}
             />
             <img
@@ -117,41 +124,37 @@ function CampaignList() {
           <select 
             value={filter}
             onChange={e => setFilter(e.target.value)}
-            style={{ padding: '12px 22px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', boxShadow: '0 2px 8px #e3e3e3', background: '#fff', cursor: 'pointer' }}
+            style={{ 
+              padding: '12px 22px', 
+              borderRadius: '8px', 
+              border: `1px solid ${COLORS.border}`, 
+              fontSize: '1rem', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)', 
+              background: COLORS.white, 
+              cursor: 'pointer',
+              color: COLORS.textPrimary
+            }}
           >
             <option value="">Filter by</option>
             <option value="Active">Active</option>
             <option value="Draft">Draft</option>
             <option value="Inactive">Inactive</option>
-            {/* Add more status options as needed */}
           </select>
         </div>
         {/* Campaign Cards */}
         {filteredCampaigns.map(campaign => (
-          <div 
-            key={campaign.id} 
+          <Card
+            key={campaign.id}
+            hoverable
+            onClick={() => navigate(`/campaign-edit/${campaign.id}`)}
             style={{ 
-              background: '#fff', 
-              borderRadius: '24px', 
-              boxShadow: '0 8px 32px rgba(0,0,0,0.08)', 
               padding: '24px', 
               display: 'flex', 
               alignItems: 'center', 
               marginBottom: '24px',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              border: '1px solid rgba(255,255,255,0.8)',
               position: 'relative',
-              overflow: 'hidden'
-            }}
-            onClick={() => navigate(`/campaign-edit/${campaign.id}`)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 16px 48px rgba(0,0,0,0.12)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.08)';
+              overflow: 'hidden',
+              cursor: 'pointer'
             }}
           >
             {/* Decorative line */}
@@ -161,7 +164,7 @@ function CampaignList() {
               left: 0,
               right: 0,
               height: '4px',
-              background: getCategoryGradient(campaign.category)
+              background: COLORS.gradient
             }}></div>
             
             <div style={{ 
@@ -187,10 +190,12 @@ function CampaignList() {
               ) : (
                 <div style={{ textAlign: 'center', color: '#fff' }}>
                   <div style={{ fontSize: '2.5rem', marginBottom: '4px', opacity: 0.9 }}>
-                    {getCategoryIcon(campaign.category)}
+                    {getCategoryIcon(Array.isArray(campaign.category) ? campaign.category[0] : campaign.category)}
                   </div>
                   <div style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: '500' }}>
-                    {campaign.category.split(' ')[0]}
+                    {Array.isArray(campaign.category) 
+                      ? (campaign.category[0] || '').split(' ')[0] 
+                      : (campaign.category || '').split(' ')[0]}
                   </div>
                 </div>
               )}
@@ -203,17 +208,19 @@ function CampaignList() {
                     fontWeight: 700, 
                     fontSize: '1.1rem', 
                     marginBottom: '6px', 
-                    color: '#2d3748',
+                    color: COLORS.textPrimary,
                     lineHeight: '1.3'
                   }}>
                     {campaign.title}
                   </div>
                   <div style={{ 
-                    color: '#718096', 
+                    color: COLORS.textSecondary, 
                     fontSize: '0.85rem',
                     fontWeight: '500'
                   }}>
-                    {campaign.category}
+                    {Array.isArray(campaign.category) 
+                      ? campaign.category.join(', ') 
+                      : campaign.category}
                   </div>
                 </div>
                 
@@ -233,25 +240,25 @@ function CampaignList() {
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontSize: '0.9rem' }}>👥</span>
-                  <span style={{ fontSize: '0.8rem', color: '#4a5568', fontWeight: '500' }}>
+                  <span style={{ fontSize: '0.8rem', color: COLORS.textSecondary, fontWeight: '500' }}>
                     {campaign.influencerCount} influencers
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontSize: '0.9rem' }}>💰</span>
-                  <span style={{ fontSize: '0.8rem', color: '#4a5568', fontWeight: '500' }}>
-                    Rp {parseInt(campaign.taskPrice || 0).toLocaleString('id-ID')}
+                  <span style={{ fontSize: '0.8rem', color: COLORS.textSecondary, fontWeight: '500' }}>
+                    {formatCurrency(parseInt(campaign.taskPrice || 0))}
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontSize: '0.9rem' }}>📊</span>
-                  <span style={{ fontSize: '0.8rem', color: '#4a5568', fontWeight: '500' }}>
+                  <span style={{ fontSize: '0.8rem', color: COLORS.textSecondary, fontWeight: '500' }}>
                     {campaign.followersCount ? `${parseInt(campaign.followersCount).toLocaleString('id-ID')}+ followers` : 'No min followers'}
                   </span>
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </div>
