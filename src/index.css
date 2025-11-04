@@ -11,3 +11,22 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Custom scrollbar for step indicator */
+.step-indicator-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.step-indicator-container::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.step-indicator-container::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+
+.step-indicator-container::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}

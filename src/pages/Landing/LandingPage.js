@@ -1,6 +1,20 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/logo.svg'; // Tambahkan baris ini
+import logo from '../../assets/logo.svg';
+import personDashboard from '../../assets/dashboard/person.svg';
+import personInfluent from '../../assets/dashboard/person_influent.svg';
+import searchIcon from '../../assets/dashboard/searchIcon.svg';
+import accountIcon from '../../assets/dashboard/account.svg';
+import collabIcon from '../../assets/dashboard/collab.svg';
+import filterIcon from '../../assets/dashboard/filter.svg';
+import paymentIcon from '../../assets/dashboard/payment.svg';
+import reviewIcon from '../../assets/dashboard/review.svg';
+import chatIcon from '../../assets/dashboard/chat.svg';
+import logoFooter from '../../assets/dashboard/footerLogo.svg';
+import emailIcon from '../../assets/dashboard/email.svg';
+import phoneIcon from '../../assets/dashboard/phone.svg';
+import locationIcon from '../../assets/dashboard/location.svg';
+import broadcastIcon from '../../assets/dashboard/broadcast.svg';
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -32,7 +46,7 @@ function LandingPage() {
             <a href="#cara-kerja" style={{ color: '#333', textDecoration: 'none', fontWeight: 500 }}>Cara Kerja</a>
             <a href="#mengapa" style={{ color: '#333', textDecoration: 'none', fontWeight: 500 }}>Mengapa Influent?</a>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/login-umkm')}
               style={{
                 padding: '10px 24px',
                 background: 'transparent',
@@ -64,7 +78,7 @@ function LandingPage() {
               marginBottom: '24px',
               lineHeight: '1.2'
             }}>
-              PLATFORM KOLABORASI UMKM & MAHASISWA PERTAMA DI INDONESIA
+              PLATFORM KOLABORASI UMKM & MAHASISWA UNTUK PROMOSI DIGITAL
             </h1>
             <p style={{ 
               fontSize: '1.2rem', 
@@ -72,7 +86,8 @@ function LandingPage() {
               lineHeight: '1.6',
               opacity: 0.9
             }}>
-              Hubungkan bisnis Anda dengan influencer muda berbakat atau mulai karir sebagai influencer
+             Influent mempertemukan UMKM dengan mahasiswa influencer untuk menciptakan promosi digital yang efektif dan berdampak.
+              Gabung sekarang sebagai UMKM atau mahasiswa influencer!
             </p>
             <div style={{ display: 'flex', gap: '16px' }}>
               <button
@@ -119,7 +134,8 @@ function LandingPage() {
               justifyContent: 'center',
               fontSize: '8rem'
             }}>
-              🤝
+              <img src={personDashboard}>
+              </img>
             </div>
           </div>
         </div>
@@ -129,16 +145,15 @@ function LandingPage() {
       <section id="tentang" style={{ padding: '80px 24px', background: '#fff' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '64px' }}>
           <div style={{
-            width: '400px',
-            height: '300px',
-            background: '#f0f0f0',
+            width: '500px',
+            height: '400px',
             borderRadius: '16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '4rem'
           }}>
-            📱
+            <img src={personInfluent} alt="About Us" style={{ width: '100%', height: '100%' }} />
           </div>
           <div style={{ flex: 1 }}>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '24px', color: '#2d3748' }}>
@@ -146,19 +161,19 @@ function LandingPage() {
             </h2>
             <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#4a5568', marginBottom: '16px' }}>
               Influent adalah platform inovatif yang menghubungkan UMKM dengan mahasiswa influencer. 
-              Kami percaya bahwa kolaborasi antara bisnis lokal dan talenta muda dapat menciptakan 
+              Kami percaya bahwa kolaborasi antara pelaku bisnis lokal dan talenta muda dapat menciptakan 
               dampak positif untuk ekonomi digital Indonesia.
             </p>
             <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#4a5568' }}>
-              Dengan Influent, UMKM dapat menemukan influencer yang tepat untuk mempromosikan produk mereka, 
-              sementara mahasiswa dapat mengembangkan skill dan mendapatkan penghasilan.
+              Dengan Influent, UMKM dapat menemukan mahasiswa influencer yang tepat untuk mempromosikan produk mereka, 
+              sementara mahasiswa influencer dapat mengembangkan skill dan mendapatkan penghasilan.
             </p>
           </div>
         </div>
       </section>
 
       {/* Cara Kerja Section */}
-      <section id="cara-kerja" style={{ padding: '80px 24px', background: '#f8f9fa' }}>
+      <section id="cara-kerja" style={{ padding: '80px 24px'}}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <h2 style={{ 
             fontSize: '2.5rem', 
@@ -179,17 +194,17 @@ function LandingPage() {
               <div style={{
                 width: '120px',
                 height: '120px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                // background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 borderRadius: '24px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 24px',
                 fontSize: '3rem',
-                color: '#fff',
-                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)'
+                // color: '#fff',
+                // boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)'
               }}>
-                📝
+                <img src={accountIcon} alt="Buat Akun" style={{ width: '80%', height: '80%' }} />
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '12px', color: '#2d3748' }}>
                 Buat Akun
@@ -204,17 +219,17 @@ function LandingPage() {
               <div style={{
                 width: '120px',
                 height: '120px',
-                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                // background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
                 borderRadius: '24px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 24px',
                 fontSize: '3rem',
-                color: '#fff',
-                boxShadow: '0 8px 24px rgba(240, 147, 251, 0.3)'
+                // color: '#fff',
+                // boxShadow: '0 8px 24px rgba(240, 147, 251, 0.3)'
               }}>
-                🔍
+                <img src={searchIcon} alt="Cari atau Buat Campaign" style={{ width: '80%', height: '80%' }} />
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '12px', color: '#2d3748' }}>
                 Cari atau Buat Campaign
@@ -229,17 +244,17 @@ function LandingPage() {
               <div style={{
                 width: '120px',
                 height: '120px',
-                background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                // background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
                 borderRadius: '24px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 24px',
                 fontSize: '3rem',
-                color: '#fff',
-                boxShadow: '0 8px 24px rgba(67, 233, 123, 0.3)'
+                // color: '#fff',
+                // boxShadow: '0 8px 24px rgba(67, 233, 123, 0.3)'
               }}>
-                🤝
+                <img src={collabIcon} alt="Kolaborasi" style={{ width: '80%', height: '80%' }} />
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '12px', color: '#2d3748' }}>
                 Kolaborasi
@@ -278,7 +293,7 @@ function LandingPage() {
                 justifyContent: 'center',
                 fontSize: '2.5rem'
               }}>
-                🎯
+                <img src={filterIcon} alt="Filter" style={{ width: '80%', height: '80%' }} />
               </div>
               <div>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '12px', color: '#2d3748' }}>
@@ -286,7 +301,7 @@ function LandingPage() {
                 </h3>
                 <p style={{ fontSize: '1rem', lineHeight: '1.7', color: '#6c757d' }}>
                   Cari influencer berdasarkan kategori, followers, gender, dan usia. 
-                  Temukan partner yang tepat untuk brand Anda dengan sistem filter yang canggih.
+                  Temukan partner yang tepat untuk brand Anda dengan sistem filter.
                 </p>
               </div>
             </div>
@@ -304,7 +319,7 @@ function LandingPage() {
                 justifyContent: 'center',
                 fontSize: '2.5rem'
               }}>
-                💳
+                <img src={paymentIcon} alt="Pembayaran" style={{ width: '80%', height: '80%' }} />
               </div>
               <div>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '12px', color: '#2d3748' }}>
@@ -330,7 +345,7 @@ function LandingPage() {
                 justifyContent: 'center',
                 fontSize: '2.5rem'
               }}>
-                💬
+                <img src={chatIcon} alt="Komunikasi" style={{ width: '80%', height: '80%' }} />
               </div>
               <div>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '12px', color: '#2d3748' }}>
@@ -356,7 +371,7 @@ function LandingPage() {
                 justifyContent: 'center',
                 fontSize: '2.5rem'
               }}>
-                ⭐
+                <img src={reviewIcon} alt="Review & Rating" style={{ width: '80%', height: '80%' }} />
               </div>
               <div>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '12px', color: '#2d3748' }}>
@@ -383,7 +398,7 @@ function LandingPage() {
             📢 Gabung Sekarang dan Bangun Kolaborasi yang Berdampak!
           </h2>
           <p style={{ fontSize: '1.2rem', marginBottom: '32px', opacity: 0.9, lineHeight: '1.6' }}>
-            Mulailah perjalanan Anda bersama ribuan UMKM dan mahasiswa lainnya. 
+            Mulailah perjalanan Anda bersama UMKM dan mahasiswa influencer lainnya. 
             Raih peluang kolaborasi yang menguntungkan untuk bisnis atau karir Anda.
           </p>
           <button
@@ -419,7 +434,7 @@ function LandingPage() {
             marginBottom: '32px'
           }}>
             <div>
-              <img src="/logo_influent.png" alt="Influent" style={{ height: '32px', marginBottom: '16px', filter: 'brightness(0) invert(1)' }} />
+              <img src={logoFooter} alt="Influent" style={{ height: '32px', marginBottom: '16px' }} />
               <p style={{ fontSize: '0.9rem', opacity: 0.8, lineHeight: '1.6' }}>
                 Platform kolaborasi UMKM dan mahasiswa pertama di Indonesia
               </p>
@@ -434,10 +449,19 @@ function LandingPage() {
             </div>
             <div>
               <h4 style={{ marginBottom: '16px', fontSize: '1.1rem' }}>Kontak</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', opacity: 0.8 }}>
-                <p style={{ margin: 0 }}>📧 info@influent.id</p>
-                <p style={{ margin: 0 }}>📱 +62 812-3456-7890</p>
-                <p style={{ margin: 0 }}>📍 Jakarta, Indonesia</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9rem', opacity: 0.8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img src={emailIcon} alt="Email" style={{ width: '16px', height: '16px' }} />
+                  <span>info@influent.id</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img src={phoneIcon} alt="Telepon" style={{ width: '16px', height: '16px' }} />
+                  <span>+62 812-3456-7890</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img src={locationIcon} alt="Lokasi" style={{ width: '16px', height: '16px' }} />
+                  <span>Jakarta, Indonesia</span>
+                </div>
               </div>
             </div>
           </div>

@@ -10,7 +10,8 @@ import { COLORS } from '../../constants/colors';
  * @param {function} onChange - Change handler
  * @param {boolean} required - If true, field is required
  * @param {boolean} disabled - If true, input is disabled
- * @param {string} error - Error message to display
+ * @param {string} error - Error message to display (single string)
+ * @param {array} errors - Multiple error messages to display (array of strings)
  * @param {object} style - Additional inline styles
  */
 const Input = ({
@@ -22,13 +23,16 @@ const Input = ({
   required = false,
   disabled = false,
   error,
+  errors = [],
   style = {},
   ...props
 }) => {
+  const hasError = error || errors.length > 0;
+  
   const inputStyles = {
     width: '100%',
     padding: '12px 16px',
-    border: `2px solid ${error ? COLORS.danger : COLORS.border}`,
+    border: `2px solid ${hasError ? COLORS.danger : COLORS.border}`,
     borderRadius: '10px',
     fontSize: '1rem',
     fontFamily: 'Montserrat, Arial, sans-serif',
@@ -36,6 +40,7 @@ const Input = ({
     transition: 'border-color 0.2s',
     backgroundColor: disabled ? COLORS.backgroundLight : COLORS.white,
     cursor: disabled ? 'not-allowed' : 'text',
+    boxSizing: 'border-box',
     ...style,
   };
 
@@ -48,9 +53,19 @@ const Input = ({
   };
 
   const errorStyles = {
-    marginTop: '6px',
+    marginTop: '8px',
     fontSize: '0.85rem',
     color: COLORS.danger,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  };
+
+  const errorItemStyles = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    marginBottom: '4px',
   };
 
   return (
@@ -70,18 +85,33 @@ const Input = ({
         disabled={disabled}
         style={inputStyles}
         onFocus={(e) => {
-          if (!error) {
+          if (!hasError) {
             e.target.style.borderColor = COLORS.primary;
           }
         }}
         onBlur={(e) => {
-          if (!error) {
+          if (!hasError) {
             e.target.style.borderColor = COLORS.border;
           }
         }}
         {...props}
       />
-      {error && <div style={errorStyles}>{error}</div>}
+      {error && (
+        <div style={errorStyles}>
+          <span style={{ fontSize: '1rem' }}>❌</span>
+          {error}
+        </div>
+      )}
+      {errors.length > 0 && (
+        <div style={{ marginTop: '8px' }}>
+          {errors.map((err, index) => (
+            <div key={index} style={errorItemStyles}>
+              <span style={{ fontSize: '1rem', color: COLORS.danger }}>❌</span>
+              <span style={{ fontSize: '0.85rem', color: COLORS.danger }}>{err}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

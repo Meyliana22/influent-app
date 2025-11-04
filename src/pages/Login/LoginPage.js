@@ -1,177 +1,211 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input } from '../../components/common';
 import { COLORS } from '../../constants/colors';
+import { useToast } from '../../hooks/useToast';
+import { SubmitButton } from '../../components/common';
+import eyeIcon from '../../assets/auth/eye.svg';
+import eyeOffIcon from '../../assets/auth/eye-off.svg';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [errors, setErrors] = useState({ email: [], password: [] });
 
-  const handleLogin = (e) => {
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Simulasi login - bisa diganti dengan API call
-    if (email && password) {
-      alert('Login berhasil!');
-      navigate('/'); // Redirect ke dashboard UMKM
+    setLoginError('');
+    const newErrors = { email: [], password: [] };
+    let hasError = false;
+
+    if (!email.trim()) {
+      newErrors.email.push('Email tidak boleh kosong');
+      hasError = true;
+    } else if (!validateEmail(email)) {
+      newErrors.email.push('Format email tidak valid');
+      hasError = true;
     }
+
+    if (!password) {
+      newErrors.password.push('Password tidak boleh kosong');
+      hasError = true;
+    } else if (password.length < 6) {
+      newErrors.password.push('Password minimal 6 karakter');
+      hasError = true;
+    }
+
+    setErrors(newErrors);
+    if (hasError) return;
+    setIsLoading(true);
+    
+    setTimeout(() => {
+      const validCredentials = {
+        'umkm@influent.com': { password: 'umkm123', role: 'umkm', name: 'UMKM Demo' },
+        'admin@influent.com': { password: 'admin123', role: 'admin', name: 'Admin Influent' }
+      };
+      const user = validCredentials[email.toLowerCase()];
+      
+      if (user && user.password === password) {
+        localStorage.setItem('user', JSON.stringify({ email, role: user.role, name: user.name, rememberMe }));
+        showToast(`Selamat datang, ${user.name}!`, 'success');
+        setIsLoading(false);
+        setTimeout(() => navigate(user.role === 'admin' ? '/admin/dashboard' : '/campaigns'), 1000);
+      } else {
+        setIsLoading(false);
+        setLoginError('Email atau password salah. Coba lagi.');
+        showToast('Login gagal. Periksa kembali kredensial Anda.', 'error');
+      }
+    }, 1500);
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: COLORS.gradient,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
-      fontFamily: 'Montserrat, Arial, sans-serif'
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #f8f9ff 0%, #fef5ff 100%)',
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      padding: '24px', 
+      fontFamily: "'Montserrat', sans-serif"
     }}>
-      <div style={{
-        background: COLORS.white,
-        borderRadius: '24px',
-        padding: '48px',
-        maxWidth: '450px',
-        width: '100%',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-      }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h1 style={{ 
-            fontSize: '2rem', 
-            fontWeight: 700, 
-            marginBottom: '8px',
-            color: COLORS.textPrimary
-          }}>
-            Masuk ke Akun Usaha
-          </h1>
-          <p style={{ color: COLORS.textSecondary, fontSize: '0.95rem' }}>
-            Kelola campaign dan kolaborasi Anda
-          </p>
+      {/* Login Card */}
+      <div style={{ background: 'rgba(255, 255, 255, 0.95)', borderRadius: '20px', padding: '48px', maxWidth: '480px', width: '100%', boxShadow: '0 20px 60px rgba(102, 126, 234, 0.15)', border: '1px solid rgba(102, 126, 234, 0.15)', position: 'relative', zIndex: 1, backdropFilter: 'blur(20px)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '8px', color: '#2d3748', letterSpacing: '-0.5px', fontFamily: "'Montserrat', sans-serif" }}>Masuk ke Akun Influent</h1>
+          <p style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 400, fontFamily: "'Montserrat', sans-serif" }}>Kelola campaign dan kolaborasi dengan mudah</p>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleLogin}>
-          {/* Email Input */}
-          <Input
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="email@example.com"
-            required
-            style={{ marginBottom: '20px' }}
-          />
+        {loginError && (
+          <div style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)', border: '1px solid #fc8181', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '1.25rem' }}>⚠️</span>
+            <span style={{ color: '#c53030', fontSize: '0.9rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{loginError}</span>
+          </div>
+        )}
 
-          {/* Password Input */}
-          <div style={{ marginBottom: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <label style={{ 
-                fontWeight: 600,
-                color: COLORS.textPrimary,
-                fontSize: '0.9rem'
-              }}>
-                Password
-              </label>
-              <button
-                type="button"
-                onClick={() => navigate('/forget-password')}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: COLORS.primary,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  fontWeight: 500
-                }}
-              >
-                Lupa Password?
-              </button>
-            </div>
-            <div style={{ position: 'relative' }}>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Masukkan password"
-                required
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  paddingRight: '48px',
-                  border: `2px solid ${COLORS.border}`,
-                  borderRadius: '12px',
-                  fontSize: '1rem',
-                  outline: 'none',
-                  transition: 'all 0.2s',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={(e) => e.target.style.borderColor = COLORS.primary}
-                onBlur={(e) => e.target.style.borderColor = COLORS.border}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '16px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '1.2rem'
-                }}
-              >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
-              </button>
-            </div>
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748', fontFamily: "'Montserrat', sans-serif" }}>Email</label>
+            <input 
+              type="email" 
+              value={email} 
+              onChange={(e) => { 
+                setEmail(e.target.value); 
+                setLoginError(''); 
+                if (errors.email.length > 0) setErrors({ ...errors, email: [] }); 
+              }} 
+              placeholder="nama@example.com" 
+              disabled={isLoading} 
+              style={{ 
+                width: '100%', 
+                padding: '14px 16px', 
+                fontSize: '0.95rem', 
+                border: `2px solid ${errors.email.length > 0 ? '#fc8181' : '#e2e8f0'}`, 
+                borderRadius: '12px', 
+                outline: 'none', 
+                transition: 'all 0.2s', 
+                fontFamily: "'Montserrat', sans-serif", 
+                backgroundColor: isLoading ? '#f7fafc' : '#fff', 
+                cursor: isLoading ? 'not-allowed' : 'text',
+                boxSizing: 'border-box'
+              }} 
+            />
+            {errors.email.length > 0 && <div style={{ marginTop: '6px', fontSize: '0.85rem', color: '#e53e3e', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{errors.email[0]}</div>}
           </div>
 
-          {/* Login Button */}
-          <Button
-            type="submit"
-            variant="primary"
-            size="large"
-            fullWidth
-            style={{ marginBottom: '24px' }}
-          >
-            MASUK
-          </Button>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748', fontFamily: "'Montserrat', sans-serif" }}>Password</label>
+            <div style={{ position: 'relative' }}>
+              <input 
+                type={showPassword ? 'text' : 'password'} 
+                value={password} 
+                onChange={(e) => { 
+                  setPassword(e.target.value); 
+                  setLoginError(''); 
+                  if (errors.password.length > 0) setErrors({ ...errors, password: [] }); 
+                }} 
+                placeholder="••••••••" 
+                disabled={isLoading} 
+                style={{ 
+                  width: '100%', 
+                  padding: '14px 48px 14px 16px', 
+                  fontSize: '0.95rem', 
+                  border: `2px solid ${errors.password.length > 0 ? '#fc8181' : '#e2e8f0'}`, 
+                  borderRadius: '12px', 
+                  outline: 'none', 
+                  transition: 'all 0.2s', 
+                  fontFamily: "'Montserrat', sans-serif", 
+                  backgroundColor: isLoading ? '#f7fafc' : '#fff', 
+                  cursor: isLoading ? 'not-allowed' : 'text',
+                  boxSizing: 'border-box'
+                }} 
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)} 
+                disabled={isLoading} 
+                style={{ 
+                  position: 'absolute', 
+                  right: '12px', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  background: 'transparent', 
+                  border: 'none', 
+                  cursor: isLoading ? 'not-allowed' : 'pointer', 
+                  fontSize: '1.25rem', 
+                  padding: '4px', 
+                  opacity: isLoading ? 0.5 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                {showPassword ? <img src={eyeIcon} alt="Hide password" style={{ width: '20px', height: '20px' }} /> : <img src={eyeOffIcon} alt="Show password" style={{ width: '20px', height: '20px' }} />}
+              </button>
+            </div>
+            {errors.password.length > 0 && <div style={{ marginTop: '6px', fontSize: '0.85rem', color: '#e53e3e', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{errors.password[0]}</div>}
+          </div>
 
-          {/* Register Link */}
-          <div style={{ 
-            textAlign: 'center',
-            fontSize: '0.95rem',
-            color: COLORS.textSecondary
-          }}>
-            Belum punya akun? {' '}
-            <button
-              type="button"
-              onClick={() => navigate('/register-umkm')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: COLORS.primary,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: '0.95rem'
-              }}
-            >
-              Daftar di sini
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', color: '#6c757d', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>
+              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} disabled={isLoading} style={{ width: '18px', height: '18px', cursor: isLoading ? 'not-allowed' : 'pointer', accentColor: '#667eea' }} />
+              Ingat saya
+            </label>
+            <button type="button" onClick={() => navigate('/forget-password')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#667eea', fontSize: '0.9rem', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 600, textDecoration: 'none', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>Lupa password?</button>
+          </div>
+
+          <div style={{ marginBottom: '24px' }}>
+            <SubmitButton
+              isLoading={isLoading}
+              text="Masuk Sekarang"
+              loadingText="Memproses..."
+            />
+          </div>
+
+          <div style={{ textAlign: 'center', fontSize: '0.95rem', color: '#6c757d', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>
+            Belum punya akun? <button type="button" onClick={() => navigate('/register-umkm')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#667eea', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer', fontSize: '0.95rem', textDecoration: 'none', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>Daftar sekarang</button>
           </div>
         </form>
 
-        {/* Back to Home */}
-        <div style={{ textAlign: 'center', marginTop: '24px' }}>
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-          >
-            ← Kembali ke Beranda
-          </Button>
+        <div style={{ marginTop: '32px', padding: '16px', background: 'linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%)', borderRadius: '12px', border: '1px solid #cbd5e0' }}>
+          <div style={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600, marginBottom: '8px', fontFamily: "'Montserrat', sans-serif" }}>💡 Demo Credentials:</div>
+          <div style={{ fontSize: '0.8rem', color: '#6c757d', lineHeight: '1.6', fontFamily: "'Montserrat', sans-serif" }}>
+            <div><strong>UMKM:</strong> umkm@influent.com / umkm123</div>
+            <div><strong>Admin:</strong> admin@influent.com / admin123</div>
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <button type="button" onClick={() => navigate('/')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#6c757d', fontSize: '0.9rem', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 600, padding: '8px 16px', borderRadius: '8px', transition: 'all 0.2s', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>← Kembali ke Beranda</button>
         </div>
       </div>
     </div>

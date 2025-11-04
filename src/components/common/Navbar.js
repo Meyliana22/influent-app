@@ -2,6 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
 import logo from '../../assets/logo.svg'; // Tambahkan baris ini
+import chatIcon from '../../assets/chat.svg';
+import notifIcon from '../../assets/notification.svg';
+import profileIcon from '../../assets/user.svg';
+
 
 /**
  * Reusable Navbar Component
@@ -63,7 +67,7 @@ const Navbar = ({ userType = 'umkm', showAuth = false }) => {
         {showAuth ? (
           <>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/login-umkm')}
               style={{
                 padding: '10px 20px',
                 background: 'transparent',
@@ -78,7 +82,7 @@ const Navbar = ({ userType = 'umkm', showAuth = false }) => {
               Masuk
             </button>
             <button
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/register-umkm')}
               style={{
                 padding: '10px 20px',
                 background: COLORS.gradientPrimary,
@@ -95,42 +99,24 @@ const Navbar = ({ userType = 'umkm', showAuth = false }) => {
           </>
         ) : (
           <>
-            <button
-              style={{
-                background: 'transparent',
-                border: 'none',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-              }}
+            <img
+              src={chatIcon}
+              alt="Chat"
+              style={{ width: '22px', height: '22px', cursor: 'pointer' }}
               onClick={() => navigate('/chat')}
-              title="Messages"
-            >
-              💬
-            </button>
-            <button
-              style={{
-                background: 'transparent',
-                border: 'none',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-              }}
+            />
+            <img
+              src={notifIcon}
+              alt="Notifications"
+              style={{ width: '26px', height: '26px', cursor: 'pointer' }}
               onClick={() => navigate('/notifications')}
-              title="Notifications"
-            >
-              🔔
-            </button>
-            <button
-              style={{
-                background: 'transparent',
-                border: 'none',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-              }}
+            />
+            <img
+              src={profileIcon}
+              alt="Profile"
+              style={{ width: '28px', height: '28px', cursor: 'pointer' }}
               onClick={() => navigate('/user')}
-              title="Settings"
-            >
-              ⚙️
-            </button>
+            />
           </>
         )}
       </div>

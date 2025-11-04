@@ -1,12 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navbar, Card, Button, Input, Alert } from '../../components/common';
+import { Card, Button, Input, Modal } from '../../components/common';
+import UMKMSidebar from '../../components/umkm/UMKMSidebar';
+import UMKMTopbar from '../../components/umkm/UMKMTopbar';
 import { COLORS } from '../../constants/colors';
+import { useToast } from '../../hooks/useToast';
 
 function UserPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('profile');
-  const [showSavePopup, setShowSavePopup] = useState(false);
+  
+  // Responsive state for sidebar
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1000);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+  // Handle window resize for responsive design
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1000);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // Profile State
   const [profileData, setProfileData] = useState({
@@ -24,6 +43,10 @@ function UserPage() {
     newPassword: '',
     confirmPassword: ''
   });
+
+  // Modal States
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Notification Preferences
   const [notifPreferences, setNotifPreferences] = useState({
@@ -47,57 +70,62 @@ function UserPage() {
   };
 
   const handleSaveProfile = () => {
-    // Simulate save
-    setShowSavePopup(true);
-    setTimeout(() => setShowSavePopup(false), 2000);
+    showToast('Profil berhasil disimpan!', 'success');
   };
 
   const handleSavePassword = () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('Password baru tidak cocok!');
+      showToast('Password baru tidak cocok!', 'error');
       return;
     }
     // Simulate save
-    setShowSavePopup(true);
+    showToast('Password berhasil diubah!', 'success');
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    setTimeout(() => setShowSavePopup(false), 2000);
   };
 
   const handleLogout = () => {
-    if (window.confirm('Apakah Anda yakin ingin keluar?')) {
-      navigate('/login');
-    }
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    showToast('Berhasil keluar', 'success');
+    setTimeout(() => {
+      navigate('/login-umkm');
+    }, 500);
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: COLORS.background,
-      fontFamily: 'Montserrat, Arial, sans-serif'
-    }}>
-      {/* Header */}
-      <Navbar userType="umkm" />
-
-      {/* Main Content */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 24px' }}>
+    <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
+      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      
+      <div style={{ marginLeft: !isMobile ? '260px' : '0', flex: 1 }}>
+        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        
+        <div style={{ marginTop: '72px', background: '#f7fafc', minHeight: 'calc(100vh - 72px)', padding: '32px' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <h2 style={{ 
           margin: '0 0 32px 0', 
-          fontSize: '2rem', 
+          fontSize: isMobile ? '1.5rem' : '2rem', 
           fontWeight: 700,
           color: '#2d3748'
         }}>
           Pengaturan Akun
         </h2>
 
-        <div style={{ display: 'flex', gap: '32px' }}>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? '16px' : '32px'
+        }}>
           {/* Sidebar */}
-          <Card padding="large" style={{ width: '280px', height: 'fit-content' }}>
+          <Card padding="large">
             <nav>
               {[
                 { id: 'profile', label: 'Profil Akun', icon: '👤' },
                 { id: 'password', label: 'Ubah Password', icon: '🔒' },
-                { id: 'notifications', label: 'Notifikasi', icon: '🔔' },
-                { id: 'privacy', label: 'Privasi', icon: '🛡️' }
+                // { id: 'notifications', label: 'Notifikasi', icon: '🔔' },
+                // { id: 'privacy', label: 'Privasi', icon: '🛡️' }
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -221,9 +249,19 @@ function UserPage() {
                 </div>
 
                 <Button
-                  variant="primary"
                   onClick={handleSaveProfile}
-                  style={{ marginTop: '24px' }}
+                  style={{ 
+                    marginTop: '24px',
+                    padding: '8px 16px',
+                    background: '#667eea',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
                 >
                   Simpan Perubahan
                 </Button>
@@ -266,9 +304,19 @@ function UserPage() {
                 </div>
 
                 <Button
-                  variant="primary"
                   onClick={handleSavePassword}
-                  style={{ marginTop: '24px' }}
+                  style={{ 
+                    marginTop: '24px',
+                    padding: '8px 16px',
+                    background: '#667eea',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
                 >
                   Update Password
                 </Button>
@@ -383,11 +431,7 @@ function UserPage() {
                     </p>
                     <Button
                       variant="danger"
-                      onClick={() => {
-                        if (window.confirm('Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan!')) {
-                          alert('Akun akan dihapus');
-                        }
-                      }}
+                      onClick={() => setShowDeleteModal(true)}
                     >
                       Hapus Akun
                     </Button>
@@ -397,16 +441,60 @@ function UserPage() {
             )}
           </div>
         </div>
-      </div>
 
-      {/* Save Success Popup */}
-      {showSavePopup && (
-        <Alert
-          type="success"
-          message="✓ Perubahan berhasil disimpan!"
-          position="top-right"
-        />
-      )}
+      {/* Logout Confirmation Modal */}
+      <Modal
+        show={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title="Konfirmasi Logout"
+      >
+        <div style={{ padding: '20px 0' }}>
+          <p style={{ marginBottom: '24px', color: COLORS.text }}>
+            Apakah Anda yakin ingin keluar?
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <Button variant="secondary" onClick={() => setShowLogoutModal(false)}>
+              Batal
+            </Button>
+            <Button variant="primary" onClick={confirmLogout}>
+              Ya, Keluar
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Account Confirmation Modal */}
+      <Modal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Hapus Akun"
+      >
+        <div style={{ padding: '20px 0' }}>
+          <p style={{ marginBottom: '24px', color: COLORS.text }}>
+            Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan!
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+              Batal
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={() => {
+                setShowDeleteModal(false);
+                showToast('Akun berhasil dihapus. Anda akan dialihkan...', 'success');
+                setTimeout(() => {
+                  navigate('/');
+                }, 2000);
+              }}
+            >
+              Ya, Hapus Akun
+            </Button>
+          </div>
+        </div>
+      </Modal>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
