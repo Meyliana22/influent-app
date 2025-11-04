@@ -3,6 +3,11 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { localStorageHelper } from './utils/localStorageHelper'; // Load localStorage helper
+import './utils/applicantStorageHelper'; // Load applicant helper
+
+// Initialize data on app startup
+localStorageHelper.initializeData();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

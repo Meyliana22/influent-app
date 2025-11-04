@@ -1,11 +1,32 @@
 import React, { useState } from 'react';
-import { Navbar, Card, Button, StatCard } from '../../components/common';
+import UMKMSidebar from '../../components/umkm/UMKMSidebar';
+import UMKMTopbar from '../../components/umkm/UMKMTopbar';
 import { COLORS } from '../../constants/colors';
 import { formatCurrency, formatDate } from '../../utils/helpers';
+import { useToast } from '../../hooks/useToast';
 
 function TransactionsPage() {
+  const { showToast } = useToast();
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  
+  // Responsive state for sidebar
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1000);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+  // Handle window resize for responsive design
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1000);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const transactions = [
     {
@@ -13,54 +34,58 @@ function TransactionsPage() {
       campaignName: 'Razer Mouse Review',
       influencer: 'User123',
       amount: 500000,
-      status: 'completed',
+      status: 'Paid',
       date: '2024-10-01',
-      paymentMethod: 'Transfer Bank'
+      paymentMethod: 'Transfer Bank',
+      description: 'Payment for influencer collaboration'
     },
     {
       id: 'TRX002',
       campaignName: 'Product Launch Campaign',
       influencer: 'UserInfluencer',
       amount: 750000,
-      status: 'pending',
+      status: 'Paid',
       date: '2024-10-05',
-      paymentMethod: 'E-Wallet'
+      paymentMethod: 'E-Wallet',
+      description: 'Campaign payment'
     },
     {
       id: 'TRX003',
       campaignName: 'Summer Sale 2024',
       influencer: 'InfluencerPro',
       amount: 1000000,
-      status: 'completed',
+      status: 'Paid',
       date: '2024-09-28',
-      paymentMethod: 'Transfer Bank'
+      paymentMethod: 'Transfer Bank',
+      description: 'Collaboration payment'
     },
     {
       id: 'TRX004',
       campaignName: 'Gaming Keyboard Review',
       influencer: 'TechReviewer',
       amount: 600000,
-      status: 'failed',
+      status: 'Refunded',
       date: '2024-10-03',
-      paymentMethod: 'E-Wallet'
+      paymentMethod: 'E-Wallet',
+      description: 'Refund due to campaign cancellation'
     },
     {
       id: 'TRX005',
       campaignName: 'Back to School Campaign',
       influencer: 'StudentInfluencer',
       amount: 450000,
-      status: 'pending',
+      status: 'Paid',
       date: '2024-10-08',
-      paymentMethod: 'Transfer Bank'
+      paymentMethod: 'Transfer Bank',
+      description: 'Payment for campaign'
     }
   ];
 
   const getStatusColor = (status) => {
     switch(status) {
-      case 'completed': return { bg: COLORS.successLight, color: COLORS.successDark, label: 'Selesai' };
-      case 'pending': return { bg: COLORS.warningLight, color: COLORS.warningDark, label: 'Pending' };
-      case 'failed': return { bg: COLORS.dangerLight, color: COLORS.dangerDark, label: 'Gagal' };
-      default: return { bg: '#e2e3e5', color: '#383d41', label: 'Unknown' };
+      case 'Paid': return { bg: '#d1fae5', color: '#065f46' };
+      case 'Refunded': return { bg: '#fef3c7', color: '#92400e' };
+      default: return { bg: '#e2e8f0', color: '#475569' };
     }
   };
 
@@ -72,278 +97,457 @@ function TransactionsPage() {
     return matchesStatus && matchesSearch;
   });
 
-  const totalCompleted = transactions.filter(t => t.status === 'completed')
+  const totalPaid = transactions.filter(t => t.status === 'Paid')
     .reduce((sum, t) => sum + t.amount, 0);
-  const totalPending = transactions.filter(t => t.status === 'pending')
+  const totalRefunded = transactions.filter(t => t.status === 'Refunded')
     .reduce((sum, t) => sum + t.amount, 0);
+
+  const handleViewDetails = (transaction) => {
+    setSelectedTransaction(transaction);
+    setShowDetailModal(true);
+  };
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: COLORS.background,
-      fontFamily: 'Montserrat, Arial, sans-serif'
-    }}>
-      {/* Header */}
-      <Navbar userType="umkm" />
+    <div style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
+      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      
+      <div style={{ marginLeft: !isMobile ? '260px' : '0', width: !isMobile ? 'calc(100% - 260px)' : '100%' }}>
+        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-      {/* Main Content */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '48px 24px' }}>
-        <h2 style={{ 
-          margin: '0 0 32px 0', 
-          fontSize: '2rem', 
-          fontWeight: 700,
-          color: COLORS.textPrimary
-        }}>
-          Riwayat Transaksi
-        </h2>
+        
+        <div style={{ marginTop: '72px', padding: '32px' }}>
+          {/* Page Header */}
+          <div style={{ marginBottom: '32px', maxWidth: '1400px', margin: '0 auto 32px' }}>
+            <h1 style={{
+              fontSize: isMobile ? '1.5rem' : '2rem',
+              fontWeight: 700,
+              color: '#1a1f36',
+              margin: '0px',
+              fontFamily: "'Inter', sans-serif"
+            }}>
+              Transactions
+            </h1>
+            <p style={{
+              fontSize: '0.95rem',
+              color: '#6c757d',
+              fontFamily: "'Inter', sans-serif"
+            }}>
+              View and manage all your campaign transactions
+            </p>
+          </div>
 
-        {/* Summary Cards */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '24px',
-          marginBottom: '32px'
-        }}>
-          <StatCard
-            variant="primary"
-            label="Total Transaksi Selesai"
-            value={formatCurrency(totalCompleted)}
-            subtitle={`${transactions.filter(t => t.status === 'completed').length} transaksi`}
-          />
-          <StatCard
-            label="Transaksi Pending"
-            value={formatCurrency(totalPending)}
-            valueColor={COLORS.warningDark}
-            subtitle={`${transactions.filter(t => t.status === 'pending').length} transaksi`}
-          />
-          <StatCard
-            label="Total Transaksi"
-            value={transactions.length}
-            subtitle="Semua periode"
-          />
-        </div>
-
-        {/* Filters and Search */}
-        <Card style={{ marginBottom: '24px' }}>
-          <div style={{ 
-            display: 'flex', 
-            gap: '16px', 
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between'
+          {/* Summary Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: isMobile ? '16px' : '20px',
+            marginBottom: '32px',
+            maxWidth: '1400px',
+            margin: '0 auto 32px'
           }}>
-            {/* Status Filter */}
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              {[
-                { value: 'all', label: 'Semua' },
-                { value: 'completed', label: 'Selesai' },
-                { value: 'pending', label: 'Pending' },
-                { value: 'failed', label: 'Gagal' }
-              ].map(filter => (
-                <button
-                  key={filter.value}
-                  onClick={() => setFilterStatus(filter.value)}
-                  style={{
-                    padding: '10px 20px',
-                    border: filterStatus === filter.value ? `2px solid ${COLORS.primary}` : `2px solid ${COLORS.border}`,
-                    borderRadius: '10px',
-                    background: filterStatus === filter.value ? COLORS.primaryLight : COLORS.white,
-                    color: filterStatus === filter.value ? COLORS.primary : COLORS.textSecondary,
-                    fontWeight: filterStatus === filter.value ? 600 : 500,
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    transition: 'all 0.2s',
-                    fontFamily: 'Montserrat, Arial, sans-serif',
-                  }}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
+            {[
+              {
+                title: 'Total Paid',
+                value: `Rp ${totalPaid.toLocaleString('id-ID')}`,
+                icon: '✅',
+                color: '#10b981',
+                bgColor: '#d1fae5',
+                count: transactions.filter(t => t.status === 'Paid').length
+              },
+              {
+                title: 'Total Refunded',
+                value: `Rp ${totalRefunded.toLocaleString('id-ID')}`,
+                icon: '↩️',
+                color: '#f59e0b',
+                bgColor: '#fef3c7',
+                count: transactions.filter(t => t.status === 'Refunded').length
+              },
+              {
+                title: 'All Transactions',
+                value: transactions.length,
+                icon: '💰',
+                color: '#3b82f6',
+                bgColor: '#dbeafe',
+                count: 'Total'
+              }
+            ].map((stat, index) => (
+              <div
+                key={index}
+                style={{
+                  background: '#fff',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  border: '1px solid #e2e8f0'
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    background: stat.bgColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.5rem'
+                  }}>
+                    {stat.icon}
+                  </div>
+                </div>
+                <div style={{
+                  fontSize: '0.85rem',
+                  color: '#6c757d',
+                  marginBottom: '8px',
+                  fontFamily: "'Inter', sans-serif"
+                }}>
+                  {stat.title}
+                </div>
+                <div style={{
+                  fontSize: '1.75rem',
+                  fontWeight: 700,
+                  color: '#1a1f36',
+                  marginBottom: '4px',
+                  fontFamily: "'Inter', sans-serif"
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{
+                  fontSize: '0.8rem',
+                  color: '#6c757d',
+                  fontFamily: "'Inter', sans-serif"
+                }}>
+                  {stat.count} transactions
+                </div>
+              </div>
+            ))}
+          </div>
 
-            {/* Search */}
-            <div style={{ position: 'relative', flex: '1', minWidth: '280px', maxWidth: '400px' }}>
+          {/* Filters */}
+          <div style={{
+            background: '#fff',
+            borderRadius: '16px',
+            padding: isMobile ? '16px' : '24px',
+            marginBottom: '24px',
+            border: '1px solid #e2e8f0',
+            display: 'flex',
+            gap: '16px',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            maxWidth: '1400px',
+            margin: '0 auto 24px'
+          }}>
+            <div style={{ flex: 1, minWidth: isMobile ? '100%' : '300px' }}>
               <input
                 type="text"
-                placeholder="Cari campaign, influencer, atau ID transaksi..."
+                placeholder="Search transactions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '12px 16px 12px 44px',
-                  border: `2px solid ${COLORS.border}`,
+                  padding: '12px 16px',
+                  border: '2px solid #e2e8f0',
                   borderRadius: '10px',
                   fontSize: '0.95rem',
-                  fontFamily: 'inherit'
+                  outline: 'none',
+                  fontFamily: "'Inter', sans-serif"
                 }}
               />
-              <span style={{
-                position: 'absolute',
-                left: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: '1.2rem'
-              }}>
-                🔍
-              </span>
+            </div>
+            <div>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                style={{
+                  padding: '12px 16px',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '10px',
+                  fontSize: '0.95rem',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  fontFamily: "'Inter', sans-serif",
+                  minWidth: '150px'
+                }}
+              >
+                <option value="all">All Status</option>
+                <option value="Paid">Paid</option>
+                <option value="Refunded">Refunded</option>
+              </select>
             </div>
           </div>
-        </Card>
 
-        {/* Transactions Table */}
-        <Card style={{ overflow: 'hidden', padding: 0 }}>
-          <table style={{ 
-            width: '100%', 
-            borderCollapse: 'collapse'
+          {/* Transactions Table */}
+          <div style={{
+            background: '#fff',
+            borderRadius: '16px',
+            border: '1px solid #e2e8f0',
+            overflow: isMobile ? 'auto' : 'hidden',
+            maxWidth: '1400px',
+            margin: '0 auto'
           }}>
-            <thead>
-              <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #e3e3e3' }}>
-                <th style={{ 
-                  padding: '16px 20px', 
-                  textAlign: 'left', 
-                  fontWeight: 700,
-                  color: '#2d3748',
-                  fontSize: '0.9rem'
-                }}>
-                  ID Transaksi
-                </th>
-                <th style={{ 
-                  padding: '16px 20px', 
-                  textAlign: 'left', 
-                  fontWeight: 700,
-                  color: '#2d3748',
-                  fontSize: '0.9rem'
-                }}>
-                  Campaign
-                </th>
-                <th style={{ 
-                  padding: '16px 20px', 
-                  textAlign: 'left', 
-                  fontWeight: 700,
-                  color: '#2d3748',
-                  fontSize: '0.9rem'
-                }}>
-                  Influencer
-                </th>
-                <th style={{ 
-                  padding: '16px 20px', 
-                  textAlign: 'right', 
-                  fontWeight: 700,
-                  color: '#2d3748',
-                  fontSize: '0.9rem'
-                }}>
-                  Jumlah
-                </th>
-                <th style={{ 
-                  padding: '16px 20px', 
-                  textAlign: 'left', 
-                  fontWeight: 700,
-                  color: '#2d3748',
-                  fontSize: '0.9rem'
-                }}>
-                  Metode
-                </th>
-                <th style={{ 
-                  padding: '16px 20px', 
-                  textAlign: 'left', 
-                  fontWeight: 700,
-                  color: '#2d3748',
-                  fontSize: '0.9rem'
-                }}>
-                  Tanggal
-                </th>
-                <th style={{ 
-                  padding: '16px 20px', 
-                  textAlign: 'center', 
-                  fontWeight: 700,
-                  color: '#2d3748',
-                  fontSize: '0.9rem'
-                }}>
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTransactions.length > 0 ? (
-                filteredTransactions.map((trx, index) => {
-                  const statusInfo = getStatusColor(trx.status);
-                  return (
-                    <tr 
-                      key={trx.id}
-                      style={{ 
-                        borderBottom: index < filteredTransactions.length - 1 ? '1px solid #f0f0f0' : 'none',
-                        transition: 'background 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#f8f9fa'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
-                    >
-                      <td style={{ padding: '16px 20px', fontWeight: 600, color: '#667eea' }}>
-                        {trx.id}
-                      </td>
-                      <td style={{ padding: '16px 20px', color: '#2d3748', fontWeight: 500 }}>
-                        {trx.campaignName}
-                      </td>
-                      <td style={{ padding: '16px 20px', color: '#6c757d' }}>
-                        {trx.influencer}
-                      </td>
-                      <td style={{ padding: '16px 20px', textAlign: 'right', fontWeight: 600, color: '#2d3748' }}>
-                        {formatCurrency(trx.amount)}
-                      </td>
-                      <td style={{ padding: '16px 20px', color: '#6c757d', fontSize: '0.9rem' }}>
-                        {trx.paymentMethod}
-                      </td>
-                      <td style={{ padding: '16px 20px', color: '#6c757d', fontSize: '0.9rem' }}>
-                        {formatDate(trx.date)}
-                      </td>
-                      <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '6px 16px',
-                          borderRadius: '20px',
-                          background: statusInfo.bg,
-                          color: statusInfo.color,
-                          fontSize: '0.85rem',
-                          fontWeight: 600
-                        }}>
-                          {statusInfo.label}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="7" style={{ 
-                    padding: '64px 20px', 
-                    textAlign: 'center',
-                    color: '#6c757d'
-                  }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '16px', opacity: 0.5 }}>📊</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>
-                      Tidak ada transaksi ditemukan
-                    </div>
-                    <div style={{ fontSize: '0.9rem', marginTop: '8px' }}>
-                      Coba ubah filter atau kata kunci pencarian
-                    </div>
-                  </td>
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontFamily: "'Inter', sans-serif",
+              minWidth: isMobile ? '800px' : 'auto'
+            }}>
+              <thead>
+                <tr style={{ background: '#f7fafc' }}>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>ID</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Campaign</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Amount</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Status</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Date</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </Card>
-
-        {/* Export Button */}
-        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
-          <Button 
-            variant="outline" 
-            onClick={() => alert('Export data ke CSV/Excel')}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <span>📥</span>
-            Export Data
-          </Button>
+              </thead>
+              <tbody>
+                {filteredTransactions.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: '#6c757d' }}>
+                      No transactions found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredTransactions.map((trx) => {
+                    const statusStyle = getStatusColor(trx.status);
+                    return (
+                      <tr
+                        key={trx.id}
+                        style={{ borderBottom: '1px solid #e2e8f0' }}
+                      >
+                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', fontWeight: 600, color: '#667eea' }}>{trx.id}</td>
+                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', fontWeight: 600, color: '#1a1f36' }}>
+                          {trx.campaignName}
+                        </td>
+                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', fontWeight: 700, color: '#1a1f36' }}>
+                          Rp {trx.amount.toLocaleString('id-ID')}
+                        </td>
+                        <td style={{ padding: '20px 24px' }}>
+                          <span style={{
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            background: statusStyle.bg,
+                            color: statusStyle.color
+                          }}>
+                            {trx.status}
+                          </span>
+                        </td>
+                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#6c757d' }}>
+                          {formatDate(trx.date)}
+                        </td>
+                        <td style={{ padding: '20px 24px', textAlign: 'center' }}>
+                          <button
+                            onClick={() => handleViewDetails(trx)}
+                            style={{
+                              padding: '8px 16px',
+                              background: '#667eea',
+                              border: 'none',
+                              borderRadius: '8px',
+                              color: '#fff',
+                              fontSize: '0.85rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+
+      {/* Transaction Detail Modal */}
+      {showDetailModal && selectedTransaction && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: '20px',
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '32px',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                <div>
+                  <h2 style={{
+                    fontSize: '1.75rem',
+                    fontWeight: 700,
+                    color: '#1a1f36',
+                    marginBottom: '8px',
+                    fontFamily: "'Inter', sans-serif"
+                  }}>
+                    Transaction Details
+                  </h2>
+                  <div style={{
+                    fontSize: '0.9rem',
+                    color: '#6c757d',
+                    fontFamily: "'Inter', sans-serif"
+                  }}>
+                    {selectedTransaction.id}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  style={{
+                    background: '#f7fafc',
+                    border: 'none',
+                    borderRadius: '10px',
+                    width: '36px',
+                    height: '36px',
+                    cursor: 'pointer',
+                    fontSize: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '32px' }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '24px',
+                marginBottom: '24px'
+              }}>
+                <div>
+                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Campaign</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1a1f36' }}>
+                    {selectedTransaction.campaignName}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Influencer</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1a1f36' }}>
+                    {selectedTransaction.influencer}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Amount</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1f36' }}>
+                    Rp {selectedTransaction.amount.toLocaleString('id-ID')}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Payment Method</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1a1f36' }}>
+                    {selectedTransaction.paymentMethod}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Date</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1a1f36' }}>
+                    {formatDate(selectedTransaction.date)}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Status</div>
+                  <div>
+                    <span style={{
+                      padding: '8px 16px',
+                      borderRadius: '10px',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      background: getStatusColor(selectedTransaction.status).bg,
+                      color: getStatusColor(selectedTransaction.status).color,
+                      display: 'inline-block'
+                    }}>
+                      {selectedTransaction.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '8px' }}>Description</div>
+                <div style={{
+                  fontSize: '0.95rem',
+                  color: '#2d3748',
+                  lineHeight: '1.6',
+                  padding: '16px',
+                  background: '#f7fafc',
+                  borderRadius: '10px'
+                }}>
+                  {selectedTransaction.description}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                <button
+                  onClick={() => showToast('Receipt downloaded!', 'success')}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    background: COLORS.gradient,
+                    border: 'none',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif"
+                  }}
+                >
+                  📥 Download Receipt
+                </button>
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  style={{
+                    padding: '14px 24px',
+                    background: '#e2e8f0',
+                    border: 'none',
+                    borderRadius: '12px',
+                    color: '#2d3748',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif"
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

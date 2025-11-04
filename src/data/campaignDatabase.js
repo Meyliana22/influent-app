@@ -29,6 +29,7 @@ class CampaignDatabase {
           selectedGender: 'female',
           selectedAge: '18-34 tahun',
           status: 'Active',
+          isPaid: true, // User sudah bayar campaign ini
           image: null,
           contentItems: [
             { id: 1, postCount: 1, contentType: 'foto' },
@@ -56,6 +57,7 @@ class CampaignDatabase {
           selectedGender: 'male',
           selectedAge: '18-25 tahun',
           status: 'Active',
+          isPaid: true, // User sudah bayar campaign ini
           image: null,
           contentItems: [
             { id: 1, postCount: 1, contentType: 'video' },
@@ -84,6 +86,7 @@ class CampaignDatabase {
           selectedGender: 'female',
           selectedAge: '18-30 tahun',
           status: 'Draft',
+          isPaid: false, // Campaign belum dibayar (masih draft)
           image: null,
           contentItems: [
             { id: 1, postCount: 1, contentType: 'foto' },
@@ -112,6 +115,7 @@ class CampaignDatabase {
           selectedGender: 'female',
           selectedAge: '25-35 tahun',
           status: 'Active',
+          isPaid: true, // User sudah bayar campaign ini
           image: null,
           contentItems: [
             { id: 1, postCount: 2, contentType: 'foto' },
@@ -140,6 +144,7 @@ class CampaignDatabase {
           selectedGender: 'male',
           selectedAge: '25-40 tahun',
           status: 'Draft',
+          isPaid: false, // Campaign belum dibayar (masih draft)
           image: null,
           contentItems: [
             { id: 1, postCount: 1, contentType: 'video' },
@@ -169,6 +174,7 @@ class CampaignDatabase {
           selectedGender: 'female',
           selectedAge: '30-45 tahun',
           status: 'Active',
+          isPaid: true, // User sudah bayar campaign ini
           image: null,
           contentItems: [
             { id: 1, postCount: 2, contentType: 'foto' },
