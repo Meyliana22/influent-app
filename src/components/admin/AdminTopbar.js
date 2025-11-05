@@ -21,56 +21,14 @@ function AdminTopbar() {
       borderBottom: '1px solid #e2e8f0',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
       padding: '0 32px',
-      marginLeft: '260px',
       position: 'fixed',
       top: 0,
       right: 0,
       left: '260px',
       zIndex: 100
     }}>
-      {/* Search Bar */}
-      <div style={{
-        flex: 1,
-        maxWidth: '500px',
-        position: 'relative'
-      }}>
-        <input
-          type="text"
-          placeholder="Search users, campaigns..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '12px 16px 12px 44px',
-            border: '2px solid #e2e8f0',
-            borderRadius: '12px',
-            fontSize: '0.95rem',
-            outline: 'none',
-            transition: 'all 0.2s',
-            fontFamily: "'Inter', sans-serif"
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = COLORS.primary;
-            e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = '#e2e8f0';
-            e.target.style.boxShadow = 'none';
-          }}
-        />
-        <span style={{
-          position: 'absolute',
-          left: '16px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          fontSize: '1.25rem'
-        }}>
-          🔍
-        </span>
-      </div>
-
       {/* Right Section */}
       <div style={{
         display: 'flex',
@@ -174,7 +132,7 @@ function AdminTopbar() {
               overflow: 'hidden',
               zIndex: 1000
             }}>
-              <button
+              {/* <button
                 onClick={() => {
                   navigate('/admin/settings');
                   setShowDropdown(false);
@@ -198,7 +156,7 @@ function AdminTopbar() {
               >
                 <span>⚙️</span>
                 Settings
-              </button>
+              </button> */}
               <button
                 onClick={() => {
                   navigate('/admin/profile');

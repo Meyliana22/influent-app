@@ -4,84 +4,150 @@ import { COLORS } from '../../constants/colors';
 import BackIcon from '../../assets/back.svg';
 import PaymentIcon from '../../assets/payment_white.svg';
 import InfoIcon from '@mui/icons-material/Info';
+import campaignService from '../../services/campaignService';
 
 function PaymentConfirmation() {
   const navigate = useNavigate();
   const { id } = useParams(); // Campaign ID from URL
   const [campaign, setCampaign] = useState(null);
 
-  // Load campaign data from localStorage
+  // Load campaign data from API
   useEffect(() => {
-    const fetchCampaign = () => {
+    const fetchCampaign = async () => {
       try {
-        const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-        const data = existingCampaigns.find(c => c.campaign_id === id);
+        console.log('🔍 Fetching campaign with ID:', id);
+        const response = await campaignService.getCampaignById(id);
+        console.log('📦 API Response:', response);
         
-        if (!data) {
-          console.error('Campaign not found');
+        // Handle different response structures
+        let data = response?.data?.data || response?.data || response;
+        console.log('📋 Campaign data extracted:', data);
+        
+        if (!data || !data.campaign_id) {
+          console.error('❌ Campaign not found or invalid data:', data);
+          alert('Campaign tidak ditemukan');
           navigate('/campaigns');
           return;
         }
         
         setCampaign(data);
+        console.log('✅ Campaign loaded successfully');
       } catch (err) {
-        console.error('Error loading campaign:', err);
+        console.error('❌ Error loading campaign:', err);
+        alert('Gagal memuat data campaign');
         navigate('/campaigns');
       }
     };
 
     if (id) {
       fetchCampaign();
+    } else {
+      console.error('❌ No campaign ID provided');
+      navigate('/campaigns');
     }
   }, [id, navigate]);
 
   // Calculate campaign costs
   const calculateCosts = () => {
-    if (!campaign) return { total: 0 };
+    if (!campaign) return { total: 0, pricePerInfluencer: 0, influencerCount: 0 };
     
-    const pricePerPost = parseFloat(campaign.price_per_post) || 0;
+    const pricePerInfluencer = parseFloat(campaign.price_per_post) || 0;
     const influencerCount = parseInt(campaign.influencer_count) || 1;
     
-    // Calculate total posts from content items
-    let totalPosts = 0;
-    if (campaign.contentItems && Array.isArray(campaign.contentItems)) {
-      totalPosts = campaign.contentItems.reduce((sum, item) => sum + (parseInt(item.post_count) || 0), 0);
-    } else {
-      totalPosts = 1; // default
-    }
+    console.log('💰 Payment calculation:', {
+      pricePerInfluencer,
+      influencerCount
+    });
     
-    const total = pricePerPost * totalPosts * influencerCount;
+    // Total = Jumlah Influencer × Price per Influencer
+    const total = pricePerInfluencer * influencerCount;
     
     return { 
       total,
-      pricePerPost,
-      totalPosts,
+      pricePerInfluencer,
       influencerCount
     };
+  };
+
+  // Format date to Indonesian format
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return date.toLocaleDateString('id-ID', options);
   };
 
   const costs = calculateCosts();
 
   // Handle payment process
-  const handlePayment = () => {
+  const handlePayment = async () => {
     try {
-      // Update campaign in localStorage
-      const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-      const updatedCampaigns = existingCampaigns.map(c => 
-        c.campaign_id === id ? {
-          ...c,
-          status: 'Active',
-          isPaid: true,
-          paidAt: new Date().toISOString(),
-          paymentAmount: costs.total
-        } : c
-      );
-      localStorage.setItem('campaigns', JSON.stringify(updatedCampaigns));
+      // Parse influencer_category
+      let parsedCategory = [];
+      if (Array.isArray(campaign.influencer_category)) {
+        parsedCategory = campaign.influencer_category;
+      } else if (typeof campaign.influencer_category === 'string') {
+        try {
+          parsedCategory = JSON.parse(campaign.influencer_category);
+        } catch {
+          parsedCategory = [];
+        }
+      }
       
-      // Navigate to success page
-      navigate(`/campaign/${id}/payment-success`);
+      // Parse contentTypes
+      let parsedContentItems = [];
+      if (campaign.contentTypes) {
+        if (Array.isArray(campaign.contentTypes)) {
+          parsedContentItems = campaign.contentTypes;
+        } else if (typeof campaign.contentTypes === 'string' && campaign.contentTypes.trim() !== '' && campaign.contentTypes !== '[]') {
+          try {
+            parsedContentItems = JSON.parse(campaign.contentTypes);
+          } catch {
+            parsedContentItems = [{ id: 1, post_count: 1, content_type: 'foto' }];
+          }
+        }
+      }
+      
+      if (parsedContentItems.length === 0) {
+        parsedContentItems = [{ id: 1, post_count: 1, content_type: 'foto' }];
+      }
+      
+      // Prepare update data with correct field mapping
+      const updateData = {
+        title: campaign.title,
+        campaignCategory: campaign.campaign_category,
+        category: parsedCategory,
+        hasProduct: campaign.has_product || false,
+        productName: campaign.product_name || null,
+        productValue: campaign.product_value || null,
+        productDesc: campaign.product_desc || null,
+        start_date: campaign.start_date,
+        end_date: campaign.end_date,
+        submission_deadline: campaign.submission_deadline,
+        content_guidelines: campaign.content_guidelines,
+        caption_guidelines: campaign.caption_guidelines,
+        contentReference: campaign.content_reference,
+        influencer_count: campaign.influencer_count,
+        price_per_post: campaign.price_per_post,
+        min_followers: campaign.min_followers,
+        selectedGender: campaign.selected_gender,
+        selectedAge: campaign.selected_age,
+        contentItems: parsedContentItems,
+        image: campaign.banner_image,
+        status: 'active' // Change status to active after payment
+      };
+      
+      console.log('💳 Processing payment for campaign:', id);
+      console.log('📦 Update data:', updateData);
+      await campaignService.updateCampaign(id, updateData);
+      
+      // Show success message
+      alert('✅ Pembayaran berhasil! Campaign Anda sekarang aktif dan dapat menerima pendaftaran dari influencer.');
+      
+      // Navigate directly to campaign list
+      navigate('/campaigns');
     } catch (err) {
-      console.error('Payment error:', err);
+      console.error('❌ Payment error:', err);
       alert('Gagal memproses pembayaran. Silakan coba lagi.');
     }
   };
@@ -157,37 +223,62 @@ function PaymentConfirmation() {
 
           {/* Campaign Info */}
           <div style={{ 
-            padding: '16px', 
+            padding: '20px', 
             background: COLORS.backgroundLight, 
             borderRadius: '12px',
             marginBottom: '24px'
           }}>
             <h3 style={{ 
-              margin: '0 0 8px 0', 
-              fontSize: '1.1rem', 
-              fontWeight: 600,
-              color: COLORS.textPrimary
+              margin: '0 0 16px 0', 
+              fontSize: '1.2rem', 
+              fontWeight: 700,
+              color: COLORS.textPrimary,
+              borderBottom: '2px solid #667eea',
+              paddingBottom: '12px'
             }}>
-              {campaign.title}
+              Draft Campaign
             </h3>
-            <p style={{ 
-              margin: 0, 
-              fontSize: '0.9rem', 
-              color: COLORS.textSecondary 
-            }}>
-              {Array.isArray(campaign.category) 
-                ? campaign.category.join(', ') 
-                : campaign.category}
-            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: COLORS.textSecondary, fontSize: '0.9rem' }}>Nama Campaign:</span>
+                <span style={{ fontWeight: 600, color: COLORS.textPrimary, fontSize: '0.95rem', textAlign: 'right', maxWidth: '60%' }}>
+                  {campaign.title}
+                </span>
+              </div> */}
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: COLORS.textSecondary, fontSize: '0.9rem' }}>Jenis Campaign:</span>
+                <span style={{ fontWeight: 600, color: COLORS.textPrimary, fontSize: '0.95rem' }}>
+                  {campaign.campaign_category || '-'}
+                </span>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: COLORS.textSecondary, fontSize: '0.9rem' }}>Deadline Proposal:</span>
+                <span style={{ fontWeight: 600, color: COLORS.textPrimary, fontSize: '0.95rem' }}>
+                  {formatDate(campaign.submission_deadline)}
+                </span>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: COLORS.textSecondary, fontSize: '0.9rem' }}>Periode Campaign:</span>
+                <span style={{ fontWeight: 600, color: COLORS.textPrimary, fontSize: '0.95rem', textAlign: 'right' }}>
+                  {formatDate(campaign.start_date)} - {formatDate(campaign.end_date)}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Cost Breakdown */}
           <div style={{ marginBottom: '32px' }}>
             <h3 style={{ 
-              fontWeight: 600, 
+              fontWeight: 700, 
               marginBottom: '16px',
-              fontSize: '1.1rem',
-              color: COLORS.textPrimary
+              fontSize: '1.2rem',
+              color: COLORS.textPrimary,
+              borderBottom: '2px solid #667eea',
+              paddingBottom: '12px'
             }}>
               Biaya Campaign
             </h3>
@@ -199,32 +290,11 @@ function PaymentConfirmation() {
               borderRadius: '12px',
               marginBottom: '16px'
             }}>
-              <div style={{ marginBottom: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '8px'
-                }}>
-                  <span style={{ 
-                    color: COLORS.textSecondary,
-                    fontSize: '0.9rem'
-                  }}>
-                    Jumlah Post
-                  </span>
-                  <span style={{ 
-                    fontWeight: 600, 
-                    color: COLORS.textPrimary,
-                    fontSize: '1rem'
-                  }}>
-                    {costs.totalPosts} post
-                  </span>
-                </div>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '8px'
+                  alignItems: 'center'
                 }}>
                   <span style={{ 
                     color: COLORS.textSecondary,
@@ -243,20 +313,22 @@ function PaymentConfirmation() {
                 <div style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  paddingTop: '12px',
+                  borderTop: '1px dashed #ddd'
                 }}>
                   <span style={{ 
                     color: COLORS.textSecondary,
                     fontSize: '0.9rem'
                   }}>
-                    Biaya per Post
+                    Biaya per Influencer
                   </span>
                   <span style={{ 
                     fontWeight: 600, 
                     color: COLORS.textPrimary,
                     fontSize: '1rem'
                   }}>
-                    {formatCurrency(costs.pricePerPost)}
+                    {formatCurrency(costs.pricePerInfluencer)}
                   </span>
                 </div>
               </div>
@@ -267,8 +339,9 @@ function PaymentConfirmation() {
               display: 'flex', 
               justifyContent: 'space-between', 
               padding: '20px',
-              background: '#6E00BE',
-              borderRadius: '12px'
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '12px',
+              boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)'
             }}>
               <span style={{ 
                 fontSize: '1.2rem', 
@@ -315,7 +388,7 @@ function PaymentConfirmation() {
           <button
             onClick={handlePayment}
             style={{
-              background: '#6E00BE',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               borderRadius: '12px',
               fontWeight: 700,
               padding: '16px',
@@ -325,14 +398,14 @@ function PaymentConfirmation() {
               color: '#fff',
               cursor: 'pointer',
               width: '100%',
-              transition: 'all 0.2s',
+              transition: 'all 0.3s ease',
               alignItems: 'center',
               display: 'flex',
               justifyContent: 'center'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.5)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';

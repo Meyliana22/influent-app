@@ -10,6 +10,7 @@ import { Grid } from '@mui/material';
 import ApplicantIcon from '../../assets/dashboard-umkm/Applicant.svg';
 import DollarIcon from '../../assets/dashboard-umkm/Dollar.svg';
 import { BarChart3 } from 'lucide-react';
+import campaignService from '../../services/campaignService';
 
 function CampaignList() {
   const navigate = useNavigate();
@@ -35,16 +36,21 @@ function CampaignList() {
 
   // Load campaigns from localStorage instead of API
   useEffect(() => {
-    const loadCampaigns = () => {
+    const loadCampaigns = async () => {
       try {
-        const storedCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-        console.log('📋 Loaded campaigns:', storedCampaigns.length);
-        console.log('Campaign IDs:', storedCampaigns.map(c => ({ 
-          id: c.campaign_id, 
+        // const storedCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
+        const response = await campaignService.getCampaigns();
+        // const data = await response.json();
+        console.log('📋 API Response:', response);
+        console.log('📋 Loaded campaigns:', response.data?.length);
+        console.log('🏷️ Campaign statuses:', response.data?.map(c => ({
+          id: c.campaign_id,
           title: c.title,
-          type: typeof c.campaign_id 
+          status: c.status,
+          statusType: typeof c.status 
         })));
-        setCampaigns(storedCampaigns);
+
+        setCampaigns(response.data);
       } catch (err) {
         console.error('Failed to load campaigns from localStorage:', err);
         setCampaigns([]);
@@ -73,23 +79,18 @@ function CampaignList() {
   // Get status badge style
   const getStatusStyle = (status) => {
     const styles = {
-      'Active': { 
+      'active': { 
         background: '#d1fae5', 
         color: '#155724',
         boxShadow: '0 2px 8px rgba(132, 250, 176, 0.3)'
       },
-      'Draft': { 
+      'inactive': { 
         background: '#e2e8f0', 
         color: '#6c757d',
         boxShadow: '0 2px 8px rgba(143, 143, 143, 0.3)'
-      },
-      // 'Inactive': { 
-      //   background: 'linear-gradient(135deg, #ddd6fe 0%, #e879f9 100%)', 
-      //   color: '#6f42c1',
-      //   boxShadow: '0 2px 8px rgba(221, 214, 254, 0.3)'
-      // }
+      }
     };
-    return styles[status] || styles['Draft'];
+    return styles[status?.toLowerCase()] || styles['inactive'];
   };
 
   // Get category icon
@@ -116,7 +117,7 @@ function CampaignList() {
 
   const filteredCampaigns = sortedCampaigns.filter(c =>
     c.title.toLowerCase().includes(search.toLowerCase()) &&
-    (filter ? c.status === filter : true)
+    (filter ? (c.status && c.status.toLowerCase() === filter.toLowerCase()) : true)
   );
 
   return (
@@ -202,8 +203,8 @@ function CampaignList() {
               }}
             >
               <option value="">All</option>
-              <option value="Active">Active</option>
-              <option value="Draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
             </select>
           </Grid>
         </Grid>
@@ -235,7 +236,7 @@ function CampaignList() {
               style={{ 
                 width: '120px', 
                 height: '120px', 
-                background: getCategoryGradient(campaign.category),
+                background: getCategoryGradient(campaign.campaign_category),
                 borderRadius: '20px', 
                 marginRight: '24px', 
                 display: 'flex', 
@@ -248,8 +249,8 @@ function CampaignList() {
                 flexShrink: 0
               }}
             >
-              {campaign.image ? (
-                <img src={campaign.image} alt={campaign.title} style={{ 
+              {campaign.banner_image ? (
+                <img src={campaign.banner_image} alt={campaign.title} style={{ 
                   width: '100%', 
                   height: '100%', 
                   objectFit: 'cover', 
@@ -258,12 +259,10 @@ function CampaignList() {
               ) : (
                 <div style={{ textAlign: 'center', color: '#fff' }}>
                   <div style={{ fontSize: '2.5rem', marginBottom: '4px', opacity: 0.9 }}>
-                    {getCategoryIcon(Array.isArray(campaign.category) ? campaign.category[0] : campaign.category)}
+                    {getCategoryIcon(campaign.campaign_category)}
                   </div>
                   <div style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: '500' }}>
-                    {Array.isArray(campaign.category) 
-                      ? (campaign.category[0] || '').split(' ')[0] 
-                      : (campaign.category || '').split(' ')[0]}
+                    {(campaign.campaign_category || '').split(' ')[0]}
                   </div>
                 </div>
               )}
@@ -294,9 +293,8 @@ function CampaignList() {
                     fontSize: '0.85rem',
                     fontWeight: '500'
                   }}>
-                    {Array.isArray(campaign.category) 
-                      ? campaign.category.join(', ') 
-                      : campaign.category}
+                    {/* Display campaign_category from API */}
+                    {campaign.campaign_category || 'No Category'}
                   </div>
                 </div>
                 
@@ -306,7 +304,7 @@ function CampaignList() {
                   borderRadius: '20px',
                   fontSize: '0.75rem',
                   fontWeight: '600',
-                  textTransform: 'uppercase',
+                  textTransform: 'capitalize',
                   letterSpacing: '0.5px'
                 }}>
                   {campaign.status}
@@ -352,12 +350,20 @@ function CampaignList() {
               }}>
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
+                  onClick={() => {
+                    // If active, go to read-only detail view
+                    // If inactive, go to edit mode (to continue payment)
+                    if (campaign.status && campaign.status.toLowerCase() === 'active') {
+                      navigate(`/campaign/${campaign.campaign_id}/detail`);
+                    } else {
+                      navigate(`/campaign-edit/${campaign.campaign_id}`);
+                    }
+                  }}
                   style={{ flex: 1 }}
                 >
                   Details
                 </Button>
-                {campaign.status === 'Active' && campaign.isPaid && (
+                {campaign.status && campaign.status.toLowerCase() === 'active' && (
                   <Button
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click

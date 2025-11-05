@@ -29,11 +29,11 @@ function UMKMSidebar({ isOpen = false, onClose = () => {} }) {
   const menuItems = [
     { icon: DashboardIcon, label: 'Dashboard', path: '/umkm/dashboard', isImage: true },
     { icon: listIcon, label: 'My Campaigns', path: '/campaigns', isImage: true },
-    { icon: CreateIcon, label: 'Create Campaign', path: '/campaign-create', isImage: true },
+    // { icon: CreateIcon, label: 'Create Campaign', path: '/campaign-create', isImage: true },
     { icon: TransactionsIcon, label: 'Transactions', path: '/transactions', isImage: true },
     { icon: ChatIcon, label: 'Chat', path: '/chat', isImage: true },
     // { icon: NotificationIcon, label: 'Notifications', path: '/notifications', isImage: true },
-    { icon: ProfileIcon, label: 'Profile', path: '/user', isImage: true }
+    // { icon: ProfileIcon, label: 'Profile', path: '/user', isImage: true }
   ];
 
   const isActive = (path) => {

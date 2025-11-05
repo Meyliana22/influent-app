@@ -8,6 +8,7 @@ import { COLORS } from '../../constants/colors';
 import SearchIcon from '../../assets/search.svg';
 import BackIcon from '../../assets/back.svg';
 import applicantStorageHelper from '../../utils/applicantStorageHelper';
+import campaignService from '../../services/campaignService';
 
 function ViewApplicants() {
   const { campaignId } = useParams();
@@ -55,8 +56,8 @@ function ViewApplicants() {
     loadData();
   }, [campaignId]);
 
-  const loadData = () => {
-    // Load campaign details from localStorage
+  const loadData = async () => {
+    // Load campaign details from API
     try {
       console.log('🔍 Loading data for campaign:', campaignId);
       
@@ -66,45 +67,20 @@ function ViewApplicants() {
         return;
       }
       
-      const campaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-      console.log('📋 Found campaigns:', campaigns.length);
+      // Fetch campaign from API
+      const response = await campaignService.getCampaignById(campaignId);
+      console.log('📦 API Response:', response);
       
-      if (campaigns.length === 0) {
-        console.error('❌ No campaigns in localStorage - seeding data...');
-        // Try to seed data if missing
-        if (window.campaignStorage && window.campaignStorage.seedDummyData) {
-          window.campaignStorage.seedDummyData();
-          console.log('✅ Data seeded, reloading...');
-          setTimeout(() => window.location.reload(), 500);
-        }
-        return;
-      }
+      // Handle different response structures
+      let campaignData = response?.data?.data || response?.data || response;
+      console.log('📋 Campaign data extracted:', campaignData);
       
-      // Debug: Show all campaign IDs with types
-      console.log('Campaign IDs:', campaigns.map(c => ({ 
-        id: c.campaign_id, 
-        type: typeof c.campaign_id,
-        title: c.title
-      })));
-      
-      // Try to find campaign with flexible matching
-      const campaignData = campaigns.find(c => 
-        c.campaign_id === campaignId || 
-        String(c.campaign_id) === String(campaignId) ||
-        parseInt(c.campaign_id) === parseInt(campaignId)
-      );
-      
-      if (campaignData) {
+      if (campaignData && campaignData.campaign_id) {
         console.log('✅ Campaign found:', campaignData.title);
         setCampaign(campaignData);
       } else {
         console.error('❌ Campaign not found with ID:', campaignId);
-        console.log('Available campaigns:', campaigns.map(c => ({ 
-          id: c.campaign_id, 
-          type: typeof c.campaign_id,
-          title: c.title
-        })));
-        // Campaign not found, redirect back
+        alert('Campaign tidak ditemukan');
         setTimeout(() => navigate('/campaigns'), 100);
         return;
       }
