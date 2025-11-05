@@ -10,6 +10,7 @@ import BackIcon from '../../assets/back.svg';
 import UploadIcon from '../../assets/upload.svg';
 import { useToast } from '../../hooks/useToast';
 import { Modal } from '../../components/common';
+import * as campaignService from '../../services/campaignService';
 
 function CollapsibleSection({ title, children, status = '', defaultOpen = false, disabled = false }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -131,6 +132,9 @@ function CampaignCreate() {
   // Helper function untuk parse currency ke number
   const parseCurrency = (value) => {
     if (!value) return '';
+    // Pastikan value adalah string
+    if (typeof value === 'number') return value.toString();
+    if (typeof value !== 'string') return '';
     return value.replace(/\D/g, '');
   };
 
@@ -179,13 +183,13 @@ function CampaignCreate() {
   // Fungsi validasi untuk setiap step
   const validateStep1 = () => {
     const errors = [];
-    if (!title.trim()) errors.push('Judul Campaign');
+    if (!title || !title.trim()) errors.push('Judul Campaign');
     if (!campaignCategory) errors.push('Jenis Campaign');
     if (hasProduct) {
-      if (!productName.trim()) errors.push('Nama Produk');
+      if (!productName || !productName.trim()) errors.push('Nama Produk');
       if (!productValue) errors.push('Nilai Produk');
     }
-    if (!productDesc.trim()) errors.push(hasProduct ? 'Deskripsi Produk' : 'Deskripsi Campaign');
+    if (!productDesc || !productDesc.trim()) errors.push(hasProduct ? 'Deskripsi Produk' : 'Deskripsi Campaign');
     if (!image && !imagePreview) errors.push('Upload Foto');
     
     if (errors.length > 0) {
@@ -264,88 +268,96 @@ function CampaignCreate() {
   // Load campaign data when in edit mode
   useEffect(() => {
     if (isEditMode && id && !isDataLoaded) {
-      // Load campaign from localStorage instead of backend
-      const fetchCampaign = () => {
+      // Load campaign from API
+      const fetchCampaign = async () => {
         try {
-          const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-          console.log('🔍 Looking for campaign with ID:', id, '(type:', typeof id, ')');
+          console.log('🔍 Fetching campaign with ID:', id);
+          const response = await campaignService.getCampaignById(id);
+          console.log('✅ Campaign data fetched from API:', response);
           
-          // Match both string and number IDs
-          const campaign = existingCampaigns.find(c => 
-            c.campaign_id === id || c.campaign_id === parseInt(id) || String(c.campaign_id) === String(id)
-          );
+          // if (!response || !response.data) {
+          //   console.log(response);
+          //   console.error('❌ Campaign not found');
+          //   showToast('Campaign tidak ditemukan', 'error');
+          //   setTimeout(() => navigate('/campaigns'), 500);
+          //   return;
+          // }
           
-          if (!campaign) {
-            console.error('❌ Campaign not found. Available IDs:', existingCampaigns.map(c => c.campaign_id));
-            showToast('Campaign tidak ditemukan', 'error');
-            setTimeout(() => navigate('/campaigns'), 500);
-            return;
-          }
+          const data = response;
+          console.log('📋 Campaign data structure:', data);
           
-          console.log('✅ Campaign found:', campaign.title);
-          
-          // Set read-only mode if campaign is paid
-          if (campaign.isPaid) {
+          // Set read-only mode if campaign is active (paid)
+          if (data.status === 'active') {
             setIsReadOnly(true);
           }
           
-          const data = {
-            title: campaign.title || '',
-            campaignCategory: campaign.campaignCategory || '',
-            category: Array.isArray(campaign.category) ? campaign.category : (campaign.category ? [campaign.category] : []),
-            productName: campaign.productName || '',
-            productValue: campaign.productValue ? String(campaign.productValue) : '',
-            productDesc: campaign.productDesc || '',
-            start_date: campaign.start_date ? campaign.start_date.split('T')[0] : '',
-            end_date: campaign.end_date ? campaign.end_date.split('T')[0] : '',
-            submission_deadline: campaign.submission_deadline ? campaign.submission_deadline.split('T')[0] : '',
-            content_guidelines: campaign.content_guidelines || '',
-            caption_guidelines: campaign.caption_guidelines || '',
-            contentReference: campaign.contentReference || '',
-            influencer_count: campaign.influencer_count || 1,
-            price_per_post: campaign.price_per_post ? String(campaign.price_per_post) : '',
-            min_followers: campaign.min_followers || '',
-            selectedGender: campaign.selectedGender || '',
-            selectedAge: campaign.selectedAge || '',
-            contentItems: campaign.contentItems || [{ id: 1, post_count: 1, content_type: 'foto' }],
-            imagePreview: campaign.bannerImage || campaign.image || null,
-            referenceFiles: campaign.referenceFiles || []
-          };
-        
-        // Set form state
-        setTitle(data.title);
-        setCampaignCategory(data.campaignCategory);
-        setCategory(data.category);
-        setProductName(data.productName);
-        setProductValue(data.productValue);
-        setProductDesc(data.productDesc);
-        setStartDate(data.start_date);
-        setEndDate(data.end_date);
-        setContentDeadline(data.submission_deadline);
-        setPhotoRules(data.content_guidelines);
-        setCaptionRules(data.caption_guidelines);
-        setContentReference(data.contentReference);
-        setInfluencerCount(data.influencer_count);
-        setPricePerPost(data.price_per_post);
-        setMinFollowers(data.min_followers);
-        setSelectedGender(data.selectedGender);
-        setSelectedAge(data.selectedAge);
-        setContentItems(data.contentItems);
-        if (data.imagePreview) {
-          setImagePreview(data.imagePreview);
-        }
+          // Set form state - mapping API fields to frontend state
+          setTitle(data.title || '');
+          setCampaignCategory(data.campaign_category || '');
+          
+          // Parse influencer_category (API returns array)
+          if (data.influencer_category && Array.isArray(data.influencer_category)) {
+            setCategory(data.influencer_category);
+          } else if (typeof data.influencer_category === 'string') {
+            try {
+              const parsed = JSON.parse(data.influencer_category);
+              setCategory(Array.isArray(parsed) ? parsed : []);
+            } catch {
+              setCategory([]);
+            }
+          } else {
+            setCategory([]);
+          }
+          
+          // Product fields
+          setHasProduct(data.has_product || false);
+          setProductName(data.product_name || '');
+          setProductValue(data.product_value ? data.product_value.toString() : '');
+          setProductDesc(data.product_desc || '');
+          
+          // Date fields
+          setStartDate(data.start_date || '');
+          setEndDate(data.end_date || '');
+          setContentDeadline(data.submission_deadline || '');
+          
+          // Guidelines
+          setPhotoRules(data.content_guidelines || '');
+          setCaptionRules(data.caption_guidelines || '');
+          setContentReference(data.content_reference || '');
+          
+          // Budget & criteria
+          setInfluencerCount(data.influencer_count || 1);
+          setPricePerPost(data.price_per_post ? data.price_per_post.toString() : '');
+          setMinFollowers(data.min_followers ? data.min_followers.toString() : '');
+          
+          // Demographics
+          setSelectedGender(data.selected_gender || '');
+          setSelectedAge(data.selected_age || '');
+          
+          // Content types - parse if needed
+          if (data.contentTypes && Array.isArray(data.contentTypes) && data.contentTypes.length > 0) {
+            setContentItems(data.contentTypes);
+          } else {
+            // Default content item if none exist
+            setContentItems([{ id: 1, post_count: 1, content_type: 'foto' }]);
+          }
+          
+          // Image
+          if (data.banner_image) {
+            setImagePreview(data.banner_image);
+          }
         
         // Save original data for comparison
           setOriginalData(data);
           setIsDataLoaded(true); // Mark as loaded to prevent duplicate calls
         } catch (err) {
-          console.error('load campaign (frontend)', err);
-          showToast('Gagal memuat campaign', 'error');
+          console.error('load campaign (API)', err);
+          showToast('Gagal memuat campaign dari server', 'error');
           setIsDataLoaded(true);
         }
       };
 
-      fetchCampaign();
+      fetchCampaign(); // Call the async function
     } else if (!isEditMode) {
       // For new campaigns, set empty original data
       setOriginalData({
@@ -473,10 +485,10 @@ function CampaignCreate() {
   const briefFilled = start_date && end_date && submission_deadline && content_guidelines && caption_guidelines;
 
   // Check if kriteria influencer fields are filled
-  const kriteriaFilled = category.length > 0 && min_followers && selectedGender && selectedAge;
+  const kriteriaFilled = category && category.length > 0 && min_followers && selectedGender && selectedAge;
 
   // Check if konten & anggaran fields are filled
-  const kontenFilled = influencer_count && price_per_post && contentItems.length > 0;
+  const kontenFilled = influencer_count && price_per_post && contentItems && contentItems.length > 0;
 
   // Status for collapsible sections
   const detailStatus = allFilled ? 'done' : 'in progress';
@@ -485,7 +497,7 @@ function CampaignCreate() {
   const briefStatus = briefFilled ? 'done' : 'in progress';
 
   // Save as Draft handler
-  const handleSaveAsDraft = () => {
+  const handleSaveAsDraft = async () => {
     // Prepare campaign data - no validation required for draft
     const campaignData = {
       title: title || 'Draft Campaign',
@@ -493,7 +505,7 @@ function CampaignCreate() {
       category,
       hasProduct,
       productName,
-      productValue: productValue ? parseCurrency(productValue) : 0,
+      productValue: productValue ? parseCurrency(productValue) : '',
       productDesc,
       start_date,
       end_date,
@@ -503,56 +515,45 @@ function CampaignCreate() {
       contentReference,
       referenceFiles: referenceFiles.map(rf => rf.name),
       influencer_count,
-      price_per_post: price_per_post ? parseCurrency(price_per_post) : 0,
-      min_followers,
+      price_per_post: price_per_post ? parseCurrency(price_per_post) : '',
+      min_followers: min_followers ? parseCurrency(min_followers) : '',
       selectedGender,
       selectedAge,
       contentItems,
-      status: 'Draft',
+      status: 'inactive', // Set to inactive for unpaid campaigns
       image: imagePreview
     };
     
-    if (isEditMode) {
-      // BYPASS BACKEND - Simpan langsung di frontend
-      try {
-        const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-        const updatedCampaigns = existingCampaigns.map(c => 
-          c.campaign_id === id ? { ...campaignData, campaign_id: id, created_at: c.created_at, updated_at: new Date().toISOString() } : c
-        );
-        localStorage.setItem('campaigns', JSON.stringify(updatedCampaigns));
+    try {
+      if (isEditMode) {
+        // Update existing campaign as draft
+        console.log('Updating campaign as draft:', id);
+        await campaignService.updateCampaign(id, campaignData);
         showToast('Campaign berhasil disimpan sebagai draft!', 'success');
-        setShowHeaderBackModal(false);
-        setTimeout(() => navigate('/campaigns'), 500);
-      } catch (err) {
-        console.error('save draft (frontend)', err);
-        showToast('Gagal menyimpan draft', 'error');
-      }
-    } else {
-      // BYPASS BACKEND - Simpan langsung di frontend
-      try {
-        const campaignId = Date.now().toString();
-        const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-        const newCampaign = {
-          ...campaignData,
-          campaign_id: campaignId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        existingCampaigns.push(newCampaign);
-        localStorage.setItem('campaigns', JSON.stringify(existingCampaigns));
+      } else {
+        // Create new campaign as draft
+        console.log('Creating new campaign as draft');
+        await campaignService.createCampaign(campaignData);
         showToast('Campaign berhasil disimpan sebagai draft!', 'success');
-        setShowHeaderBackModal(false);
-        setTimeout(() => navigate('/campaigns'), 500);
-      } catch (err) {
-        console.error('save draft (frontend)', err);
-        showToast('Gagal menyimpan draft', 'error');
       }
+      
+      setShowHeaderBackModal(false);
+      setTimeout(() => navigate('/campaigns'), 500);
+    } catch (err) {
+      console.error('save draft (API)', err);
+      showToast(err.message || 'Gagal menyimpan draft ke server', 'error');
     }
   };
 
   // Save handler
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
+    
+    // Check if data is still loading (for edit mode)
+    if (isEditMode && !isDataLoaded) {
+      showToast('Data campaign masih dimuat. Mohon tunggu sebentar.', 'warning');
+      return;
+    }
     
     // Validasi semua step
     const step1Valid = validateStep1();
@@ -583,7 +584,7 @@ function CampaignCreate() {
       referenceFiles: referenceFiles.map(rf => rf.name),
       influencer_count,
       price_per_post: parseCurrency(price_per_post),
-      min_followers,
+      min_followers: parseCurrency(min_followers),
       selectedGender,
       selectedAge,
       contentItems: contentItems.map(item => ({
@@ -591,44 +592,74 @@ function CampaignCreate() {
         post_count: item.post_count,
         content_type: item.content_type
       })),
-      status: 'Draft',
-      isPaid: false,
+      status: 'inactive', // Set to inactive for unpaid campaigns, will be 'active' after payment
       image: imagePreview
     };
     
-    // BYPASS BACKEND - Simpan langsung di frontend
+    console.log('💾 Saving campaign with data:', campaignData);
+    console.log('🏷️ Campaign status before save:', campaignData.status);
+    
+    // Save to API
     try {
-      // Generate campaign ID
-      const campaignId = isEditMode ? id : Date.now().toString();
-      
-      // Get existing campaigns from localStorage
-      const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
+      let response;
+      let campaignId;
       
       if (isEditMode) {
         // Update existing campaign
-        const updatedCampaigns = existingCampaigns.map(c => 
-          c.campaign_id === id ? { ...campaignData, campaign_id: id, created_at: c.created_at, updated_at: new Date().toISOString() } : c
-        );
-        localStorage.setItem('campaigns', JSON.stringify(updatedCampaigns));
+        console.log('Updating campaign:', id);
+        response = await campaignService.updateCampaign(id, campaignData);
+        campaignId = id; // For update, use existing ID
         showToast('Campaign berhasil diupdate!', 'success');
       } else {
-        // Add new campaign
-        const newCampaign = {
-          ...campaignData,
-          campaign_id: campaignId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        existingCampaigns.push(newCampaign);
-        localStorage.setItem('campaigns', JSON.stringify(existingCampaigns));
+        // Create new campaign
+        console.log('Creating new campaign');
+        response = await campaignService.createCampaign(campaignData);
+        console.log('Create campaign response:', response);
+        
+        // Try multiple ways to get campaign_id from response
+        campaignId = response?.data?.campaign_id || 
+                     response?.campaign_id || 
+                     response?.insertId ||
+                     response?.id;
+        
+        console.log('Campaign ID extracted:', campaignId);
+        
+        // If campaignId is still not valid, try to extract from any nested structure
+        if (!campaignId || campaignId === 'undefined') {
+          // Try to find campaign_id in any level of the response
+          if (response?.data?.data?.campaign_id) {
+            campaignId = response.data.data.campaign_id;
+          } else if (response?.result?.campaign_id) {
+            campaignId = response.result.campaign_id;
+          }
+        }
+        
+        console.log('Final Campaign ID:', campaignId);
         showToast('Campaign berhasil dibuat!', 'success');
       }
       
-      // Navigate to payment confirmation
-      setTimeout(() => navigate(`/campaign/${campaignId}/payment`), 1500);
+      // Check if campaign status is inactive (unpaid) - redirect to payment
+      if (campaignData.status === 'inactive') {
+        if (campaignId && campaignId !== 'undefined') {
+          console.log('✅ Campaign status is inactive, redirecting to payment page with ID:', campaignId);
+          setTimeout(() => navigate(`/campaign/${campaignId}/payment`), 1500);
+        } else {
+          console.error('❌ No valid campaign ID returned from API');
+          console.error('Full response:', JSON.stringify(response, null, 2));
+          showToast(isEditMode ? 'Campaign diupdate tapi tidak bisa redirect.' : 'Campaign dibuat tapi tidak bisa redirect.', 'warning');
+          setTimeout(() => navigate('/campaigns'), 1500);
+        }
+      } else {
+        // For paid campaigns (status = active), just show success and stay/go to list
+        console.log('✅ Campaign is active (paid), no payment needed');
+        if (isEditMode) {
+          showToast('Campaign aktif berhasil diupdate!', 'success');
+        }
+        setTimeout(() => navigate('/campaigns'), 1500);
+      }
     } catch (err) {
-      console.error('save campaign (frontend)', err);
-      showToast('Gagal menyimpan campaign', 'error');
+      console.error('save campaign (API)', err);
+      showToast(err.message || 'Gagal menyimpan campaign ke server', 'error');
     }
   };
 
@@ -637,18 +668,17 @@ function CampaignCreate() {
     setShowDeletePopup(true);
   };
 
-  const confirmDelete = () => {
-    // BYPASS BACKEND - Hapus dari localStorage
+  const confirmDelete = async () => {
+    // Delete campaign from API
     try {
-      const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-      const updatedCampaigns = existingCampaigns.filter(c => c.campaign_id !== id);
-      localStorage.setItem('campaigns', JSON.stringify(updatedCampaigns));
+      console.log('Deleting campaign:', id);
+      await campaignService.deleteCampaign(id);
       showToast('Campaign berhasil dihapus', 'success');
       setShowDeletePopup(false);
-      navigate('/campaigns');
+      setTimeout(() => navigate('/campaigns'), 500);
     } catch (err) {
-      console.error('delete campaign (frontend)', err);
-      showToast('Gagal menghapus campaign', 'error');
+      console.error('delete campaign (API)', err);
+      showToast(err.message || 'Gagal menghapus campaign dari server', 'error');
     }
   };
 
@@ -815,10 +845,10 @@ function CampaignCreate() {
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '6px', 
+              gap: '4px', 
               flexWrap: 'nowrap',
-              minWidth: 'fit-content',
-              justifyContent: 'flex-start'
+              width: '100%',
+              justifyContent: 'space-between'
             }}>
               {[
                 { num: 1, name: 'Detail Campaign', shortName: 'Detail', completed: allFilled },
@@ -842,65 +872,44 @@ function CampaignCreate() {
                         alignItems: 'center', 
                         gap: '6px',
                         cursor: canAccess ? 'pointer' : 'not-allowed',
-                        opacity: canAccess ? 1 : 0.4,
+                        opacity: canAccess ? 1 : 0.5,
                         transition: 'all 0.3s ease',
-                        padding: '6px 10px',
-                        borderRadius: '8px',
-                        background: isActive ? 'rgba(0, 123, 255, 0.1)' : 'transparent',
-                        flexShrink: 0
-                      }}
-                      onMouseEnter={(e) => {
-                        if (canAccess && !isActive) {
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                          e.currentTarget.style.background = 'rgba(0, 123, 255, 0.05)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                        if (!isActive) {
-                          e.currentTarget.style.background = 'transparent';
-                        }
+                        flex: '1',
+                        minWidth: '0'
                       }}
                     >
                       <div style={{
-                        width: '28px',
-                        height: '28px',
+                        width: '32px',
+                        height: '32px',
                         borderRadius: '50%',
-                        background: step.completed ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)' : (isActive ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#e9ecef'),
-                        color: step.completed || isActive ? 'white' : '#6c757d',
+                        background: isActive 
+                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                          : '#e9ecef',
+                        color: isActive ? 'white' : '#adb5bd',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: step.completed ? '1rem' : '0.85rem',
-                        fontWeight: 'bold',
-                        border: isActive && !step.completed ? '2px solid #667eea' : 'none',
-                        boxShadow: step.completed ? '0 2px 8px rgba(40, 167, 69, 0.3)' : (isActive ? '0 2px 8px rgba(102, 126, 234, 0.3)' : 'none'),
+                        fontSize: '0.85rem',
+                        fontWeight: '700',
+                        boxShadow: isActive ? '0 4px 12px rgba(102, 126, 234, 0.4)' : 'none',
                         transition: 'all 0.3s ease',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        transform: isActive ? 'scale(1.05)' : 'scale(1)'
                       }}>
-                        {step.completed ? '✓' : step.num}
+                        {step.num}
                       </div>
                       <span style={{ 
-                        fontSize: '0.8rem', 
-                        color: step.completed ? '#28a745' : (isActive ? '#007bff' : '#6c757d'),
-                        fontWeight: isActive ? '700' : (step.completed ? '600' : '400'),
+                        fontSize: '0.75rem', 
+                        color: isActive ? '#667eea' : '#adb5bd',
+                        fontWeight: isActive ? '600' : '500',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        maxWidth: window.innerWidth < 768 ? '70px' : '150px'
+                        transition: 'all 0.3s ease'
                       }}>
                         {window.innerWidth < 768 ? step.shortName : step.name}
                       </span>
                     </div>
-                    {index < 3 && (
-                      <div style={{ 
-                        width: window.innerWidth < 768 ? '20px' : '24px',
-                        height: '2px',
-                        background: step.completed ? '#28a745' : '#dee2e6',
-                        margin: '0 2px',
-                        flexShrink: 0
-                      }} />
-                    )}
                   </React.Fragment>
                 );
               })}
@@ -1147,20 +1156,24 @@ function CampaignCreate() {
                   onChange={(event, newValue) => setCategory(newValue)}
                   disabled={isReadOnly}
                   renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip
-                        label={option}
-                        {...getTagProps({ index })}
-                        onDelete={isReadOnly ? undefined : () => {
-                          setCategory(category.filter((cat) => cat !== option));
-                        }}
-                        style={{
-                          backgroundColor: '#f0f0f0',
-                          border: '1px solid #ccc',
-                          borderRadius: '16px'
-                        }}
-                      />
-                    ))
+                    value.map((option, index) => {
+                      const { key, ...tagProps } = getTagProps({ index });
+                      return (
+                        <Chip
+                          key={key}
+                          label={option}
+                          {...tagProps}
+                          onDelete={isReadOnly ? undefined : () => {
+                            setCategory(category.filter((cat) => cat !== option));
+                          }}
+                          style={{
+                            backgroundColor: '#f0f0f0',
+                            border: '1px solid #ccc',
+                            borderRadius: '16px'
+                          }}
+                        />
+                      );
+                    })
                   }
                   renderInput={(params) => (
                     <TextField

@@ -13,7 +13,7 @@ function AdminSidebar() {
     { path: '/admin/campaigns', icon: '📢', label: 'Manage Campaigns' },
     { path: '/admin/reports', icon: '📈', label: 'Reports' },
     { path: '/chat', icon: '💬', label: 'Chat' },
-    { path: '/admin/settings', icon: '⚙️', label: 'Settings' },
+    // { path: '/admin/settings', icon: '⚙️', label: 'Settings' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -133,7 +133,7 @@ function AdminSidebar() {
       </div>
 
       {/* Bottom Section */}
-      <div style={{
+      {/* <div style={{
         position: 'absolute',
         bottom: '24px',
         left: '24px',
@@ -157,7 +157,7 @@ function AdminSidebar() {
         }}>
           v1.0.0
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

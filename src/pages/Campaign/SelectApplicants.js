@@ -4,9 +4,8 @@ import { Modal, Button } from '../../components/common';
 import UMKMSidebar from '../../components/umkm/UMKMSidebar';
 import UMKMTopbar from '../../components/umkm/UMKMTopbar';
 import { COLORS } from '../../constants/colors';
-import campaignDB from '../../data/campaignDatabase';
-import applicantDB from '../../data/applicantDatabase';
 import BackIcon from '../../assets/back.svg';
+import campaignService from '../../services/campaignService';
 
 function SelectApplicants() {
   const { campaignId } = useParams();
@@ -36,26 +35,33 @@ function SelectApplicants() {
     loadData();
   }, [campaignId]);
 
-  const loadData = () => {
-    // Load campaign details
-    const campaignData = campaignDB.getById(campaignId);
-    if (campaignData) {
-      setCampaign(campaignData);
-    } else {
+  const loadData = async () => {
+    try {
+      // Load campaign details from API
+      const response = await campaignService.getCampaignById(campaignId);
+      const campaignData = response.data;
+      
+      if (campaignData) {
+        setCampaign(campaignData);
+      } else {
+        navigate('/campaigns');
+        return;
+      }
+
+      // Load applicants from localStorage (will be changed to API later)
+      const applicantsData = JSON.parse(localStorage.getItem('applicants') || '[]')
+        .filter(a => a.campaignId === parseInt(campaignId) && (a.status === 'Pending' || a.status === 'Accepted'));
+      setApplicants(applicantsData);
+
+      // Pre-select already accepted applicants
+      const alreadyAccepted = applicantsData
+        .filter(a => a.status === 'Accepted')
+        .map(a => a.id);
+      setSelectedIds(alreadyAccepted);
+    } catch (error) {
+      console.error('Error loading data:', error);
       navigate('/campaigns');
-      return;
     }
-
-    // Load applicants (only show Pending and Accepted)
-    const applicantsData = applicantDB.getByCampaignId(campaignId)
-      .filter(a => a.status === 'Pending' || a.status === 'Accepted');
-    setApplicants(applicantsData);
-
-    // Pre-select already accepted applicants
-    const alreadyAccepted = applicantsData
-      .filter(a => a.status === 'Accepted')
-      .map(a => a.id);
-    setSelectedIds(alreadyAccepted);
   };
 
   // Toggle selection
@@ -85,25 +91,33 @@ function SelectApplicants() {
     setShowConfirmModal(true);
   };
 
-  const confirmSelection = () => {
-    // Update status for all applicants
-    applicants.forEach(applicant => {
-      const newStatus = selectedIds.includes(applicant.id) ? 'Accepted' : 'Rejected';
-      applicantDB.updateStatus(applicant.id, newStatus);
-    });
+  const confirmSelection = async () => {
+    try {
+      // Update status for all applicants in localStorage (will be changed to API later)
+      const allApplicants = JSON.parse(localStorage.getItem('applicants') || '[]');
+      const updatedApplicants = allApplicants.map(applicant => {
+        if (applicant.campaignId === parseInt(campaignId) && applicants.some(a => a.id === applicant.id)) {
+          const newStatus = selectedIds.includes(applicant.id) ? 'Accepted' : 'Rejected';
+          return { ...applicant, status: newStatus };
+        }
+        return applicant;
+      });
+      localStorage.setItem('applicants', JSON.stringify(updatedApplicants));
 
-    // Update campaign to set deadline
-    const deadlineDate = new Date(campaign.end_date);
-    campaignDB.update(campaignId, {
-      ...campaign,
-      status: 'Ongoing',
-      selectedInfluencersCount: selectedIds.length,
-      selectionDate: new Date().toISOString(),
-      postingDeadline: deadlineDate.toISOString()
-    });
+      // Update campaign via API - set to active (ongoing)
+      await campaignService.updateCampaign(campaignId, {
+        ...campaign,
+        status: 'active', // API uses 'active' for paid/ongoing campaigns
+        influencer_count: selectedIds.length,
+        selectionDate: new Date().toISOString()
+      });
 
-    setShowConfirmModal(false);
-    navigate(`/campaigns`);
+      setShowConfirmModal(false);
+      navigate(`/campaigns`);
+    } catch (error) {
+      console.error('Error confirming selection:', error);
+      alert('Failed to confirm selection. Please try again.');
+    }
   };
 
   // Format number

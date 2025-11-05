@@ -4,9 +4,8 @@ import { Button, Card } from '../../components/common';
 import UMKMSidebar from '../../components/umkm/UMKMSidebar';
 import UMKMTopbar from '../../components/umkm/UMKMTopbar';
 import { COLORS } from '../../constants/colors';
-import campaignDB from '../../data/campaignDatabase';
-import applicantDB from '../../data/applicantDatabase';
 import BackIcon from '../../assets/back.svg';
+import campaignService from '../../services/campaignService';
 
 function CampaignDetail() {
   const { id } = useParams();
@@ -40,36 +39,43 @@ function CampaignDetail() {
     loadData();
   }, [id]);
 
-  const loadData = () => {
-    // Load campaign from localStorage
-    const campaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-    const campaignData = campaigns.find(c => c.campaign_id === id);
-    
-    if (!campaignData) {
+  const loadData = async () => {
+    try {
+      // Load campaign from API
+      const response = await campaignService.getCampaignById(id);
+      const campaignData = response.data || response;
+
+      if (!campaignData) {
+        navigate('/campaigns');
+        return;
+      }
+      
+      console.log('Campaign data loaded:', campaignData);
+      setCampaign(campaignData);
+
+      // Load selected influencers from localStorage (akan diubah ke API nanti)
+      const applicants = JSON.parse(localStorage.getItem('applicants') || '[]');
+      const campaignApplicants = applicants.filter(a => 
+        a.campaignId === parseInt(id) && a.status === 'Accepted'
+      );
+      setSelectedInfluencers(campaignApplicants);
+
+      // Calculate stats
+      const totalSelected = campaignApplicants.length;
+      const completed = campaignApplicants.filter(a => a.proofUploaded).length;
+      const pending = totalSelected - completed;
+      const progressPercentage = totalSelected > 0 ? (completed / totalSelected) * 100 : 0;
+
+      setStats({
+        totalSelected,
+        completed,
+        pending,
+        progressPercentage
+      });
+    } catch (error) {
+      console.error('Error loading campaign:', error);
       navigate('/campaigns');
-      return;
     }
-    setCampaign(campaignData);
-
-    // Load selected influencers from localStorage
-    const applicants = JSON.parse(localStorage.getItem('applicants') || '[]');
-    const campaignApplicants = applicants.filter(a => 
-      a.campaignId === id && a.status === 'Accepted'
-    );
-    setSelectedInfluencers(campaignApplicants);
-
-    // Calculate stats
-    const totalSelected = campaignApplicants.length;
-    const completed = campaignApplicants.filter(a => a.proofUploaded).length;
-    const pending = totalSelected - completed;
-    const progressPercentage = totalSelected > 0 ? (completed / totalSelected) * 100 : 0;
-
-    setStats({
-      totalSelected,
-      completed,
-      pending,
-      progressPercentage
-    });
   };
 
   // Format currency
@@ -94,10 +100,10 @@ function CampaignDetail() {
   };
 
   // Calculate days remaining
-  const getDaysRemaining = (endDate) => {
-    if (!endDate) return null;
+  const getDaysRemaining = () => {
+    if (!campaign || !campaign.end_date) return null;
     const today = new Date();
-    const end = new Date(endDate);
+    const end = new Date(campaign.end_date);
     const diffTime = end - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
@@ -108,37 +114,44 @@ function CampaignDetail() {
     if (!campaign) return 'unknown';
     
     const today = new Date();
+    // Parse dates from API format (YYYY-MM-DD)
     const startDate = campaign.start_date ? new Date(campaign.start_date) : null;
     const endDate = campaign.end_date ? new Date(campaign.end_date) : null;
     
+    // If status is null or not set, treat as inactive (unpaid)
+    if (!campaign.status) return 'inactive';
+    
     // If status is explicitly set
-    if (campaign.status === 'Closed') return 'closed';
-    if (campaign.status === 'Draft') return 'draft';
+    const status = campaign.status.toLowerCase();
+    if (status === 'closed') return 'closed';
+    if (status === 'inactive') return 'inactive'; // Unpaid campaigns
     
-    // Check if payment is made
-    if (!campaign.isPaid) return 'awaiting-payment';
-    
-    // Check if influencers are selected
-    if (!campaign.selectedInfluencersCount || campaign.selectedInfluencersCount === 0) {
-      return 'active'; // Active but no influencers selected yet
-    }
-    
-    // Campaign is ongoing
-    if (startDate && endDate) {
-      if (today < startDate) return 'scheduled';
-      if (today >= startDate && today <= endDate) return 'ongoing';
-      if (today > endDate) {
-        // Campaign ended, check if payouts are done
-        if (campaign.payoutCompleted) return 'closed';
-        return 'awaiting-payout';
+    // If status is active (paid)
+    if (status === 'active') {
+      // Check if influencers are selected
+      if (!campaign.influencer_count || campaign.influencer_count === 0) {
+        return 'active'; // Active but no influencers selected yet
       }
+      
+      // Campaign is ongoing
+      if (startDate && endDate) {
+        if (today < startDate) return 'scheduled';
+        if (today >= startDate && today <= endDate) return 'ongoing';
+        if (today > endDate) {
+          // Campaign ended, check if payouts are done
+          if (campaign.payoutCompleted) return 'closed';
+          return 'awaiting-payout';
+        }
+      }
+      
+      return 'ongoing';
     }
     
-    return 'ongoing';
+    return 'inactive'; // Default to inactive (unpaid)
   };
 
   const phase = getCampaignPhase();
-  const daysRemaining = campaign ? getDaysRemaining(campaign.end_date) : null;
+  const daysRemaining = getDaysRemaining();
 
   if (!campaign) {
     return (
@@ -151,8 +164,29 @@ function CampaignDetail() {
         fontFamily: 'Montserrat, Arial, sans-serif'
       }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⏳</div>
-          <p style={{ color: COLORS.textSecondary }}>Loading campaign...</p>
+          {/* Animated spinner */}
+          <div style={{
+            width: '60px',
+            height: '60px',
+            border: '4px solid #e2e8f0',
+            borderTop: '4px solid #667eea',
+            borderRadius: '50%',
+            margin: '0 auto 24px',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <p style={{ 
+            color: COLORS.textSecondary,
+            fontSize: '1.1rem',
+            fontWeight: 500
+          }}>
+            Loading campaign details...
+          </p>
         </div>
       </div>
     );
@@ -161,7 +195,7 @@ function CampaignDetail() {
   // Render based on phase
   const renderPhaseContent = () => {
     switch (phase) {
-      case 'awaiting-payment':
+      case 'inactive':
         return (
           <Card style={{ padding: '32px', textAlign: 'center', marginTop: '24px' }}>
             <div style={{ fontSize: '4rem', marginBottom: '16px' }}>💳</div>
@@ -712,9 +746,7 @@ function CampaignDetail() {
             {campaign.title}
           </h1>
           <div style={{ fontSize: '0.9rem', color: COLORS.textSecondary, marginBottom: '16px' }}>
-            {Array.isArray(campaign.category)
-              ? campaign.category.join(', ')
-              : campaign.category}
+            {campaign.campaign_category || 'No Category'}
           </div>
           <div style={{
             display: 'inline-block',

@@ -179,8 +179,6 @@ function AdminDashboard() {
 
           {/* Main Content Grid */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: '2fr 1fr',
             gap: '24px'
           }}>
             {/* Recent Activities */}
@@ -258,7 +256,7 @@ function AdminDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div style={{
+            {/* <div style={{
               background: '#fff',
               borderRadius: '16px',
               padding: '24px',
@@ -313,7 +311,7 @@ function AdminDashboard() {
                   </button>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

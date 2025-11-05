@@ -211,31 +211,6 @@ function UMKMTopbar({ onMenuClick = () => {} }) {
                 <span>👤</span>
                 Profile
               </div>
-              <div
-                onClick={() => {
-                  setShowDropdown(false);
-                  navigate('/transactions');
-                }}
-                style={{
-                  padding: '12px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontSize: '0.9rem',
-                  color: '#2d3748'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#f7fafc';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#fff';
-                }}
-              >
-                <span>💰</span>
-                Transactions
-              </div>
               <div style={{
                 height: '1px',
                 background: '#e2e8f0',

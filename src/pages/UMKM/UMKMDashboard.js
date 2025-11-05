@@ -11,6 +11,7 @@ import DollarIcon from '../../assets/dashboard-umkm/Dollar.svg';
 import CustomerIcon from '../../assets/dashboard-umkm/Customer.svg';  
 import listIcon from '../../assets/dashboard-umkm/List.svg';
 import CreateIcon from '../../assets/dashboard-umkm/Create.svg';
+import campaignService from '../../services/campaignService';
 
 function UMKMDashboard() {
   const navigate = useNavigate();
@@ -36,25 +37,75 @@ function UMKMDashboard() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const loadDashboardData = () => {
-    const campaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-    const applicants = JSON.parse(localStorage.getItem('applicants') || '[]');
+  const loadDashboardData = async () => {
+    try {
+      // Fetch campaigns from API
+      const response = await campaignService.getCampaigns();
+      console.log('📊 Dashboard API Response:', response);
+      
+      // Handle different response structures
+      let campaigns = [];
+      if (Array.isArray(response)) {
+        campaigns = response;
+      } else if (response?.data && Array.isArray(response.data)) {
+        campaigns = response.data;
+      } else if (response?.data?.data && Array.isArray(response.data.data)) {
+        campaigns = response.data.data;
+      }
+      
+      console.log('📋 Campaigns array:', campaigns);
+      console.log('📈 Total campaigns found:', campaigns.length);
+      
+      const applicants = []; // TODO: Load from applicants API when available
 
-    // Calculate stats
-    const total = campaigns.length;
-    const ongoing = campaigns.filter(c => c.status === 'Active').length;
-    const completed = campaigns.filter(c => c.status === 'Completed').length;
-    const totalApplicants = applicants.length;
+      // Calculate stats
+      const total = campaigns.length;
+      const activeCampaigns = campaigns.filter(c => c.status === 'active');
+      const completedCampaigns = campaigns.filter(c => c.status === 'completed');
+      const ongoing = activeCampaigns.length;
+      const completed = completedCampaigns.length;
+      const totalApplicants = applicants.length;
 
-    setStats({
-      totalCampaigns: total,
-      ongoingCampaigns: ongoing,
-      completedCampaigns: completed,
-      totalApplicants
-    });
+      console.log('📊 Stats calculated:', {
+        total,
+        active: ongoing,
+        completed,
+        applicants: totalApplicants
+      });
 
-    // Get recent 5 campaigns
-    setRecentCampaigns(campaigns.slice(0, 3));
+      setStats({
+        totalCampaigns: total,
+        ongoingCampaigns: ongoing,
+        completedCampaigns: completed,
+        totalApplicants
+      });
+
+      // Get recent 3 campaigns - sort by created_at descending
+      const sortedCampaigns = [...campaigns].sort((a, b) => {
+        const dateA = new Date(a.created_at || 0);
+        const dateB = new Date(b.created_at || 0);
+        return dateB - dateA; // Most recent first
+      });
+      
+      const recentThree = sortedCampaigns.slice(0, 3);
+      setRecentCampaigns(recentThree);
+      console.log('✅ Recent 3 campaigns set:', recentThree.map(c => ({
+        id: c.campaign_id,
+        title: c.title,
+        status: c.status,
+        created: c.created_at
+      })));
+    } catch (error) {
+      console.error('❌ Error loading dashboard data:', error);
+      // Fallback to empty state
+      setStats({
+        totalCampaigns: 0,
+        ongoingCampaigns: 0,
+        completedCampaigns: 0,
+        totalApplicants: 0
+      });
+      setRecentCampaigns([]);
+    }
   };
 
   const statCards = [
@@ -320,8 +371,8 @@ function UMKMDashboard() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {recentCampaigns.map((campaign, index) => (
                     <div
-                      key={index}
-                      onClick={() => navigate(`/campaign/${campaign.id}/detail`)}
+                      key={campaign.campaign_id || index}
+                      onClick={() => navigate(`/campaign/${campaign.campaign_id}/detail`)}
                       style={{
                         padding: '16px',
                         borderRadius: '12px',
@@ -357,10 +408,10 @@ function UMKMDashboard() {
                           borderRadius: '6px',
                           fontSize: '0.75rem',
                           fontWeight: 600,
-                          background: campaign.status === 'Active' ? '#d1fae5' : '#e2e8f0',
-                          color: campaign.status === 'Active' ? '#065f46' : '#6c757d'
+                          background: campaign.status === 'active' ? '#d1fae5' : campaign.status === 'inactive' ? '#e2e8f0' : '#fff',
+                          color: campaign.status === 'active' ? '#065f46' : campaign.status === 'inactive' ? '#6c757d' : '#000'
                         }}>
-                          {campaign.status}
+                          {campaign.status === 'active' ? 'Active' : campaign.status === 'inactive' ? 'Inactive' : campaign.status}
                         </span>
                       </div>
                       <div style={{
@@ -369,7 +420,7 @@ function UMKMDashboard() {
                         marginBottom: '8px',
                         fontFamily: "'Inter', sans-serif"
                       }}>
-                        {campaign.productDesc?.substring(0, 80)}...
+                        {campaign.product_desc?.substring(0, 80) || 'No description'}...
                       </div>
                       <div style={{
                         display: 'flex',
@@ -378,8 +429,14 @@ function UMKMDashboard() {
                         color: '#6c757d',
                         alignItems: 'center',
                       }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><img src={DollarIcon} alt="Budget" style={{ width: '16px', height: '16px' }} /> Rp {(campaign.price_per_post || 0).toLocaleString('id-ID')}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><img src={ApplicantIcon} alt="Influencers" style={{ width: '16px', height: '16px' }} /> {campaign.influencer_count || 0} influencers</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <img src={DollarIcon} alt="Budget" style={{ width: '16px', height: '16px' }} /> 
+                          Rp {(campaign.price_per_post || 0).toLocaleString('id-ID')}
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <img src={ApplicantIcon} alt="Influencers" style={{ width: '16px', height: '16px' }} /> 
+                          {campaign.influencer_count || 0} influencers
+                        </span>
                       </div>
                     </div>
                   ))}
