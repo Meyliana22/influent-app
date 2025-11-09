@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminTopbar from '../../components/admin/AdminTopbar';
 import { COLORS } from '../../constants/colors';
-import ApplicantIcon from '../../assets/dashboard-umkm/Applicant.svg';
-import CampaignIcon from '../../assets/dashboard-umkm/Campaign.svg';
-import CompletedIcon from '../../assets/dashboard-umkm/Completed.svg';
-import OngoingIcon from '../../assets/dashboard-umkm/Ongoing.svg';
+import ApplicantIcon from '@mui/icons-material/People';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import CompletedIcon from '@mui/icons-material/CheckCircle';
+import OngoingIcon from '@mui/icons-material/HourglassEmpty';
 
 function ManageCampaigns() {
   const [campaigns, setCampaigns] = useState([]);
@@ -138,10 +138,10 @@ function ManageCampaigns() {
             marginBottom: '32px'
           }}>
             {[
-              { label: 'Total Campaigns', value: stats.total, icon: CampaignIcon, color: '#667eea' },
-              { label: 'Active', value: stats.active, icon: OngoingIcon, color: '#10b981' },
-              { label: 'Completed', value: stats.completed, icon: CompletedIcon, color: '#3b82f6' },
-              { label: 'Pending', value: stats.draft, icon: ApplicantIcon, color: '#f59e0b' }
+              { label: 'Total Campaigns', value: stats.total, IconComponent: CampaignIcon, bgColor: '#e0e7ff', iconColor: '#4338ca' },
+              { label: 'Active', value: stats.active, IconComponent: OngoingIcon, bgColor: '#ffebebff', iconColor: '#dc2626' },
+              { label: 'Completed', value: stats.completed, IconComponent: CompletedIcon, bgColor: '#fcffd1ff', iconColor: '#bdaa33ff' },
+              { label: 'Pending', value: stats.draft, IconComponent: ApplicantIcon, bgColor: '#f9e9ffff', iconColor: '#6f3ec5ff' }
             ].map((stat, index) => (
               <div
                 key={index}
@@ -159,20 +159,12 @@ function ManageCampaigns() {
                   width: '48px',
                   height: '48px',
                   borderRadius: '12px',
-                  background: `${stat.color}20`,
+                  background: stat.bgColor,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <img 
-                    src={stat.icon} 
-                    alt={stat.label} 
-                    style={{ 
-                      width: '28px', 
-                      height: '28px',
-                      objectFit: 'contain'
-                    }} 
-                  />
+                  <stat.IconComponent sx={{ fontSize: 28, color: stat.iconColor }} />
                 </div>
                 <div>
                   <div style={{

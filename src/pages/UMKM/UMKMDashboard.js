@@ -110,7 +110,7 @@ function UMKMDashboard() {
       IconComponent: CompletedIcon,
       color: '#fce1e1ff',
       bgColor: '#fcffd1ff',
-      iconColor: '#ca8a04', // Darker yellow to match light yellow background
+      iconColor: '#bdaa33ff', // Darker yellow to match light yellow background
       description: 'Successfully finished'
     },
     {
@@ -118,7 +118,7 @@ function UMKMDashboard() {
       value: stats.totalApplicants,
       IconComponent: ApplicantIcon,
       bgColor: '#f9e9ffff',
-      iconColor: '#7c3aed', // Darker purple to match light purple background
+      iconColor: '#6f3ec5ff', // Darker purple to match light purple background
       description: 'All time applicants'
     }
   ];

@@ -7,6 +7,7 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ChatIcon from '@mui/icons-material/Chat';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import logoIcon from '../../assets/logoIcon.svg';
 
 function AdminSidebar() {
   const navigate = useNavigate();
@@ -44,16 +45,24 @@ function AdminSidebar() {
           gap: '12px'
         }}>
           <div style={{
-            width: '48px',
-            height: '48px',
+            width: '40px',
+            height: '40px',
             background: COLORS.gradient,
             borderRadius: '12px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1.5rem'
+            flexShrink: 0
           }}>
-            <RocketLaunchIcon sx={{ fontSize: 28, color: '#fff' }} />
+            <img 
+              src={logoIcon} 
+              alt="Influent Logo" 
+              style={{ 
+                width: '24px', 
+                height: '24px',
+                objectFit: 'contain'
+              }} 
+            />
           </div>
           <div>
             <div style={{
