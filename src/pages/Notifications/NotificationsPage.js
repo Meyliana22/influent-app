@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import UMKMSidebar from '../../components/umkm/UMKMSidebar';
 import UMKMTopbar from '../../components/umkm/UMKMTopbar';
 import { COLORS } from '../../constants/colors';
+import PersonIcon from '@mui/icons-material/Person';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import SettingsIcon from '@mui/icons-material/Settings';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import StarIcon from '@mui/icons-material/Star';
 
 function NotificationsPage() {
   // Responsive state for sidebar
@@ -75,12 +82,12 @@ function NotificationsPage() {
 
   const getIcon = (type) => {
     switch(type) {
-      case 'applicant': return '�';
-      case 'approval': return '✅';
-      case 'payment': return '�';
-      case 'content': return '📸';
-      case 'system': return '⚙️';
-      default: return '🔔';
+      case 'applicant': return PersonIcon;
+      case 'approval': return CheckCircleIcon;
+      case 'payment': return AttachMoneyIcon;
+      case 'content': return PhotoCameraIcon;
+      case 'system': return SettingsIcon;
+      default: return NotificationsIcon;
     }
   };
 
@@ -131,7 +138,7 @@ function NotificationsPage() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '32px'
+            marginBottom: '18px'
           }}>
             <div>
               <h1 style={{
@@ -183,11 +190,11 @@ function NotificationsPage() {
             flexWrap: 'wrap'
           }}>
             {[
-              { value: 'all', label: 'All', icon: '🔔' },
-              { value: 'unread', label: 'Unread', icon: '⭐' },
-              { value: 'applicant', label: 'Applicants', icon: '👤' },
-              { value: 'approval', label: 'Approvals', icon: '✅' },
-              { value: 'payment', label: 'Payments', icon: '💰' }
+              { value: 'all', label: 'All', IconComponent: NotificationsIcon },
+              { value: 'unread', label: 'Unread', IconComponent: StarIcon },
+              { value: 'applicant', label: 'Applicants', IconComponent: PersonIcon },
+              { value: 'approval', label: 'Approvals', IconComponent: CheckCircleIcon },
+              { value: 'payment', label: 'Payments', IconComponent: AttachMoneyIcon }
             ].map(filter => (
               <button
                 key={filter.value}
@@ -208,7 +215,7 @@ function NotificationsPage() {
                   gap: '8px'
                 }}
               >
-                <span>{filter.icon}</span>
+                <filter.IconComponent sx={{ fontSize: 18 }} />
                 {filter.label}
               </button>
             ))}
@@ -261,7 +268,9 @@ function NotificationsPage() {
                       fontSize: '1.5rem',
                       flexShrink: 0
                     }}>
-                      {getIcon(notif.type)}
+                      {React.createElement(getIcon(notif.type), { 
+                        sx: { fontSize: 24, color: iconStyle.color } 
+                      })}
                     </div>
 
                     {/* Content */}

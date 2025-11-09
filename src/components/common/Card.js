@@ -33,6 +33,8 @@ const Card = ({
     boxShadow: `0 4px 16px ${COLORS.shadowMedium}`,
     transition: 'all 0.3s',
     cursor: onClick ? 'pointer' : 'default',
+    width: '100%',
+    flex: '1',
     ...style,
   };
 

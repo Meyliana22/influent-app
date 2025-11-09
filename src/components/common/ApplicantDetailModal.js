@@ -19,13 +19,14 @@ import {
   LinkOutlined as LinkIcon,
   ContentCopy as CopyIcon
 } from '@mui/icons-material';
+import { toast } from 'react-toastify';
 
 const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
   if (!applicant) return null;
 
   const copyToClipboard = (text, label) => {
     navigator.clipboard.writeText(text);
-    alert(`${label} berhasil disalin!`);
+    toast.success(`${label} berhasil disalin!`);
   };
 
   const formatNumber = (num) => {

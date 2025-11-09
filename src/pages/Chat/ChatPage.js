@@ -49,7 +49,6 @@ function ChatPage() {
     e.preventDefault();
     if (message.trim()) {
       // Logika kirim pesan
-      console.log('Send message:', message);
       setMessage('');
     }
   };

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { COLORS } from "../../constants/colors";
-import BackIcon from "../../assets/back.svg";
-import PaymentIcon from "../../assets/payment_white.svg";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import PaymentIcon from "@mui/icons-material/Payment";
 import InfoIcon from "@mui/icons-material/Info";
 import campaignService from "../../services/campaignService";
+import { toast } from 'react-toastify';
 
 function PaymentConfirmation() {
   const navigate = useNavigate();
@@ -15,26 +16,20 @@ function PaymentConfirmation() {
   useEffect(() => {
     const fetchCampaign = async () => {
       try {
-        console.log("🔍 Fetching campaign with ID:", id);
         const response = await campaignService.getCampaignById(id);
-        console.log("📦 API Response:", response);
-
         // Handle different response structures
         let data = response?.data?.data || response?.data || response;
-        console.log("📋 Campaign data extracted:", data);
-
         if (!data || !data.campaign_id) {
           console.error("❌ Campaign not found or invalid data:", data);
-          alert("Campaign tidak ditemukan");
+          toast.error("Campaign tidak ditemukan");
           navigate("/campaigns");
           return;
         }
 
         setCampaign(data);
-        console.log("✅ Campaign loaded successfully");
       } catch (err) {
         console.error("❌ Error loading campaign:", err);
-        alert("Gagal memuat data campaign");
+        toast.error("Gagal memuat data campaign");
         navigate("/campaigns");
       }
     };
@@ -54,12 +49,6 @@ function PaymentConfirmation() {
 
     const pricePerInfluencer = parseFloat(campaign.price_per_post) || 0;
     const influencerCount = parseInt(campaign.influencer_count) || 1;
-
-    console.log("💰 Payment calculation:", {
-      pricePerInfluencer,
-      influencerCount,
-    });
-
     // Total = Jumlah Influencer × Price per Influencer
     const total = pricePerInfluencer * influencerCount;
 
@@ -90,75 +79,15 @@ function PaymentConfirmation() {
 
       const redirectUrl = data?.snap.redirect_url;
       window.open(redirectUrl, "_blank");
-      // Parse influencer_category
-      let parsedCategory = [];
-      // if (Array.isArray(campaign.influencer_category)) {
-      //   parsedCategory = campaign.influencer_category;
-      // } else if (typeof campaign.influencer_category === 'string') {
-      //   try {
-      //     parsedCategory = JSON.parse(campaign.influencer_category);
-      //   } catch {
-      //     parsedCategory = [];
-      //   }
-      // }
 
-      // Parse contentTypes
-      let parsedContentItems = [];
-      // if (campaign.contentTypes) {
-      //   if (Array.isArray(campaign.contentTypes)) {
-      //     parsedContentItems = campaign.contentTypes;
-      //   } else if (typeof campaign.contentTypes === 'string' && campaign.contentTypes.trim() !== '' && campaign.contentTypes !== '[]') {
-      //     try {
-      //       parsedContentItems = JSON.parse(campaign.contentTypes);
-      //     } catch {
-      //       parsedContentItems = [{ id: 1, post_count: 1, content_type: 'foto' }];
-      //     }
-      //   }
-      // }
-
-      // if (parsedContentItems.length === 0) {
-      //   parsedContentItems = [{ id: 1, post_count: 1, content_type: 'foto' }];
-      // }
-
-      // Prepare update data with correct field mapping
-      // const updateData = {
-      //   title: campaign.title,
-      //   campaignCategory: campaign.campaign_category,
-      //   category: parsedCategory,
-      //   hasProduct: campaign.has_product || false,
-      //   productName: campaign.product_name || null,
-      //   productValue: campaign.product_value || null,
-      //   productDesc: campaign.product_desc || null,
-      //   start_date: campaign.start_date,
-      //   end_date: campaign.end_date,
-      //   submission_deadline: campaign.submission_deadline,
-      //   content_guidelines: campaign.content_guidelines,
-      //   caption_guidelines: campaign.caption_guidelines,
-      //   contentReference: campaign.content_reference,
-      //   influencer_count: campaign.influencer_count,
-      //   price_per_post: campaign.price_per_post,
-      //   min_followers: campaign.min_followers,
-      //   selectedGender: campaign.selected_gender,
-      //   selectedAge: campaign.selected_age,
-      //   contentItems: parsedContentItems,
-      //   image: campaign.banner_image,
-      //   status: 'active' // Change status to active after payment
-      // };
-
-      // console.log('💳 Processing payment for campaign:', id);
-      // console.log('📦 Update data:', updateData);
-      // await campaignService.updateCampaign(id, updateData);
-
-      // Show success message
-      alert(
+      toast.success(
         "✅ Pembayaran berhasil! Campaign Anda sekarang aktif dan dapat menerima pendaftaran dari influencer."
       );
 
-      // Navigate directly to campaign list
       navigate("/campaigns");
     } catch (err) {
       console.error("❌ Payment error:", err);
-      alert("Gagal memproses pembayaran. Silakan coba lagi.");
+      toast.error("Gagal memproses pembayaran. Silakan coba lagi.");
     }
   };
 
@@ -246,10 +175,8 @@ function PaymentConfirmation() {
                 cursor: "pointer",
               }}
             >
-              <img
-                src={BackIcon}
-                alt="Back"
-                style={{ width: "16px", height: "16px" }}
+              <ArrowBackIcon
+                sx={{ fontSize: 16, color: COLORS.textPrimary }}
               />
             </button>
             <h2
@@ -289,13 +216,6 @@ function PaymentConfirmation() {
             <div
               style={{ display: "flex", flexDirection: "column", gap: "12px" }}
             >
-              {/* <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: COLORS.textSecondary, fontSize: '0.9rem' }}>Nama Campaign:</span>
-                <span style={{ fontWeight: 600, color: COLORS.textPrimary, fontSize: '0.95rem', textAlign: 'right', maxWidth: '60%' }}>
-                  {campaign.title}
-                </span>
-              </div> */}
-
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span
                   style={{ color: COLORS.textSecondary, fontSize: "0.9rem" }}
@@ -534,11 +454,7 @@ function PaymentConfirmation() {
                 "0 4px 16px rgba(102, 126, 234, 0.3)";
             }}
           >
-            <img
-              src={PaymentIcon}
-              alt="Payment Icon"
-              style={{ marginRight: "8px", width: "24px", height: "24px" }}
-            />{" "}
+            <PaymentIcon sx={{ fontSize: 24, color: COLORS.white, marginRight: '8px' }} />
             Proses Pembayaran
           </button>
         </div>

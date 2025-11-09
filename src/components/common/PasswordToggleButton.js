@@ -1,6 +1,7 @@
 import React from 'react';
-import eyeIcon from '../../assets/auth/eye.svg';
-import eyeOffIcon from '../../assets/auth/eye-off.svg';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { COLORS } from '../../constants/colors';
 
 /**
  * PasswordToggleButton - Reusable button for show/hide password
@@ -28,12 +29,6 @@ const PasswordToggleButton = ({ show, onClick, style = {} }) => {
     ...style,
   };
 
-  const imgStyles = {
-    width: '20px',
-    height: '20px',
-    display: 'block',
-  };
-
   return (
     <button
       type="button"
@@ -42,11 +37,11 @@ const PasswordToggleButton = ({ show, onClick, style = {} }) => {
       onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
       onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
     >
-      <img
-        src={show ? eyeOffIcon : eyeIcon}
-        alt={show ? 'Hide password' : 'Show password'}
-        style={imgStyles}
-      />
+      {show ? (
+        <VisibilityOffIcon sx={{ fontSize: 22, color: COLORS.textSecondary }} />
+      ) : (
+        <VisibilityIcon sx={{ fontSize: 22, color: COLORS.textSecondary }} />
+      )}
     </button>
   );
 };

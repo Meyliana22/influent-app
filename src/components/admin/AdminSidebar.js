@@ -1,19 +1,23 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
-import dashboardIcon from '../../assets/sidebar/dashboard.svg';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import PeopleIcon from '@mui/icons-material/People';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import ChatIcon from '@mui/icons-material/Chat';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 
 function AdminSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const menuItems = [
-    { path: '/admin/dashboard', icon: dashboardIcon, label: 'Dashboard', isImage: true },
-    { path: '/admin/users', icon: '👥', label: 'Manage Users' },
-    { path: '/admin/campaigns', icon: '📢', label: 'Manage Campaigns' },
-    { path: '/admin/reports', icon: '📈', label: 'Reports' },
-    { path: '/chat', icon: '💬', label: 'Chat' },
-    // { path: '/admin/settings', icon: '⚙️', label: 'Settings' },
+    { path: '/admin/dashboard', icon: DashboardIcon, label: 'Dashboard' },
+    { path: '/admin/users', icon: PeopleIcon, label: 'Manage Users' },
+    { path: '/admin/campaigns', icon: CampaignIcon, label: 'Manage Campaigns' },
+    { path: '/admin/reports', icon: BarChartIcon, label: 'Reports' },
+    { path: '/chat', icon: ChatIcon, label: 'Chat' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -49,7 +53,7 @@ function AdminSidebar() {
             justifyContent: 'center',
             fontSize: '1.5rem'
           }}>
-            🚀
+            <RocketLaunchIcon sx={{ fontSize: 28, color: '#fff' }} />
           </div>
           <div>
             <div style={{
@@ -113,20 +117,12 @@ function AdminSidebar() {
               }
             }}
           >
-            {item.isImage ? (
-              <img 
-                src={item.icon} 
-                alt={item.label}
-                style={{ 
-                  width: '20px', 
-                  height: '20px',
-                  objectFit: 'contain',
-                  filter: isActive(item.path) ? 'brightness(0) invert(1)' : 'brightness(0.7) invert(1)'
-                }} 
-              />
-            ) : (
-              <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
-            )}
+            <item.icon 
+              sx={{
+                fontSize: 22,
+                color: isActive(item.path) ? '#fff' : 'rgba(255,255,255,0.7)'
+              }}
+            />
             <span>{item.label}</span>
           </button>
         ))}
