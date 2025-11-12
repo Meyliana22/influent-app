@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import DashboardIcon from '../../assets/sidebar/dashboard.svg';
-import CreateIcon from '../../assets/sidebar/create.svg';
-import TransactionsIcon from '../../assets/sidebar/payment.svg';
-import ChatIcon from '../../assets/sidebar/chat.svg';
-import NotificationIcon from '../../assets/sidebar/notification.svg';
-import ProfileIcon from '../../assets/sidebar/profile.svg';
-import listIcon from '../../assets/sidebar/list.svg';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import CreateIcon from '@mui/icons-material/AddCircleOutline';
+import TransactionsIcon from '@mui/icons-material/Payment';
+import ChatIcon from '@mui/icons-material/Chat';
+import NotificationIcon from '@mui/icons-material/Notifications';
+import ProfileIcon from '@mui/icons-material/Person';
+import ListIcon from '@mui/icons-material/List';
 import logoIcon from '../../assets/logoIcon.svg';
 
 import { COLORS } from '../../constants/colors';
@@ -27,13 +27,10 @@ function UMKMSidebar({ isOpen = false, onClose = () => {} }) {
   }, []);
 
   const menuItems = [
-    { icon: DashboardIcon, label: 'Dashboard', path: '/umkm/dashboard', isImage: true },
-    { icon: listIcon, label: 'My Campaigns', path: '/campaigns', isImage: true },
-    // { icon: CreateIcon, label: 'Create Campaign', path: '/campaign-create', isImage: true },
-    { icon: TransactionsIcon, label: 'Transactions', path: '/transactions', isImage: true },
-    { icon: ChatIcon, label: 'Chat', path: '/chat', isImage: true },
-    // { icon: NotificationIcon, label: 'Notifications', path: '/notifications', isImage: true },
-    // { icon: ProfileIcon, label: 'Profile', path: '/user', isImage: true }
+    { icon: DashboardIcon, label: 'Dashboard', path: '/umkm/dashboard' },
+    { icon: ListIcon, label: 'My Campaigns', path: '/campaigns' },
+    { icon: TransactionsIcon, label: 'Transactions', path: '/transactions' },
+    { icon: ChatIcon, label: 'Chat', path: '/chat' },
   ];
 
   const isActive = (path) => {
@@ -204,20 +201,12 @@ function UMKMSidebar({ isOpen = false, onClose = () => {} }) {
               }
             }}
           >
-            {item.isImage ? (
-              <img 
-                src={item.icon} 
-                alt={item.label}
-                style={{ 
-                  width: '20px', 
-                  height: '20px',
-                  objectFit: 'contain',
-                  filter: isActive(item.path) ? 'brightness(0) invert(1)' : 'brightness(0.7) invert(1)'
-                }} 
-              />
-            ) : (
-              <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
-            )}
+            <item.icon 
+              sx={{
+                fontSize: 22,
+                color: isActive(item.path) ? '#fff' : 'rgba(255,255,255,0.7)'
+              }}
+            />
             <span style={{
               fontSize: '0.95rem',
               fontWeight: isActive(item.path) ? 600 : 500

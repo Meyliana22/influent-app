@@ -4,6 +4,9 @@ import UMKMTopbar from '../../components/umkm/UMKMTopbar';
 import { COLORS } from '../../constants/colors';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { useToast } from '../../hooks/useToast';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import UndoIcon from '@mui/icons-material/Undo';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 
 function TransactionsPage() {
   const { showToast } = useToast();
@@ -117,7 +120,7 @@ function TransactionsPage() {
         
         <div style={{ marginTop: '72px', padding: '32px' }}>
           {/* Page Header */}
-          <div style={{ marginBottom: '32px', maxWidth: '1400px', margin: '0 auto 32px' }}>
+          <div style={{ marginBottom: '32px', margin: '0 auto 32px' }}>
             <h1 style={{
               fontSize: isMobile ? '1.5rem' : '2rem',
               fontWeight: 700,
@@ -142,14 +145,13 @@ function TransactionsPage() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
             gap: isMobile ? '16px' : '20px',
             marginBottom: '32px',
-            maxWidth: '1400px',
             margin: '0 auto 32px'
           }}>
             {[
               {
                 title: 'Total Paid',
                 value: `Rp ${totalPaid.toLocaleString('id-ID')}`,
-                icon: '✅',
+                IconComponent: CheckCircleIcon,
                 color: '#10b981',
                 bgColor: '#d1fae5',
                 count: transactions.filter(t => t.status === 'Paid').length
@@ -157,7 +159,7 @@ function TransactionsPage() {
               {
                 title: 'Total Refunded',
                 value: `Rp ${totalRefunded.toLocaleString('id-ID')}`,
-                icon: '↩️',
+                IconComponent: UndoIcon,
                 color: '#f59e0b',
                 bgColor: '#fef3c7',
                 count: transactions.filter(t => t.status === 'Refunded').length
@@ -165,7 +167,7 @@ function TransactionsPage() {
               {
                 title: 'All Transactions',
                 value: transactions.length,
-                icon: '💰',
+                IconComponent: AccountBalanceWalletIcon,
                 color: '#3b82f6',
                 bgColor: '#dbeafe',
                 count: 'Total'
@@ -196,7 +198,7 @@ function TransactionsPage() {
                     justifyContent: 'center',
                     fontSize: '1.5rem'
                   }}>
-                    {stat.icon}
+                    <stat.IconComponent sx={{ fontSize: 28, color: stat.color }} />
                   </div>
                 </div>
                 <div style={{
@@ -238,7 +240,6 @@ function TransactionsPage() {
             gap: '16px',
             alignItems: 'center',
             flexWrap: 'wrap',
-            maxWidth: '1400px',
             margin: '0 auto 24px'
           }}>
             <div style={{ flex: 1, minWidth: isMobile ? '100%' : '300px' }}>
@@ -286,7 +287,6 @@ function TransactionsPage() {
             borderRadius: '16px',
             border: '1px solid #e2e8f0',
             overflow: isMobile ? 'auto' : 'hidden',
-            maxWidth: '1400px',
             margin: '0 auto'
           }}>
             <table style={{

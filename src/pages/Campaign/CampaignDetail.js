@@ -4,7 +4,7 @@ import { Button, Card } from '../../components/common';
 import UMKMSidebar from '../../components/umkm/UMKMSidebar';
 import UMKMTopbar from '../../components/umkm/UMKMTopbar';
 import { COLORS } from '../../constants/colors';
-import BackIcon from '../../assets/back.svg';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import campaignService from '../../services/campaignService';
 
 function CampaignDetail() {
@@ -49,8 +49,6 @@ function CampaignDetail() {
         navigate('/campaigns');
         return;
       }
-      
-      console.log('Campaign data loaded:', campaignData);
       setCampaign(campaignData);
 
       // Load selected influencers from localStorage (akan diubah ke API nanti)
@@ -722,7 +720,7 @@ function CampaignDetail() {
             gap: '8px'
           }}
         >
-          <img src={BackIcon} alt="Back" style={{ width: '16px', height: '16px' }} />
+          <ArrowBackIcon sx={{ fontSize: 16 }} />
           Back to Campaigns
         </Button>
 

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
-import logo from '../../assets/logo.svg'; // Tambahkan baris ini
-import chatIcon from '../../assets/chat.svg';
-import notifIcon from '../../assets/notification.svg';
-import profileIcon from '../../assets/user.svg';
+import logo from '../../assets/logo.svg';
+import ChatIcon from '@mui/icons-material/Chat';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import PersonIcon from '@mui/icons-material/Person';
 
 
 /**
@@ -99,22 +99,31 @@ const Navbar = ({ userType = 'umkm', showAuth = false }) => {
           </>
         ) : (
           <>
-            <img
-              src={chatIcon}
-              alt="Chat"
-              style={{ width: '22px', height: '22px', cursor: 'pointer' }}
+            <ChatIcon
+              sx={{ 
+                fontSize: 26, 
+                color: COLORS.textSecondary, 
+                cursor: 'pointer',
+                '&:hover': { color: COLORS.primary }
+              }}
               onClick={() => navigate('/chat')}
             />
-            <img
-              src={notifIcon}
-              alt="Notifications"
-              style={{ width: '26px', height: '26px', cursor: 'pointer' }}
+            <NotificationsIcon
+              sx={{ 
+                fontSize: 28, 
+                color: COLORS.textSecondary, 
+                cursor: 'pointer',
+                '&:hover': { color: COLORS.primary }
+              }}
               onClick={() => navigate('/notifications')}
             />
-            <img
-              src={profileIcon}
-              alt="Profile"
-              style={{ width: '28px', height: '28px', cursor: 'pointer' }}
+            <PersonIcon
+              sx={{ 
+                fontSize: 30, 
+                color: COLORS.textSecondary, 
+                cursor: 'pointer',
+                '&:hover': { color: COLORS.primary }
+              }}
               onClick={() => navigate('/user')}
             />
           </>

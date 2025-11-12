@@ -4,8 +4,9 @@ import { Modal, Button } from '../../components/common';
 import UMKMSidebar from '../../components/umkm/UMKMSidebar';
 import UMKMTopbar from '../../components/umkm/UMKMTopbar';
 import { COLORS } from '../../constants/colors';
-import BackIcon from '../../assets/back.svg';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import campaignService from '../../services/campaignService';
+import { toast } from 'react-toastify';
 
 function SelectApplicants() {
   const { campaignId } = useParams();
@@ -85,7 +86,7 @@ function SelectApplicants() {
   // Confirm selection
   const handleConfirm = () => {
     if (selectedIds.length === 0) {
-      alert('Please select at least one influencer');
+      toast.warning('Please select at least one influencer');
       return;
     }
     setShowConfirmModal(true);
@@ -113,10 +114,11 @@ function SelectApplicants() {
       });
 
       setShowConfirmModal(false);
+      toast.success('Selection confirmed successfully!');
       navigate(`/campaigns`);
     } catch (error) {
       console.error('Error confirming selection:', error);
-      alert('Failed to confirm selection. Please try again.');
+      toast.error('Failed to confirm selection. Please try again.');
     }
   };
 
@@ -166,7 +168,7 @@ function SelectApplicants() {
             gap: '8px'
           }}
         >
-          <img src={BackIcon} alt="Back" style={{ width: '16px', height: '16px' }} />
+          <ArrowBackIcon sx={{ fontSize: 16 }} />
           Back to View Applicants
         </Button>
 

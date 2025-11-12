@@ -10,11 +10,6 @@ const API_BASE_URL = "https://influent-api-1fnn.vercel.app/api/v1";
  */
 const handleResponse = async (response) => {
   const data = await response.json();
-
-  //   if (!response.ok) {
-  //     throw new Error(data.message || 'API request failed');
-  //   }
-
   return data;
 };
 
@@ -116,10 +111,6 @@ export const createCampaign = async (campaignData) => {
             )
           : null,
     };
-
-    console.log("🚀 Creating campaign with status:", apiData.status);
-    console.log("📦 Full API data:", apiData);
-
     const response = await fetch(`${API_BASE_URL}/campaigns`, {
       method: "POST",
       headers: {
@@ -129,12 +120,6 @@ export const createCampaign = async (campaignData) => {
     });
 
     const result = await handleResponse(response);
-    console.log("✅ API Response:", result);
-    console.log(
-      "📋 Campaign created with ID:",
-      result?.data?.campaign_id || result?.campaign_id
-    );
-
     return result;
   } catch (error) {
     console.error("Error creating campaign:", error);

@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminTopbar from '../../components/admin/AdminTopbar';
 import { COLORS } from '../../constants/colors';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import PeopleIcon from '@mui/icons-material/People';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 function Reports() {
   const [campaigns, setCampaigns] = useState([]);
@@ -134,28 +138,28 @@ function Reports() {
               {
                 title: 'Total Revenue',
                 value: `Rp ${analytics.totalRevenue.toLocaleString('id-ID')}`,
-                icon: '💰',
+                IconComponent: AttachMoneyIcon,
                 color: '#10b981',
                 bgColor: '#d1fae5'
               },
               {
                 title: 'Active Campaigns',
                 value: analytics.activeCampaigns,
-                icon: '📢',
+                IconComponent: CampaignIcon,
                 color: '#3b82f6',
                 bgColor: '#dbeafe'
               },
               {
                 title: 'Total Influencers',
                 value: analytics.totalInfluencers,
-                icon: '👥',
+                IconComponent: PeopleIcon,
                 color: '#8b5cf6',
                 bgColor: '#ede9fe'
               },
               {
                 title: 'Success Rate',
                 value: `${analytics.successRate}%`,
-                icon: '📈',
+                IconComponent: TrendingUpIcon,
                 color: '#f59e0b',
                 bgColor: '#fef3c7'
               }
@@ -195,7 +199,7 @@ function Reports() {
                     justifyContent: 'center',
                     fontSize: '1.5rem'
                   }}>
-                    {card.icon}
+                    <card.IconComponent sx={{ fontSize: 28, color: card.color }} />
                   </div>
                 </div>
                 <div style={{

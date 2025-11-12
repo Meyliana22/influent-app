@@ -8,7 +8,6 @@ class ApplicantDatabase {
   // Initialize with default data
   init() {
     if (!localStorage.getItem(this.storageKey)) {
-      console.log('Initializing applicant dummy data');
       const defaultApplicants = [
         // Applicants untuk Campaign ID 1 (SCARLETT)
         {
@@ -294,7 +293,6 @@ class ApplicantDatabase {
       ];
       
       this.saveToStorage(defaultApplicants);
-      console.log('Applicant dummy data saved:', defaultApplicants.length, 'applicants');
     }
   }
 

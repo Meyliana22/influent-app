@@ -2,6 +2,13 @@ import React, { useEffect, useState } from 'react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminTopbar from '../../components/admin/AdminTopbar';
 import { COLORS } from '../../constants/colors';
+import PeopleIcon from '@mui/icons-material/People';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import WarningIcon from '@mui/icons-material/Warning';
+import PersonIcon from '@mui/icons-material/Person';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -34,7 +41,7 @@ function AdminDashboard() {
     {
       title: 'Total Users',
       value: stats.totalUsers,
-      icon: '👥',
+      IconComponent: PeopleIcon,
       color: '#667eea',
       bgColor: 'rgba(102, 126, 234, 0.1)',
       change: '+12%',
@@ -43,7 +50,7 @@ function AdminDashboard() {
     {
       title: 'Active Campaigns',
       value: stats.activeCampaigns,
-      icon: '📢',
+      IconComponent: CampaignIcon,
       color: '#10b981',
       bgColor: 'rgba(16, 185, 129, 0.1)',
       change: '+8%',
@@ -52,7 +59,7 @@ function AdminDashboard() {
     {
       title: 'Pending Review',
       value: stats.pendingReview,
-      icon: '⏳',
+      IconComponent: HourglassEmptyIcon,
       color: '#f59e0b',
       bgColor: 'rgba(245, 158, 11, 0.1)',
       change: '3 new',
@@ -61,7 +68,7 @@ function AdminDashboard() {
     {
       title: 'Reports Filed',
       value: stats.reportsFiled,
-      icon: '⚠️',
+      IconComponent: WarningIcon,
       color: '#ef4444',
       bgColor: 'rgba(239, 68, 68, 0.1)',
       change: '1 new',
@@ -70,11 +77,11 @@ function AdminDashboard() {
   ];
 
   const recentActivities = [
-    { action: 'New campaign created', user: 'Scarlett Beauty', time: '5 min ago', icon: '📢', color: '#667eea' },
-    { action: 'User registered', user: '@beautyguru', time: '15 min ago', icon: '👤', color: '#10b981' },
-    { action: 'Campaign completed', user: 'Gaming Pro Campaign', time: '1 hour ago', icon: '✅', color: '#10b981' },
-    { action: 'Report submitted', user: 'Campaign #1234', time: '2 hours ago', icon: '⚠️', color: '#ef4444' },
-    { action: 'Payment processed', user: 'Rp 5.000.000', time: '3 hours ago', icon: '💰', color: '#f59e0b' }
+    { action: 'New campaign created', user: 'Scarlett Beauty', time: '5 min ago', IconComponent: CampaignIcon, color: '#667eea' },
+    { action: 'User registered', user: '@beautyguru', time: '15 min ago', IconComponent: PersonIcon, color: '#10b981' },
+    { action: 'Campaign completed', user: 'Gaming Pro Campaign', time: '1 hour ago', IconComponent: CheckCircleIcon, color: '#10b981' },
+    { action: 'Report submitted', user: 'Campaign #1234', time: '2 hours ago', IconComponent: WarningIcon, color: '#ef4444' },
+    { action: 'Payment processed', user: 'Rp 5.000.000', time: '3 hours ago', IconComponent: AttachMoneyIcon, color: '#f59e0b' }
   ];
 
   return (
@@ -170,7 +177,7 @@ function AdminDashboard() {
                     justifyContent: 'center',
                     fontSize: '1.75rem'
                   }}>
-                    {card.icon}
+                    <card.IconComponent sx={{ fontSize: 32, color: card.color }} />
                   </div>
                 </div>
               </div>
@@ -224,7 +231,7 @@ function AdminDashboard() {
                       fontSize: '1.25rem',
                       flexShrink: 0
                     }}>
-                      {activity.icon}
+                      <activity.IconComponent sx={{ fontSize: 22, color: activity.color }} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{

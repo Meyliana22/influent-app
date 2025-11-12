@@ -1,4 +1,4 @@
-Ôªøimport React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
 import { useToast } from '../../hooks/useToast';
@@ -87,7 +87,7 @@ function LoginPage() {
 
         {loginError && (
           <div style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)', border: '1px solid #fc8181', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '1.25rem' }}>‚ö†Ô∏è</span>
+            <span style={{ fontSize: '1.25rem' }}>??</span>
             <span style={{ color: '#c53030', fontSize: '0.9rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{loginError}</span>
           </div>
         )}
@@ -133,7 +133,7 @@ function LoginPage() {
                   setLoginError(''); 
                   if (errors.password.length > 0) setErrors({ ...errors, password: [] }); 
                 }} 
-                placeholder="‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢" 
+                placeholder="ïïïïïïïï" 
                 disabled={isLoading} 
                 style={{ 
                   width: '100%', 
@@ -197,7 +197,7 @@ function LoginPage() {
         </form>
 
         {/* <div style={{ marginTop: '32px', padding: '16px', background: 'linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%)', borderRadius: '12px', border: '1px solid #cbd5e0' }}>
-          <div style={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600, marginBottom: '8px', fontFamily: "'Montserrat', sans-serif" }}>üí° Demo Credentials:</div>
+          <div style={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600, marginBottom: '8px', fontFamily: "'Montserrat', sans-serif" }}>?? Demo Credentials:</div>
           <div style={{ fontSize: '0.8rem', color: '#6c757d', lineHeight: '1.6', fontFamily: "'Montserrat', sans-serif" }}>
             <div><strong>UMKM:</strong> umkm@influent.com / umkm123</div>
             <div><strong>Admin:</strong> admin@influent.com / admin123</div>
@@ -205,7 +205,7 @@ function LoginPage() {
         </div> */}
 
         <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          <button type="button" onClick={() => navigate('/')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#6c757d', fontSize: '0.9rem', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 600, padding: '8px 16px', borderRadius: '8px', transition: 'all 0.2s', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>‚Üê Kembali ke Beranda</button>
+          <button type="button" onClick={() => navigate('/')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#6c757d', fontSize: '0.9rem', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 600, padding: '8px 16px', borderRadius: '8px', transition: 'all 0.2s', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>? Kembali ke Beranda</button>
         </div>
       </div>
     </div>

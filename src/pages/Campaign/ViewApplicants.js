@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Modal, StatCard, Button, SelectionConfirmModal, ApplicantDetailModal } from '../../components/common';
 import ApplicantCard from '../../components/common/ApplicantCard';
 import UMKMSidebar from '../../components/umkm/UMKMSidebar';
 import UMKMTopbar from '../../components/umkm/UMKMTopbar';
 import { COLORS } from '../../constants/colors';
-import SearchIcon from '../../assets/search.svg';
-import BackIcon from '../../assets/back.svg';
+import SearchIcon from '@mui/icons-material/Search';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PeopleIcon from '@mui/icons-material/People';
+import StarIcon from '@mui/icons-material/Star';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import applicantStorageHelper from '../../utils/applicantStorageHelper';
 import campaignService from '../../services/campaignService';
+import { toast } from 'react-toastify';
 
 function ViewApplicants() {
   const { campaignId } = useParams();
   const navigate = useNavigate();
-  
-  console.log('🎯 ViewApplicants - Received campaignId:', campaignId, 'Type:', typeof campaignId);
-  
   const [campaign, setCampaign] = useState(null);
   const [applicants, setApplicants] = useState([]);
   const [search, setSearch] = useState('');
@@ -59,8 +62,6 @@ function ViewApplicants() {
   const loadData = async () => {
     // Load campaign details from API
     try {
-      console.log('🔍 Loading data for campaign:', campaignId);
-      
       if (!campaignId) {
         console.error('❌ No campaignId provided!');
         setTimeout(() => navigate('/campaigns'), 100);
@@ -69,26 +70,19 @@ function ViewApplicants() {
       
       // Fetch campaign from API
       const response = await campaignService.getCampaignById(campaignId);
-      console.log('📦 API Response:', response);
-      
       // Handle different response structures
       let campaignData = response?.data?.data || response?.data || response;
-      console.log('📋 Campaign data extracted:', campaignData);
-      
       if (campaignData && campaignData.campaign_id) {
-        console.log('✅ Campaign found:', campaignData.title);
         setCampaign(campaignData);
       } else {
         console.error('❌ Campaign not found with ID:', campaignId);
-        alert('Campaign tidak ditemukan');
+        toast.error('Campaign tidak ditemukan');
         setTimeout(() => navigate('/campaigns'), 100);
         return;
       }
 
       // Load applicants for this campaign from localStorage
       const allApplicants = JSON.parse(localStorage.getItem('applicants') || '[]');
-      console.log('👥 Total applicants:', allApplicants.length);
-      
       // Use the found campaign's ID for filtering
       const actualCampaignId = campaignData.campaign_id;
       const applicantsData = allApplicants.filter(a => 
@@ -96,8 +90,6 @@ function ViewApplicants() {
         String(a.campaignId) === String(actualCampaignId) ||
         parseInt(a.campaignId) === parseInt(actualCampaignId)
       );
-      console.log('👥 Applicants for campaign', actualCampaignId, ':', applicantsData.length);
-      
       setApplicants(applicantsData);
 
       // Calculate statistics
@@ -106,9 +98,6 @@ function ViewApplicants() {
       const accepted = applicantsData.filter(a => a.status === 'Accepted').length;
       const rejected = applicantsData.filter(a => a.status === 'Rejected').length;
       const selected = applicantsData.filter(a => a.isSelected === true).length;
-      
-      console.log('📊 Stats:', { total, pending, accepted, rejected, selected });
-      
       setStats({ total, pending, accepted, rejected, selected });
     } catch (error) {
       console.error('Failed to load data from localStorage:', error);
@@ -281,7 +270,7 @@ function ViewApplicants() {
             gap: '8px'
           }}
         >
-          <img src={BackIcon} alt="Back" style={{ width: '16px', height: '16px' }} />
+          <ArrowBackIcon sx={{ fontSize: 16 }} />
           Back to Campaigns
         </Button>
 
@@ -361,31 +350,31 @@ function ViewApplicants() {
           <StatCard
             title="Total Applicants"
             value={stats.total}
-            icon="👥"
+            IconComponent={PeopleIcon}
             gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
           />
           <StatCard
             title="Selected"
             value={stats.selected}
-            icon="⭐"
+            IconComponent={StarIcon}
             gradient="linear-gradient(135deg, #f6d365 0%, #fda085 100%)"
           />
           <StatCard
             title="Pending Review"
             value={stats.pending}
-            icon="⏳"
+            IconComponent={HourglassEmptyIcon}
             gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
           />
           <StatCard
             title="Accepted"
             value={stats.accepted}
-            icon="✅"
+            IconComponent={CheckCircleIcon}
             gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
           />
           <StatCard
             title="Rejected"
             value={stats.rejected}
-            icon="❌"
+            IconComponent={CancelIcon}
             gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
           />
         </div>
@@ -413,18 +402,16 @@ function ViewApplicants() {
                 boxSizing: 'border-box'
               }}
             />
-            <img
-              src={SearchIcon}
-              alt="Search"
-              style={{
+            <SearchIcon
+              sx={{
                 position: 'absolute',
                 left: '16px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                width: '20px',
-                height: '20px',
+                fontSize: 22,
                 opacity: 0.6,
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                color: COLORS.textSecondary
               }}
             />
           </div>

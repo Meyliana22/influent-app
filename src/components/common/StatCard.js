@@ -7,7 +7,8 @@ import { COLORS } from '../../constants/colors';
  * @param {string} title - Card title/label
  * @param {string|number} value - Main value to display
  * @param {string} subtitle - Additional info
- * @param {string} icon - Emoji icon to display
+ * @param {string} icon - Emoji icon to display (legacy support)
+ * @param {Component} IconComponent - Material-UI icon component
  * @param {string} variant - Card variant: 'primary', 'white'
  * @param {string} gradient - Custom gradient background
  * @param {string} valueColor - Custom color for value
@@ -17,7 +18,8 @@ const StatCard = ({
   title, 
   value, 
   subtitle,
-  icon, 
+  icon,
+  IconComponent,
   variant = 'white',
   gradient,
   valueColor,
@@ -62,13 +64,17 @@ const StatCard = ({
       }}
     >
       {/* Icon (if provided) */}
-      {icon && (
+      {(icon || IconComponent) && (
         <div style={{ 
           fontSize: '2rem', 
           marginBottom: '12px',
           opacity: isColoredBackground ? 0.9 : 1
         }}>
-          {icon}
+          {IconComponent ? (
+            <IconComponent sx={{ fontSize: 40, color: isColoredBackground ? COLORS.white : COLORS.primary }} />
+          ) : (
+            icon
+          )}
         </div>
       )}
 

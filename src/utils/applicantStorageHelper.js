@@ -126,7 +126,6 @@ export const applicantStorageHelper = {
 // Make available in console
 if (typeof window !== 'undefined') {
   window.applicantStorage = applicantStorageHelper;
-  console.log('👥 Applicant Storage Helper loaded! Use window.applicantStorage in console');
 }
 
 export default applicantStorageHelper;

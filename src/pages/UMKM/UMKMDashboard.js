@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import UMKMSidebar from '../../components/umkm/UMKMSidebar';
 import UMKMTopbar from '../../components/umkm/UMKMTopbar';
 import { COLORS } from '../../constants/colors.js';
-import ApplicantIcon from '../../assets/dashboard-umkm/Applicant.svg';
-import CampaignIcon from '../../assets/dashboard-umkm/Campaign.svg';
-import CompletedIcon from '../../assets/dashboard-umkm/Completed.svg';
-import OngoingIcon from '../../assets/dashboard-umkm/Ongoing.svg';
-import DollarIcon from '../../assets/dashboard-umkm/Dollar.svg';
-import CustomerIcon from '../../assets/dashboard-umkm/Customer.svg';  
-import listIcon from '../../assets/dashboard-umkm/List.svg';
-import CreateIcon from '../../assets/dashboard-umkm/Create.svg';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import OngoingIcon from '@mui/icons-material/HourglassEmpty';
+import CompletedIcon from '@mui/icons-material/CheckCircle';
+import ApplicantIcon from '@mui/icons-material/People';
+import PersonIcon from '@mui/icons-material/Person';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import campaignService from '../../services/campaignService';
 
 function UMKMDashboard() {
@@ -41,8 +40,6 @@ function UMKMDashboard() {
     try {
       // Fetch campaigns from API
       const response = await campaignService.getCampaigns();
-      console.log('📊 Dashboard API Response:', response);
-      
       // Handle different response structures
       let campaigns = [];
       if (Array.isArray(response)) {
@@ -52,10 +49,6 @@ function UMKMDashboard() {
       } else if (response?.data?.data && Array.isArray(response.data.data)) {
         campaigns = response.data.data;
       }
-      
-      console.log('📋 Campaigns array:', campaigns);
-      console.log('📈 Total campaigns found:', campaigns.length);
-      
       const applicants = []; // TODO: Load from applicants API when available
 
       // Calculate stats
@@ -65,14 +58,6 @@ function UMKMDashboard() {
       const ongoing = activeCampaigns.length;
       const completed = completedCampaigns.length;
       const totalApplicants = applicants.length;
-
-      console.log('📊 Stats calculated:', {
-        total,
-        active: ongoing,
-        completed,
-        applicants: totalApplicants
-      });
-
       setStats({
         totalCampaigns: total,
         ongoingCampaigns: ongoing,
@@ -89,12 +74,6 @@ function UMKMDashboard() {
       
       const recentThree = sortedCampaigns.slice(0, 3);
       setRecentCampaigns(recentThree);
-      console.log('✅ Recent 3 campaigns set:', recentThree.map(c => ({
-        id: c.campaign_id,
-        title: c.title,
-        status: c.status,
-        created: c.created_at
-      })));
     } catch (error) {
       console.error('❌ Error loading dashboard data:', error);
       // Fallback to empty state
@@ -112,58 +91,62 @@ function UMKMDashboard() {
     {
       title: 'Total Campaigns',
       value: stats.totalCampaigns,
-      icon: CampaignIcon,
+      IconComponent: CampaignIcon,
       bgColor: '#e0e7ff',
+      iconColor: '#4c51bf', // Darker indigo to match light indigo background
       description: 'All time campaigns'
     },
     {
       title: 'Ongoing Campaigns',
       value: stats.ongoingCampaigns,
-      icon: OngoingIcon,
+      IconComponent: OngoingIcon,
       bgColor: '#ffebebff',
+      iconColor: '#dc2626', // Darker red to match light red background
       description: 'Currently active'
     },
     {
       title: 'Completed Campaigns',
       value: stats.completedCampaigns,
-      icon: CompletedIcon,
+      IconComponent: CompletedIcon,
       color: '#fce1e1ff',
       bgColor: '#fcffd1ff',
+      iconColor: '#bdaa33ff', // Darker yellow to match light yellow background
       description: 'Successfully finished'
     },
     {
       title: 'Total Applicants',
       value: stats.totalApplicants,
-      icon: ApplicantIcon,
+      IconComponent: ApplicantIcon,
       bgColor: '#f9e9ffff',
+      iconColor: '#6f3ec5ff', // Darker purple to match light purple background
       description: 'All time applicants'
     }
   ];
 
   const recentActivities = [
     {
-      icon: '✅',
+      IconComponent: CompletedIcon,
       title: 'Campaign Created',
       description: 'New campaign has been published',
       time: '2 hours ago',
       color: '#10b981'
     },
     {
-      icon: '👤',
+      IconComponent: PersonIcon,
       title: 'New Applicant',
       description: 'Influencer applied to your campaign',
       time: '5 hours ago',
       color: '#3b82f6'
     },
     {
-      icon: '💰',
+      IconComponent: AttachMoneyIcon,
       title: 'Payment Successful',
       description: 'Campaign payment processed',
       time: '1 day ago',
       color: '#f59e0b'
     },
     {
-      icon: '📊',
+      IconComponent: BarChartIcon,
       title: 'Campaign Approved',
       description: 'Your campaign has been verified',
       time: '2 days ago',
@@ -172,10 +155,10 @@ function UMKMDashboard() {
   ];
 
   return (
-    <div className="dashboard-container" style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
       <UMKMSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="dashboard-content" style={{ 
+      <div style={{ 
         marginLeft: !isMobile ? '260px' : '0',
         width: !isMobile ? 'calc(100% - 260px)' : '100%',
         transition: 'all 0.3s ease'
@@ -245,13 +228,10 @@ function UMKMDashboard() {
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <img 
-                      src={card.icon} 
-                      alt={card.title} 
-                      style={{ 
-                        width: '28px', 
-                        height: '28px',
-                        objectFit: 'contain'
+                    <card.IconComponent 
+                      sx={{ 
+                        fontSize: 32,
+                        color: card.iconColor
                       }} 
                     />
                   </div>
@@ -343,7 +323,7 @@ function UMKMDashboard() {
                   textAlign: 'center',
                   color: '#6c757d'
                 }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📢</div>
+                  <CampaignIcon sx={{ fontSize: 64, color: '#9ca3af', mb: 2 }} />
                   <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '8px' }}>
                     No campaigns yet
                   </div>
@@ -430,11 +410,11 @@ function UMKMDashboard() {
                         alignItems: 'center',
                       }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <img src={DollarIcon} alt="Budget" style={{ width: '16px', height: '16px' }} /> 
+                          <AttachMoneyIcon sx={{ fontSize: 16, color: '#6c757d' }} /> 
                           Rp {(campaign.price_per_post || 0).toLocaleString('id-ID')}
                         </span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <img src={ApplicantIcon} alt="Influencers" style={{ width: '16px', height: '16px' }} /> 
+                          <ApplicantIcon sx={{ fontSize: 16, color: '#6c757d' }} /> 
                           {campaign.influencer_count || 0} influencers
                         </span>
                       </div>
@@ -491,7 +471,7 @@ function UMKMDashboard() {
                         fontSize: '1.1rem',
                         flexShrink: 0
                       }}>
-                        {activity.icon}
+                        <activity.IconComponent sx={{ fontSize: 20, color: activity.color }} />
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{

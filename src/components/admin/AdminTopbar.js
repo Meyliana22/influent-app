@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
+import Badge from '@mui/material/Badge';
+import IconButton from '@mui/material/IconButton';
+import Avatar from '@mui/material/Avatar';
 
 function AdminTopbar() {
   const navigate = useNavigate();
@@ -36,35 +42,22 @@ function AdminTopbar() {
         gap: '16px'
       }}>
         {/* Notifications */}
-        <button style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '10px',
-          border: 'none',
-          background: '#f7fafc',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1.25rem',
-          position: 'relative',
-          transition: 'all 0.2s'
-        }}
-        onMouseEnter={(e) => e.target.style.background = '#edf2f7'}
-        onMouseLeave={(e) => e.target.style.background = '#f7fafc'}
+        <IconButton
+          onClick={() => navigate('/notifications')}
+          sx={{
+            width: 44,
+            height: 44,
+            borderRadius: '12px',
+            background: '#f7fafc',
+            '&:hover': {
+              background: '#edf2f7'
+            }
+          }}
         >
-          🔔
-          <span style={{
-            position: 'absolute',
-            top: '8px',
-            right: '8px',
-            width: '8px',
-            height: '8px',
-            background: '#ef4444',
-            borderRadius: '50%',
-            border: '2px solid #fff'
-          }}></span>
-        </button>
+          <Badge badgeContent={3} color="error">
+            <NotificationsIcon sx={{ color: '#2d3748', fontSize: 22 }} />
+          </Badge>
+        </IconButton>
 
         {/* Admin Profile */}
         <div style={{ position: 'relative' }}>
@@ -74,30 +67,27 @@ function AdminTopbar() {
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
-              padding: '8px 12px',
+              padding: '6px 12px 6px 6px',
               background: '#f7fafc',
               border: 'none',
               borderRadius: '12px',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
-            onMouseEnter={(e) => e.target.style.background = '#edf2f7'}
-            onMouseLeave={(e) => e.target.style.background = '#f7fafc'}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#edf2f7'}
+            onMouseLeave={(e) => e.currentTarget.style.background = '#f7fafc'}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: COLORS.gradient,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: '0.9rem'
-            }}>
+            <Avatar
+              sx={{
+                width: 36,
+                height: 36,
+                background: COLORS.gradient,
+                fontSize: '0.9rem',
+                fontWeight: 700
+              }}
+            >
               {adminData.name ? adminData.name.charAt(0).toUpperCase() : 'A'}
-            </div>
+            </Avatar>
             <div style={{ textAlign: 'left' }}>
               <div style={{
                 fontSize: '0.9rem',
@@ -105,7 +95,7 @@ function AdminTopbar() {
                 color: '#2d3748',
                 fontFamily: "'Inter', sans-serif"
               }}>
-                {adminData.name || 'Admin'}
+                {adminData.name || 'Admin Influent'}
               </div>
               <div style={{
                 fontSize: '0.75rem',
@@ -114,7 +104,6 @@ function AdminTopbar() {
                 Administrator
               </div>
             </div>
-            <span style={{ fontSize: '0.8rem', color: '#6c757d' }}>▼</span>
           </button>
 
           {/* Dropdown */}
@@ -154,7 +143,7 @@ function AdminTopbar() {
                 onMouseEnter={(e) => e.target.style.background = '#f7fafc'}
                 onMouseLeave={(e) => e.target.style.background = 'transparent'}
               >
-                <span>⚙️</span>
+                <PersonIcon sx={{ fontSize: 18 }} />
                 Settings
               </button> */}
               <button
@@ -176,10 +165,10 @@ function AdminTopbar() {
                   alignItems: 'center',
                   gap: '10px'
                 }}
-                onMouseEnter={(e) => e.target.style.background = '#f7fafc'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#f7fafc'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
-                <span>👤</span>
+                <PersonIcon sx={{ fontSize: 18 }} />
                 Profile
               </button>
               <div style={{
@@ -204,10 +193,10 @@ function AdminTopbar() {
                   alignItems: 'center',
                   gap: '10px'
                 }}
-                onMouseEnter={(e) => e.target.style.background = '#fef2f2'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
-                <span>🚪</span>
+                <LogoutIcon sx={{ fontSize: 18 }} />
                 Logout
               </button>
             </div>

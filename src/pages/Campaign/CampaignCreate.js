@@ -150,6 +150,7 @@ function CampaignCreate() {
   // Modal state
   const [showBackModal, setShowBackModal] = useState(false);
   const [showHeaderBackModal, setShowHeaderBackModal] = useState(false);
+  const [isHoveringBatal, setIsHoveringBatal] = useState(false);
   
   // Brief Campaign state
   const [start_date, setStartDate] = useState('');
@@ -271,21 +272,8 @@ function CampaignCreate() {
       // Load campaign from API
       const fetchCampaign = async () => {
         try {
-          console.log('🔍 Fetching campaign with ID:', id);
           const response = await campaignService.getCampaignById(id);
-          console.log('✅ Campaign data fetched from API:', response);
-          
-          // if (!response || !response.data) {
-          //   console.log(response);
-          //   console.error('❌ Campaign not found');
-          //   showToast('Campaign tidak ditemukan', 'error');
-          //   setTimeout(() => navigate('/campaigns'), 500);
-          //   return;
-          // }
-          
           const data = response;
-          console.log('📋 Campaign data structure:', data);
-          
           // Set read-only mode if campaign is active (paid)
           if (data.status === 'active') {
             setIsReadOnly(true);
@@ -527,12 +515,10 @@ function CampaignCreate() {
     try {
       if (isEditMode) {
         // Update existing campaign as draft
-        console.log('Updating campaign as draft:', id);
         await campaignService.updateCampaign(id, campaignData);
         showToast('Campaign berhasil disimpan sebagai draft!', 'success');
       } else {
         // Create new campaign as draft
-        console.log('Creating new campaign as draft');
         await campaignService.createCampaign(campaignData);
         showToast('Campaign berhasil disimpan sebagai draft!', 'success');
       }
@@ -595,10 +581,6 @@ function CampaignCreate() {
       status: 'inactive', // Set to inactive for unpaid campaigns, will be 'active' after payment
       image: imagePreview
     };
-    
-    console.log('💾 Saving campaign with data:', campaignData);
-    console.log('🏷️ Campaign status before save:', campaignData.status);
-    
     // Save to API
     try {
       let response;
@@ -606,24 +588,17 @@ function CampaignCreate() {
       
       if (isEditMode) {
         // Update existing campaign
-        console.log('Updating campaign:', id);
         response = await campaignService.updateCampaign(id, campaignData);
         campaignId = id; // For update, use existing ID
         showToast('Campaign berhasil diupdate!', 'success');
       } else {
         // Create new campaign
-        console.log('Creating new campaign');
         response = await campaignService.createCampaign(campaignData);
-        console.log('Create campaign response:', response);
-        
         // Try multiple ways to get campaign_id from response
         campaignId = response?.data?.campaign_id || 
                      response?.campaign_id || 
                      response?.insertId ||
                      response?.id;
-        
-        console.log('Campaign ID extracted:', campaignId);
-        
         // If campaignId is still not valid, try to extract from any nested structure
         if (!campaignId || campaignId === 'undefined') {
           // Try to find campaign_id in any level of the response
@@ -633,15 +608,12 @@ function CampaignCreate() {
             campaignId = response.result.campaign_id;
           }
         }
-        
-        console.log('Final Campaign ID:', campaignId);
         showToast('Campaign berhasil dibuat!', 'success');
       }
       
       // Check if campaign status is inactive (unpaid) - redirect to payment
       if (campaignData.status === 'inactive') {
         if (campaignId && campaignId !== 'undefined') {
-          console.log('✅ Campaign status is inactive, redirecting to payment page with ID:', campaignId);
           setTimeout(() => navigate(`/campaign/${campaignId}/payment`), 1500);
         } else {
           console.error('❌ No valid campaign ID returned from API');
@@ -650,8 +622,6 @@ function CampaignCreate() {
           setTimeout(() => navigate('/campaigns'), 1500);
         }
       } else {
-        // For paid campaigns (status = active), just show success and stay/go to list
-        console.log('✅ Campaign is active (paid), no payment needed');
         if (isEditMode) {
           showToast('Campaign aktif berhasil diupdate!', 'success');
         }
@@ -671,7 +641,6 @@ function CampaignCreate() {
   const confirmDelete = async () => {
     // Delete campaign from API
     try {
-      console.log('Deleting campaign:', id);
       await campaignService.deleteCampaign(id);
       showToast('Campaign berhasil dihapus', 'success');
       setShowDeletePopup(false);
@@ -1982,11 +1951,14 @@ function CampaignCreate() {
             <Button 
               variant="secondary"
               style={{
-                background: '#d32020ff',
+                background: isHoveringBatal ? '#ecf0ffff' : '#ffffff',
                 borderColor: '#ccc',
-                color: '#000000ff',
-                fontWeight: 'bold'
+                color: '#667eea',
+                fontWeight: 'bold',
+                transition: 'background 0.3s ease'
               }}
+              onMouseEnter={() => setIsHoveringBatal(true)}
+              onMouseLeave={() => setIsHoveringBatal(false)}
               onClick={() => setShowHeaderBackModal(false)}
             >
               Batal
@@ -1994,9 +1966,9 @@ function CampaignCreate() {
             <Button 
               variant="primary" 
               style={{
-                background: '#16b751ff',
+                background: '#667eea',
                 borderColor: '#ccc',
-                color: '#000000ff',
+                color: '#ffffff',
                 fontWeight: 'bold'
               }}
               onClick={handleSaveAsDraft}
