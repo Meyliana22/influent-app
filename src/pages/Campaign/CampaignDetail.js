@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card } from '../../components/common';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
-import { COLORS } from '../../constants/colors';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import campaignService from '../../services/campaignService';
+import { Sidebar, Topbar } from '../../components/common';
+import { COLORS } from '../../constants/colors';
+import Card from '@mui/material/Card';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import Grid from '@mui/material/Grid';
+import Avatar from '@mui/material/Avatar';
+import Chip from '@mui/material/Chip';
+import LinearProgress from '@mui/material/LinearProgress';
+import Paper from '@mui/material/Paper';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import PersonIcon from '@mui/icons-material/Person';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 function CampaignDetail() {
   const { id } = useParams();
@@ -153,7 +169,7 @@ function CampaignDetail() {
 
   if (!campaign) {
     return (
-      <div style={{
+      <Box sx={{
         background: COLORS.background,
         minHeight: '100vh',
         display: 'flex',
@@ -161,32 +177,15 @@ function CampaignDetail() {
         justifyContent: 'center',
         fontFamily: 'Montserrat, Arial, sans-serif'
       }}>
-        <div style={{ textAlign: 'center' }}>
-          {/* Animated spinner */}
-          <div style={{
-            width: '60px',
-            height: '60px',
-            border: '4px solid #e2e8f0',
-            borderTop: '4px solid #667eea',
-            borderRadius: '50%',
-            margin: '0 auto 24px',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
-          <p style={{ 
-            color: COLORS.textSecondary,
-            fontSize: '1.1rem',
-            fontWeight: 500
-          }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <LinearProgress sx={{ width: 60, height: 6, borderRadius: 3 }} />
+          </Box>
+          <Typography color={COLORS.textSecondary} fontSize={18} fontWeight={500}>
             Loading campaign details...
-          </p>
-        </div>
-      </div>
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 
@@ -195,18 +194,19 @@ function CampaignDetail() {
     switch (phase) {
       case 'inactive':
         return (
-          <Card style={{ padding: '32px', textAlign: 'center', marginTop: '24px' }}>
-            <div style={{ fontSize: '4rem', marginBottom: '16px' }}>💳</div>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.5rem', fontWeight: 600 }}>
+          <Card sx={{ p: 4, textAlign: 'center', mt: 3 }}>
+            <CreditCardIcon sx={{ fontSize: 56, color: COLORS.primary, mb: 2 }} />
+            <Typography variant="h5" fontWeight={600} mb={1.5}>
               Menunggu Pembayaran
-            </h3>
-            <p style={{ margin: '0 0 24px 0', color: COLORS.textSecondary }}>
+            </Typography>
+            <Typography color={COLORS.textSecondary} mb={3}>
               Selesaikan pembayaran untuk mengaktifkan campaign Anda
-            </p>
+            </Typography>
             <Button
-              variant="primary"
+              variant="contained"
+              color="primary"
               onClick={() => navigate(`/campaign/${id}/payment`)}
-              style={{ padding: '14px 32px', fontSize: '1rem', fontWeight: 700 }}
+              sx={{ py: 1.5, px: 5, fontSize: 16, fontWeight: 700 }}
             >
               Bayar Sekarang
             </Button>
@@ -215,565 +215,382 @@ function CampaignDetail() {
 
       case 'active':
         return (
-          <Card style={{ padding: '32px', marginTop: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2rem'
-              }}>
-                ✅
-              </div>
-              <div>
-                <h3 style={{ margin: '0 0 4px 0', fontSize: '1.5rem', fontWeight: 600 }}>
+          <Card sx={{ p: 4, mt: 3 }}>
+            <Stack direction="row" alignItems="center" spacing={2} mb={3}>
+              <CheckCircleIcon sx={{ fontSize: 48, color: COLORS.success }} />
+              <Box>
+                <Typography variant="h6" fontWeight={600} mb={0.5}>
                   Campaign Active
-                </h3>
-                <p style={{ margin: 0, color: COLORS.textSecondary }}>
+                </Typography>
+                <Typography color={COLORS.textSecondary}>
                   Menunggu influencer mendaftar
-                </p>
-              </div>
-            </div>
-
-            <div style={{
-              padding: '20px',
-              background: COLORS.backgroundLight,
-              borderRadius: '12px',
-              marginBottom: '24px'
-            }}>
-              <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: COLORS.textSecondary }}>
-                📅 Campaign Period: <strong>{formatDate(campaign.start_date)}</strong> - <strong>{formatDate(campaign.end_date)}</strong>
-              </p>
-              <p style={{ margin: 0, fontSize: '0.9rem', color: COLORS.textSecondary }}>
-                👥 Target Influencer: <strong>{campaign.influencer_count || 0}</strong>
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
+                </Typography>
+              </Box>
+            </Stack>
+            <Paper sx={{ p: 2.5, background: COLORS.backgroundLight, borderRadius: 2, mb: 3 }} elevation={0}>
+              <Typography fontSize={15} color={COLORS.textSecondary} mb={1}>
+                <b>Campaign Period:</b> {formatDate(campaign.start_date)} - {formatDate(campaign.end_date)}
+              </Typography>
+              <Typography fontSize={15} color={COLORS.textSecondary}>
+                <b>Target Influencer:</b> {campaign.influencer_count || 0}
+              </Typography>
+            </Paper>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <Button
-                variant="primary"
+                variant="contained"
+                color="primary"
                 onClick={() => navigate(`/campaign/${id}/applicants`)}
-                style={{ flex: 1 }}
+                sx={{ flex: 1, py: 1.5, fontWeight: 700 }}
               >
                 View Applicants
-              </Button> 
+              </Button>
               <Button
-                variant="outline"
+                variant="outlined"
+                color="primary"
                 onClick={() => navigate(`/campaign-edit/${id}`)}
-                style={{ flex: 1 }}
+                sx={{ flex: 1, py: 1.5, fontWeight: 700 }}
               >
                 Edit Campaign
               </Button>
-            </div>
+            </Stack>
           </Card>
         );
 
       case 'ongoing':
         return (
-          <div style={{ marginTop: '24px' }}>
+          <Box mt={3}>
             {/* Status Card */}
-            <Card style={{ padding: '32px', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                <div style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '2rem'
-                }}>
-                  🚀
-                </div>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: '0 0 4px 0', fontSize: '1.5rem', fontWeight: 600 }}>
+            <Card sx={{ p: 4, mb: 3 }}>
+              <Stack direction="row" alignItems="center" spacing={2} mb={3}>
+                <RocketLaunchIcon sx={{ fontSize: 48, color: COLORS.primary }} />
+                <Box flex={1}>
+                  <Typography variant="h6" fontWeight={600} mb={0.5}>
                     Campaign Ongoing
-                  </h3>
-                  <p style={{ margin: 0, color: COLORS.textSecondary }}>
+                  </Typography>
+                  <Typography color={COLORS.textSecondary}>
                     {daysRemaining !== null && daysRemaining >= 0
                       ? `${daysRemaining} hari lagi sampai deadline`
                       : 'Campaign deadline sudah lewat'}
-                  </p>
-                </div>
-                <div style={{
-                  textAlign: 'right',
-                  padding: '12px 20px',
-                  background: COLORS.primaryLight,
-                  borderRadius: '12px'
-                }}>
-                  <div style={{ fontSize: '2rem', fontWeight: '700', color: COLORS.primary }}>
+                  </Typography>
+                </Box>
+                <Box textAlign="right" px={3} py={2} sx={{ background: COLORS.primaryLight, borderRadius: 2 }}>
+                  <Typography fontSize={28} fontWeight={700} color={COLORS.primary}>
                     {Math.round(stats.progressPercentage)}%
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: COLORS.textSecondary }}>
+                  </Typography>
+                  <Typography fontSize={12} color={COLORS.textSecondary}>
                     Progress
-                  </div>
-                </div>
-              </div>
-
+                  </Typography>
+                </Box>
+              </Stack>
               {/* Progress Bar */}
-              <div style={{ marginBottom: '24px' }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '8px',
-                  fontSize: '0.85rem',
-                  color: COLORS.textSecondary
-                }}>
+              <Box mb={3}>
+                <Stack direction="row" justifyContent="space-between" mb={1} fontSize={14} color={COLORS.textSecondary}>
                   <span>Content Submission Progress</span>
                   <span>{stats.completed} / {stats.totalSelected} completed</span>
-                </div>
-                <div className="progress" style={{ height: '12px', borderRadius: '6px', background: COLORS.backgroundLight }}>
-                  <div
-                    className="progress-bar"
-                    role="progressbar"
-                    style={{
-                      width: `${stats.progressPercentage}%`,
-                      background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
-                      borderRadius: '6px'
-                    }}
-                    aria-valuenow={stats.progressPercentage}
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  ></div>
-                </div>
-              </div>
-
+                </Stack>
+                <LinearProgress
+                  variant="determinate"
+                  value={stats.progressPercentage}
+                  sx={{ height: 12, borderRadius: 2, background: COLORS.backgroundLight, '& .MuiLinearProgress-bar': { background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)' } }}
+                />
+              </Box>
               {/* Campaign Info */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '16px',
-                padding: '20px',
-                background: COLORS.backgroundLight,
-                borderRadius: '12px',
-                marginBottom: '24px'
-              }}>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: COLORS.textSecondary, marginBottom: '4px' }}>
+              <Grid container spacing={2} sx={{ p: 3, background: COLORS.backgroundLight, borderRadius: 2, mb: 3 }}>
+                <Grid item xs={12} sm={4}>
+                  <Typography fontSize={12} color={COLORS.textSecondary} mb={0.5}>
                     DEADLINE CAMPAIGN
-                  </div>
-                  <div style={{ fontSize: '1rem', fontWeight: 600, color: COLORS.textPrimary }}>
+                  </Typography>
+                  <Typography fontWeight={600} color={COLORS.textPrimary}>
                     {formatDate(campaign.end_date)}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: COLORS.textSecondary, marginBottom: '4px' }}>
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography fontSize={12} color={COLORS.textSecondary} mb={0.5}>
                     INFLUENCER AKTIF
-                  </div>
-                  <div style={{ fontSize: '1rem', fontWeight: 600, color: COLORS.textPrimary }}>
+                  </Typography>
+                  <Typography fontWeight={600} color={COLORS.textPrimary}>
                     {stats.totalSelected} influencers
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: COLORS.textSecondary, marginBottom: '4px' }}>
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography fontSize={12} color={COLORS.textSecondary} mb={0.5}>
                     TOTAL BUDGET
-                  </div>
-                  <div style={{ fontSize: '1rem', fontWeight: 600, color: COLORS.textPrimary }}>
+                  </Typography>
+                  <Typography fontWeight={600} color={COLORS.textPrimary}>
                     {formatCurrency(campaign.price_per_post * stats.totalSelected)}
-                  </div>
-                </div>
-              </div>
-
+                  </Typography>
+                </Grid>
+              </Grid>
               <Button
-                variant="primary"
+                variant="contained"
+                color="primary"
                 onClick={() => navigate(`/campaign/${id}/applicants`)}
                 fullWidth
-                style={{ padding: '14px', fontSize: '1rem', fontWeight: 700 }}
+                sx={{ py: 1.5, fontWeight: 700 }}
               >
                 Lihat Detail Campaign
               </Button>
             </Card>
-
             {/* Influencer Status */}
             {selectedInfluencers.length > 0 && (
-              <Card style={{ padding: '32px' }}>
-                <h4 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', fontWeight: 600 }}>
+              <Card sx={{ p: 4 }}>
+                <Typography variant="subtitle1" fontWeight={600} mb={2.5}>
                   Status Influencer
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                </Typography>
+                <Stack spacing={1.5}>
                   {selectedInfluencers.map(influencer => (
-                    <div
-                      key={influencer.id}
-                      style={{
-                        padding: '16px',
-                        background: COLORS.backgroundLight,
-                        borderRadius: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          background: COLORS.gradient,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '1.2rem'
-                        }}>
-                          👤
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                            {influencer.fullName}
-                          </div>
-                          <div style={{ fontSize: '0.8rem', color: COLORS.textSecondary }}>
-                            @{influencer.influencerName}
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{
-                        padding: '6px 16px',
-                        borderRadius: '20px',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        background: influencer.proofUploaded
-                          ? 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
-                          : '#ffc107',
-                        color: '#fff'
-                      }}>
-                        {influencer.proofUploaded ? '✅ Sudah Upload' : '⚠️ Belum Upload'}
-                      </div>
-                    </div>
+                    <Paper key={influencer.id} sx={{ p: 2, background: COLORS.backgroundLight, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} elevation={0}>
+                      <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <Avatar sx={{ bgcolor: COLORS.gradient, width: 40, height: 40 }}>
+                          <PersonIcon sx={{ color: '#fff' }} />
+                        </Avatar>
+                        <Box>
+                          <Typography fontWeight={600} fontSize={15}>{influencer.fullName}</Typography>
+                          <Typography fontSize={13} color={COLORS.textSecondary}>@{influencer.influencerName}</Typography>
+                        </Box>
+                      </Stack>
+                      <Chip
+                        label={influencer.proofUploaded ? 'Sudah Upload' : 'Belum Upload'}
+                        icon={influencer.proofUploaded ? <DoneAllIcon sx={{ color: '#fff' }} /> : <InfoOutlinedIcon sx={{ color: '#fff' }} />}
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: 2,
+                          fontWeight: 600,
+                          fontSize: 13,
+                          color: '#fff',
+                          background: influencer.proofUploaded
+                            ? 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+                            : '#ffc107',
+                        }}
+                      />
+                    </Paper>
                   ))}
-                </div>
+                </Stack>
               </Card>
             )}
-          </div>
+          </Box>
         );
 
       case 'awaiting-payout':
         return (
-          <Card style={{ padding: '32px', marginTop: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2rem'
-              }}>
-                ⏰
-              </div>
-              <div>
-                <h3 style={{ margin: '0 0 4px 0', fontSize: '1.5rem', fontWeight: 600 }}>
+          <Card sx={{ p: 4, mt: 3 }}>
+            <Stack direction="row" alignItems="center" spacing={2} mb={3}>
+              <AccessTimeIcon sx={{ fontSize: 48, color: COLORS.warning }} />
+              <Box>
+                <Typography variant="h6" fontWeight={600} mb={0.5}>
                   Selesai, Menunggu Pembayaran ke Influencer
-                </h3>
-                <p style={{ margin: 0, color: COLORS.textSecondary }}>
+                </Typography>
+                <Typography color={COLORS.textSecondary}>
                   Campaign telah selesai dan sedang dalam proses verifikasi
-                </p>
-              </div>
-            </div>
-
+                </Typography>
+              </Box>
+            </Stack>
             {/* Info Box */}
-            <div style={{
-              padding: '20px',
-              background: '#fff3cd',
-              borderRadius: '12px',
-              border: '1px solid #ffc107',
-              marginBottom: '24px'
-            }}>
-              <p style={{
-                margin: '0 0 8px 0',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                color: '#856404'
-              }}>
-                ℹ️ Informasi Penting
-              </p>
-              <p style={{
-                margin: 0,
-                fontSize: '0.85rem',
-                color: '#856404',
-                lineHeight: '1.6'
-              }}>
-                Dana akan dicairkan ke influencer dalam <strong>7 hari kerja</strong> setelah verifikasi konten selesai.
-              </p>
-            </div>
-
+            <Paper sx={{ p: 3, background: '#fff3cd', borderRadius: 2, border: '1px solid #ffc107', mb: 3 }} elevation={0}>
+              <Typography fontWeight={600} fontSize={15} color="#856404" mb={1}>
+                <InfoOutlinedIcon sx={{ fontSize: 18, mr: 1, verticalAlign: 'middle' }} /> Informasi Penting
+              </Typography>
+              <Typography fontSize={14} color="#856404">
+                Dana akan dicairkan ke influencer dalam <b>7 hari kerja</b> setelah verifikasi konten selesai.
+              </Typography>
+            </Paper>
             {/* Influencer List with Upload Status */}
             {selectedInfluencers.length > 0 && (
-              <div>
-                <h4 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 600 }}>
+              <Box mb={3}>
+                <Typography variant="subtitle1" fontWeight={600} mb={2}>
                   Status Upload Konten
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                </Typography>
+                <Stack spacing={1.5}>
                   {selectedInfluencers.map(influencer => (
-                    <div
-                      key={influencer.id}
-                      style={{
-                        padding: '16px',
-                        background: COLORS.backgroundLight,
-                        borderRadius: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          background: COLORS.gradient,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '1.2rem'
-                        }}>
-                          👤
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                            {influencer.fullName}
-                          </div>
-                          <div style={{ fontSize: '0.8rem', color: COLORS.textSecondary }}>
-                            @{influencer.influencerName}
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{
-                        padding: '6px 16px',
-                        borderRadius: '20px',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        background: influencer.proofUploaded
-                          ? 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
-                          : '#dc3545',
-                        color: '#fff'
-                      }}>
-                        {influencer.proofUploaded ? '✅ Sudah Upload' : '⚠️ Belum Upload'}
-                      </div>
-                    </div>
+                    <Paper key={influencer.id} sx={{ p: 2, background: COLORS.backgroundLight, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} elevation={0}>
+                      <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <Avatar sx={{ bgcolor: COLORS.gradient, width: 40, height: 40 }}>
+                          <PersonIcon sx={{ color: '#fff' }} />
+                        </Avatar>
+                        <Box>
+                          <Typography fontWeight={600} fontSize={15}>{influencer.fullName}</Typography>
+                          <Typography fontSize={13} color={COLORS.textSecondary}>@{influencer.influencerName}</Typography>
+                        </Box>
+                      </Stack>
+                      <Chip
+                        label={influencer.proofUploaded ? 'Sudah Upload' : 'Belum Upload'}
+                        icon={influencer.proofUploaded ? <DoneAllIcon sx={{ color: '#fff' }} /> : <InfoOutlinedIcon sx={{ color: '#fff' }} />}
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: 2,
+                          fontWeight: 600,
+                          fontSize: 13,
+                          color: '#fff',
+                          background: influencer.proofUploaded
+                            ? 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+                            : '#dc3545',
+                        }}
+                      />
+                    </Paper>
                   ))}
-                </div>
-              </div>
+                </Stack>
+              </Box>
             )}
-
             {/* Summary */}
-            <div style={{
-              padding: '20px',
-              background: COLORS.primaryLight,
-              borderRadius: '12px'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ color: COLORS.textSecondary }}>Total Influencer:</span>
-                <span style={{ fontWeight: 600 }}>{stats.totalSelected}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ color: COLORS.textSecondary }}>Sudah Upload:</span>
-                <span style={{ fontWeight: 600, color: COLORS.success }}>{stats.completed}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: COLORS.textSecondary }}>Belum Upload:</span>
-                <span style={{ fontWeight: 600, color: COLORS.danger }}>{stats.pending}</span>
-              </div>
-            </div>
+            <Paper sx={{ p: 3, background: COLORS.primaryLight, borderRadius: 2 }} elevation={0}>
+              <Stack direction="row" justifyContent="space-between" mb={1}>
+                <Typography color={COLORS.textSecondary}>Total Influencer:</Typography>
+                <Typography fontWeight={600}>{stats.totalSelected}</Typography>
+              </Stack>
+              <Stack direction="row" justifyContent="space-between" mb={1}>
+                <Typography color={COLORS.textSecondary}>Sudah Upload:</Typography>
+                <Typography fontWeight={600} color={COLORS.success}>{stats.completed}</Typography>
+              </Stack>
+              <Stack direction="row" justifyContent="space-between">
+                <Typography color={COLORS.textSecondary}>Belum Upload:</Typography>
+                <Typography fontWeight={600} color={COLORS.danger}>{stats.pending}</Typography>
+              </Stack>
+            </Paper>
           </Card>
         );
 
       case 'closed':
         return (
-          <Card style={{ padding: '32px', marginTop: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2rem'
-              }}>
-                ✔️
-              </div>
-              <div>
-                <h3 style={{ margin: '0 0 4px 0', fontSize: '1.5rem', fontWeight: 600 }}>
+          <Card sx={{ p: 4, mt: 3 }}>
+            <Stack direction="row" alignItems="center" spacing={2} mb={3}>
+              <CheckCircleIcon sx={{ fontSize: 48, color: COLORS.success }} />
+              <Box>
+                <Typography variant="h6" fontWeight={600} mb={0.5}>
                   Campaign Closed
-                </h3>
-                <p style={{ margin: 0, color: COLORS.textSecondary }}>
+                </Typography>
+                <Typography color={COLORS.textSecondary}>
                   Campaign telah selesai dan semua pembayaran sudah cair
-                </p>
-              </div>
-            </div>
-
+                </Typography>
+              </Box>
+            </Stack>
             {/* Campaign Summary */}
-            <div style={{
-              padding: '24px',
-              background: COLORS.backgroundLight,
-              borderRadius: '12px',
-              marginBottom: '24px'
-            }}>
-              <h4 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 600 }}>
+            <Paper sx={{ p: 3, background: COLORS.backgroundLight, borderRadius: 2, mb: 3 }} elevation={0}>
+              <Typography variant="subtitle1" fontWeight={600} mb={2}>
                 Ringkasan Campaign
-              </h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: COLORS.textSecondary, marginBottom: '4px' }}>
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Typography fontSize={12} color={COLORS.textSecondary} mb={0.5}>
                     TOTAL INFLUENCER
-                  </div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: COLORS.primary }}>
+                  </Typography>
+                  <Typography fontSize={24} fontWeight={700} color={COLORS.primary}>
                     {stats.totalSelected}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: COLORS.textSecondary, marginBottom: '4px' }}>
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography fontSize={12} color={COLORS.textSecondary} mb={0.5}>
                     TOTAL ENGAGEMENT
-                  </div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: COLORS.success }}>
+                  </Typography>
+                  <Typography fontSize={24} fontWeight={700} color={COLORS.success}>
                     {selectedInfluencers.reduce((sum, inf) => sum + (inf.engagement || 0), 0).toFixed(1)}%
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: COLORS.textSecondary, marginBottom: '4px' }}>
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography fontSize={12} color={COLORS.textSecondary} mb={0.5}>
                     TOTAL BIAYA
-                  </div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: COLORS.textPrimary }}>
+                  </Typography>
+                  <Typography fontSize={24} fontWeight={700} color={COLORS.textPrimary}>
                     {formatCurrency(campaign.price_per_post * stats.totalSelected)}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: COLORS.textSecondary, marginBottom: '4px' }}>
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography fontSize={12} color={COLORS.textSecondary} mb={0.5}>
                     PERIODE CAMPAIGN
-                  </div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: COLORS.textPrimary }}>
-                    {formatDate(campaign.start_date)}
-                    <br />
-                    {formatDate(campaign.end_date)}
-                  </div>
-                </div>
-              </div>
-            </div>
-
+                  </Typography>
+                  <Typography fontSize={16} fontWeight={600} color={COLORS.textPrimary}>
+                    {formatDate(campaign.start_date)}<br />{formatDate(campaign.end_date)}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Paper>
             {/* Success Message */}
-            <div style={{
-              padding: '20px',
-              background: 'linear-gradient(135deg, #43e97b20 0%, #38f9d720 100%)',
-              borderRadius: '12px',
-              border: '1px solid #43e97b',
-              textAlign: 'center'
-            }}>
-              <p style={{
-                margin: 0,
-                fontSize: '0.95rem',
-                color: COLORS.success,
-                fontWeight: 600
-              }}>
-                ✅ Semua pembayaran sudah cair. Terima kasih telah menggunakan Influent!
-              </p>
-            </div>
-
+            <Paper sx={{ p: 3, background: 'linear-gradient(135deg, #43e97b20 0%, #38f9d720 100%)', borderRadius: 2, border: '1px solid #43e97b', textAlign: 'center', mb: 2 }} elevation={0}>
+              <Typography fontSize={16} color={COLORS.success} fontWeight={600}>
+                <CheckCircleIcon sx={{ fontSize: 20, color: COLORS.success, mr: 1, verticalAlign: 'middle' }} /> Semua pembayaran sudah cair. Terima kasih telah menggunakan Influent!
+              </Typography>
+            </Paper>
             {/* Optional: View Report Button */}
             <Button
-              variant="outline"
+              variant="outlined"
+              color="primary"
               onClick={() => {/* Navigate to report */}}
               fullWidth
-              style={{ marginTop: '16px', padding: '14px', fontSize: '1rem', fontWeight: 600 }}
+              sx={{ mt: 2, py: 1.5, fontWeight: 600, fontSize: 16 }}
+              startIcon={<BarChartIcon />}
             >
-              📊 Lihat Laporan Lengkap
+              Lihat Laporan Lengkap
             </Button>
           </Card>
         );
 
       default:
         return (
-          <Card style={{ padding: '32px', marginTop: '24px', textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📋</div>
-            <h3 style={{ margin: '0 0 12px 0' }}>Campaign Details</h3>
-            <p style={{ margin: 0, color: COLORS.textSecondary }}>
+          <Card sx={{ p: 4, mt: 3, textAlign: 'center' }}>
+            <BarChartIcon sx={{ fontSize: 48, color: COLORS.primary, mb: 2 }} />
+            <Typography variant="h6" mb={1.5}>Campaign Details</Typography>
+            <Typography color={COLORS.textSecondary}>
               Status: {campaign.status || 'Unknown'}
-            </p>
+            </Typography>
           </Card>
         );
     }
   };
 
   return (
-    <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      <div style={{ marginLeft: !isMobile ? '260px' : '0', flex: 1 }}>
-        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        
-        <div style={{ marginTop: '72px', background: '#f7fafc', minHeight: 'calc(100vh - 72px)', padding: '32px' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Back Button */}
-        <Button
-          variant="outline"
-          onClick={() => navigate('/campaigns')}
-          style={{
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <ArrowBackIcon sx={{ fontSize: 16 }} />
-          Back to Campaigns
-        </Button>
-
-        {/* Campaign Header */}
-        <Card style={{ padding: '32px', marginBottom: '24px', position: 'relative', overflow: 'hidden' }}>
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '6px',
-            background: COLORS.gradient
-          }}></div>
-
-          <h1 style={{
-            margin: '0 0 12px 0',
-            fontSize: '2rem',
-            fontWeight: '700',
-            color: COLORS.textPrimary
-          }}>
-            {campaign.title}
-          </h1>
-          <div style={{ fontSize: '0.9rem', color: COLORS.textSecondary, marginBottom: '16px' }}>
-            {campaign.campaign_category || 'No Category'}
-          </div>
-          <div style={{
-            display: 'inline-block',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            background: phase === 'closed' ? 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' :
-                       phase === 'ongoing' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' :
-                       phase === 'awaiting-payout' ? 'linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%)' :
-                       'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
-            color: '#fff'
-          }}>
-            {phase === 'closed' ? 'Closed' :
-             phase === 'ongoing' ? 'Ongoing' :
-             phase === 'awaiting-payout' ? 'Awaiting Payout' :
-             phase === 'active' ? 'Active' :
-             campaign.status}
-          </div>
-        </Card>
-
-        {/* Phase-specific Content */}
-        {renderPhaseContent()}
-          </div>
-        </div>
-      </div>
-    </div>
+    <Box sx={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Box sx={{ ml: !isMobile ? 32.5 : 0, flex: 1 }}>
+        <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Box sx={{ mt: 9, background: '#f7fafc', minHeight: 'calc(100vh - 72px)', p: { xs: 2, md: 4 } }}>
+          <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+            {/* Back Button */}
+            <Button
+              color="primary"
+              onClick={() => navigate('/campaigns')}
+              sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 600, textTransform: 'none', fontSize: 16 }}
+              startIcon={<ArrowBackIcon sx={{ fontSize: 18 }} />}
+            >
+              Back to Campaigns
+            </Button>
+            {/* Campaign Header */}
+            <Card sx={{ p: 4, mb: 3, position: 'relative', overflow: 'hidden' }}>
+              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: COLORS.gradient }} />
+              <Typography variant="h4" fontWeight={700} color={COLORS.textPrimary} mb={1.5}>
+                {campaign.title}
+              </Typography>
+              <Typography fontSize={15} color={COLORS.textSecondary} mb={2}>
+                {campaign.campaign_category || 'No Category'}
+              </Typography>
+              <Chip
+                label={phase === 'closed' ? 'Closed' :
+                  phase === 'ongoing' ? 'Ongoing' :
+                  phase === 'awaiting-payout' ? 'Awaiting Payout' :
+                  phase === 'active' ? 'Active' :
+                  campaign.status}
+                sx={{
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  fontSize: 13,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  background: phase === 'closed' ? 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' :
+                    phase === 'ongoing' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' :
+                    phase === 'awaiting-payout' ? 'linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%)' :
+                    'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+                  color: '#fff',
+                }}
+              />
+            </Card>
+            {/* Phase-specific Content */}
+            {renderPhaseContent()}
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

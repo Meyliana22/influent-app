@@ -91,7 +91,7 @@ function UserPage() {
     setShowLogoutModal(false);
     showToast('Berhasil keluar', 'success');
     setTimeout(() => {
-      navigate('/login-umkm');
+      navigate('/login');
     }, 500);
   };
 

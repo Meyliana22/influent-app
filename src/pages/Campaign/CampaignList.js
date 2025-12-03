@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card } from '../../components/common';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
+import { Box, Container, Stack, Grid, Card, CardContent, Typography, Button, TextField, Select, MenuItem, InputAdornment, Paper } from '@mui/material';
+import Sidebar from '../../components/common/Sidebar';
+import Topbar from '../../components/common/Topbar';
 import { COLORS } from '../../constants/colors';
 import { formatCurrency } from '../../utils/helpers';
 import SearchIcon from '@mui/icons-material/Search';
@@ -20,51 +20,34 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import FlightIcon from '@mui/icons-material/Flight';
 import CampaignIcon from '@mui/icons-material/Campaign';
 
+
 function CampaignList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [campaigns, setCampaigns] = useState([]);
-  
-  // Responsive state for sidebar
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Handle window resize for responsive design
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1000);
-    };
-
+    const handleResize = () => setIsMobile(window.innerWidth < 1000);
     window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Load campaigns from localStorage instead of API
   useEffect(() => {
     const loadCampaigns = async () => {
       try {
         const response = await campaignService.getCampaigns();
         setCampaigns(response.data);
       } catch (err) {
-        console.error('Failed to load campaigns from localStorage:', err);
         setCampaigns([]);
       }
     };
-
     loadCampaigns();
-    
-    // Optional: Listen for storage events to sync across tabs
-    const handleStorageChange = () => {
-      loadCampaigns();
-    };
+    const handleStorageChange = () => loadCampaigns();
     window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Get category color gradient
@@ -118,289 +101,234 @@ function CampaignList() {
   );
 
   return (
-    <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      <div style={{ 
-        flex: 1,
-        marginLeft: !isMobile ? '260px' : '0',
-        overflow: 'hidden'
-      }}>
-        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        
-        <div style={{ 
-          marginTop: '72px', 
-          background: '#f7fafc', 
-          minHeight: 'calc(100vh - 72px)',
-          overflow: 'hidden'
-        }}>
-          <div style={{ 
-            padding: '32px', 
-            maxWidth: '100%', 
-            boxSizing: 'border-box',
-            overflow: 'hidden'
-          }}>
+    <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Box sx={{ flex: 1, ml: isMobile ? 0 : 32.5, overflow: 'hidden' }}>
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Box sx={{ mt: 9, bgcolor: '#f7fafc', minHeight: 'calc(100vh - 72px)', overflow: 'hidden' }}>
+          <Container maxWidth={false} sx={{ py: { xs: 2, md: 4 }, maxWidth: 1 }}>
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px' }}>
+            <Stack direction="row" alignItems="center" spacing={2} mb={4}>
               <Button
+                variant="contained"
                 onClick={() => navigate('/campaign-create')}
-                style={{ 
-                  marginRight: '18px',
-                  padding: '8px 16px',
-                  background: '#667eea',
-                  border: 'none',
-                  borderRadius: '8px',
+                sx={{
+                  bgcolor: '#667eea',
                   color: '#fff',
-                  fontSize: '1rem',
                   fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontSize: 16,
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#5568d3' }
                 }}
               >
                 New
               </Button>
-              <h2 style={{ fontWeight: 600, fontSize: '1.5rem', margin: 0, color: COLORS.textPrimary }}>Campaign List</h2>
-            </div>
+              <Typography variant="h5" sx={{ fontWeight: 600, color: COLORS.textPrimary }}>
+                Campaign List
+              </Typography>
+            </Stack>
             {/* Search & Filter */}
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 auto', minWidth: '250px' }}>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    placeholder="Search campaigns..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 44px 12px 44px',
-                      borderRadius: '12px',
-                      border: `1px solid ${COLORS.border}`,
-                      fontSize: '1.1rem',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  <SearchIcon
-                    sx={{
-                      position: 'absolute',
-                      left: '16px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      fontSize: 22,
-                      opacity: 0.6,
-                      pointerEvents: 'none',
-                      color: COLORS.textSecondary
-                    }}
-                  />
-                </div>
-              </div>
-              <div style={{ flex: '0 0 auto', minWidth: '150px' }}>
-                <select 
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={4} flexWrap="wrap">
+              <Box sx={{ flex: '1 1 auto', minWidth: 250 }}>
+                <TextField
+                  fullWidth
+                  placeholder="Search campaigns..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: COLORS.textSecondary, opacity: 0.6 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    bgcolor: '#fff',
+                    boxShadow: 1,
+                    fontSize: 15,
+                  }}
+                />
+              </Box>
+              <Box sx={{ flex: '0 0 auto', minWidth: 150 }}>
+                <Select
                   value={filter}
                   onChange={e => setFilter(e.target.value)}
-                  style={{ 
-                    width: '100%',
-                    padding: '12px 22px', 
-                    borderRadius: '8px', 
-                    border: `1px solid ${COLORS.border}`, 
-                    fontSize: '1rem', 
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)', 
-                    background: COLORS.white, 
-                    cursor: 'pointer',
-                    color: COLORS.textPrimary,
-                    boxSizing: 'border-box'
+                  fullWidth
+                  displayEmpty
+                  sx={{
+                    borderRadius: 2,
+                    bgcolor: '#fff',
+                    fontSize: 16,
+                    boxShadow: 1,
                   }}
                 >
-                  <option value="">All</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-            </div>
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="inactive">Inactive</MenuItem>
+                </Select>
+              </Box>
+            </Stack>
             {/* Campaign Cards */}
             {filteredCampaigns.map(campaign => (
               <Card
                 key={campaign.campaign_id}
-                style={{ 
-                  padding: '24px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  marginBottom: '24px',
+                sx={{
+                  p: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 3,
                   position: 'relative',
                   overflow: 'hidden',
-                  width: '100%',
-                  maxWidth: '100%',
-                  boxSizing: 'border-box'
+                  width: 1,
+                  boxSizing: 'border-box',
+                  borderRadius: 3,
+                  boxShadow: 1
                 }}
               >
-                {/* Decorative line */}
-                {/* <div style={{position: 'absolute', top: 0, left: 0, right: 0, height: '4px',background: COLORS.gradient}}></div> */}
-                
-                <div 
+                {/* Image/Icon */}
+                <Box
                   onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
-                  style={{ 
-                    width: '120px', 
-                    height: '120px', 
+                  sx={{
+                    width: { xs: 20, sm: 30 },
+                    height: { xs: 20, sm: 30 },
                     background: getCategoryGradient(campaign.campaign_category),
-                    borderRadius: '20px', 
-                    marginRight: '24px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
+                    borderRadius: 3,
+                    mr: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     flexDirection: 'column',
                     overflow: 'hidden',
                     position: 'relative',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                    boxShadow: 2,
                     cursor: 'pointer',
                     flexShrink: 0
                   }}
                 >
                   {campaign.banner_image ? (
-                    <img src={campaign.banner_image} alt={campaign.title} style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover', 
-                      borderRadius: '18px'
-                    }} />
+                    <Box component="img" src={campaign.banner_image} alt={campaign.title} sx={{ width: 1, height: 1, objectFit: 'cover', borderRadius: 2.5 }} />
                   ) : (
-                    <div style={{ textAlign: 'center', color: '#fff' }}>
-                      <div style={{ marginBottom: '4px', opacity: 0.9 }}>
+                    <Box sx={{ textAlign: 'center', color: '#fff' }}>
+                      <Box sx={{ mb: 0.5, opacity: 0.9 }}>
                         {React.createElement(getCategoryIcon(campaign.campaign_category), {
-                          sx: { fontSize: 40, color: '#fff' }
+                          sx: { fontSize: 20, color: '#fff' }
                         })}
-                      </div>
-                      <div style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: '500' }}>
+                      </Box>
+                      <Typography sx={{ fontSize: 10, opacity: 0.8, fontWeight: 500 }}>
                         {(campaign.campaign_category || '').split(' ')[0]}
-                      </div>
-                    </div>
+                      </Typography>
+                    </Box>
                   )}
-                </div>
-                
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div 
+                </Box>
+                {/* Card Content */}
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <Box
                     onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'flex-start', 
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
                       justifyContent: 'space-between',
                       cursor: 'pointer'
                     }}
                   >
-                    <div>
-                      <div style={{ 
-                        fontWeight: 700, 
-                        fontSize: '1.1rem', 
-                        marginBottom: '6px', 
-                        color: COLORS.textPrimary,
-                        lineHeight: '1.3'
-                      }}>
+                    <Box>
+                      <Typography sx={{ fontWeight: 700, fontSize: 17, mb: 0.5, color: COLORS.textPrimary, lineHeight: 1.3 }}>
                         {campaign.title}
-                      </div>
-                      <div style={{ 
-                        color: COLORS.textSecondary, 
-                        fontSize: '0.85rem',
-                        fontWeight: '500'
-                      }}>
-                        {/* Display campaign_category from API */}
+                      </Typography>
+                      <Typography sx={{ color: COLORS.textSecondary, fontSize: 13, fontWeight: 500 }}>
                         {campaign.campaign_category || 'No Category'}
-                      </div>
-                    </div>
-                    
-                    <div style={{
+                      </Typography>
+                    </Box>
+                    <Box sx={{
                       ...getStatusStyle(campaign.status),
-                      padding: '6px 12px',
-                      borderRadius: '20px',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
+                      px: 2,
+                      py: 0.5,
+                      borderRadius: 5,
+                      fontSize: 12,
+                      fontWeight: 600,
                       textTransform: 'capitalize',
-                      letterSpacing: '0.5px'
+                      letterSpacing: '0.5px',
+                      alignSelf: 'flex-start'
                     }}>
                       {campaign.status}
-                    </div>
-                  </div>
-                  
-                  <div 
+                    </Box>
+                  </Box>
+                  <Box
                     onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
-                    style={{ 
-                      display: 'flex', 
-                      gap: '16px', 
+                    sx={{
+                      display: 'flex',
+                      gap: 2,
                       alignItems: 'center',
                       cursor: 'pointer'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <PeopleIcon sx={{ fontSize: 16, color: COLORS.textSecondary }} />
-                      <span style={{ fontSize: '0.8rem', color: COLORS.textSecondary, fontWeight: '500' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <PeopleIcon sx={{ fontSize: 13, color: COLORS.textSecondary }} />
+                      <Typography sx={{ fontSize: 12, color: COLORS.textSecondary, fontWeight: 500 }}>
                         {campaign.influencer_count || 0} influencers
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <AttachMoneyIcon sx={{ fontSize: 16, color: COLORS.textSecondary }} />
-                      <span style={{ fontSize: '0.8rem', color: COLORS.textSecondary, fontWeight: '500' }}>
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <AttachMoneyIcon sx={{ fontSize: 13, color: COLORS.textSecondary }} />
+                      <Typography sx={{ fontSize: 12, color: COLORS.textSecondary, fontWeight: 500 }}>
                         Rp {parseInt(campaign.price_per_post || 0).toLocaleString('id-ID')}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <BarChart3 size={16} color={COLORS.textSecondary} />
-                      <span style={{ fontSize: '0.8rem', color: COLORS.textSecondary, fontWeight: '500' }}>
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <BarChart3 size={13} color={COLORS.textSecondary} />
+                      <Typography sx={{ fontSize: 12, color: COLORS.textSecondary, fontWeight: 500 }}>
                         {campaign.min_followers ? `${parseInt(campaign.min_followers).toLocaleString('id-ID')}+ followers` : 'No min followers'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons - Show "View applicants" only if Active and Paid */}
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '12px', 
-                    marginTop: '8px',
-                    paddingTop: '12px',
-                    borderTop: `1px solid ${COLORS.border}`
-                  }}>
+                      </Typography>
+                    </Box>
+                  </Box>
+                  {/* Action Buttons */}
+                  <Stack direction="row" spacing={1.5} mt={1} pt={1.5} sx={{ borderTop: 1, borderColor: COLORS.border }}> 
                     <Button
-                      variant="outline"
+                      variant="outlined"
                       onClick={() => {
-                        // If active, go to read-only detail view
-                        // If inactive, go to edit mode (to continue payment)
                         if (campaign.status && campaign.status.toLowerCase() === 'active') {
                           navigate(`/campaign/${campaign.campaign_id}/detail`);
                         } else {
                           navigate(`/campaign-edit/${campaign.campaign_id}`);
                         }
                       }}
-                      style={{ flex: 1 }}
+                      sx={{ flex: 1, textTransform: 'none', fontWeight: 600 }}
                     >
                       Details
                     </Button>
                     {campaign.status && campaign.status.toLowerCase() === 'active' && (
                       <Button
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent card click
+                        variant="contained"
+                        onClick={e => {
+                          e.stopPropagation();
                           navigate(`/campaign/${campaign.campaign_id}/applicants`);
                         }}
-                        style={{
-                          padding: '8px 16px',
-                          background: '#667eea',
-                          border: 'none',
-                          borderRadius: '8px',
+                        sx={{
+                          bgcolor: '#667eea',
                           color: '#fff',
-                          fontSize: '1rem',
                           fontWeight: 600,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          flex: '1'
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          fontSize: 16,
+                          boxShadow: 'none',
+                          flex: 1,
+                          '&:hover': { bgcolor: '#5568d3' }
                         }}
                       >
                         View applicants
                       </Button>
                     )}
-                  </div>
-                </div>
+                  </Stack>
+                </Box>
               </Card>
             ))}
-          </div>
-        </div>
-      </div>
-    </div>
+          </Container>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

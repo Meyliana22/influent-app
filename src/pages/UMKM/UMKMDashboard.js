@@ -1,8 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
+import { Sidebar, Topbar } from '../../components/common';
 import { COLORS } from '../../constants/colors.js';
+import {
+  Box,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Paper,
+  Typography,
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Stack
+} from '@mui/material';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import OngoingIcon from '@mui/icons-material/HourglassEmpty';
 import CompletedIcon from '@mui/icons-material/CheckCircle';
@@ -23,6 +37,10 @@ function UMKMDashboard() {
     totalApplicants: 0
   });
   const [recentCampaigns, setRecentCampaigns] = useState([]);
+
+  // Get user name from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userName = user.name || 'User';
 
   useEffect(() => {
     loadDashboardData();
@@ -155,359 +173,266 @@ function UMKMDashboard() {
   ];
 
   return (
-    <div style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
-      <UMKMSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <Box sx={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div style={{ 
+      <Box sx={{ 
         marginLeft: !isMobile ? '260px' : '0',
         width: !isMobile ? 'calc(100% - 260px)' : '100%',
         transition: 'all 0.3s ease'
       }}>
-        <UMKMTopbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-        <div style={{ marginTop: '72px', padding: '32px' }}>
+        <Container maxWidth={false} sx={{ marginTop: '72px', padding: '32px', maxWidth: '100%' }}>
           {/* Page Header */}
-          <div style={{ marginBottom: '32px' }}>
-            <h1 style={{
+          <Box sx={{ marginBottom: '32px' }}>
+            <Typography variant="h4" sx={{
               fontSize: '2rem',
               fontWeight: 700,
               color: '#1a1f36',
-              margin: '0px',
-              fontFamily: "'Inter', sans-serif"
+              margin: '0px'
             }}>
-              Dashboard Overview
-            </h1>
-            <p style={{
+              Welcome, {userName}! 👋
+            </Typography>
+            <Typography sx={{
               fontSize: '0.95rem',
-              color: '#6c757d',
-              fontFamily: "'Inter', sans-serif"
+              color: '#6c757d'
             }}>
-              Welcome back! Here's what's happening with your campaigns today.
-            </p>
-          </div>
+              Here's what's happening with your campaigns today.
+            </Typography>
+          </Box>
 
           {/* Stats Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '20px',
-            marginBottom: '24px'
-          }}>
+          <Grid container spacing={2} sx={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between' }}>
             {statCards.map((card, index) => (
-              <div
-                key={index}
-                style={{
-                  background: '#fff',
-                  borderRadius: '16px',
-                  padding: '24px',
-                  border: '1px solid #e2e8f0',
-                  transition: 'all 0.3s',
-                  cursor: 'default'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '16px'
-                }}>
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: card.bgColor,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <card.IconComponent 
-                      sx={{ 
-                        fontSize: 32,
-                        color: card.iconColor
-                      }} 
-                    />
-                  </div>
-                </div>
-                <div style={{
-                  fontSize: '0.85rem',
-                  color: '#6c757d',
-                  marginBottom: '8px',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {card.title}
-                </div>
-                <div style={{
-                  fontSize: '2rem',
-                  fontWeight: 700,
-                  color: '#1a1f36',
-                  marginBottom: '4px',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {card.value}
-                </div>
-                <div style={{
-                  fontSize: '0.8rem',
-                  color: '#6c757d',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {card.description}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Two Column Layout - Responsive */}
-          <div style={{
-            // display: 'grid',
-            // gridTemplateColumns: !isMobile ? '2fr 1fr' : '1fr',
-            gap: '24px'
-          }}>
-            {/* Recent Campaigns */}
-            <div style={{
-              background: '#fff',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #e2e8f0'
-            }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-                <h3 style={{
-                  fontSize: '1.25rem',
-                  fontWeight: 700,
-                  color: '#1a1f36',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  Recent Campaigns
-                </h3>
-                <button
-                  onClick={() => navigate('/campaigns')}
-                  style={{
-                    padding: '8px 16px',
-                    background: 'transparent',
-                    border: '2px solid #667eea',
-                    borderRadius: '10px',
-                    color: '#667eea',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
+              <Grid item xs={12} sm={6} lg={3} key={index} sx={{ display: 'flex' }}>
+                <Card
+                  sx={{
+                    bgcolor: 'background.paper',
+                    borderRadius: 5,
+                    p: 2,
+                    pr: 5,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    transition: 'all 0.3s ease',
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontFamily: "'Inter', sans-serif"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#667eea';
-                    e.currentTarget.style.color = '#fff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = '#667eea';
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-start',
+                    width: '100%',
+                    '&:hover': {
+                      boxShadow: 3,
+                      transform: 'translateY(-2px)'
+                    }
                   }}
                 >
-                  View All
-                </button>
-              </div>
-
-              {recentCampaigns.length === 0 ? (
-                <div style={{
-                  padding: '40px',
-                  textAlign: 'center',
-                  color: '#6c757d'
-                }}>
-                  <CampaignIcon sx={{ fontSize: 64, color: '#9ca3af', mb: 2 }} />
-                  <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '8px' }}>
-                    No campaigns yet
-                  </div>
-                  <div style={{ fontSize: '0.9rem', marginBottom: '20px' }}>
-                    Create your first campaign to get started
-                  </div>
-                  <button
-                    onClick={() => navigate('/campaign-create')}
-                    style={{
-                      padding: '12px 24px',
-                      background: COLORS.primary,
-                      border: 'none',
-                      borderRadius: '10px',
-                      color: '#fff',
-                      fontSize: '0.9rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      fontFamily: "'Inter', sans-serif"
+                  <CardContent
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      height: '100%',
+                      p: 0,
+                      '&:last-child': {
+                        p: 0
+                      }
                     }}
                   >
-                    Create Campaign
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {recentCampaigns.map((campaign, index) => (
-                    <div
-                      key={campaign.campaign_id || index}
-                      onClick={() => navigate(`/campaign/${campaign.campaign_id}/detail`)}
-                      style={{
-                        padding: '16px',
-                        borderRadius: '12px',
-                        border: '1px solid #e2e8f0',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#f7fafc';
-                        e.currentTarget.style.borderColor = '#667eea';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#fff';
-                        e.currentTarget.style.borderColor = '#e2e8f0';
-                      }}
-                    >
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'start',
-                        marginBottom: '8px'
-                      }}>
-                        <div style={{
-                          fontSize: '1rem',
-                          fontWeight: 600,
-                          color: '#1a1f36',
-                          fontFamily: "'Inter', sans-serif"
-                        }}>
-                          {campaign.title || 'Untitled Campaign'}
-                        </div>
-                        <span style={{
-                          padding: '4px 12px',
-                          borderRadius: '6px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          background: campaign.status === 'active' ? '#d1fae5' : campaign.status === 'inactive' ? '#e2e8f0' : '#fff',
-                          color: campaign.status === 'active' ? '#065f46' : campaign.status === 'inactive' ? '#6c757d' : '#000'
-                        }}>
-                          {campaign.status === 'active' ? 'Active' : campaign.status === 'inactive' ? 'Inactive' : campaign.status}
-                        </span>
-                      </div>
-                      <div style={{
-                        fontSize: '0.85rem',
-                        color: '#6c757d',
-                        marginBottom: '8px',
-                        fontFamily: "'Inter', sans-serif"
-                      }}>
-                        {campaign.product_desc?.substring(0, 80) || 'No description'}...
-                      </div>
-                      <div style={{
-                        display: 'flex',
-                        gap: '16px',
-                        fontSize: '0.8rem',
-                        color: '#6c757d',
-                        alignItems: 'center',
-                      }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <AttachMoneyIcon sx={{ fontSize: 16, color: '#6c757d' }} /> 
-                          Rp {(campaign.price_per_post || 0).toLocaleString('id-ID')}
-                        </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <ApplicantIcon sx={{ fontSize: 16, color: '#6c757d' }} /> 
-                          {campaign.influencer_count || 0} influencers
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Recent Activities & Quick Actions */}
-            {/* <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div style={{
-                background: '#fff',
-                borderRadius: '16px',
-                padding: '24px',
-                border: '1px solid #e2e8f0'
-              }}>
-                <h3 style={{
-                  fontSize: '1.1rem',
-                  fontWeight: 700,
-                  color: '#1a1f36',
-                  marginBottom: '20px',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  Recent Activities
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {recentActivities.map((activity, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        display: 'flex',
-                        gap: '12px',
-                        padding: '12px',
-                        borderRadius: '10px',
-                        transition: 'all 0.2s',
-                        cursor: 'pointer'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#f7fafc';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                      }}
-                    >
-                      <div style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '10px',
-                        background: `${activity.color}20`,
+                    <Box
+                      sx={{
+                        minWidth: 48,
+                        width: 48,
+                        height: 48,
+                        borderRadius: 1.5,
+                        bgcolor: card.bgColor,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '1.1rem',
                         flexShrink: 0
-                      }}>
-                        <activity.IconComponent sx={{ fontSize: 20, color: activity.color }} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{
-                          fontSize: '0.9rem',
-                          fontWeight: 600,
-                          color: '#1a1f36',
-                          marginBottom: '4px',
-                          fontFamily: "'Inter', sans-serif"
-                        }}>
-                          {activity.title}
-                        </div>
-                        <div style={{
+                      }}
+                    >
+                      <card.IconComponent sx={{ fontSize: 24, color: card.iconColor }} />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, flex: 1, minWidth: 0 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
                           fontSize: '0.8rem',
                           color: '#6c757d',
-                          marginBottom: '4px',
-                          fontFamily: "'Inter', sans-serif"
-                        }}>
-                          {activity.description}
-                        </div>
-                        <div style={{
+                          fontWeight: 500,
+                          display: 'block'
+                        }}
+                      >
+                        {card.title}
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontSize: '1.5rem',
+                          fontWeight: 700,
+                          color: '#1a1f36',
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {card.value}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
                           fontSize: '0.75rem',
                           color: '#a0aec0',
-                          fontFamily: "'Inter', sans-serif"
-                        }}>
-                          {activity.time}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div> */}
-          </div>
-        </div>
-      </div>
-    </div>
+                          display: 'block'
+                        }}
+                      >
+                        {card.description}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* Recent Campaigns */}
+          <Paper sx={{
+            background: '#fff',
+            borderRadius: '1rem',
+            padding: '1.5rem',
+            border: '1px solid #e2e8f0'
+          }}>
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.25rem'
+            }}>
+              <Typography variant="h6" sx={{
+                fontSize: '1.25rem',
+                fontWeight: 700,
+                color: '#1a1f36'
+              }}>
+                Recent Campaigns
+              </Typography>
+              <Button
+                onClick={() => navigate('/campaigns')}
+                variant="outlined"
+                sx={{
+                  padding: '0.5rem 1rem',
+                  borderColor: '#667eea',
+                  color: '#667eea',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  '&:hover': {
+                    background: '#667eea',
+                    color: '#fff'
+                  }
+                }}
+              >
+                View All
+              </Button>
+            </Box>
+
+            {recentCampaigns.length === 0 ? (
+              <Box sx={{
+                padding: '2.5rem 1.25rem',
+                textAlign: 'center',
+                color: '#6c757d'
+              }}>
+                <CampaignIcon sx={{ fontSize: '4rem', color: '#9ca3af', mb: 1, display: 'block', mx: 'auto' }} />
+                <Typography sx={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+                  No campaigns yet
+                </Typography>
+                <Typography sx={{ fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+                  Create your first campaign to get started
+                </Typography>
+                <Button
+                  onClick={() => navigate('/campaign-create')}
+                  variant="contained"
+                  sx={{
+                    background: COLORS.primary,
+                    color: '#fff',
+                    padding: '0.75rem 1.5rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 600
+                  }}
+                >
+                  Create Campaign
+                </Button>
+              </Box>
+            ) : (
+              <Stack spacing={1}>
+                {recentCampaigns.map((campaign, index) => (
+                  <Paper
+                    key={campaign.campaign_id || index}
+                    onClick={() => navigate(`/campaign/${campaign.campaign_id}/detail`)}
+                    sx={{
+                      padding: '1rem',
+                      borderRadius: '0.75rem',
+                      border: '1px solid #e2e8f0',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        background: '#f7fafc',
+                        borderColor: '#667eea'
+                      },
+                      background: '#fff'
+                    }}
+                  >
+                    <Box sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'start',
+                      marginBottom: '0.5rem'
+                    }}>
+                      <Typography sx={{
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        color: '#1a1f36'
+                      }}>
+                        {campaign.title || 'Untitled Campaign'}
+                      </Typography>
+                      <Box sx={{
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '0.375rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        background: campaign.status === 'active' ? '#d1fae5' : campaign.status === 'inactive' ? '#e2e8f0' : '#fff',
+                        color: campaign.status === 'active' ? '#065f46' : campaign.status === 'inactive' ? '#6c757d' : '#000'
+                      }}>
+                        {campaign.status === 'active' ? 'Active' : campaign.status === 'inactive' ? 'Inactive' : campaign.status}
+                      </Box>
+                    </Box>
+                    <Typography sx={{
+                      fontSize: '0.85rem',
+                      color: '#6c757d',
+                      marginBottom: '0.5rem'
+                    }}>
+                      {campaign.product_desc?.substring(0, 80) || 'No description'}...
+                    </Typography>
+                    <Box sx={{
+                      display: 'flex',
+                      gap: '1rem',
+                      fontSize: '0.8rem',
+                      color: '#6c757d',
+                      alignItems: 'center'
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <AttachMoneyIcon sx={{ fontSize: '1rem' }} /> 
+                        Rp {(campaign.price_per_post || 0).toLocaleString('id-ID')}
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <ApplicantIcon sx={{ fontSize: '1rem' }} /> 
+                        {campaign.influencer_count || 0} influencers
+                      </Box>
+                    </Box>
+                  </Paper>
+                ))}
+              </Stack>
+            )}
+          </Paper>
+        </Container>
+      </Box>
+    </Box>
   );
 }
 

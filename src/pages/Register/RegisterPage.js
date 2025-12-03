@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
 import { useToast } from '../../hooks/useToast';
 import { SubmitButton } from '../../components/common';
@@ -8,11 +8,23 @@ import eyeOffIcon from '../../assets/auth/eye-off.svg';
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const { role } = useParams();
   const { showToast } = useToast();
+  
+  // Determine user role from URL parameter, default to 'umkm' for legacy route
+  const [userRole, setUserRole] = useState('umkm');
+  
+  useEffect(() => {
+    if (role && ['umkm', 'influencer'].includes(role)) {
+      setUserRole(role);
+    }
+  }, [role]);
   
   const [formData, setFormData] = useState({
     namaUsaha: '',
     namaPemilik: '',
+    nama: '',
+    universitas: '',
     email: '',
     noTelp: '',
     password: '',
@@ -24,14 +36,26 @@ function RegisterPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
+  // Memoize error keys based on user role
+  const errorKeys = useMemo(() => {
+    if (userRole === 'umkm') {
+      return ['namaUsaha', 'namaPemilik', 'email', 'noTelp', 'password', 'confirmPassword'];
+    } else {
+      return ['nama', 'universitas', 'email', 'noTelp', 'password', 'confirmPassword'];
+    }
+  }, [userRole]);
+  
   const [errors, setErrors] = useState({
+    nama: [],
     namaUsaha: [],
     namaPemilik: [],
+    universitas: [],
     email: [],
     noTelp: [],
     password: [],
     confirmPassword: []
   });
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,7 +65,7 @@ function RegisterPage() {
     });
     
     // Clear errors untuk field yang sedang diubah
-    if (errors[name].length > 0) {
+    if (errors[name] && errors[name].length > 0) {
       setErrors({
         ...errors,
         [name]: []
@@ -85,8 +109,10 @@ function RegisterPage() {
     e.preventDefault();
     
     const newErrors = {
+      nama: [],
       namaUsaha: [],
       namaPemilik: [],
+      universitas: [],
       email: [],
       noTelp: [],
       password: [],
@@ -95,25 +121,47 @@ function RegisterPage() {
     
     let hasError = false;
 
-    // Validasi Nama Usaha
-    if (!formData.namaUsaha.trim()) {
-      newErrors.namaUsaha.push('Nama usaha tidak boleh kosong');
-      hasError = true;
-    } else if (formData.namaUsaha.trim().length < 3) {
-      newErrors.namaUsaha.push('Nama usaha minimal 3 karakter');
-      hasError = true;
+    if (userRole === 'umkm') {
+      // Validasi untuk UMKM
+      // Validasi Nama Usaha
+      if (!formData.namaUsaha.trim()) {
+        newErrors.namaUsaha.push('Nama usaha tidak boleh kosong');
+        hasError = true;
+      } else if (formData.namaUsaha.trim().length < 3) {
+        newErrors.namaUsaha.push('Nama usaha minimal 3 karakter');
+        hasError = true;
+      }
+
+      // Validasi Nama Pemilik
+      if (!formData.namaPemilik.trim()) {
+        newErrors.namaPemilik.push('Nama pemilik tidak boleh kosong');
+        hasError = true;
+      } else if (formData.namaPemilik.trim().length < 3) {
+        newErrors.namaPemilik.push('Nama pemilik minimal 3 karakter');
+        hasError = true;
+      }
+    } else {
+      // Validasi untuk Mahasiswa
+      // Validasi Nama
+      if (!formData.nama.trim()) {
+        newErrors.nama.push('Nama tidak boleh kosong');
+        hasError = true;
+      } else if (formData.nama.trim().length < 3) {
+        newErrors.nama.push('Nama minimal 3 karakter');
+        hasError = true;
+      }
+
+      // Validasi Universitas
+      if (!formData.universitas.trim()) {
+        newErrors.universitas.push('Universitas tidak boleh kosong');
+        hasError = true;
+      } else if (formData.universitas.trim().length < 3) {
+        newErrors.universitas.push('Nama universitas minimal 3 karakter');
+        hasError = true;
+      }
     }
 
-    // Validasi Nama Pemilik
-    if (!formData.namaPemilik.trim()) {
-      newErrors.namaPemilik.push('Nama pemilik tidak boleh kosong');
-      hasError = true;
-    } else if (formData.namaPemilik.trim().length < 3) {
-      newErrors.namaPemilik.push('Nama pemilik minimal 3 karakter');
-      hasError = true;
-    }
-
-    // Validasi Email
+    // Validasi Email (untuk kedua role)
     if (!formData.email.trim()) {
       newErrors.email.push('Email tidak boleh kosong');
       hasError = true;
@@ -122,7 +170,7 @@ function RegisterPage() {
       hasError = true;
     }
 
-    // Validasi No Telepon
+    // Validasi No Telepon (untuk kedua role)
     if (!formData.noTelp.trim()) {
       newErrors.noTelp.push('Nomor telepon tidak boleh kosong');
       hasError = true;
@@ -131,14 +179,14 @@ function RegisterPage() {
       hasError = true;
     }
 
-    // Validasi Password
+    // Validasi Password (untuk kedua role)
     const passwordErrors = validatePassword(formData.password);
     if (passwordErrors.length > 0) {
       newErrors.password = passwordErrors;
       hasError = true;
     }
 
-    // Validasi Confirm Password
+    // Validasi Confirm Password (untuk kedua role)
     if (!formData.confirmPassword) {
       newErrors.confirmPassword.push('Konfirmasi password tidak boleh kosong');
       hasError = true;
@@ -162,12 +210,18 @@ function RegisterPage() {
       // Simpan data user jika rememberMe diaktifkan
       const userData = {
         email: formData.email,
-        role: 'umkm',
-        name: formData.namaPemilik,
-        namaUsaha: formData.namaUsaha,
+        role: userRole,
         noTelp: formData.noTelp,
         rememberMe: rememberMe
       };
+
+      if (userRole === 'umkm') {
+        userData.name = formData.namaPemilik;
+        userData.namaUsaha = formData.namaUsaha;
+      } else {
+        userData.name = formData.nama;
+        userData.universitas = formData.universitas;
+      }
       
       if (rememberMe) {
         // Simpan kredensial ke localStorage
@@ -176,12 +230,13 @@ function RegisterPage() {
         localStorage.setItem('rememberedPassword', formData.password); // Note: Dalam production, jangan simpan password plain text!
       }
       
-      showToast('Registrasi berhasil! Silakan login.', 'success');
+      const roleText = userRole === 'umkm' ? 'UMKM' : 'Influencer';
+      showToast(`Registrasi ${roleText} berhasil! Silakan login.`, 'success');
       setIsLoading(false);
       
-      // Navigate setelah 1 detik
+      // Navigate to unified login page
       setTimeout(() => {
-        navigate('/login-umkm');
+        navigate('/login');
       }, 1000);
     }, 1500);
   };
@@ -212,7 +267,7 @@ function RegisterPage() {
         {/* Back Button */}
         <button
           type="button"
-          onClick={() => navigate('/login-umkm')}
+          onClick={() => navigate('/')}
           disabled={isLoading}
           style={{
             position: 'absolute',
@@ -244,7 +299,7 @@ function RegisterPage() {
             margin: '0 0 8px 0',
             fontFamily: "'Montserrat', sans-serif"
           }}>
-            Daftar Akun UMKM
+            Daftar Akun {userRole === 'umkm' ? 'UMKM' : 'Influencer'}
           </h1>
           <p style={{
             fontSize: '0.95rem',
@@ -253,111 +308,221 @@ function RegisterPage() {
             lineHeight: '1.5',
             fontFamily: "'Montserrat', sans-serif"
           }}>
-            Daftarkan usaha Anda dan mulai berkolaborasi dengan influencer
+            {userRole === 'umkm' 
+              ? 'Daftarkan usaha Anda dan mulai berkolaborasi dengan influencer'
+              : 'Daftarkan akun Anda dan mulai berkolaborasi dengan UMKM'}
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleRegister}>
-          {/* Nama Usaha */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '8px',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              color: '#1a1f36',
-              fontFamily: "'Montserrat', sans-serif"
-            }}>
-              Nama Usaha <span style={{ color: '#fc8181' }}>*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Masukkan nama usaha"
-              name="namaUsaha"
-              value={formData.namaUsaha}
-              onChange={handleChange}
-              disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '14px',
-                fontSize: '0.95rem',
-                border: errors.namaUsaha.length > 0 ? '2px solid #fc8181' : '2px solid #e2e8f0',
-                borderRadius: '12px',
-                outline: 'none',
-                transition: 'all 0.2s',
-                backgroundColor: isLoading ? '#f7fafc' : 'white',
-                cursor: isLoading ? 'not-allowed' : 'text',
-                boxSizing: 'border-box',
-                fontFamily: "'Montserrat', sans-serif"
-              }}
-              onFocus={(e) => !errors.namaUsaha.length && (e.target.style.borderColor = '#667eea')}
-              onBlur={(e) => !errors.namaUsaha.length && (e.target.style.borderColor = '#e2e8f0')}
-            />
-            {errors.namaUsaha.length > 0 && (
-              <div style={{
-                marginTop: '8px',
-                padding: '12px',
-                background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
-                borderRadius: '8px',
-                fontSize: '0.875rem',
-                color: '#c53030',
-                fontFamily: "'Montserrat', sans-serif"
-              }}>
-                ⚠️ {errors.namaUsaha[0]}
+          {/* Conditional Fields Based on Role */}
+          {userRole === 'umkm' ? (
+            <>
+              {/* UMKM: Nama Usaha */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#1a1f36',
+                  fontFamily: "'Montserrat', sans-serif"
+                }}>
+                  Nama Usaha <span style={{ color: '#fc8181' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Masukkan nama usaha"
+                  name="namaUsaha"
+                  value={formData.namaUsaha}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '0.95rem',
+                    border: errors.namaUsaha.length > 0 ? '2px solid #fc8181' : '2px solid #e2e8f0',
+                    borderRadius: '12px',
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                    backgroundColor: isLoading ? '#f7fafc' : 'white',
+                    cursor: isLoading ? 'not-allowed' : 'text',
+                    boxSizing: 'border-box',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}
+                  onFocus={(e) => !errors.namaUsaha.length && (e.target.style.borderColor = '#667eea')}
+                  onBlur={(e) => !errors.namaUsaha.length && (e.target.style.borderColor = '#e2e8f0')}
+                />
+                {errors.namaUsaha.length > 0 && (
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '12px',
+                    background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    color: '#c53030',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}>
+                    ⚠️ {errors.namaUsaha[0]}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Nama Pemilik */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '8px',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              color: '#1a1f36',
-              fontFamily: "'Montserrat', sans-serif"
-            }}>
-              Nama Pemilik <span style={{ color: '#fc8181' }}>*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Masukkan nama pemilik"
-              name="namaPemilik"
-              value={formData.namaPemilik}
-              onChange={handleChange}
-              disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '14px',
-                fontSize: '0.95rem',
-                border: errors.namaPemilik.length > 0 ? '2px solid #fc8181' : '2px solid #e2e8f0',
-                borderRadius: '12px',
-                outline: 'none',
-                transition: 'all 0.2s',
-                backgroundColor: isLoading ? '#f7fafc' : 'white',
-                cursor: isLoading ? 'not-allowed' : 'text',
-                boxSizing: 'border-box',
-                fontFamily: "'Montserrat', sans-serif"
-              }}
-              onFocus={(e) => !errors.namaPemilik.length && (e.target.style.borderColor = '#667eea')}
-              onBlur={(e) => !errors.namaPemilik.length && (e.target.style.borderColor = '#e2e8f0')}
-            />
-            {errors.namaPemilik.length > 0 && (
-              <div style={{
-                marginTop: '8px',
-                padding: '12px',
-                background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
-                borderRadius: '8px',
-                fontSize: '0.875rem',
-                color: '#c53030',
-                fontFamily: "'Montserrat', sans-serif"
-              }}>
-                ⚠️ {errors.namaPemilik[0]}
+              {/* UMKM: Nama Pemilik */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#1a1f36',
+                  fontFamily: "'Montserrat', sans-serif"
+                }}>
+                  Nama Pemilik <span style={{ color: '#fc8181' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Masukkan nama pemilik"
+                  name="namaPemilik"
+                  value={formData.namaPemilik}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '0.95rem',
+                    border: errors.namaPemilik.length > 0 ? '2px solid #fc8181' : '2px solid #e2e8f0',
+                    borderRadius: '12px',
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                    backgroundColor: isLoading ? '#f7fafc' : 'white',
+                    cursor: isLoading ? 'not-allowed' : 'text',
+                    boxSizing: 'border-box',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}
+                  onFocus={(e) => !errors.namaPemilik.length && (e.target.style.borderColor = '#667eea')}
+                  onBlur={(e) => !errors.namaPemilik.length && (e.target.style.borderColor = '#e2e8f0')}
+                />
+                {errors.namaPemilik.length > 0 && (
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '12px',
+                    background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    color: '#c53030',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}>
+                    ⚠️ {errors.namaPemilik[0]}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <>
+              {/* Mahasiswa: Nama */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#1a1f36',
+                  fontFamily: "'Montserrat', sans-serif"
+                }}>
+                  Nama Lengkap <span style={{ color: '#fc8181' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Masukkan nama lengkap"
+                  name="nama"
+                  value={formData.nama}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '0.95rem',
+                    border: errors.nama.length > 0 ? '2px solid #fc8181' : '2px solid #e2e8f0',
+                    borderRadius: '12px',
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                    backgroundColor: isLoading ? '#f7fafc' : 'white',
+                    cursor: isLoading ? 'not-allowed' : 'text',
+                    boxSizing: 'border-box',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}
+                  onFocus={(e) => !errors.nama.length && (e.target.style.borderColor = '#667eea')}
+                  onBlur={(e) => !errors.nama.length && (e.target.style.borderColor = '#e2e8f0')}
+                />
+                {errors.nama.length > 0 && (
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '12px',
+                    background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    color: '#c53030',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}>
+                    ⚠️ {errors.nama[0]}
+                  </div>
+                )}
+              </div>
+
+              {/* Mahasiswa: Universitas */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#1a1f36',
+                  fontFamily: "'Montserrat', sans-serif"
+                }}>
+                  Universitas <span style={{ color: '#fc8181' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Masukkan nama universitas"
+                  name="universitas"
+                  value={formData.universitas}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '0.95rem',
+                    border: errors.universitas.length > 0 ? '2px solid #fc8181' : '2px solid #e2e8f0',
+                    borderRadius: '12px',
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                    backgroundColor: isLoading ? '#f7fafc' : 'white',
+                    cursor: isLoading ? 'not-allowed' : 'text',
+                    boxSizing: 'border-box',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}
+                  onFocus={(e) => !errors.universitas.length && (e.target.style.borderColor = '#667eea')}
+                  onBlur={(e) => !errors.universitas.length && (e.target.style.borderColor = '#e2e8f0')}
+                />
+                {errors.universitas.length > 0 && (
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '12px',
+                    background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    color: '#c53030',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}>
+                    ⚠️ {errors.universitas[0]}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
 
           {/* Email */}
           <div style={{ marginBottom: '16px' }}>
@@ -658,7 +823,7 @@ function RegisterPage() {
           Sudah punya akun?{' '}
           <button
             type="button"
-            onClick={() => navigate('/login-umkm')}
+            onClick={() => navigate('/login')}
             disabled={isLoading}
             style={{
               background: 'none',

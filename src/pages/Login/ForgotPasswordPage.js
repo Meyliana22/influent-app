@@ -39,7 +39,7 @@ function ForgotPasswordPage() {
       
       // Redirect setelah 4 detik
       setTimeout(() => {
-        navigate('/login-umkm');
+        navigate('/login');
       }, 4000);
     }, 1500);
   };
@@ -194,7 +194,7 @@ function ForgotPasswordPage() {
                 Ingat password Anda? {' '}
                 <button
                   type="button"
-                  onClick={() => navigate('/login-umkm')}
+                  onClick={() => navigate('/login')}
                   disabled={isLoading}
                   style={{
                     background: 'transparent',
@@ -292,7 +292,7 @@ function ForgotPasswordPage() {
               </p>
 
               <button
-                onClick={() => navigate('/login-umkm')}
+                onClick={() => navigate('/login')}
                 style={{
                   background: 'transparent',
                   border: '2px solid #667eea',

@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Modal, StatCard, Button, SelectionConfirmModal, ApplicantDetailModal } from '../../components/common';
+import { Box, Container, Stack, Grid, Card, CardContent, Typography, Button, TextField, Select, MenuItem, InputAdornment, Paper } from '@mui/material';
+import StatCard from '../../components/common/StatCard';
 import ApplicantCard from '../../components/common/ApplicantCard';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
+import Modal from '../../components/common/Modal';
+import SelectionConfirmModal from '../../components/common/SelectionConfirmModal';
+import ApplicantDetailModal from '../../components/common/ApplicantDetailModal';
+import Sidebar from '../../components/common/Sidebar';
+import Topbar from '../../components/common/Topbar';
 import { COLORS } from '../../constants/colors';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -12,6 +16,8 @@ import StarIcon from '@mui/icons-material/Star';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 import applicantStorageHelper from '../../utils/applicantStorageHelper';
 import campaignService from '../../services/campaignService';
 import { toast } from 'react-toastify';
@@ -242,320 +248,190 @@ function ViewApplicants() {
 
   if (!campaign) {
     return (
-      <div style={{ background: COLORS.background, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2>Loading...</h2>
-        </div>
-      </div>
+      <Box sx={{ bgcolor: COLORS.background, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h6">Loading...</Typography>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      <div style={{ marginLeft: !isMobile ? '260px' : '0', flex: 1 }}>
-        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        
-        <div style={{ marginTop: '72px', background: '#f7fafc', minHeight: 'calc(100vh - 72px)', padding: '32px' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Back Button */}
-        <Button
-          variant="outline"
-          onClick={() => navigate('/campaigns')}
-          style={{ 
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <ArrowBackIcon sx={{ fontSize: 16 }} />
-          Back to Campaigns
-        </Button>
-
-        {/* Campaign Header */}
-        <div style={{
-          background: COLORS.white,
-          borderRadius: '20px',
-          padding: '32px',
-          marginBottom: '32px',
-          boxShadow: `0 8px 32px ${COLORS.shadowLarge}`,
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          {/* Decorative gradient line */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '6px',
-            background: COLORS.gradient
-          }}></div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <div style={{
-              width: '100px',
-              height: '100px',
-              borderRadius: '16px',
-              background: COLORS.gradient,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '3rem',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
-            }}>
-              📋
-            </div>
-            <div style={{ flex: 1 }}>
-              <h1 style={{
-                margin: '0 0 8px 0',
-                fontSize: '2rem',
-                fontWeight: '700',
-                color: COLORS.textPrimary
-              }}>
-                View Applicants
-              </h1>
-              <h2 style={{
-                margin: '0 0 8px 0',
-                fontSize: '1.3rem',
-                fontWeight: '600',
-                color: COLORS.primary
-              }}>
-                {campaign.title}
-              </h2>
-              <div style={{
-                fontSize: '0.9rem',
-                color: COLORS.textSecondary
-              }}>
-                Campaign Status: <span style={{ 
-                  fontWeight: '600', 
-                  color: campaign.status === 'Active' ? '#28a745' : '#6c757d' 
-                }}>
-                  {campaign.status}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Statistics Cards */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '20px',
-          marginBottom: '32px'
-        }}>
-          <StatCard
-            title="Total Applicants"
-            value={stats.total}
-            IconComponent={PeopleIcon}
-            gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-          />
-          <StatCard
-            title="Selected"
-            value={stats.selected}
-            IconComponent={StarIcon}
-            gradient="linear-gradient(135deg, #f6d365 0%, #fda085 100%)"
-          />
-          <StatCard
-            title="Pending Review"
-            value={stats.pending}
-            IconComponent={HourglassEmptyIcon}
-            gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
-          />
-          <StatCard
-            title="Accepted"
-            value={stats.accepted}
-            IconComponent={CheckCircleIcon}
-            gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-          />
-          <StatCard
-            title="Rejected"
-            value={stats.rejected}
-            IconComponent={CancelIcon}
-            gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
-          />
-        </div>
-
-        {/* Search & Filter */}
-        <div style={{
-          display: 'flex',
-          gap: '18px',
-          marginBottom: '32px',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ flex: '1 1 400px', position: 'relative' }}>
-            <input
-              type="text"
-              placeholder="Search by name, username, or location..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '14px 44px 14px 44px',
-                borderRadius: '12px',
-                border: `1px solid ${COLORS.border}`,
-                fontSize: '1rem',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                boxSizing: 'border-box'
+    <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Box sx={{ ml: isMobile ? 0 : 32.5, flex: 1 }}>
+        <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Box sx={{ mt: 9, bgcolor: '#f7fafc', minHeight: 'calc(100vh - 72px)', py: { xs: 2, md: 4 } }}>
+          <Container maxWidth="lg">
+            {/* Back Button */}
+            <Button
+              onClick={() => navigate('/campaigns')}
+              startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
+              sx={{ mb: 3, fontWeight: 600, textTransform: 'none' }}
+            >
+              Back to Campaigns
+            </Button>
+            {/* Campaign Header */}
+            <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 2, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden', boxShadow: 6 }}>
+              {/* Decorative gradient line */}
+              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: COLORS.gradient }} />
+              <Stack direction="row" alignItems="center" spacing={3}>
+                <Box sx={{ width: 100, height: 100, borderRadius: 2, background: COLORS.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 3 }}>
+                  <AssignmentIcon sx={{ fontSize: 56, color: '#000' }} />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, mb: 1 }}>
+                    View Applicants
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: COLORS.primary, mb: 1 }}>
+                    {campaign.title}
+                  </Typography>
+                  <Typography sx={{ fontSize: 15, color: COLORS.textSecondary }}>
+                    Campaign Status: <Box component="span" sx={{ fontWeight: 600, color: campaign.status === 'Active' ? '#28a745' : '#6c757d', display: 'inline' }}>{campaign.status}</Box>
+                  </Typography>
+                </Box>
+              </Stack>
+            </Paper>
+            {/* Statistics Cards */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 4, width: '100%' }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <StatCard title="Total Applicants" value={stats.total} IconComponent={PeopleIcon} gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <StatCard title="Selected" value={stats.selected} IconComponent={StarIcon} gradient="linear-gradient(135deg, #f6d365 0%, #fda085 100%)" />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <StatCard title="Pending Review" value={stats.pending} IconComponent={HourglassEmptyIcon} gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <StatCard title="Accepted" value={stats.accepted} IconComponent={CheckCircleIcon} gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <StatCard title="Rejected" value={stats.rejected} IconComponent={CancelIcon} gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)" />
+              </Box>
+            </Box>
+            {/* Search & Filter */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={4} flexWrap="wrap">
+              <Box sx={{ flex: '1 1 400px', position: 'relative' }}>
+                <TextField
+                  fullWidth
+                  placeholder="Search by name, username, or location..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: COLORS.textSecondary, opacity: 0.6 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ borderRadius: 2, bgcolor: '#fff', fontSize: 16, boxShadow: 1 }}
+                />
+              </Box>
+              <Box sx={{ minWidth: 200 }}>
+                <Select
+                  value={filter}
+                  onChange={e => setFilter(e.target.value)}
+                  fullWidth
+                  displayEmpty
+                  sx={{ borderRadius: 2, bgcolor: '#fff', fontSize: 16, boxShadow: 1 }}
+                >
+                  <MenuItem value="">All Status</MenuItem>
+                  <MenuItem value="Pending">
+                    <HourglassEmptyIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: COLORS.textSecondary }} />
+                    Pending
+                  </MenuItem>
+                  <MenuItem value="Accepted">
+                    <CheckCircleIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: COLORS.textSecondary }} />
+                    Selected
+                  </MenuItem>
+                  <MenuItem value="Rejected">
+                    <CancelIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: COLORS.textSecondary }} />
+                    Rejected
+                  </MenuItem>
+                </Select>
+              </Box>
+              <Button
+                variant="contained"
+                onClick={() => navigate(`/campaign/${campaignId}/select-applicants`)}
+                startIcon={<CheckCircleIcon />}
+                sx={{ borderRadius: 2, fontWeight: 600, minWidth: 25, textTransform: 'none', fontSize: 16, bgcolor: '#667eea', color: '#fff', '&:hover': { bgcolor: '#5568d3' } }}
+              >
+                Select Applicants
+              </Button>
+            </Stack>
+            {/* Results Count */}
+            <Typography sx={{ mb: 2, fontSize: 15, color: COLORS.textSecondary, fontWeight: 600 }}>
+              Showing {filteredApplicants.length} of {applicants.length} applicants
+            </Typography>
+            {/* Applicants List */}
+            {filteredApplicants.length === 0 ? (
+              <Paper elevation={2} sx={{ bgcolor: COLORS.white, borderRadius: 2, py: 8, px: 4, textAlign: 'center', boxShadow: 4 }}>
+                <SentimentDissatisfiedIcon sx={{ fontSize: 56, mb: 2, color: COLORS.textSecondary }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, color: COLORS.textPrimary, mb: 1 }}>
+                  No Applicants Found
+                </Typography>
+                <Typography sx={{ color: COLORS.textSecondary, fontSize: 15 }}>
+                  {search || filter ? 'Try adjusting your search or filter criteria' : 'No one has applied to this campaign yet'}
+                </Typography>
+              </Paper>
+            ) : (
+              <Box>
+                {filteredApplicants.map(applicant => (
+                  <ApplicantCard
+                    key={applicant.id}
+                    applicant={applicant}
+                    onAccept={handleAccept}
+                    onReject={handleReject}
+                    onCancel={handleCancel}
+                    onToggleSelection={handleToggleSelection}
+                    onChat={handleChat}
+                    onShowDetail={handleShowDetail}
+                    showActions={true}
+                    showSelection={true}
+                  />
+                ))}
+              </Box>
+            )}
+            {/* Confirmation Modal */}
+            <Modal
+              isOpen={showModal}
+              onClose={() => setShowModal(false)}
+              title={modalConfig.title}
+              onConfirm={modalConfig.action}
+              confirmText="Confirm"
+              cancelText="Cancel"
+              variant={modalConfig.variant}
+            >
+              <Typography sx={{ fontSize: 16, lineHeight: 1.6, color: COLORS.textSecondary }}>
+                {modalConfig.message}
+              </Typography>
+            </Modal>
+            {/* Selection Confirmation Modal */}
+            <SelectionConfirmModal
+              isOpen={showSelectionModal}
+              onClose={() => {
+                setShowSelectionModal(false);
+                setSelectedApplicant(null);
               }}
+              applicantName={selectedApplicant?.fullName}
+              influencerName={selectedApplicant?.influencerName}
+              currentSelection={selectedApplicant?.isSelected || false}
+              onConfirm={confirmToggleSelection}
             />
-            <SearchIcon
-              sx={{
-                position: 'absolute',
-                left: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: 22,
-                opacity: 0.6,
-                pointerEvents: 'none',
-                color: COLORS.textSecondary
+            {/* Applicant Detail Modal */}
+            <ApplicantDetailModal
+              isOpen={showDetailModal}
+              onClose={() => {
+                setShowDetailModal(false);
+                setSelectedApplicant(null);
               }}
+              applicant={selectedApplicant}
             />
-          </div>
-
-          <select
-            value={filter}
-            onChange={e => setFilter(e.target.value)}
-            style={{
-              padding: '14px 24px',
-              borderRadius: '12px',
-              border: `1px solid ${COLORS.border}`,
-              fontSize: '1rem',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-              background: COLORS.white,
-              cursor: 'pointer',
-              color: COLORS.textPrimary,
-              minWidth: '200px'
-            }}
-          >
-            <option value="">All Status</option>
-            <option value="Pending">⏳ Pending</option>
-            <option value="Accepted">✅ Selected</option>
-            <option value="Rejected">❌ Rejected</option>
-          </select>
-
-          {/* Select All Button - Only show for campaign owner */}
-          <Button
-            variant="primary"
-            onClick={() => navigate(`/campaign/${campaignId}/select-applicants`)}
-            style={{
-              padding: '14px 24px',
-              borderRadius: '12px',
-              fontSize: '1rem',
-              fontWeight: 600,
-              minWidth: '200px'
-            }}
-          >
-            ✓ Select Applicants
-          </Button>
-        </div>
-
-        {/* Results Count */}
-        <div style={{
-          marginBottom: '20px',
-          fontSize: '0.95rem',
-          color: COLORS.textSecondary,
-          fontWeight: '600'
-        }}>
-          Showing {filteredApplicants.length} of {applicants.length} applicants
-        </div>
-
-        {/* Applicants List */}
-        {filteredApplicants.length === 0 ? (
-          <div style={{
-            background: COLORS.white,
-            borderRadius: '16px',
-            padding: '64px 32px',
-            textAlign: 'center',
-            boxShadow: `0 4px 20px ${COLORS.shadowMedium}`
-          }}>
-            <div style={{ fontSize: '4rem', marginBottom: '16px' }}>😔</div>
-            <h3 style={{ 
-              margin: '0 0 8px 0', 
-              fontSize: '1.3rem', 
-              fontWeight: '600',
-              color: COLORS.textPrimary 
-            }}>
-              No Applicants Found
-            </h3>
-            <p style={{ 
-              margin: 0, 
-              color: COLORS.textSecondary,
-              fontSize: '0.95rem'
-            }}>
-              {search || filter 
-                ? 'Try adjusting your search or filter criteria' 
-                : 'No one has applied to this campaign yet'}
-            </p>
-          </div>
-        ) : (
-          <div>
-            {filteredApplicants.map(applicant => (
-              <ApplicantCard
-                key={applicant.id}
-                applicant={applicant}
-                onAccept={handleAccept}
-                onReject={handleReject}
-                onCancel={handleCancel}
-                onToggleSelection={handleToggleSelection}
-                onChat={handleChat}
-                onShowDetail={handleShowDetail}
-                showActions={true}
-                showSelection={true}
-              />
-            ))}
-          </div>
-        )}
-
-      {/* Confirmation Modal */}
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title={modalConfig.title}
-        onConfirm={modalConfig.action}
-        confirmText="Confirm"
-        cancelText="Cancel"
-        variant={modalConfig.variant}
-      >
-        <p style={{ 
-          margin: 0, 
-          fontSize: '1rem', 
-          lineHeight: '1.6',
-          color: COLORS.textSecondary 
-        }}>
-          {modalConfig.message}
-        </p>
-      </Modal>
-
-      {/* Selection Confirmation Modal */}
-      <SelectionConfirmModal
-        isOpen={showSelectionModal}
-        onClose={() => {
-          setShowSelectionModal(false);
-          setSelectedApplicant(null);
-        }}
-        applicantName={selectedApplicant?.fullName}
-        influencerName={selectedApplicant?.influencerName}
-        currentSelection={selectedApplicant?.isSelected || false}
-        onConfirm={confirmToggleSelection}
-      />
-
-      {/* Applicant Detail Modal */}
-      <ApplicantDetailModal
-        isOpen={showDetailModal}
-        onClose={() => {
-          setShowDetailModal(false);
-          setSelectedApplicant(null);
-        }}
-        applicant={selectedApplicant}
-      />
-          </div>
-        </div>
-      </div>
-    </div>
+          </Container>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

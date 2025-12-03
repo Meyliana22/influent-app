@@ -51,7 +51,8 @@ function LoginPage() {
     setTimeout(() => {
       const validCredentials = {
         'umkm@influent.com': { password: 'umkm123', role: 'umkm', name: 'UMKM Demo' },
-        'admin@influent.com': { password: 'admin123', role: 'admin', name: 'Admin Influent' }
+        'admin@influent.com': { password: 'admin123', role: 'admin', name: 'Admin Influent' },
+        'student@influent.com': { password: 'student123', role: 'student', name: 'Student Demo' }
       };
       const user = validCredentials[email.toLowerCase()];
       
@@ -59,7 +60,10 @@ function LoginPage() {
         localStorage.setItem('user', JSON.stringify({ email, role: user.role, name: user.name, rememberMe }));
         showToast(`Selamat datang, ${user.name}!`, 'success');
         setIsLoading(false);
-        setTimeout(() => navigate(user.role === 'admin' ? '/admin/dashboard' : '/umkm/dashboard'), 1000);
+        let dashboardPath = '/umkm/dashboard';
+        if (user.role === 'admin') dashboardPath = '/admin/dashboard';
+        if (user.role === 'student') dashboardPath = '/student/dashboard';
+        setTimeout(() => navigate(dashboardPath), 1000);
       } else {
         setIsLoading(false);
         setLoginError('Email atau password salah. Coba lagi.');
@@ -133,7 +137,7 @@ function LoginPage() {
                   setLoginError(''); 
                   if (errors.password.length > 0) setErrors({ ...errors, password: [] }); 
                 }} 
-                placeholder="••••••••" 
+                placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" 
                 disabled={isLoading} 
                 style={{ 
                   width: '100%', 
@@ -192,7 +196,46 @@ function LoginPage() {
           </div>
 
           <div style={{ textAlign: 'center', fontSize: '0.95rem', color: '#6c757d', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>
-            Belum punya akun? <button type="button" onClick={() => navigate('/register-umkm')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#667eea', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer', fontSize: '0.95rem', textDecoration: 'none', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>Daftar sekarang</button>
+            Belum punya akun? Daftar sekarang sebagai{' '}
+            <button 
+              type="button" 
+              onClick={() => navigate('/register/umkm')} 
+              disabled={isLoading} 
+              style={{ 
+                background: 'transparent', 
+                border: 'none', 
+                color: '#667eea', 
+                fontWeight: 700, 
+                cursor: isLoading ? 'not-allowed' : 'pointer', 
+                fontSize: '0.95rem', 
+                opacity: isLoading ? 0.5 : 1, 
+                fontFamily: "'Montserrat', sans-serif",
+                padding: 0,
+                margin: 0
+              }}
+            >
+              UMKM
+            </button>
+            {' / '}
+            <button 
+              type="button" 
+              onClick={() => navigate('/register/influencer')} 
+              disabled={isLoading} 
+              style={{ 
+                background: 'transparent', 
+                border: 'none', 
+                color: '#667eea', 
+                fontWeight: 700, 
+                cursor: isLoading ? 'not-allowed' : 'pointer', 
+                fontSize: '0.95rem', 
+                opacity: isLoading ? 0.5 : 1, 
+                fontFamily: "'Montserrat', sans-serif",
+                padding: 0,
+                margin: 0
+              }}
+            >
+              Influencer
+            </button>
           </div>
         </form>
 

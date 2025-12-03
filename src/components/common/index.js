@@ -12,3 +12,5 @@ export { default as ApplicantCard } from './ApplicantCard';
 export { default as SelectionConfirmModal } from './SelectionConfirmModal';
 export { default as ApplicantDetailModal } from './ApplicantDetailModal';
 export { default as SubmitButton } from './SubmitButton';
+export { default as Sidebar } from './Sidebar';
+export { default as Topbar } from './Topbar';

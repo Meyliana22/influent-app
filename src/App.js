@@ -19,6 +19,10 @@ import ManageUsers from './pages/Admin/ManageUsers';
 import ManageCampaigns from './pages/Admin/ManageCampaigns';
 import Reports from './pages/Admin/Reports';
 import UMKMDashboard from './pages/UMKM/UMKMDashboard';
+import StudentDashboard from './pages/Student/StudentDashboard';
+import BrowseCampaigns from './pages/Student/BrowseCampaigns';
+import Collaborations from './pages/Student/Collaborations';
+import Transactions from './pages/Student/Transactions';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -31,7 +35,9 @@ function App() {
         <ToastContainer />
         {/* Routing for pages - Each page has its own Navbar component */}
         <Routes>
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/login-umkm" element={<LoginPage />} />
+          <Route path="/register/:role" element={<RegisterPage />} />
           <Route path="/register-umkm" element={<RegisterPage />} />
           <Route path="/forget-password" element={<ForgotPasswordPage />} />
           <Route path="/chat" element={<ChatPage />} />
@@ -55,6 +61,12 @@ function App() {
           
           {/* UMKM Routes */}
           <Route path="/umkm/dashboard" element={<UMKMDashboard />} />
+          
+          {/* Student Routes */}
+          <Route path="/student/dashboard" element={<StudentDashboard />} />
+          <Route path="/student/browse-campaigns" element={<BrowseCampaigns />} />
+          <Route path="/student/collaborations" element={<Collaborations />} />
+          <Route path="/student/transactions" element={<Transactions />} />
           
           <Route path="/" element={<LandingPage />} />
         </Routes>

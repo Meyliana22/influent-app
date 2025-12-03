@@ -64,7 +64,7 @@ function LandingPage() {
               </>
             )}
             <button
-              onClick={() => navigate('/login-umkm')}
+              onClick={() => navigate('/login')}
               style={{
                 padding: isMobile ? '8px 16px' : '10px 24px',
                 background: 'transparent',
@@ -122,7 +122,7 @@ function LandingPage() {
               justifyContent: isMobile ? 'center' : 'flex-start'
             }}>
               <button
-                onClick={() => navigate('/register-umkm')}
+                onClick={() => navigate('/register/umkm')}
                 style={{
                   padding: '16px 32px',
                   background: '#fff',
@@ -138,7 +138,7 @@ function LandingPage() {
                 Daftar Sebagai UMKM
               </button>
               <button
-                onClick={() => navigate('/register-student')}
+                onClick={() => navigate('/register/influencer')}
                 style={{
                   padding: '16px 32px',
                   background: 'transparent',
@@ -150,7 +150,7 @@ function LandingPage() {
                   cursor: 'pointer'
                 }}
               >
-                Daftar Sebagai Mahasiswa
+                Daftar Sebagai Influencer
               </button>
             </div>
           </div>

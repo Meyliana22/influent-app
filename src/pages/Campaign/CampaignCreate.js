@@ -3,8 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
 import { Button, TextField, Select, MenuItem, FormControl, InputLabel, RadioGroup, FormControlLabel, Radio, Checkbox, ListItemText, OutlinedInput, Chip, Box } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
+import { Sidebar, Topbar } from '../../components/common';
+import Card from '@mui/material/Card';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Container from '@mui/material/Container';
+import Stack from '@mui/material/Stack';
+import Grid from '@mui/material/Grid';
 import DeleteIcon from '../../assets/delete.svg';
 import BackIcon from '../../assets/back.svg';
 import UploadIcon from '../../assets/upload.svg';
@@ -23,38 +28,41 @@ function CollapsibleSection({ title, children, status = '', defaultOpen = false,
   
   return (
     <div style={{ 
-      marginBottom: '24px', 
+      marginBottom: 3,
       background: '#fff', 
-      borderRadius: '12px', 
+      borderRadius: 3,
       boxShadow: '0 2px 8px #e3e3e3',
       opacity: disabled ? 0.5 : 1
     }}>
       <div
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
-          cursor: disabled ? 'not-allowed' : 'pointer', 
-          fontWeight: 600, 
-          fontSize: '1.2rem', 
-          padding: '18px 24px', 
+        style={{
+          fontSize: 19,
+          paddingTop: 2.25,
+          paddingBottom: 2.25,
+          paddingLeft: 3,
+          paddingRight: 3,
           borderBottom: open ? '1px solid #eee' : 'none',
-          color: disabled ? '#999' : 'inherit'
+          color: disabled ? '#999' : 'inherit',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          fontWeight: 600
         }}
         onClick={handleClick}
       >
         <span>
-          <span style={{ marginRight: '8px', color: disabled ? '#ccc' : 'inherit' }}>
+          <span style={{ marginRight: 1, color: disabled ? '#ccc' : 'inherit' }}>
             {disabled ? '▶' : (open ? '▼' : '▶')}
           </span>
           {title}
         </span>
-        <span style={{ color: status === 'done' ? 'green' : (disabled ? '#ccc' : '#888'), fontWeight: 600, fontSize: '1rem' }}>
+        <span style={{ color: status === 'done' ? 'green' : (disabled ? '#ccc' : '#888'), fontWeight: 600, fontSize: 16 }}>
           {status === 'done' ? <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Done <FaCheckCircle /></span> : status || ''}
         </span>
       </div>
       {open && !disabled && (
-        <div style={{ padding: '24px' }}>{children}</div>
+        <div style={{ padding: 3 }}>{children}</div>
       )}
     </div>
   );
@@ -738,73 +746,49 @@ function CampaignCreate() {
   };
 
   return (
-    <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      <div style={{ marginLeft: !isMobile ? '260px' : '0', flex: 1 }}>
-        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        
-        <div style={{ marginTop: '72px', background: '#f7fafc', minHeight: 'calc(100vh - 72px)', padding: '32px' }}>
-          <div style={{ maxWidth: isMobile ? '100%' : '900px', margin: '0 auto' }}>
-        <div style={{ background: '#fff', borderRadius: '20px', boxShadow: '0 4px 24px #e3e3e3', padding: isMobile ? '20px' : '32px', marginBottom: '32px' }}>
-          {/* Back Button */}
-          
-          {/* Header with Title and Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  // If read-only (paid/active), go directly back to campaign list
-                  if (isReadOnly) {
-                    navigate('/campaigns');
-                  } else {
-                    setShowHeaderBackModal(true);
-                  }
-                }}
-                aria-label="Kembali ke daftar campaign"
-                style={{
-                  background: 'rgba(102,126,234,0.12)', // soft purple
-                  border: 'none',
-                  borderRadius: '18px',
-                  width: '36px',
-                  height: '36px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 24px rgba(102,126,234,0.08)',
-                  cursor: 'pointer',
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(102,126,234,0.12)';
-                  e.currentTarget.style.boxShadow = '0 4px 24px rgba(102,126,234,0.08)';
-                }}
-              >
-                <img src={BackIcon} alt="Back" style={{ width: '16px', height: '16px' }} />
-              </button>
-              <h2 style={{ fontWeight: 600, margin: 0 }}>
-                {isReadOnly ? 'Campaign Details' : 
-                 isEditMode ? 'Edit Campaign' : 'Create Campaign'}
-              </h2>
-              {isEditMode && !isReadOnly && (
-                <img 
-                  onClick={handleDelete}
-                  src={DeleteIcon}
-                  alt="Campaign" 
-                  style={{ width: '20px', height: '20px', borderRadius: '50%' }} 
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Step Indicator */}
+    <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Box sx={{ ml: !isMobile ? 32.5 : 0, flex: 1 }}>
+        <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Box sx={{ mt: 9, bgcolor: '#f7fafc', minHeight: 'calc(100vh - 72px)', py: 4 }}>
+          <Container maxWidth="md">
+            <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 2, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden', boxShadow: 6 }}>
+              {/* Header with Title and Buttons */}
+              <Stack direction="row" alignItems="center" spacing={2} mb={3}>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => {
+                    if (isReadOnly) {
+                      navigate('/campaigns');
+                    } else {
+                      setShowHeaderBackModal(true);
+                    }
+                  }}
+                  sx={{ minWidth: 36, minHeight: 36, borderRadius: 2, p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <img src={BackIcon} alt="Back" style={{ width: 16, height: 16 }} />
+                </Button>
+                <Typography variant="h5" fontWeight={600} sx={{ flex: 1 }}>
+                  {isReadOnly ? 'Campaign Details' : isEditMode ? 'Edit Campaign' : 'Create Campaign'}
+                </Typography>
+                {isEditMode && !isReadOnly && (
+                  <Button onClick={handleDelete} sx={{ minWidth: 0, p: 0, borderRadius: '50%' }}>
+                    <img src={DeleteIcon} alt="Delete" style={{ width: 20, height: 20, borderRadius: '50%' }} />
+                  </Button>
+                )}
+              </Stack>
+              {/* ...existing code... */}
           <div 
             className="step-indicator-container"
             style={{ 
               background: '#f8f9fa', 
-              borderRadius: '12px', 
-              padding: '14px 16px', 
-              marginBottom: '24px',
+              borderRadius: 3, 
+              paddingTop: 1.75,
+              paddingBottom: 1.75,
+              paddingLeft: 2,
+              paddingRight: 2,
+              marginBottom: 3,
               overflowX: 'auto',
               overflowY: 'hidden',
               WebkitOverflowScrolling: 'touch',
@@ -814,7 +798,7 @@ function CampaignCreate() {
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '4px', 
+              gap: 0.5, 
               flexWrap: 'nowrap',
               width: '100%',
               justifyContent: 'space-between'
@@ -839,7 +823,7 @@ function CampaignCreate() {
                       style={{ 
                         display: 'flex', 
                         alignItems: 'center', 
-                        gap: '6px',
+                        gap: 0.75,
                         cursor: canAccess ? 'pointer' : 'not-allowed',
                         opacity: canAccess ? 1 : 0.5,
                         transition: 'all 0.3s ease',
@@ -848,8 +832,8 @@ function CampaignCreate() {
                       }}
                     >
                       <div style={{
-                        width: '32px',
-                        height: '32px',
+                        width: 4,
+                        height: 4,
                         borderRadius: '50%',
                         background: isActive 
                           ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
@@ -858,9 +842,9 @@ function CampaignCreate() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '0.85rem',
+                        fontSize: 14,
                         fontWeight: '700',
-                        boxShadow: isActive ? '0 4px 12px rgba(102, 126, 234, 0.4)' : 'none',
+                        boxShadow: isActive ? '0 0.5 1.5 rgba(102, 126, 234, 0.4)' : 'none',
                         transition: 'all 0.3s ease',
                         flexShrink: 0,
                         transform: isActive ? 'scale(1.05)' : 'scale(1)'
@@ -868,7 +852,7 @@ function CampaignCreate() {
                         {step.num}
                       </div>
                       <span style={{ 
-                        fontSize: '0.75rem', 
+                        fontSize: 12, 
                         color: isActive ? '#667eea' : '#adb5bd',
                         fontWeight: isActive ? '600' : '500',
                         whiteSpace: 'nowrap',
@@ -876,7 +860,7 @@ function CampaignCreate() {
                         textOverflow: 'ellipsis',
                         transition: 'all 0.3s ease'
                       }}>
-                        {window.innerWidth < 768 ? step.shortName : step.name}
+                        {window.innerWidth < 48 ? step.shortName : step.name}
                       </span>
                     </div>
                   </React.Fragment>
@@ -887,16 +871,16 @@ function CampaignCreate() {
 
           {/* Step Content Card */}
           {currentStep === 1 && (
-            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Detail Campaign</h3>
+            <div style={{ background: '#fff', borderRadius: 3, boxShadow: '0 2px 8px #e3e3e3', padding: 4, marginBottom: 3 }}>
+              <h3 style={{ marginTop: 0, marginBottom: 3, fontSize: 21, fontWeight: 600 }}>Detail Campaign</h3>
             <form onSubmit={handleSave}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '18px', marginTop: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 2.25, marginTop: 0.75 }}>
                 <div style={{ 
-                  width: '180px', 
-                  height: '160px', 
+                  width: 22.5, 
+                  height: 20, 
                   background: imagePreview ? '#fff' : '#f5f5f5',
-                  borderRadius: '8px', 
-                  marginRight: '18px', 
+                  borderRadius: 1,
+                  marginRight: 2.25,
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
@@ -927,7 +911,7 @@ function CampaignCreate() {
                         width: 'auto', 
                         height: 'auto', 
                         objectFit: 'cover', 
-                        borderRadius: '14px'
+                        borderRadius: 3
                       }} />
                       <div style={{
                         position: 'absolute',
@@ -941,7 +925,7 @@ function CampaignCreate() {
                         justifyContent: 'center',
                         opacity: 0,
                         transition: 'opacity 0.3s ease',
-                        borderRadius: '14px'
+                        borderRadius: 3
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.opacity = '1';
@@ -951,16 +935,16 @@ function CampaignCreate() {
                       }}
                       >
                         <div style={{ textAlign: 'center', color: '#fff' }}>
-                          <div style={{ fontSize: '1.5rem', marginBottom: '4px' }}>📷</div>
-                          <div style={{ fontSize: '0.8rem' }}>Change Image</div>
+                          <div style={{ fontSize: 24, marginBottom: 0.5 }}>📷</div>
+                          <div style={{ fontSize: 13 }}>Change Image</div>
                         </div>
                       </div>
                     </>
                   ) : (
                     <div style={{ textAlign: 'center', color: '#000000ff' }}>
-                      <img src={UploadIcon} alt="Upload" style={{ width: '32px', height: '32px', marginBottom: '8px' }} />
-                      <div style={{ fontSize: '0.9rem', fontWeight: '500', opacity: 0.9 }}><RequiredLabel>Upload Image</RequiredLabel></div>
-                      <div style={{ fontSize: '0.7rem', opacity: 0.7, marginTop: '4px' }}>Click to browse</div>
+                      <img src={UploadIcon} alt="Upload" style={{ width: 4, height: 4, marginBottom: 1 }} />
+                      <div style={{ fontSize: 14, fontWeight: 500, opacity: 0.9 }}><RequiredLabel>Upload Image</RequiredLabel></div>
+                      <div style={{ fontSize: 11, opacity: 0.7, marginTop: 0.5 }}>Click to browse</div>
                     </div>
                   )}
                   <input
@@ -977,12 +961,12 @@ function CampaignCreate() {
                   variant="outlined"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
-                  style={{ flex: 1, marginBottom: '18px' }}
+                  style={{ flex: 1, marginBottom: 2.25 }}
                   InputLabelProps={{ shrink: true }}
                   disabled={isReadOnly}
                 />
               </div>
-              <div style={{ marginBottom: '18px', marginTop: '6px' }}>
+              <div style={{ marginBottom: 2.25, marginTop: 0.75 }}>
                 <Autocomplete
                   options={categoryOptions}
                   value={campaignCategory}
@@ -999,14 +983,14 @@ function CampaignCreate() {
                         '& .MuiOutlinedInput-root': {
                           '& fieldset': {
                             borderColor: '#d1d5db',
-                            borderWidth: '1px'
+                            borderWidth: 1
                           },
                           '&:hover fieldset': {
                             borderColor: '#667eea'
                           },
                           '&.Mui-focused fieldset': {
                             borderColor: '#667eea',
-                            borderWidth: '2px'
+                            borderWidth: 2
                           }
                         }
                       }}
@@ -1014,9 +998,8 @@ function CampaignCreate() {
                   )}
                 />
               </div>
-              
               {/* Toggle untuk produk */}
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -1031,7 +1014,7 @@ function CampaignCreate() {
               </div>
               {hasProduct && (
                 <>
-                  <div style={{ marginBottom: '18px' }}>
+                  <div style={{ marginBottom: 2.25 }}>
                     <TextField
                       label={<RequiredLabel>Nama Produk</RequiredLabel>}
                       variant="outlined"
@@ -1043,7 +1026,7 @@ function CampaignCreate() {
                       disabled={isReadOnly}
                     />
                   </div>
-                  <div style={{ marginBottom: '18px' }}>
+                  <div style={{ marginBottom: 2.25 }}>
                     <TextField
                       label={<RequiredLabel>Nilai Produk</RequiredLabel>}
                       variant="outlined"
@@ -1053,7 +1036,7 @@ function CampaignCreate() {
                       fullWidth
                       InputLabelProps={{ shrink: true }}
                       InputProps={{
-                        startAdornment: <span style={{ marginRight: '4px', color: '#666' }}>Rp</span>,
+                        startAdornment: <span style={{ marginRight: 1, color: '#666' }}>Rp</span>,
                       }}
                       // helperText="Format otomatis: 89000 → Rp 89.000"
                       disabled={isReadOnly}
@@ -1061,8 +1044,7 @@ function CampaignCreate() {
                   </div>
                 </>
               )}
-              
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <TextField
                   label={<RequiredLabel>{hasProduct ? 'Deskripsi Produk' : 'Deskripsi Campaign'}</RequiredLabel>}
                   variant="outlined"
@@ -1080,9 +1062,8 @@ function CampaignCreate() {
                 />
               </div>
             </form>
-            
             {/* Navigation Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, paddingTop: 3, borderTop: '1px solid #eee' }}>
               <div></div>
               <Button
                 onClick={handleNext}
@@ -1090,9 +1071,12 @@ function CampaignCreate() {
                 color="primary"
                 size="large"
                 style={{ 
-                  borderRadius: '8px',
+                  borderRadius: 2,
                   fontWeight: 600,
-                  padding: '12px 32px',
+                  paddingTop: 1.5,
+                  paddingBottom: 1.5,
+                  paddingLeft: 4,
+                  paddingRight: 4,
                   background: '#667eea',
                   border: 'none'
                 }}
@@ -1105,10 +1089,10 @@ function CampaignCreate() {
 
           {/* Step 2: Kriteria Influencer */}
           {currentStep === 2 && (
-            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Kriteria Influencer</h3>
+            <div style={{ background: '#fff', borderRadius: 3, boxShadow: '0 2px 8px #e3e3e3', padding: 4, marginBottom: 3 }}>
+              <h3 style={{ margin: '0 0 3 0', fontSize: 21, fontWeight: 600 }}>Kriteria Influencer</h3>
             <form>
-              <div style={{ marginBottom: '18px', marginTop: '6px' }}>
+              <div style={{ marginBottom: 2.25, marginTop: 0.75 }}>
                 <Autocomplete
                   multiple
                   options={[
@@ -1138,7 +1122,7 @@ function CampaignCreate() {
                           style={{
                             backgroundColor: '#f0f0f0',
                             border: '1px solid #ccc',
-                            borderRadius: '16px'
+                            borderRadius: 2
                           }}
                         />
                       );
@@ -1155,14 +1139,14 @@ function CampaignCreate() {
                         '& .MuiOutlinedInput-root': {
                           '& fieldset': {
                             borderColor: '#d1d5db',
-                            borderWidth: '1px'
+                            borderWidth: 1
                           },
                           '&:hover fieldset': {
                             borderColor: '#667eea'
                           },
                           '&.Mui-focused fieldset': {
                             borderColor: '#667eea',
-                            borderWidth: '2px'
+                            borderWidth: 2
                           }
                         }
                       }}
@@ -1171,7 +1155,7 @@ function CampaignCreate() {
                 />
               </div>
 
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <TextField
                   label={<RequiredLabel>Minimal Jumlah Followers</RequiredLabel>}
                   variant="outlined"
@@ -1186,44 +1170,44 @@ function CampaignCreate() {
                     '& .MuiOutlinedInput-root': {
                       '& fieldset': {
                         borderColor: '#d1d5db',
-                        borderWidth: '1px'
+                        borderWidth: 1
                       },
                       '&:hover fieldset': {
                         borderColor: '#667eea'
                       },
                       '&.Mui-focused fieldset': {
                         borderColor: '#667eea',
-                        borderWidth: '2px'
+                        borderWidth: 2
                       }
                     }
                   }}
                 />
               </div>
 
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+              <div style={{ marginBottom: 2.25 }}>
+                <label style={{ fontWeight: 600, display: 'block', marginBottom: 0.5 }}>
                   <RequiredLabel>Target Gender</RequiredLabel>
                 </label>
                 <RadioGroup
                   row
                   value={selectedGender}
                   onChange={(e) => setSelectedGender(e.target.value)}
-                  style={{ marginBottom: '12px' }}
+                  style={{ marginBottom: 1.5 }}
                 >
                   <FormControlLabel value="male" control={<Radio disabled={isReadOnly} />} label="Laki-Laki" />
                   <FormControlLabel value="female" control={<Radio disabled={isReadOnly} />} label="Perempuan" />
                 </RadioGroup>
               </div>
 
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+              <div style={{ marginBottom: 2.25 }}>
+                <label style={{ fontWeight: 600, display: 'block', marginBottom: 0.75 }}>
                   <RequiredLabel>Target Usia</RequiredLabel>
                 </label>
                 <RadioGroup
                   row
                   value={selectedAge}
                   onChange={(e) => setSelectedAge(e.target.value)}
-                  style={{ marginBottom: '12px' }}
+                  style={{ marginBottom: 1.5 }}
                 >
                   <FormControlLabel value="< 18 tahun" control={<Radio disabled={isReadOnly} />} label="< 18 tahun" />
                   <FormControlLabel value="18-24 tahun" control={<Radio disabled={isReadOnly} />} label="18-24 tahun" />
@@ -1233,7 +1217,7 @@ function CampaignCreate() {
                 </RadioGroup>
               </div>
 
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <label style={{ fontWeight: 600 }}>Lainnya..</label>
                 <TextField
                   placeholder="Tambahkan kriteria lainnya jika ada"
@@ -1241,22 +1225,24 @@ function CampaignCreate() {
                   fullWidth
                   multiline
                   rows={2}
-                  style={{ marginTop: '6px' }}
+                  style={{ marginTop: 0.75 }}
                   disabled={isReadOnly}
                 />
               </div>
             </form>
-            
             {/* Navigation Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, paddingTop: 3, borderTop: '1px solid #eee' }}>
               <Button
                 onClick={handleBack}
                 variant="outlined"
                 size="large"
                 style={{ 
-                  borderRadius: '8px',
+                  borderRadius: 2,
                   fontWeight: 600,
-                  padding: '12px 32px'
+                  paddingTop: 1.5,
+                  paddingBottom: 1.5,
+                  paddingLeft: 4,
+                  paddingRight: 4
                 }}
               >
                 ← Back
@@ -1267,9 +1253,12 @@ function CampaignCreate() {
                 color="primary"
                 size="large"
                 style={{ 
-                  borderRadius: '8px',
+                  borderRadius: 2,
                   fontWeight: 600,
-                  padding: '12px 32px',
+                  paddingTop: 1.5,
+                  paddingBottom: 1.5,
+                  paddingLeft: 4,
+                  paddingRight: 4,
                   background: '#667eea',
                   border: 'none'
                 }}
@@ -1282,29 +1271,32 @@ function CampaignCreate() {
 
           {/* Step 3: Konten & Anggaran */}
           {currentStep === 3 && (
-            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Konten & Anggaran</h3>
+            <div style={{ background: '#fff', borderRadius: 3, boxShadow: '0 2px 8px #e3e3e3', padding: 4, marginBottom: 3 }}>
+              <h3 style={{ margin: '0 0 3 0', fontSize: 21, fontWeight: 600 }}>Konten & Anggaran</h3>
             <form>
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Platform:</label>
-                <span style={{ fontSize: '1.1rem' }}>Instagram</span>
+              <div style={{ marginBottom: 2.25 }}>
+                <label style={{ fontWeight: 600, display: 'block', marginBottom: 0.75 }}>Platform:</label>
+                <span style={{ fontSize: 17 }}>Instagram</span>
               </div>
 
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+              <div style={{ marginBottom: 2.25 }}>
+                <label style={{ fontWeight: 600, display: 'block', marginBottom: 0.75 }}>
                   <RequiredLabel>Jumlah Influencer yang Dibutuhkan</RequiredLabel>
                 </label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Button 
                     variant="outlined" 
                     onClick={() => setInfluencerCount(Math.max(1, influencer_count - 1))}
                     disabled={isReadOnly}
                     style={{ 
-                      padding: '8px 16px',
-                      borderRadius: '8px',
+                      paddingTop: 1,
+                      paddingBottom: 1,
+                      paddingLeft: 2,
+                      paddingRight: 2,
+                      borderRadius: 2,
                       flex: '0 0 auto',
-                      minWidth: '40px',
-                      height: '40px',
+                      minWidth: 5,
+                      height: 5,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -1317,7 +1309,7 @@ function CampaignCreate() {
                     min="1"
                     value={influencer_count}
                     onChange={(e) => setInfluencerCount(Math.max(1, parseInt(e.target.value) || 1))}
-                    style={{ width: '80px', padding: '8px', borderRadius: '8px', textAlign: 'center' }}
+                    style={{ width: 10, padding: 1, borderRadius: 2, textAlign: 'center' }}
                     disabled={isReadOnly}
                   />
                   <Button 
@@ -1325,11 +1317,14 @@ function CampaignCreate() {
                     onClick={() => setInfluencerCount(influencer_count + 1)}
                     disabled={isReadOnly}
                     style={{ 
-                      padding: '8px 16px',
-                      borderRadius: '8px',
+                      paddingTop: 1,
+                      paddingBottom: 1,
+                      paddingLeft: 2,
+                      paddingRight: 2,
+                      borderRadius: 2,
                       flex: '0 0 auto',
-                      minWidth: '40px',
-                      height: '40px',
+                      minWidth: 5,
+                      height: 5,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -1342,45 +1337,51 @@ function CampaignCreate() {
 
               {contentItems.map((item, index) => (
                 <div key={item.id} style={{ 
-                  marginBottom: '18px',
-                  padding: '16px',
+                  marginBottom: 2.25,
+                  padding: 2,
                   border: '1px solid #e3e3e3',
-                  borderRadius: '8px',
+                  borderRadius: 2,
                   background: '#fff'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 1.5 }}>
                     <h4 style={{ margin: 0, fontWeight: 600 }}>Konten {index + 1}</h4>
                     {contentItems.length > 1 && !isReadOnly && (
                       <Button
                         variant="outlined"
                         onClick={() => removeContentItem(item.id)}
                         style={{ 
-                          padding: '4px 8px',
+                          paddingTop: 0.5,
+                          paddingBottom: 0.5,
+                          paddingLeft: 1,
+                          paddingRight: 1,
                           borderColor: '#dc3545',
                           color: '#dc3545',
-                          borderRadius: '4px',
-                          height: '36px',
-                          minWidth: '80px'
+                          borderRadius: 1,
+                          height: 4.5,
+                          minWidth: 10
                         }}
                       >
                         Remove
                       </Button>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
                     <div style={{ flex: '0 0 auto' }}>
-                      <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Jumlah Post</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <label style={{ fontWeight: 600, display: 'block', marginBottom: 0.75 }}>Jumlah Post</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Button
                           variant="outlined"
                           onClick={() => updateContentItem(item.id, 'post_count', Math.max(1, item.post_count - 1))}
                           disabled={isReadOnly}
                           style={{ 
-                            padding: '8px 16px',
-                            borderRadius: '8px',
+                            paddingTop: 1,
+                            paddingBottom: 1,
+                            paddingLeft: 2,
+                            paddingRight: 2,
+                            borderRadius: 2,
                             flex: '0 0 auto',
-                            minWidth: '40px',
-                            height: '40px',
+                            minWidth: 5,
+                            height: 5,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center'
@@ -1393,7 +1394,7 @@ function CampaignCreate() {
                           min="1"
                           value={item.post_count}
                           onChange={(e) => updateContentItem(item.id, 'post_count', parseInt(e.target.value) || 1)}
-                          style={{ width: '80px', padding: '8px', borderRadius: '8px', textAlign: 'center' }}
+                          style={{ width: 10, padding: 1, borderRadius: 2, textAlign: 'center' }}
                           disabled={isReadOnly}
                         />
                         <Button
@@ -1401,11 +1402,14 @@ function CampaignCreate() {
                           onClick={() => updateContentItem(item.id, 'post_count', item.post_count + 1)}
                           disabled={isReadOnly}
                           style={{ 
-                            padding: '8px 16px',
-                            borderRadius: '8px',
+                            paddingTop: 1,
+                            paddingBottom: 1,
+                            paddingLeft: 2,
+                            paddingRight: 2,
+                            borderRadius: 2,
                             flex: '0 0 auto',
-                            minWidth: '40px',
-                            height: '40px',
+                            minWidth: 5,
+                            height: 5,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center'
@@ -1417,7 +1421,7 @@ function CampaignCreate() {
                     </div>
 
                     <div style={{ flex: 1 }}>
-                      <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Jenis Konten</label>
+                      <label style={{ fontWeight: 600, display: 'block', marginBottom: 0.75 }}>Jenis Konten</label>
                       <FormControl fullWidth variant="outlined" disabled={isReadOnly}>
                         <Select
                           value={item.content_type}
@@ -1435,20 +1439,21 @@ function CampaignCreate() {
                   </div>
                 </div>
               ))}
-              
+
               {!isReadOnly && (
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <Button 
                   variant="outlined" 
                   onClick={addContentItem}
                   style={{ 
                     width: '100%',
-                    padding: '12px',
+                    paddingTop: 1.5,
+                    paddingBottom: 1.5,
                     border: '1px dashed #ccc',
-                    borderRadius: '8px',
+                    borderRadius: 2,
                     cursor: 'pointer',
                     color: '#666',
-                    fontSize: '1rem'
+                    fontSize: 16
                   }}
                 >
                   + Add Konten
@@ -1456,7 +1461,7 @@ function CampaignCreate() {
               </div>
               )}
 
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <TextField
                   label={<RequiredLabel>Harga per Task</RequiredLabel>}
                   variant="outlined"
@@ -1466,38 +1471,43 @@ function CampaignCreate() {
                   fullWidth
                   InputLabelProps={{ shrink: true }}
                   InputProps={{
-                    startAdornment: <span style={{ marginRight: '4px', color: '#666' }}>Rp</span>,
+                    startAdornment: <span style={{ marginRight: 1, color: '#666' }}>Rp</span>,
                   }}
                   // helperText="💰 Format otomatis: 50000 → Rp 50.000"
                   disabled={isReadOnly}
                 />
               </div>
 
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Estimasi Total Anggaran</label>
+              <div style={{ marginBottom: 2.25 }}>
+                <label style={{ fontWeight: 600, display: 'block', marginBottom: 0.75 }}>Estimasi Total Anggaran</label>
                 <div style={{ 
-                  padding: '12px', 
-                  borderRadius: '8px', 
+                  paddingTop: 1.5,
+                  paddingBottom: 1.5,
+                  paddingLeft: 2,
+                  paddingRight: 2,
+                  borderRadius: 2,
                   background: '#f8f9fa',
                   border: '1px solid #dee2e6',
-                  fontSize: '1.1rem'
+                  fontSize: 17
                 }}>
                   Rp {estimatedBudget.toLocaleString()}
                 </div>
               </div>
 
             </form>
-            
             {/* Navigation Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, paddingTop: 3, borderTop: '1px solid #eee' }}>
               <Button
                 onClick={handleBack}
                 variant="outlined"
                 size="large"
                 style={{ 
-                  borderRadius: '8px',
+                  borderRadius: 2,
                   fontWeight: 600,
-                  padding: '12px 32px'
+                  paddingTop: 1.5,
+                  paddingBottom: 1.5,
+                  paddingLeft: 4,
+                  paddingRight: 4
                 }}
               >
                 ← Back
@@ -1508,9 +1518,12 @@ function CampaignCreate() {
                 color="primary"
                 size="large"
                 style={{ 
-                  borderRadius: '8px',
+                  borderRadius: 2,
                   fontWeight: 600,
-                  padding: '12px 32px',
+                  paddingTop: 1.5,
+                  paddingBottom: 1.5,
+                  paddingLeft: 4,
+                  paddingRight: 4,
                   background: '#667eea',
                   border: 'none'
                 }}
@@ -1523,14 +1536,13 @@ function CampaignCreate() {
 
           {/* Step 4: Brief Campaign */}
           {currentStep === 4 && (
-            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Brief Campaign</h3>
+            <div style={{ background: '#fff', borderRadius: 3, boxShadow: '0 2px 8px #e3e3e3', padding: 4, marginBottom: 3 }}>
+              <h3 style={{ margin: '0 0 3 0', fontSize: 21, fontWeight: 600 }}>Brief Campaign</h3>
             <form>
-              <p style={{ color: '#666', marginBottom: '16px', fontSize: '14px' }}>
+              <p style={{ color: '#666', marginBottom: 2, fontSize: 14 }}>
                 💡 <strong>Tips:</strong> Berikan waktu lebih jika campaign memerlukan pengiriman barang ke influencer. Minimal 1 minggu antar tanggal.
               </p>
-              
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <TextField
                   label={<RequiredLabel>Deadline Proposal Konten</RequiredLabel>}
                   type="date"
@@ -1545,8 +1557,7 @@ function CampaignCreate() {
                   disabled={isReadOnly}
                 />
               </div>
-              
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <TextField
                   label={<RequiredLabel>Tanggal Campaign Mulai</RequiredLabel>}
                   type="date"
@@ -1561,8 +1572,7 @@ function CampaignCreate() {
                   disabled={isReadOnly}
                 />
               </div>
-
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <TextField
                   label={<RequiredLabel>Tanggal Campaign Selesai</RequiredLabel>}
                   type="date"
@@ -1578,8 +1588,7 @@ function CampaignCreate() {
                   disabled={isReadOnly}
                 />
               </div>
-
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <TextField
                   label="Aturan Foto/Video (Opsional)"
                   variant="outlined"
@@ -1592,8 +1601,7 @@ function CampaignCreate() {
                   disabled={isReadOnly}
                 />
               </div>
-
-              <div style={{ marginBottom: '18px' }}>
+              <div style={{ marginBottom: 2.25 }}>
                 <TextField
                   label="Aturan Caption (Opsional)"
                   variant="outlined"
@@ -1606,22 +1614,20 @@ function CampaignCreate() {
                   disabled={isReadOnly}
                 />
               </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>
+              <div style={{ marginBottom: 2.25 }}>
+                <label style={{ fontWeight: 600, display: 'block', marginBottom: 1 }}>
                   Referensi Foto/Video (Opsional)
                 </label>
-                
                 {/* Upload Button */}
                 <div 
                   style={{ 
                     border: '2px solid #667eea', 
-                    borderRadius: '12px', 
-                    padding: '16px', 
+                    borderRadius: 3, 
+                    padding: 2,
                     textAlign: 'center',
                     background: '#fff',
                     cursor: 'pointer',
-                    marginBottom: '16px',
+                    marginBottom: 2,
                     transition: 'all 0.3s ease'
                   }}
                   onClick={() => document.getElementById('referenceFileInput').click()}
@@ -1642,21 +1648,20 @@ function CampaignCreate() {
                     onChange={handleReferenceFileChange}
                     style={{ display: 'none' }}
                   />
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <img src={UploadIcon} alt="Upload" style={{ width: '24px', height: '24px', marginBottom: '4px' }} />
-                    <span style={{ color: '#667eea', fontWeight: 600, fontSize: '15px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    <img src={UploadIcon} alt="Upload" style={{ width: 3, height: 3, marginBottom: 0.5 }} />
+                    <span style={{ color: '#667eea', fontWeight: 600, fontSize: 15 }}>
                       Cari foto atau video
                     </span>
                   </div>
                 </div>
-
                 {/* File Previews Grid */}
                 {referenceFiles.length > 0 && (
                   <div style={{ 
                     display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', 
-                    gap: '12px',
-                    marginTop: '16px'
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(19, 1fr))', 
+                    gap: 1.5,
+                    marginTop: 2
                   }}>
                     {referenceFiles.map((fileObj, index) => (
                       <div 
@@ -1664,8 +1669,8 @@ function CampaignCreate() {
                         style={{ 
                           position: 'relative',
                           border: '1px solid #e0e0e0',
-                          borderRadius: '8px',
-                          padding: '8px',
+                          borderRadius: 2,
+                          padding: 1,
                           background: '#fff',
                           overflow: 'hidden'
                         }}
@@ -1675,13 +1680,13 @@ function CampaignCreate() {
                           onClick={() => handleRemoveReferenceFile(index)}
                           style={{
                             position: 'absolute',
-                            top: '8px',
-                            right: '8px',
+                            top: 1,
+                            right: 1,
                             background: '#fff',
                             border: 'none',
                             borderRadius: '50%',
-                            width: '28px',
-                            height: '28px',
+                            width: 3.5,
+                            height: 3.5,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1702,20 +1707,19 @@ function CampaignCreate() {
                           <img 
                             src={DeleteIcon} 
                             alt="Delete" 
-                            style={{ width: '14px', height: '14px' }} 
+                            style={{ width: 1.75, height: 1.75 }} 
                           />
                         </button>
-
                         {/* Preview */}
                         {fileObj.preview ? (
                           <div style={{ 
                             width: '100%', 
-                            height: '120px', 
+                            height: 15, 
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center',
                             background: '#f5f5f5',
-                            borderRadius: '4px',
+                            borderRadius: 1,
                             overflow: 'hidden'
                           }}>
                             {fileObj.type === 'image' ? (
@@ -1742,21 +1746,20 @@ function CampaignCreate() {
                         ) : (
                           <div style={{ 
                             width: '100%', 
-                            height: '120px', 
+                            height: 15, 
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center',
                             background: '#f5f5f5',
-                            borderRadius: '4px'
+                            borderRadius: 1
                           }}>
-                            <span style={{ fontSize: '32px' }}>📄</span>
+                            <span style={{ fontSize: 24 }}>📄</span>
                           </div>
                         )}
-
                         {/* File Name */}
                         <p style={{ 
-                          marginTop: '8px', 
-                          fontSize: '11px', 
+                          marginTop: 1, 
+                          fontSize: 11, 
                           color: '#666',
                           textAlign: 'center',
                           whiteSpace: 'nowrap',
@@ -1771,17 +1774,19 @@ function CampaignCreate() {
                 )}
               </div>
             </form>
-            
             {/* Navigation Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, paddingTop: 3, borderTop: '1px solid #eee' }}>
               <Button
                 onClick={handleBack}
                 variant="outlined"
                 size="large"
                 style={{ 
-                  borderRadius: '8px',
+                  borderRadius: 2,
                   fontWeight: 600,
-                  padding: '12px 32px'
+                  paddingTop: 1.5,
+                  paddingBottom: 1.5,
+                  paddingLeft: 4,
+                  paddingRight: 4
                 }}
               >
                 ← Back
@@ -1793,9 +1798,12 @@ function CampaignCreate() {
                 color="primary"
                 size="large"
                 style={{ 
-                  borderRadius: '8px',
+                  borderRadius: 2,
                   fontWeight: 600,
-                  padding: '12px 32px',
+                  paddingTop: 1.5,
+                  paddingBottom: 1.5,
+                  paddingLeft: 4,
+                  paddingRight: 4,
                   background: '#667eea',
                   border: 'none'
                 }}
@@ -1806,181 +1814,11 @@ function CampaignCreate() {
             </div>
           </div>
           )}
-        </div>
-      </div>
-
-      {/* Delete Confirmation Popup */}
-      {showDeletePopup && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999
-          }}
-          onClick={cancelDelete}
-        >
-          <div
-            style={{
-              background: '#fff',
-              borderRadius: '16px',
-              padding: '32px',
-              maxWidth: '450px',
-              width: '90%',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-              animation: 'slideIn 0.3s ease-out'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <div style={{ fontSize: '4rem', marginBottom: '16px' }}>🗑️</div>
-              <h3 style={{ margin: '0 0 12px 0', fontSize: '1.5rem', fontWeight: 600, color: '#333' }}>
-                Delete Campaign?
-              </h3>
-              <p style={{ margin: 0, color: '#666', fontSize: '0.95rem', lineHeight: '1.5' }}>
-                Are you sure you want to delete this campaign? This action cannot be undone and all data will be permanently removed.
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button
-                onClick={cancelDelete}
-                style={{
-                  flex: 1,
-                  padding: '12px 24px',
-                  border: '2px solid #ddd',
-                  background: '#fff',
-                  color: '#333',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#f8f9fa';
-                  e.target.style.borderColor = '#999';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = '#fff';
-                  e.target.style.borderColor = '#ddd';
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                style={{
-                  flex: 1,
-                  padding: '12px 24px',
-                  border: 'none',
-                  background: '#dc3545',
-                  color: '#fff',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#c82333';
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = '#dc3545';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Back Confirmation Modal */}
-      <Modal
-        isOpen={showBackModal}
-        onClose={() => setShowBackModal(false)}
-        title="Keluar dari Halaman Ini?"
-        showActions={false}
-      >
-        <div>
-          <p style={{ marginBottom: '24px', color: '#666' }}>
-            Apakah Anda ingin menyimpan draft atau keluar tanpa menyimpan?
-          </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <Button 
-              variant="secondary" 
-              onClick={() => setShowBackModal(false)}
-            >
-              Tetap di Halaman
-            </Button>
-            <Button 
-              variant="primary" 
-              onClick={() => {
-                setShowBackModal(false);
-                navigate('/campaigns');
-              }}
-            >
-              Keluar Tanpa Menyimpan
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Header Back Button Modal */}
-      <Modal
-        isOpen={showHeaderBackModal}
-        onClose={() => setShowHeaderBackModal(false)}
-        title="Simpan atau Keluar?"
-        showActions={false}
-      >
-        <div>
-          <p style={{ marginBottom: '24px', color: '#666' }}>
-            Apakah Anda ingin menyimpan campaign sebagai draft atau keluar tanpa menyimpan?
-          </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <Button 
-              variant="secondary"
-              style={{
-                background: isHoveringBatal ? '#ecf0ffff' : '#ffffff',
-                borderColor: '#ccc',
-                color: '#667eea',
-                fontWeight: 'bold',
-                transition: 'background 0.3s ease'
-              }}
-              onMouseEnter={() => setIsHoveringBatal(true)}
-              onMouseLeave={() => setIsHoveringBatal(false)}
-              onClick={() => setShowHeaderBackModal(false)}
-            >
-              Batal
-            </Button>
-            <Button 
-              variant="primary" 
-              style={{
-                background: '#667eea',
-                borderColor: '#ccc',
-                color: '#ffffff',
-                fontWeight: 'bold'
-              }}
-              onClick={handleSaveAsDraft}
-            >
-              Simpan sebagai Draft
-            </Button>
-          </div>
-        </div>
-      </Modal>
-        </div>
-      </div>
-    </div>
+            </Paper>
+          </Container>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

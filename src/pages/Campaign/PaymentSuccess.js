@@ -2,18 +2,20 @@ import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
 import { FaCheckCircle } from 'react-icons/fa';
-import { FileText, ClipboardList, Notebook, FileEdit } from 'lucide-react';
+import { FileText } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 function PaymentSuccess() {
   const navigate = useNavigate();
-  const { id } = useParams(); // Campaign ID from URL
+  const { id } = useParams();
 
-  // Add confetti animation effect
   useEffect(() => {
-    // Simple confetti animation using emojis
     const confettiEmojis = ['🎉', '✨', '🎊', '⭐', '💫'];
     const confettiElements = [];
-
     for (let i = 0; i < 30; i++) {
       const confetti = document.createElement('div');
       confetti.innerText = confettiEmojis[Math.floor(Math.random() * confettiEmojis.length)];
@@ -25,24 +27,12 @@ function PaymentSuccess() {
       confetti.style.pointerEvents = 'none';
       confetti.style.zIndex = '9999';
       confetti.style.animation = `fall ${2 + Math.random() * 3}s linear forwards`;
-      
       document.body.appendChild(confetti);
       confettiElements.push(confetti);
     }
-
-    // Add keyframes for animation
     const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes fall {
-        to {
-          top: 100vh;
-          transform: rotate(${Math.random() * 360}deg);
-        }
-      }
-    `;
+    style.innerHTML = `@keyframes fall { to { top: 100vh; transform: rotate(${Math.random() * 360}deg); } }`;
     document.head.appendChild(style);
-
-    // Cleanup
     return () => {
       confettiElements.forEach(el => el.remove());
       style.remove();
@@ -50,171 +40,102 @@ function PaymentSuccess() {
   }, []);
 
   return (
-    <div style={{ 
-      background: COLORS.background, 
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: 'Montserrat, Arial, sans-serif',
-      padding: '24px'
-    }}>
-      <div style={{ 
-        maxWidth: '550px', 
-        width: '100%',
-        background: COLORS.white,
-        borderRadius: '24px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-        padding: '48px 32px',
-        textAlign: 'center'
-      }}>
-        {/* Success Icon */}
-        <div style={{
-          width: '120px',
-          height: '120px',
-          margin: '0 auto 32px auto',
-          background: '#43e97b',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 10px 30px rgba(67, 233, 123, 0.3)',
-          animation: 'scaleIn 0.5s ease-out'
-        }}>
-          <FaCheckCircle style={{ 
-            fontSize: '4rem', 
-            color: COLORS.white 
-          }} />
-        </div>
-
-        {/* Success Message */}
-        <h2 style={{ 
-          fontWeight: 700, 
-          fontSize: '1.8rem',
-          marginBottom: '16px',
-          color: COLORS.textPrimary,
-          lineHeight: '1.3'
-        }}>
+    <Box sx={{ bgcolor: COLORS.background, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Montserrat, Arial, sans-serif', p: 2.5 }}>
+      <Paper elevation={6} sx={{ maxWidth: 480, width: '100%', mx: 'auto', bgcolor: COLORS.white, borderRadius: 2.5, boxShadow: 9, p: { xs: 2, md: 4 }, textAlign: 'center' }}>
+        <Box sx={{ width: 95, height: 95, mx: 'auto', mb: 3, bgcolor: '#43e97b', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 4, animation: 'scaleIn 0.5s ease-out' }}>
+          <FaCheckCircle style={{ fontSize: '3rem', color: COLORS.white }} />
+        </Box>
+        <Typography variant="h5" fontWeight={700} sx={{ mb: 1.7, color: COLORS.textPrimary, lineHeight: 1.3 }}>
           Pembayaran Berhasil!
-        </h2>
-        
-        <p style={{ 
-          fontSize: '1.1rem',
-          color: COLORS.textSecondary,
-          marginBottom: '32px',
-          lineHeight: '1.6'
-        }}>
+        </Typography>
+        <Typography sx={{ fontSize: 16, color: COLORS.textSecondary, mb: 3, lineHeight: 1.6 }}>
           Campaign kamu sedang diproses dan akan segera aktif. Influencer dapat mulai mendaftar ke campaign Anda.
-        </p>
-
-        {/* Info Box */}
-        <div style={{
-          padding: '16px',
-          background: COLORS.primaryLight,
-          borderRadius: '12px',
-          border: '1px solid rgba(102, 126, 234, 0.2)',
-          marginBottom: '32px',
-          textAlign: 'left'
-        }}>
-          <p style={{ 
-            margin: '0 0 8px 0', 
-            fontSize: '0.9rem',
-            color: COLORS.textPrimary,
-            fontWeight: 600,
-            display: 'flex', 
-            alignItems: 'center',
-          }}>
-            <FileText size={18} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Apa selanjutnya?
-          </p>
-          <ul style={{
-            margin: 0,
-            paddingLeft: '20px',
-            fontSize: '0.85rem',
-            color: COLORS.textSecondary,
-            lineHeight: '1.8'
-          }}>
+        </Typography>
+        <Box sx={{ p: 1.7, bgcolor: COLORS.primaryLight, borderRadius: 2, border: '1px solid rgba(102, 126, 234, 0.2)', mb: 3, textAlign: 'left' }}>
+          <Typography sx={{ mb: 1, fontSize: 14, color: COLORS.textPrimary, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+            <FileText size={17} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Apa selanjutnya?
+          </Typography>
+          <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.75 }}>
             <li>Influencer akan melihat dan mendaftar ke campaign Anda</li>
             <li>Anda dapat melihat dan memilih influencer yang sesuai</li>
             <li>Campaign akan berjalan sesuai timeline yang ditentukan</li>
-          </ul>
-        </div>
-
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <button
+          </Box>
+        </Box>
+        <Stack spacing={1.7} direction="column">
+          <Button
             onClick={() => navigate('/campaigns')}
-            style={{
-              background: '#667eea 100%',
-              borderRadius: '12px',
+            variant="contained"
+            size="medium"
+            sx={{
+              bgcolor: '#667eea',
+              borderRadius: 2,
               fontWeight: 700,
-              padding: '16px',
-              fontSize: '1rem',
-              boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
-              border: 'none',
+              py: 1.5,
+              fontSize: 15,
+              boxShadow: 2.5,
               color: '#fff',
-              cursor: 'pointer',
               width: '100%',
-              transition: 'all 0.2s'
+              textTransform: 'none',
+              transition: 'all 0.2s',
+              '&:hover': {
+                bgcolor: '#667eea',
+                boxShadow: 5,
+                transform: 'translateY(-2px)'
+              },
+              '&:active': {
+                transform: 'translateY(0)'
+              }
             }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
           >
-              mpaign Saya
-          </button>
-          
-          <button
+            Campaign Saya
+          </Button>
+          <Button
             onClick={() => navigate(`/campaign/${id}/applicants`)}
-            style={{
-              borderRadius: '12px',
+            variant="outlined"
+            size="medium"
+            sx={{
+              borderRadius: 2,
               fontWeight: 600,
-              padding: '16px',
-              fontSize: '1rem',
-              border: `2px solid ${COLORS.primary}`,
+              py: 1.5,
+              fontSize: 15,
+              borderColor: COLORS.primary,
               color: COLORS.primary,
-              background: 'transparent',
-              cursor: 'pointer',
+              bgcolor: 'transparent',
               width: '100%',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = COLORS.primary;
-              e.currentTarget.style.color = '#fff';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = COLORS.primary;
+              textTransform: 'none',
+              transition: 'all 0.2s',
+              '&:hover': {
+                bgcolor: COLORS.primary,
+                color: '#fff',
+                borderColor: COLORS.primary
+              },
+              '&:active': {
+                bgcolor: 'transparent',
+                color: COLORS.primary
+              }
             }}
           >
-           Lihat Pelamar
-          </button>
-        </div>
-
-        {/* Additional Info */}
-        <p style={{ 
-          marginTop: '24px',
-          fontSize: '0.75rem',
-          color: COLORS.textLight,
-          lineHeight: '1.5'
-        }}>
+            Lihat Pelamar
+          </Button>
+        </Stack>
+        <Typography sx={{ mt: 2.5, fontSize: 11, color: COLORS.textLight, lineHeight: 1.5 }}>
           Terima kasih telah menggunakan Influent!<br />
           Notifikasi akan dikirim ketika ada influencer yang mendaftar.
-        </p>
-      </div>
-
-      {/* Animation Styles */}
-      <style>{`
-        @keyframes scaleIn {
-          from {
-            transform: scale(0);
-            opacity: 0;
+        </Typography>
+        <style>{`
+          @keyframes scaleIn {
+            from {
+              transform: scale(0);
+              opacity: 0;
+            }
+            to {
+              transform: scale(1);
+              opacity: 1;
+            }
           }
-          to {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-      `}</style>
-    </div>
+        `}</style>
+      </Paper>
+    </Box>
   );
 }
 

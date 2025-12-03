@@ -67,7 +67,7 @@ const Navbar = ({ userType = 'umkm', showAuth = false }) => {
         {showAuth ? (
           <>
             <button
-              onClick={() => navigate('/login-umkm')}
+              onClick={() => navigate('/login')}
               style={{
                 padding: '10px 20px',
                 background: 'transparent',
