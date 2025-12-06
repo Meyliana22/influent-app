@@ -1,15 +1,17 @@
+import { Box, Typography, Button as MUIButton, TextField } from '@mui/material';
+import TextsmsIcon from '@mui/icons-material/Textsms';
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Modal } from "../../components/common";
-import UMKMSidebar from "../../components/umkm/UMKMSidebar";
-import UMKMTopbar from "../../components/umkm/UMKMTopbar"; // fixed import
+import Sidebar from "../../components/common/Sidebar";
+import Topbar from "../../components/common/Topbar";
 import { COLORS } from "../../constants/colors";
 import { useToast } from "../../hooks/useToast";
 import { io } from "socket.io-client";
 
 // Backend base url and socket URL (use same origin if possible)
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
-const SOCKET_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+const API_BASE = process.env.REACT_APP_API_URL || "https://influent-api-1fnn.vercel.app";
+const SOCKET_URL = process.env.REACT_APP_API_URL || "https://influent-api-1fnn.vercel.app";
 
 // small helper to decode JWT payload (no dependency)
 function parseJwt(token) {
@@ -331,337 +333,178 @@ function ChatPage() {
   };
 
   return (
-    <div style={{ display: "flex", fontFamily: "'Inter', sans-serif" }}>
-      <UMKMSidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
-
-      <div style={{ marginLeft: !isMobile ? "260px" : "0", flex: 1 }}>
-        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-
-        <div
-          style={{
-            marginTop: "72px",
-            display: "flex",
-            height: "calc(100vh - 72px)",
-          }}
-        >
+    <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Box sx={{ ml: !isMobile ? 32.5 : 0, flex: 1 }}>
+        <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Box sx={{ mt: 9, display: 'flex', minHeight: 'calc(100vh - 72px)' }}>
           {/* Chat Sidebar */}
-          <div
-            style={{
-              width: "320px",
-              borderRight: "1px solid #e2e8f0",
-              overflowY: "auto",
-              background: "white",
-            }}
-          >
-            <div style={{ padding: "24px 20px" }}>
-              <h2
-                style={{
-                  margin: "0 0 20px 0",
-                  fontSize: "1.5rem",
-                  fontWeight: 700,
-                  color: "#1a1f36",
-                }}
-              >
+          <Box sx={{ width: 300, borderRight: '1px solid #e2e8f0', overflowY: 'auto', bgcolor: 'white' }}>
+            <Box sx={{ pt: 3, pb: 3, px: 2.5 }}>
+              <Typography variant="h4" fontWeight={700} color="#1a1f36" sx={{ mb: 2 }}>
                 Chats
-              </h2>
-
+              </Typography>
               {/* Chat List */}
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-              >
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {chatList.length === 0 && (
-                  <div style={{ color: "#6c757d" }}>Tidak ada chat</div>
+                  <Typography color="#6c757d">Tidak ada chat</Typography>
                 )}
                 {chatList.map((chat) => (
-                  <div
+                  <Box
                     key={chat.id}
                     onClick={() => onSelectChat(chat)}
-                    style={{
-                      padding: "16px",
-                      borderRadius: "12px",
-                      background:
-                        selectedChat?.id === chat.id
-                          ? "#f7fafc"
-                          : "transparent",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                      border:
-                        selectedChat?.id === chat.id
-                          ? "2px solid #667eea"
-                          : "2px solid transparent",
+                    sx={{
+                      p: 2,
+                      borderRadius: 1.5,
+                      bgcolor: selectedChat?.id === chat.id ? '#f7fafc' : 'transparent',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      border: selectedChat?.id === chat.id ? '2px solid #667eea' : '2px solid transparent',
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      <span style={{ fontWeight: 600, color: "#1a1f36" }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography fontWeight={600} color="#1a1f36">
                         {chat.name}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "0.85rem",
-                        color: "#6c757d",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: 13, color: '#6c757d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {chat.lastMessage}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "#a0aec0",
-                        marginTop: "4px",
-                      }}
-                    >
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: '#a0aec0', mt: 0.5 }}>
                       {chat.time}
-                    </div>
-                  </div>
+                    </Typography>
+                  </Box>
                 ))}
-              </div>
-            </div>
-          </div>
-
+              </Box>
+            </Box>
+          </Box>
           {/* Chat content */}
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              background: "#f7fafc",
-            }}
-          >
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', bgcolor: '#f7fafc' }}>
             {selectedChat ? (
               <>
                 {/* Header */}
-                <div
-                  style={{
-                    padding: "20px 32px",
-                    background: "white",
-                    borderBottom: "1px solid #e2e8f0",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                        background:
-                          "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "1.2rem",
-                        color: "white",
-                      }}
-                    >
+                <Box sx={{ pt: 2.5, pb: 2.5, px: 4, bgcolor: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ width: 5, height: 5, borderRadius: '50%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: 'white' }}>
                       {selectedChat.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          fontSize: "1.1rem",
-                          color: "#1a1f36",
-                        }}
-                      >
+                    </Box>
+                    <Box>
+                      <Typography fontWeight={700} fontSize={16} color="#1a1f36">
                         {selectedChat.name}
-                      </div>
-                      <div style={{ fontSize: "0.875rem", color: "#6c757d" }}>
-                        Online
-                      </div>
-                    </div>
-                  </div>
-                  <button
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, color: '#6c757d' }}>Online</Typography>
+                    </Box>
+                  </Box>
+                  <MUIButton
                     onClick={() => setShowReportPopup(true)}
-                    style={{
-                      padding: "8px 16px",
-                      background: "#fff5f5",
-                      border: "2px solid #fc8181",
-                      borderRadius: "8px",
-                      color: "#c53030",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      fontSize: "0.875rem",
+                    variant="outlined"
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      bgcolor: '#fff5f5',
+                      border: '2px solid #fc8181',
+                      borderRadius: 1,
+                      color: '#c53030',
+                      fontWeight: 600,
+                      fontSize: 14,
+                      '&:hover': { bgcolor: '#ffe5e5', borderColor: '#fc8181' },
                     }}
                   >
                     ⚠️ Report
-                  </button>
-                </div>
-
+                  </MUIButton>
+                </Box>
                 {/* Messages Area */}
-                <div
-                  style={{
-                    flex: 1,
-                    overflowY: "auto",
-                    padding: "32px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "16px",
-                  }}
-                >
+                <Box sx={{ flex: 1, overflowY: 'auto', p: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {messages.length === 0 && (
-                    <div style={{ color: "#6c757d" }}>Belum ada pesan</div>
+                    <Typography color="#6c757d">Belum ada pesan</Typography>
                   )}
                   {messages.map((msg) => (
-                    <div
+                    <Box
                       key={msg.id}
-                      style={{
-                        display: "flex",
-                        justifyContent:
-                          msg.userId === currentUserId
-                            ? "flex-end"
-                            : "flex-start",
-                      }}
+                      sx={{ display: 'flex', justifyContent: msg.userId === currentUserId ? 'flex-end' : 'flex-start' }}
                     >
-                      <div
-                        style={{
-                          maxWidth: "60%",
-                          padding: "12px 16px",
-                          borderRadius: "16px",
-                          background:
-                            msg.userId === currentUserId
-                              ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                              : "white",
-                          color:
-                            msg.userId === currentUserId ? "white" : "#1a1f36",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                      <Box
+                        sx={{
+                          maxWidth: '60%',
+                          px: 1.5,
+                          py: 1,
+                          borderRadius: 2,
+                          bgcolor: msg.userId === currentUserId ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
+                          color: msg.userId === currentUserId ? 'white' : '#1a1f36',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                         }}
                       >
-                        <div style={{ marginBottom: "4px" }}>{msg.text}</div>
-                        <div
-                          style={{
-                            fontSize: "0.75rem",
-                            opacity: 0.7,
-                            textAlign: "right",
-                          }}
-                        >
+                        <Typography sx={{ mb: 0.5 }}>{msg.text}</Typography>
+                        <Typography sx={{ fontSize: 12, opacity: 0.7, textAlign: 'right' }}>
                           {new Date(msg.time).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
+                            hour: '2-digit',
+                            minute: '2-digit',
                           })}
-                        </div>
-                      </div>
-                    </div>
+                        </Typography>
+                      </Box>
+                    </Box>
                   ))}
                   <div ref={messagesEndRef} />
                   {typingIndicatorText() && (
-                    <div style={{ color: "#6c757d", fontSize: "0.9rem" }}>
+                    <Typography color="#6c757d" fontSize={14}>
                       {typingIndicatorText()}
-                    </div>
+                    </Typography>
                   )}
-                </div>
-
+                </Box>
                 {/* Message Input */}
-                <div
-                  style={{
-                    padding: "20px 32px",
-                    background: "white",
-                    borderTop: "1px solid #e2e8f0",
-                  }}
-                >
-                  <form
-                    onSubmit={handleSendMessage}
-                    style={{
-                      display: "flex",
-                      gap: "12px",
-                      alignItems: "center",
-                    }}
-                  >
-                    <input
+                <Box sx={{ pt: 2.5, pb: 2.5, px: 4, bgcolor: 'white', borderTop: '1px solid #e2e8f0' }}>
+                  <Box component="form" onSubmit={handleSendMessage} sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                    <TextField
                       type="text"
                       value={message}
                       onChange={handleInputChange}
                       placeholder="Ketik pesan..."
-                      style={{
-                        flex: 1,
-                        padding: "14px 20px",
-                        border: "2px solid #e2e8f0",
-                        borderRadius: "24px",
-                        fontSize: "1rem",
-                        outline: "none",
-                        transition: "all 0.2s",
+                      fullWidth
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 3,
+                          fontSize: 16,
+                          px: 2,
+                          py: 1,
+                        },
                       }}
-                      onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-                      onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
+                      onFocus={(e) => (e.target.style.borderColor = '#667eea')}
+                      onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
                     />
-                    <button
+                    <MUIButton
                       type="submit"
-                      style={{
-                        padding: "14px 24px",
-                        background:
-                          "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                        border: "none",
-                        borderRadius: "24px",
-                        color: "white",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        fontSize: "0.95rem",
+                      sx={{
+                        px: 2.5,
+                        py: 1,
+                        bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        border: 'none',
+                        borderRadius: 3,
+                        color: 'white',
+                        fontWeight: 600,
+                        fontSize: 15,
+                        boxShadow: 'none',
+                        '&:hover': { bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', opacity: 0.9 },
                       }}
                     >
                       ➤ Kirim
-                    </button>
-                  </form>
-                </div>
+                    </MUIButton>
+                  </Box>
+                </Box>
               </>
             ) : (
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexDirection: "column",
-                  color: "#6c757d",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "5rem",
-                    marginBottom: "16px",
-                    opacity: 0.3,
-                  }}
-                >
-                  💬
-                </div>
-                <h3
-                  style={{
-                    fontSize: "1.3rem",
-                    fontWeight: 600,
-                    marginBottom: "8px",
-                    color: "#1a1f36",
-                  }}
-                >
+              <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: '#6c757d' }}>
+                <TextsmsIcon sx={{ fontSize: 40, mb: 2, opacity: 0.3 }} />
+                <Typography variant="h5" fontWeight={600} sx={{ mb: 1, color: '#1a1f36', fontSize: 18 }}>
                   Pilih Chat
-                </h3>
-                <p style={{ fontSize: "1rem" }}>
-                  Pilih chat dari sidebar untuk memulai percakapan
-                </p>
-              </div>
+                </Typography>
+                <Typography sx={{ fontSize: 15 }}>
+                  Pilih chat dari  untuk memulai percakapan
+                </Typography>
+              </Box>
             )}
-          </div>
-        </div>
-      </div>
-
+          </Box>
+        </Box>
+      </Box>
       {/* Report Popup */}
       <Modal
         isOpen={showReportPopup}
@@ -669,62 +512,47 @@ function ChatPage() {
         title="Report User"
         variant="danger"
       >
-        <div style={{ textAlign: "center", marginBottom: "24px" }}>
-          <div style={{ fontSize: "4rem", marginBottom: "16px" }}>⚠️</div>
-          <p
-            style={{
-              margin: 0,
-              color: "#6c757d",
-              fontSize: "0.95rem",
-              lineHeight: "1.5",
-            }}
-          >
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Typography sx={{ fontSize: 32, mb: 2 }}>⚠️</Typography>
+          <Typography sx={{ color: '#6c757d', fontSize: 15, lineHeight: 1.5 }}>
             Mengapa Anda ingin melaporkan user ini?
-          </p>
-        </div>
-        <textarea
+          </Typography>
+        </Box>
+        <TextField
           value={reportReason}
           onChange={(e) => setReportReason(e.target.value)}
           placeholder="Jelaskan alasan pelaporan..."
-          rows="4"
-          style={{
-            width: "100%",
-            padding: "12px",
-            border: "2px solid #e2e8f0",
-            borderRadius: "8px",
-            fontSize: "0.95rem",
-            marginBottom: "20px",
-            resize: "vertical",
-            boxSizing: "border-box",
-            fontFamily: "'Inter', sans-serif",
-            outline: "none",
-          }}
-          onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-          onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
+          multiline
+          rows={4}
+          fullWidth
+          sx={{ mb: 2, fontSize: 15 }}
         />
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-          <Button
-            variant="outline"
+        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
+          <MUIButton
+            variant="outlined"
             onClick={() => setShowReportPopup(false)}
             fullWidth
+            sx={{ fontSize: 15, py: 1 }}
           >
             Batal
-          </Button>
-          <Button
-            variant="danger"
+          </MUIButton>
+          <MUIButton
+            variant="contained"
+            color="error"
             onClick={() => {
-              showToast(`User telah dilaporkan: ${reportReason}`, "success");
+              showToast(`User telah dilaporkan: ${reportReason}`, 'success');
               setShowReportPopup(false);
-              setReportReason("");
+              setReportReason('');
             }}
             disabled={!reportReason.trim()}
             fullWidth
+            sx={{ fontSize: 15, py: 1 }}
           >
             Laporkan
-          </Button>
-        </div>
+          </MUIButton>
+        </Box>
       </Modal>
-    </div>
+    </Box>
   );
 }
 
