@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
+import { Box, Typography, Button, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Sidebar, Topbar } from '../../components/common';
 import { COLORS } from '../../constants/colors';
 import PersonIcon from '@mui/icons-material/Person';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -125,70 +126,55 @@ function NotificationsPage() {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
-      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      <div style={{ marginLeft: !isMobile ? '260px' : '0', width: !isMobile ? 'calc(100% - 260px)' : '100%' }}>
-        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-
-        
-        <div style={{ marginTop: '72px', padding: '32px' }}>
+    <Box sx={{ display: 'flex', background: '#f7fafc', minHeight: '100vh', height: '100vh' }}>
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Box sx={{ ml: !isMobile ? 32.5 : 0, width: !isMobile ? `calc(100% - ${32.5 * 8}px)` : '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} unreadCount={unreadCount} />
+        <Box
+          sx={{
+            flex: 1,
+            mt: 9,
+            p: 4,
+            overflow: 'auto',
+            height: 'calc(100vh - 72px)', // 72px is Topbar height
+            minHeight: 0
+          }}
+        >
           {/* Page Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '18px'
-          }}>
-            <div>
-              <h1 style={{
-                fontSize: isMobile ? '1.5rem' : '2rem',
-                fontWeight: 700,
-                color: '#1a1f36',
-                margin: '0px',
-                fontFamily: "'Inter', sans-serif"
-              }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.25 }}>
+            <Box>
+              <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ color: '#1a1f36', m: 0, fontWeight: 700, fontFamily: 'Inter, sans-serif' }}>
                 Notifications
-              </h1>
-              <p style={{
-                fontSize: '0.95rem',
-                color: '#6c757d',
-                fontFamily: "'Inter', sans-serif"
-              }}>
+              </Typography>
+              <Typography sx={{ fontSize: 15, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>
                 {unreadCount > 0 ? `You have ${unreadCount} unread notifications` : 'All caught up!'}
-              </p>
-            </div>
+              </Typography>
+            </Box>
             {unreadCount > 0 && (
-              <button
+              <Button
                 onClick={markAllAsRead}
-                style={{
-                  padding: '12px 24px',
-                  background: COLORS.gradient,
-                  border: 'none',
+                sx={{
+                  py: 1.5,
+                  px: 3,
+                  background: COLORS.gradientPrimary,
                   borderRadius: '10px',
-                  color: '#fff',
+                  color: COLORS.textWhite,
                   fontSize: '0.9rem',
                   fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
+                  fontFamily: 'Inter, sans-serif',
+                  boxShadow: 'none',
+                  textTransform: 'none',
+                  '&:hover': { background: COLORS.gradientPrimary }
                 }}
+                variant="contained"
               >
                 Mark All as Read
-              </button>
+              </Button>
             )}
-          </div>
+          </Box>
 
           {/* Filter Tabs */}
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            padding: '16px 24px',
-            marginBottom: '24px',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            gap: '12px',
-            flexWrap: 'wrap'
-          }}>
+          <Box sx={{ background: '#fff', borderRadius: 2, p: 2.5, mb: 3, border: '1px solid #e2e8f0', display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
             {[
               { value: 'all', label: 'All', IconComponent: NotificationsIcon },
               { value: 'unread', label: 'Unread', IconComponent: StarIcon },
@@ -196,180 +182,120 @@ function NotificationsPage() {
               { value: 'approval', label: 'Approvals', IconComponent: CheckCircleIcon },
               { value: 'payment', label: 'Payments', IconComponent: AttachMoneyIcon }
             ].map(filter => (
-              <button
+              <Button
                 key={filter.value}
                 onClick={() => setFilterType(filter.value)}
-                style={{
-                  padding: '10px 20px',
-                  border: filterType === filter.value ? 'none' : '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  background: filterType === filter.value ? COLORS.gradient : '#fff',
-                  color: filterType === filter.value ? '#fff' : '#6c757d',
+                sx={{
+                  py: 1.25,
+                  px: 2.5,
+                  border: filterType === filter.value ? 'none' : '2px solid #6573c333',
+                  borderRadius: 1.25,
+                  background: filterType === filter.value ? '#6573c3' : '#fff',
+                  color: filterType === filter.value ? '#fff' : '#6573c3',
                   fontWeight: filterType === filter.value ? 600 : 500,
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                  transition: 'all 0.2s',
-                  fontFamily: "'Inter', sans-serif",
+                  fontFamily: 'Inter, sans-serif',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px'
+                  gap: '8px',
+                  boxShadow: 'none',
+                  textTransform: 'none',
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    background: filterType === filter.value ? '#4b5bb7' : '#f0f4ff',
+                    color: filterType === filter.value ? '#fff' : '#4b5bb7'
+                  }
                 }}
+                variant={filterType === filter.value ? 'contained' : 'outlined'}
+                startIcon={<filter.IconComponent sx={{ fontSize: 18 }} />}
               >
-                <filter.IconComponent sx={{ fontSize: 18 }} />
                 {filter.label}
-              </button>
+              </Button>
             ))}
-          </div>
+          </Box>
 
           {/* Notifications List */}
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            border: '1px solid #e2e8f0',
-            overflow: 'hidden'
-          }}>
+          <Box sx={{ background: '#fff', borderRadius: 2, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             {filteredNotifications.length > 0 ? (
               filteredNotifications.map((notif, index) => {
                 const iconStyle = getIconColor(notif.type);
                 return (
-                  <div
+                  <Box
                     key={notif.id}
                     onClick={() => !notif.isRead && markAsRead(notif.id)}
-                    style={{
-                      padding: '20px 24px',
+                    sx={{
+                      p: 2.5,
                       borderBottom: index < filteredNotifications.length - 1 ? '1px solid #e2e8f0' : 'none',
                       background: notif.isRead ? '#fff' : '#f0f9ff',
                       cursor: notif.isRead ? 'default' : 'pointer',
                       transition: 'all 0.2s',
                       display: 'flex',
-                      gap: '16px',
-                      alignItems: 'flex-start'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!notif.isRead) {
-                        e.currentTarget.style.background = '#e0f2fe';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!notif.isRead) {
-                        e.currentTarget.style.background = '#f0f9ff';
-                      }
+                      gap: 2,
+                      alignItems: 'center',
+                      '&:hover': !notif.isRead ? { background: '#e0f2fe' } : {}
                     }}
                   >
                     {/* Icon */}
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '12px',
-                      background: iconStyle.bg,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.5rem',
-                      flexShrink: 0
-                    }}>
-                      {React.createElement(getIcon(notif.type), { 
-                        sx: { fontSize: 24, color: iconStyle.color } 
-                      })}
-                    </div>
+                    <Box sx={{ width: 26, height: 26, borderRadius: 1.5, background: iconStyle.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {React.createElement(getIcon(notif.type), { sx: { fontSize: 26, color: iconStyle.color } })}
+                    </Box>
 
                     {/* Content */}
-                    <div style={{ flex: 1 }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'start',
-                        justifyContent: 'space-between',
-                        marginBottom: '8px'
-                      }}>
-                        <h3 style={{
-                          margin: 0,
-                          fontSize: '1rem',
-                          fontWeight: notif.isRead ? 600 : 700,
-                          color: '#1a1f36',
-                          fontFamily: "'Inter', sans-serif"
-                        }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography
+                          sx={{
+                            m: 0,
+                            fontSize: 17,
+                            fontWeight: 700,
+                            color: '#1a1f36',
+                            fontFamily: 'Inter, sans-serif',
+                            whiteSpace: 'normal',
+                            wordBreak: 'break-word',
+                          }}
+                        >
                           {notif.title}
-                        </h3>
+                        </Typography>
                         {!notif.isRead && (
-                          <span style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            background: '#3b82f6',
-                            flexShrink: 0,
-                            marginLeft: '12px',
-                            marginTop: '6px'
-                          }} />
+                          <Box sx={{ width: 7.5, height: 7.5, borderRadius: '50%', background: '#3b82f6', ml: 1 }} />
                         )}
-                      </div>
-                      <p style={{
-                        margin: '0 0 8px 0',
-                        color: '#6c757d',
-                        fontSize: '0.9rem',
-                        lineHeight: '1.5',
-                        fontFamily: "'Inter', sans-serif"
-                      }}>
+                      </Box>
+                      <Typography sx={{ mb: 1, color: '#6c757d', fontSize: 14, lineHeight: 1.5, fontFamily: 'Inter, sans-serif' }}>
                         {notif.message}
-                      </p>
-                      <span style={{
-                        fontSize: '0.8rem',
-                        color: '#a0aec0',
-                        fontFamily: "'Inter', sans-serif"
-                      }}>
+                      </Typography>
+                      <Typography sx={{ fontSize: 12, color: '#a0aec0', fontFamily: 'Inter, sans-serif' }}>
                         {notif.time}
-                      </span>
-                    </div>
+                      </Typography>
+                    </Box>
 
                     {/* Delete Button */}
-                    <button
+                    <IconButton
                       onClick={(e) => {
                         e.stopPropagation();
                         deleteNotification(notif.id);
                       }}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#ef4444',
-                        fontSize: '1.2rem',
-                        cursor: 'pointer',
-                        padding: '4px 8px',
-                        opacity: 0.6,
-                        transition: 'opacity 0.2s',
-                        flexShrink: 0
-                      }}
-                      onMouseEnter={(e) => e.target.style.opacity = 1}
-                      onMouseLeave={(e) => e.target.style.opacity = 0.6}
+                      sx={{ color: '#ef4444', opacity: 0.6, transition: 'opacity 0.2s', flexShrink: 0, p: 0.5, '&:hover': { opacity: 1 } }}
                       title="Delete notification"
                     >
-                      🗑️
-                    </button>
-                  </div>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
                 );
               })
             ) : (
-              <div style={{
-                padding: '64px 24px',
-                textAlign: 'center',
-                color: '#6c757d'
-              }}>
-                <div style={{ fontSize: '4rem', marginBottom: '16px', opacity: 0.5 }}>🔔</div>
-                <h3 style={{
-                  fontSize: '1.3rem',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  color: '#1a1f36'
-                }}>
+              <Box sx={{ pt: 38, px: 3, textAlign: 'center', color: '#6c757d' }}>
+                <NotificationsIcon sx={{ fontSize: 38, mb: 2, opacity: 0.5 }} />
+                <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, color: '#1a1f36' }}>
                   No Notifications
-                </h3>
-                <p style={{ fontSize: '1rem' }}>
+                </Typography>
+                <Typography sx={{ fontSize: 14 }}>
                   All notifications will appear here
-                </p>
-              </div>
+                </Typography>
+              </Box>
             )}
-          </div>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
