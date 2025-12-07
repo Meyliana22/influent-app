@@ -183,7 +183,16 @@ function UMKMDashboard() {
       }}>
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-        <Container maxWidth={false} sx={{ marginTop: '72px', padding: '32px', maxWidth: '100%' }}>
+        <Container
+          maxWidth={false}
+          sx={{
+            marginTop: '72px',
+            padding: '32px',
+            maxWidth: '100%',
+            height: 'calc(100vh - 72px)',
+            overflow: 'auto',
+          }}
+        >
           {/* Page Header */}
           <Box sx={{ marginBottom: '32px' }}>
             <Typography variant="h4" sx={{

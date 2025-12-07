@@ -337,7 +337,14 @@ function ChatPage() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <Box sx={{ ml: !isMobile ? 32.5 : 0, flex: 1 }}>
         <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <Box sx={{ mt: 9, display: 'flex', minHeight: 'calc(100vh - 72px)' }}>
+        <Box
+          sx={{
+            mt: 9,
+            display: 'flex',
+            height: 'calc(100vh - 72px)',
+            overflow: 'auto',
+          }}
+        >
           {/* Chat Sidebar */}
           <Box sx={{ width: 300, borderRight: '1px solid #e2e8f0', overflowY: 'auto', bgcolor: 'white' }}>
             <Box sx={{ pt: 3, pb: 3, px: 2.5 }}>

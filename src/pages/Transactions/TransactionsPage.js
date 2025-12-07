@@ -139,7 +139,15 @@ function TransactionsPage() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <Box sx={{ ml: !isMobile ? 32.5 : 0, width: '100%' }}>
         <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <Container maxWidth="lg" sx={{ mt: 9, pb: 4 }}>
+        <Container
+          maxWidth="lg"
+          sx={{
+            mt: 9,
+            pb: 4,
+            height: 'calc(100vh - 72px)',
+            overflow: 'auto',
+          }}
+        >
           <Box sx={{ mb: 4, mt: 13 }}>
             <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700} sx={{ color: '#1a1f36', m: 0, fontFamily: 'Inter, sans-serif' }}>
               Transactions

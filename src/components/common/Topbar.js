@@ -13,11 +13,11 @@ import {
   Badge
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 
-function Topbar({ onMenuClick = () => {} }) {
+function Topbar({ onMenuClick = () => {}, unreadCount = 0 }) {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
@@ -127,8 +127,23 @@ function Topbar({ onMenuClick = () => {} }) {
             }
           }}
         >
-          <Badge badgeContent={1} color="error">
-            <NotificationsIcon />
+          <Badge
+            variant="dot"
+            color="error"
+            overlap="circular"
+            sx={{
+              '& .MuiBadge-dot': {
+                width: 7,
+                height: 7,
+                minWidth: 0,
+                borderRadius: '50%',
+                top: 2,
+                right: 2,
+              }
+            }}
+            invisible={unreadCount === 0}
+          >
+            <NotificationsNoneIcon />
           </Badge>
         </IconButton>
 

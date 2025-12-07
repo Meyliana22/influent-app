@@ -106,7 +106,15 @@ function CampaignList() {
       <Box sx={{ flex: 1, ml: isMobile ? 0 : 32.5, overflow: 'hidden' }}>
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <Box sx={{ mt: 9, bgcolor: '#f7fafc', minHeight: 'calc(100vh - 72px)', overflow: 'hidden' }}>
-          <Container maxWidth={false} sx={{ py: { xs: 2, md: 4 }, maxWidth: 1 }}>
+            <Container
+              maxWidth={false}
+              sx={{
+                py: { xs: 2, md: 4 },
+                maxWidth: 1,
+                height: 'calc(100vh - 72px)',
+                overflow: 'auto',
+              }}
+            >
             {/* Header */}
             <Stack direction="row" alignItems="center" spacing={2} mb={4}>
               <Button
