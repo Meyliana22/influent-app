@@ -218,7 +218,8 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
         sx={{
           flex: 1,
           padding: '16px 0',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          overflowX: 'hidden',
         }}
       >
         {menuItems.map((item, index) => {
@@ -233,12 +234,12 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
                 if (isMobile) onClose();
               }}
               sx={{
-                margin: '4px 12px',
-                padding: '12px 16px',
+                margin: '4px',
+                padding: '10px 12px',
                 borderRadius: '10px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1.5,
+                gap: 1.2,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 background: active 
@@ -248,8 +249,12 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
                   ? '3px solid #667eea' 
                   : '3px solid transparent',
                 color: active ? '#fff' : 'rgba(255,255,255,0.7)',
-                fontSize: '0.95rem',
+                fontSize: '0.92rem',
                 fontWeight: active ? 600 : 500,
+                maxWidth: 250,
+                width: '100%',
+                boxSizing: 'border-box',
+                // overflow: 'visible',
                 '&:hover': {
                   background: active ? 'rgba(102,126,234,0.15)' : 'rgba(255,255,255,0.05)',
                   color: '#fff'
@@ -270,7 +275,11 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
                   '& .MuiListItemText-primary': {
                     fontSize: '0.95rem',
                     fontWeight: active ? 600 : 500,
-                    color: 'inherit'
+                    color: 'inherit',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    maxWidth: '100%',
                   }
                 }}
               />

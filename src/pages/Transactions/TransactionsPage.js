@@ -148,7 +148,7 @@ function TransactionsPage() {
             overflow: 'auto',
           }}
         >
-          <Box sx={{ mb: 4, mt: 13 }}>
+          <Box sx={{ mb: 4, mt: 4 }}>
             <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700} sx={{ color: '#1a1f36', m: 0, fontFamily: 'Inter, sans-serif' }}>
               Transactions
             </Typography>
