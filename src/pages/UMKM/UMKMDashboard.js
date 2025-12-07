@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import WavingHandIcon from '@mui/icons-material/WavingHand';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar, Topbar } from '../../components/common';
 import { COLORS } from '../../constants/colors.js';
@@ -199,9 +200,13 @@ function UMKMDashboard() {
               fontSize: '2rem',
               fontWeight: 700,
               color: '#1a1f36',
-              margin: '0px'
+              margin: '0px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
             }}>
-              Welcome, {userName}! 👋
+              Welcome, {userName}!
+              <WavingHandIcon sx={{ fontSize: '2rem', transform: 'scaleX(-1)', color: '#fbbf24', ml: 1 }} />
             </Typography>
             <Typography sx={{
               fontSize: '0.95rem',

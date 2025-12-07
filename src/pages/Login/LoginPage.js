@@ -1,3 +1,4 @@
+import LockOutlineIcon from '@mui/icons-material/LockOutline';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
@@ -91,7 +92,7 @@ function LoginPage() {
 
         {loginError && (
           <div style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)', border: '1px solid #fc8181', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '1.25rem' }}>??</span>
+            <LockOutlineIcon sx={{ fontSize: '1.25rem', color: '#c53030' }} />
             <span style={{ color: '#c53030', fontSize: '0.9rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{loginError}</span>
           </div>
         )}
@@ -137,7 +138,7 @@ function LoginPage() {
                   setLoginError(''); 
                   if (errors.password.length > 0) setErrors({ ...errors, password: [] }); 
                 }} 
-                placeholder="��������" 
+                placeholder="Masukkan password"
                 disabled={isLoading} 
                 style={{ 
                   width: '100%', 
