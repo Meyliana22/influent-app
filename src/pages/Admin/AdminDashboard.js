@@ -123,7 +123,7 @@ function AdminDashboard() {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <Box
         sx={{
-          marginLeft: isDesktop && sidebarOpen ? '260px' : 0,
+          marginLeft: isDesktop && sidebarOpen ? 32.5 : 0, // 260px / 8
           width: isDesktop && sidebarOpen ? 'calc(100% - 260px)' : '100%',
           maxWidth: '100%',
           boxSizing: 'border-box',
@@ -134,29 +134,29 @@ function AdminDashboard() {
         
         <Box
           sx={{
-            marginTop: 9,
+            mt: 9,
             width: '100%',
             maxWidth: '100%',
-            padding: 4,
+            p: 4,
             backgroundColor: '#f8f9fa',
-            minHeight: 'calc(100vh - 72px)',
+            minHeight: 'calc(100vh - 9 * 8px)',
             boxSizing: 'border-box',
             overflowX: 'hidden'
           }}
         >
           {/* Page Header */}
-          <Box sx={{ marginBottom: 4 }}>
+          <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{
               fontSize: 32,
               fontWeight: 700,
               color: '#1a1f36',
-              marginBottom: 1
+              mb: 1
             }}>
                 Welcome, {userName}!
                 <WavingHandIcon sx={{ fontSize: 32, transform: 'scaleX(-1)', color: '#fbbf24', ml: 1 }} />
             </Typography>
             <Typography sx={{
-              fontSize: 15, // 0.95rem ≈ 15px
+              fontSize: 16,
               color: '#6c757d'
             }}>
               Here's what's happening with your platform today.
@@ -166,9 +166,9 @@ function AdminDashboard() {
           {/* Stats Cards */}
           <Box sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(25ch, 1fr))',
             gap: 2.5,
-            marginBottom: 4
+            mb: 4
           }}>
             {statCards.map((card, index) => (
               <Box
@@ -176,7 +176,7 @@ function AdminDashboard() {
                 sx={{
                   background: '#fff',
                   borderRadius: 5,
-                  padding: 2.5,
+                  p: 3,
                   border: '1px solid #e2e8f0',
                   display: 'flex',
                   alignItems: 'center',
@@ -192,10 +192,11 @@ function AdminDashboard() {
                 }}
               >
                 <Box sx={{
+                  minWidth: 48,
                   width: 48,
                   height: 48,
                   borderRadius: 2,
-                  background: card.bgColor,
+                  bgcolor: card.bgColor,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -204,27 +205,13 @@ function AdminDashboard() {
                   <card.IconComponent sx={{ fontSize: 28, color: card.color }} />
                 </Box>
                 <Box>
-                  <Typography sx={{
-                    fontSize: '0.85rem',
-                    color: '#6c757d',
-                    marginBottom: '4px',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
+                  <Typography sx={{ fontSize: 15, color: '#6c757d', mb: 0.5, fontFamily: "'Inter', sans-serif" }}>
                     {card.title}
                   </Typography>
-                  <Typography sx={{
-                    fontSize: '1.75rem',
-                    fontWeight: 700,
-                    color: '#1a1f36',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
+                  <Typography sx={{ fontSize: 25, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
                     {card.value}
                   </Typography>
-                  <Typography sx={{
-                    fontSize: '0.85rem',
-                    color: '#a0aec0',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
+                  <Typography sx={{ fontSize: 15, color: '#a0aec0', fontFamily: "'Inter', sans-serif" }}>
                     {card.change}
                   </Typography>
                 </Box>
@@ -236,14 +223,14 @@ function AdminDashboard() {
           <Paper sx={{
             background: '#fff',
             borderRadius: 2,
-            padding: 3,
+            p: 3,
             border: '1px solid #e2e8f0'
           }}>
             <Typography variant="h6" sx={{
               fontSize: 20,
               fontWeight: 700,
               color: '#1a1f36',
-              marginBottom: 2
+              mb: 2
             }}>
               Recent Activities
             </Typography>
@@ -255,7 +242,7 @@ function AdminDashboard() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 2,
-                    padding: 2,
+                    p: 2,
                     background: '#f7fafc',
                     borderRadius: 1.5,
                     transition: 'all 0.2s',
@@ -265,8 +252,8 @@ function AdminDashboard() {
                   }}
                 >
                   <Box sx={{
-                    width: 30,
-                    height: 30,
+                    width: 45,
+                    height: 45,
                     borderRadius: 1,
                     background: activity.color + '20',
                     display: 'flex',
@@ -274,14 +261,14 @@ function AdminDashboard() {
                     justifyContent: 'center',
                     flexShrink: 0
                   }}>
-                    <activity.IconComponent sx={{ fontSize: '1.375rem', color: activity.color }} />
+                    <activity.IconComponent sx={{ fontSize: 25, color: activity.color }} />
                   </Box>
                   <Box sx={{ flex: 1 }}>
                     <Typography sx={{
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: 600,
                       color: '#1a1f36',
-                      marginBottom: 0.5
+                      mb: 0.5
                     }}>
                       {activity.action}
                     </Typography>
@@ -293,7 +280,7 @@ function AdminDashboard() {
                     </Typography>
                   </Box>
                   <Typography sx={{
-                    fontSize: 12,
+                    fontSize: 13,
                     color: '#6c757d',
                     whiteSpace: 'nowrap'
                   }}>

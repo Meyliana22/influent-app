@@ -20,6 +20,7 @@ import {
   FormControl,
   Stack
 } from '@mui/material';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import AddIcon from '@mui/icons-material/Add';
 
 function ManageUsers() {
@@ -125,10 +126,10 @@ function ManageUsers() {
           {/* Page Header */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
             <Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: 'Inter, sans-serif' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: 'Inter, sans-serif', fontSize: 32 }}>
                 Manage Users
               </Typography>
-              <Typography sx={{ fontSize: 15, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>
+              <Typography sx={{ fontSize: 16, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>
                 Total: {filteredUsers.length} users
               </Typography>
             </Box>
@@ -156,7 +157,7 @@ function ManageUsers() {
                   boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)'
                 }
               }}
-              startIcon={<AddIcon sx={{ color: '#fff', fontSize: 24 }} />}
+              startIcon={<AddIcon sx={{ color: '#fff', fontSize: 16 }} />}
             >
               Add User
             </Button>
@@ -182,7 +183,7 @@ function ManageUsers() {
                 size="medium"
                 sx={{
                   background: '#fff',
-                  borderRadius: 1.25,
+                  borderRadius: 1.5,
                   fontSize: 15,
                   fontFamily: 'Inter, sans-serif',
                   '& .MuiOutlinedInput-root': {
@@ -191,7 +192,7 @@ function ManageUsers() {
                 }}
               />
             </Box>
-            <FormControl sx={{ minWidth: 19 }}>
+            <FormControl sx={{ minWidth: 2.375 }}>
               <Select
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
@@ -220,25 +221,25 @@ function ManageUsers() {
             <Table sx={{ width: 1, borderCollapse: 'collapse', fontFamily: 'Inter, sans-serif' }}>
               <TableHead>
                 <TableRow sx={{ background: '#f7fafc' }}>
-                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>ID</TableCell>
-                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Name</TableCell>
-                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Email</TableCell>
-                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Role</TableCell>
-                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Status</TableCell>
-                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'center', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Actions</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>ID</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Name</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Email</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Role</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Status</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id} sx={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5, fontSize: 14.5, color: '#2d3748' }}>#{user.id}</TableCell>
-                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5, fontSize: 14.5, fontWeight: 600, color: '#1a1f36' }}>{user.name}</TableCell>
-                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5, fontSize: 14.5, color: '#6c757d' }}>{user.email}</TableCell>
+                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5, fontSize: 14, color: '#2d3748' }}>#{user.id}</TableCell>
+                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5, fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>{user.name}</TableCell>
+                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5, fontSize: 14, color: '#6c757d' }}>{user.email}</TableCell>
                     <TableCell sx={{ pl: 2, pr: 3, py: 2.5 }}>
                       <Box component="span" sx={{
                         px: 1.25,
                         py: 0.5,
-                        borderRadius: 1,
+                        borderRadius: 2,
                         fontSize: 13,
                         fontWeight: 600,
                         background: user.role === 'Admin' ? '#fef3c7' : user.role === 'UMKM' ? '#dbeafe' : '#d1fae5',
@@ -250,7 +251,7 @@ function ManageUsers() {
                       <Box component="span" sx={{
                         px: 1.25,
                         py: 0.5,
-                        borderRadius: 1,
+                        borderRadius: 2,
                         fontSize: 13,
                         fontWeight: 600,
                         background: user.status === 'Active' ? '#d1fae5' : '#fee2e2',
@@ -264,7 +265,7 @@ function ManageUsers() {
                           onClick={() => handleEditUser(user)}
                           size="small"
                           sx={{
-                            px: 1.25,
+                            px: 1.5,
                             py: 0.5,
                             minHeight: 0,
                             background: '#667eea',
@@ -285,7 +286,7 @@ function ManageUsers() {
                           onClick={() => handleDeleteClick(user)}
                           size="small"
                           sx={{
-                            px: 1.25,
+                            px: 1.5,
                             py: 0.5,
                             minHeight: 0,
                             background: '#ef4444',
@@ -325,7 +326,7 @@ function ManageUsers() {
           width: '90%',
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
         }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1f36', mb: 3, fontFamily: 'Inter, sans-serif' }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1f36', mb: 3, fontFamily: 'Inter, sans-serif', fontSize: 25 }}>
             {modalMode === 'add' ? 'Add New User' : 'Edit User'}
           </Typography>
           <Box sx={{ mb: 2 }}>
@@ -467,11 +468,13 @@ function ManageUsers() {
           background: '#fff',
           borderRadius: 2.5,
           p: 4,
-          maxWidth: 50,
-          width: '90%',
+          maxWidth: 'sm',
+          width: '30%',
           textAlign: 'center',
         }}>
-          <Box sx={{ fontSize: 36, mb: 2 }}>⚠️</Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+            <WarningAmberIcon sx={{ fontSize: 36, color: '#ef4444' }} />
+          </Box>
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1.5, fontFamily: 'Inter, sans-serif' }}>
             Delete User?
           </Typography>
@@ -485,7 +488,7 @@ function ManageUsers() {
                 flex: 1,
                 py: 1.5,
                 background: '#e2e8f0',
-                borderRadius: 1.25,
+                borderRadius: 1.5,
                 color: '#2d3748',
                 fontSize: 15,
                 fontWeight: 600,

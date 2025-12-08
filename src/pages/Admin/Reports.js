@@ -5,8 +5,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleIcon from '@mui/icons-material/People';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { PieChart } from '@mui/x-charts';
-import { LineChart } from '@mui/x-charts';
+import { PieChart, LineChart, BarChart } from '@mui/x-charts';
 import { Box, Typography } from '@mui/material';
 import { Select, MenuItem, Table, TableHead, TableRow, TableCell, TableBody, Button } from '@mui/material';
 
@@ -113,7 +112,7 @@ function Reports() {
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: "'Inter', sans-serif", fontSize: 32 }}>
               Reports & Analytics
             </Typography>
-            <Typography sx={{ fontSize: '0.95rem', color: '#6c757d', fontFamily: "'Inter', sans-serif" }}>
+            <Typography sx={{ fontSize: 16, color: '#6c757d', fontFamily: "'Inter', sans-serif" }}>
               Monitor platform performance and review problem reports
             </Typography>
           </Box>
@@ -189,10 +188,10 @@ function Reports() {
                   <card.IconComponent sx={{ fontSize: 28, color: card.color }} />
                 </Box>
                 <Box>
-                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', mb: '4px', fontFamily: "'Inter', sans-serif" }}>
+                  <Typography sx={{ fontSize: 15, color: '#6c757d', mb: '4px', fontFamily: "'Inter', sans-serif" }}>
                     {card.title}
                   </Typography>
-                  <Typography sx={{ fontSize: '1.75rem', fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
+                  <Typography sx={{ fontSize: 25, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
                     {card.value}
                   </Typography>
                 </Box>
@@ -215,7 +214,7 @@ function Reports() {
               border: '1px solid #e2e8f0'
             }}>
               <Typography variant="h6" sx={{
-                fontSize: '1.1rem',
+                fontSize: 18,
                 fontWeight: 700,
                 color: '#1a1f36',
                 mb: 2.5,
@@ -223,46 +222,33 @@ function Reports() {
               }}>
                 Campaigns per Month
               </Typography>
-              <Box sx={{
-                height: 200,
-                display: 'flex',
-                alignItems: 'flex-end',
-                gap: 1.5,
-                py: 2.5
-              }}>
-                {[65, 80, 45, 90, 75, 100].map((height, i) => (
-                  <Box
-                    key={i}
-                    sx={{
-                      flex: 1,
-                      height: `${height}%`,
-                      background: `linear-gradient(135deg, ${COLORS.gradient})`,
-                      borderRadius: '8px 8px 0 0',
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'center',
-                      pt: 1,
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      color: '#fff'
-                    }}
-                  >
-                    {Math.floor(height / 10)}
-                  </Box>
-                ))}
-              </Box>
-              <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                mt: 1.5,
-                fontSize: '0.75rem',
-                color: '#6c757d',
-                fontFamily: "'Inter', sans-serif"
-              }}>
-                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((month, i) => (
-                  <Typography key={i} sx={{ fontSize: '0.75rem', color: '#6c757d' }}>{month}</Typography>
-                ))}
-              </Box>
+              <BarChart
+                xAxis={[{
+                  id: 'months',
+                  data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                  scaleType: 'band',
+                  label: 'Month',
+                }]}
+                series={[{
+                  data: [65, 80, 45, 90, 75, 100],
+                  // color: COLORS.gradientPrimary ? undefined : '#667eea',
+                  color: '#667eea',
+                  label: 'Campaigns',
+                }]}
+                height={220}
+                sx={{
+                  mb: 1,
+                  '--ChartsLegend-rootOffsetY': '8px',
+                  '--ChartsLegend-rootOffsetX': '8px',
+                  '--ChartsAxis-labelFontSize': '12px',
+                  '--ChartsAxis-tickLabelFontSize': '12px',
+                  '--ChartsLegend-labelFontSize': '13px',
+                  fontFamily: 'Inter, sans-serif',
+                  pr: 4.5
+                }}
+                margin={{ top: 10, right: 10, left: 10, bottom: 25 }}
+                grid={{ horizontal: true }}
+              />
             </Box>
 
             {/* Chart 2: User Growth */}
@@ -273,7 +259,7 @@ function Reports() {
               border: '1px solid #e2e8f0'
             }}>
               <Typography variant="h6" sx={{
-                fontSize: '1.1rem',
+                fontSize: 18,
                 fontWeight: 700,
                 color: '#1a1f36',
                 mb: 2.5,
@@ -300,7 +286,7 @@ function Reports() {
               border: '1px solid #e2e8f0'
             }}>
               <Typography variant="h6" sx={{
-                fontSize: '1.1rem',
+                fontSize: 18,
                 fontWeight: 700,
                 color: '#1a1f36',
                 mb: 2.5,
@@ -341,10 +327,10 @@ function Reports() {
                   top: '50%',
                   transform: 'translateY(-50%)'
                 }}>
-                  <Typography sx={{ fontSize: '1.75rem', fontWeight: 700, color: '#1a1f36' }}>
+                  <Typography sx={{ fontSize: 25, fontWeight: 700, color: '#1a1f36' }}>
                     {campaigns.length}
                   </Typography>
-                  <Typography sx={{ fontSize: '0.8rem', color: '#6c757d' }}>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>
                     Total
                   </Typography>
                 </Box>
@@ -366,14 +352,14 @@ function Reports() {
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
-              <Typography variant="h6" sx={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
+              <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
                 Problem Reports
               </Typography>
               <Select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 variant="outlined"
-                sx={{ minWidth: 140, fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', borderRadius: 2 }}
+                sx={{ minWidth: 140, fontFamily: "'Inter', sans-serif", fontSize: 14, borderRadius: 2 }}
               >
                 <MenuItem value="All">All Status</MenuItem>
                 <MenuItem value="Pending">Pending</MenuItem>
@@ -384,13 +370,13 @@ function Reports() {
             <Table sx={{ width: '100%', fontFamily: "'Inter', sans-serif" }}>
               <TableHead>
                 <TableRow sx={{ background: '#f7fafc' }}>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>ID</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Campaign</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Reported By</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Reason</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Status</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Date</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Actions</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>ID</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Campaign</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Reported By</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Reason</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Status</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Date</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -398,16 +384,16 @@ function Reports() {
                   const statusStyle = getStatusColor(report.status);
                   return (
                     <TableRow key={report.id} sx={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <TableCell sx={{ px: 3, py: 2, fontSize: '0.9rem', color: '#2d3748' }}>#{report.id}</TableCell>
-                      <TableCell sx={{ px: 3, py: 2, fontSize: '0.9rem', fontWeight: 600, color: '#1a1f36' }}>{report.campaignName}</TableCell>
-                      <TableCell sx={{ px: 3, py: 2, fontSize: '0.9rem', color: '#6c757d' }}>{report.reportedBy}</TableCell>
-                      <TableCell sx={{ px: 3, py: 2, fontSize: '0.9rem', color: '#6c757d' }}>{report.reason}</TableCell>
+                      <TableCell sx={{ px: 3, py: 2, fontSize: 14, color: '#2d3748' }}>#{report.id}</TableCell>
+                      <TableCell sx={{ px: 3, py: 2, fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>{report.campaignName}</TableCell>
+                      <TableCell sx={{ px: 3, py: 2, fontSize: 14, color: '#6c757d' }}>{report.reportedBy}</TableCell>
+                      <TableCell sx={{ px: 3, py: 2, fontSize: 14, color: '#6c757d' }}>{report.reason}</TableCell>
                       <TableCell sx={{ px: 3, py: 2 }}>
                         <Box component="span" sx={{
                           px: 1.5,
                           py: 0.75,
                           borderRadius: 2,
-                          fontSize: '0.8rem',
+                          fontSize: 13,
                           fontWeight: 600,
                           background: statusStyle.bg,
                           color: statusStyle.color,
@@ -416,7 +402,7 @@ function Reports() {
                           {report.status}
                         </Box>
                       </TableCell>
-                      <TableCell sx={{ px: 3, py: 2, fontSize: '0.9rem', color: '#6c757d' }}>{report.date}</TableCell>
+                      <TableCell sx={{ px: 3, py: 2, fontSize: 14, color: '#6c757d' }}>{report.date}</TableCell>
                       <TableCell sx={{ px: 3, py: 2, textAlign: 'center' }}>
                         <Button
                           variant="contained"
@@ -426,7 +412,7 @@ function Reports() {
                             bgcolor: '#667eea',
                             borderRadius: 2.5,
                             color: '#fff',
-                            fontSize: '0.85rem',
+                            fontSize: 13,
                             fontWeight: 600,
                             textTransform: 'none',
                             boxShadow: 'none',

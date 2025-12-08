@@ -129,7 +129,7 @@ function ManageCampaigns() {
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: "'Inter', sans-serif", fontSize: 32 }}>
               Manage Campaigns
             </Typography>
-            <Typography sx={{ fontSize: '0.95rem', color: '#6c757d', fontFamily: "'Inter', sans-serif" }}>
+            <Typography sx={{ fontSize: 16, color: '#6c757d', fontFamily: "'Inter', sans-serif" }}>
               Monitor and manage all campaigns on the platform
             </Typography>
           </Box>
@@ -168,7 +168,7 @@ function ManageCampaigns() {
                 }}
               >
                 <Box sx={{
-                  minWidth: 48,
+                  minWidth: 6,
                   width: 48,
                   height: 48,
                   borderRadius: 2,
@@ -181,10 +181,10 @@ function ManageCampaigns() {
                   <stat.IconComponent sx={{ fontSize: 28, color: stat.iconColor }} />
                 </Box>
                 <Box>
-                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', mb: '4px', fontFamily: "'Inter', sans-serif" }}>
+                  <Typography sx={{ fontSize: 15, color: '#6c757d', mb: 0.5, fontFamily: "'Inter', sans-serif" }}>
                     {stat.label}
                   </Typography>
-                  <Typography sx={{ fontSize: '1.75rem', fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
+                  <Typography sx={{ fontSize: 25, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
                     {stat.value}
                   </Typography>
                 </Box>
@@ -220,7 +220,7 @@ function ManageCampaigns() {
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 variant="outlined"
-                sx={{ minWidth: 19, fontFamily: "'Inter', sans-serif" }}
+                sx={{ minWidth: 19 / 8, fontFamily: "'Inter', sans-serif" }}
               >
                 <MenuItem value="All">All Status</MenuItem>
                 <MenuItem value="Active">Active</MenuItem>
@@ -298,7 +298,7 @@ function ManageCampaigns() {
                                 fontWeight: 600,
                                 textTransform: 'none',
                                 boxShadow: 'none',
-                                minWidth: 10,
+                                minWidth: 10 / 8,
                                 py: 1,
                                 px: 2,
                                 '&:hover': { bgcolor: '#5a67d8' }
@@ -319,7 +319,7 @@ function ManageCampaigns() {
                                   fontWeight: 600,
                                   textTransform: 'none',
                                   boxShadow: 'none',
-                                  minWidth: 10,
+                                  minWidth: 10 / 8,
                                   py: 1,
                                   px: 2,
                                   '&:hover': { bgcolor: '#d97706' }
@@ -363,14 +363,14 @@ function ManageCampaigns() {
                 <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: "'Inter', sans-serif" }}>
                   {selectedCampaign?.campaign_title || 'Untitled Campaign'}
                 </Typography>
-                <Typography sx={{ fontSize: '0.9rem', color: '#6c757d', fontFamily: "'Inter', sans-serif" }}>
+                <Typography sx={{ fontSize: 14, color: '#6c757d', fontFamily: "'Inter', sans-serif" }}>
                   {selectedCampaign?.business_name || 'Unnamed UMKM'}
                 </Typography>
               </Box>
               <Button
                 onClick={() => setShowDetailModal(false)}
                 sx={{
-                  bgcolor: '#f7fafc',
+                  bgcolor: 'transparent',
                   width: 40,
                   height: 40,
                   borderRadius: '50%',
@@ -381,7 +381,10 @@ function ManageCampaigns() {
                   justifyContent: 'center',
                   minWidth: 0,
                   p: 0,
-                  '&:hover': { bgcolor: '#e2e8f0' }
+                  transition: 'background 0.2s',
+                  '&:hover': {
+                    bgcolor: '#e2e8f0',
+                  }
                 }}
               >
                 <CloseIcon sx={{ fontSize: 24 }} />
@@ -395,7 +398,7 @@ function ManageCampaigns() {
               <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: "'Inter', sans-serif" }}>
                 Campaign Description
               </Typography>
-              <Typography sx={{ fontSize: '0.95rem', color: '#6c757d', lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>
+              <Typography sx={{ fontSize: 15, color: '#6c757d', lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>
                 {selectedCampaign?.description || 'No description provided.'}
               </Typography>
             </Box>
