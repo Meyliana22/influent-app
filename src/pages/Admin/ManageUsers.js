@@ -1,7 +1,26 @@
+
 import React, { useState, useEffect } from 'react';
-import AdminSidebar from '../../components/admin/AdminSidebar';
-import AdminTopbar from '../../components/admin/AdminTopbar';
+import { Sidebar, Topbar } from '../../components/common';
 import { COLORS } from '../../constants/colors';
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  Modal,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  InputLabel,
+  FormControl,
+  Stack
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 
 function ManageUsers() {
   const [users, setUsers] = useState([]);
@@ -96,456 +115,412 @@ function ManageUsers() {
     setShowModal(false);
   };
 
+
   return (
-    <div style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
-      <AdminSidebar />
-      
-      <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
-        <AdminTopbar />
-        
-        <div style={{ marginTop: '72px', padding: '32px' }}>
+    <Box sx={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
+      <Sidebar />
+      <Box sx={{ ml: 32.5, width: 'calc(100% - 260px)' }}>
+        <Topbar />
+        <Box sx={{ mt: 9, p: 4 }}>
           {/* Page Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '32px'
-          }}>
-            <div>
-              <h1 style={{
-                fontSize: '2rem',
-                fontWeight: 700,
-                color: '#1a1f36',
-                marginBottom: '8px',
-                fontFamily: "'Inter', sans-serif"
-              }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: 'Inter, sans-serif' }}>
                 Manage Users
-              </h1>
-              <p style={{
-                fontSize: '0.95rem',
-                color: '#6c757d',
-                fontFamily: "'Inter', sans-serif"
-              }}>
+              </Typography>
+              <Typography sx={{ fontSize: 15, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>
                 Total: {filteredUsers.length} users
-              </p>
-            </div>
-            <button
+              </Typography>
+            </Box>
+            <Button
               onClick={handleAddUser}
-              style={{
-                padding: '12px 24px',
-                background: COLORS.gradient,
-                border: 'none',
-                borderRadius: '12px',
+              sx={{
+                px: 3,
+                py: 1.5,
+                backgroundImage: COLORS.gradientPrimary,
+                borderRadius: 2.5,
                 color: '#fff',
-                fontSize: '0.95rem',
-                fontWeight: 600,
-                cursor: 'pointer',
+                fontSize: 15,
+                fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: 1,
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                fontFamily: 'Inter, sans-serif',
+                textTransform: 'none',
                 transition: 'all 0.3s',
-                fontFamily: "'Inter', sans-serif",
-                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                '&:hover': {
+                  backgroundImage: COLORS.gradientPrimary,
+                  opacity: 0.9,
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)'
+                }
               }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
-              }}
+              startIcon={<AddIcon sx={{ color: '#fff', fontSize: 24 }} />}
             >
-              <span style={{ fontSize: '1.25rem' }}>➕</span>
               Add User
-            </button>
-          </div>
-
+            </Button>
+          </Box>
           {/* Filters */}
-          <div style={{
+          <Paper elevation={0} sx={{
             background: '#fff',
-            borderRadius: '16px',
-            padding: '24px',
-            marginBottom: '24px',
+            borderRadius: 2,
+            p: 3,
+            mb: 3,
             border: '1px solid #e2e8f0',
             display: 'flex',
-            gap: '16px',
+            gap: 2,
             alignItems: 'center'
           }}>
-            <div style={{ flex: 1 }}>
-              <input
-                type="text"
+            <Box sx={{ flex: 1 }}>
+              <TextField
+                fullWidth
                 placeholder="Search by name or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  fontFamily: "'Inter', sans-serif"
+                variant="outlined"
+                size="medium"
+                sx={{
+                  background: '#fff',
+                  borderRadius: 1.25,
+                  fontSize: 15,
+                  fontFamily: 'Inter, sans-serif',
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 1.25,
+                  }
                 }}
               />
-            </div>
-            <div>
-              <select
+            </Box>
+            <FormControl sx={{ minWidth: 19 }}>
+              <Select
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
-                style={{
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif",
-                  minWidth: '150px'
+                size="medium"
+                sx={{
+                  borderRadius: 1.25,
+                  fontSize: 15,
+                  fontFamily: 'Inter, sans-serif',
+                  background: '#fff',
                 }}
               >
-                <option value="All">All Roles</option>
-                <option value="UMKM">UMKM</option>
-                <option value="Influencer">Influencer</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
-          </div>
-
+                <MenuItem value="All">All Roles</MenuItem>
+                <MenuItem value="UMKM">UMKM</MenuItem>
+                <MenuItem value="Influencer">Influencer</MenuItem>
+                <MenuItem value="Admin">Admin</MenuItem>
+              </Select>
+            </FormControl>
+          </Paper>
           {/* Users Table */}
-          <div style={{
+          <Paper elevation={0} sx={{
             background: '#fff',
-            borderRadius: '16px',
+            borderRadius: 2,
             border: '1px solid #e2e8f0',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}>
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              <thead>
-                <tr style={{ background: '#f7fafc' }}>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>ID</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Name</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Role</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table sx={{ width: 1, borderCollapse: 'collapse', fontFamily: 'Inter, sans-serif' }}>
+              <TableHead>
+                <TableRow sx={{ background: '#f7fafc' }}>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>ID</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Name</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Email</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Role</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'left', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Status</TableCell>
+                  <TableCell sx={{ pl: 2, pr: 3, py: 2, textAlign: 'center', fontSize: 13.5, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: 0.5 }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {filteredUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    style={{ borderBottom: '1px solid #e2e8f0' }}
-                  >
-                    <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#2d3748' }}>#{user.id}</td>
-                    <td style={{ padding: '20px 24px', fontSize: '0.9rem', fontWeight: 600, color: '#1a1f36' }}>{user.name}</td>
-                    <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#6c757d' }}>{user.email}</td>
-                    <td style={{ padding: '20px 24px' }}>
-                      <span style={{
-                        padding: '6px 12px',
-                        borderRadius: '8px',
-                        fontSize: '0.8rem',
+                  <TableRow key={user.id} sx={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5, fontSize: 14.5, color: '#2d3748' }}>#{user.id}</TableCell>
+                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5, fontSize: 14.5, fontWeight: 600, color: '#1a1f36' }}>{user.name}</TableCell>
+                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5, fontSize: 14.5, color: '#6c757d' }}>{user.email}</TableCell>
+                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5 }}>
+                      <Box component="span" sx={{
+                        px: 1.25,
+                        py: 0.5,
+                        borderRadius: 1,
+                        fontSize: 13,
                         fontWeight: 600,
                         background: user.role === 'Admin' ? '#fef3c7' : user.role === 'UMKM' ? '#dbeafe' : '#d1fae5',
-                        color: user.role === 'Admin' ? '#92400e' : user.role === 'UMKM' ? '#1e40af' : '#065f46'
-                      }}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td style={{ padding: '20px 24px' }}>
-                      <span style={{
-                        padding: '6px 12px',
-                        borderRadius: '8px',
-                        fontSize: '0.8rem',
+                        color: user.role === 'Admin' ? '#92400e' : user.role === 'UMKM' ? '#1e40af' : '#065f46',
+                        display: 'inline-block'
+                      }}>{user.role}</Box>
+                    </TableCell>
+                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5 }}>
+                      <Box component="span" sx={{
+                        px: 1.25,
+                        py: 0.5,
+                        borderRadius: 1,
+                        fontSize: 13,
                         fontWeight: 600,
                         background: user.status === 'Active' ? '#d1fae5' : '#fee2e2',
-                        color: user.status === 'Active' ? '#065f46' : '#991b1b'
-                      }}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: '20px 24px', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                        <button
+                        color: user.status === 'Active' ? '#065f46' : '#991b1b',
+                        display: 'inline-block'
+                      }}>{user.status}</Box>
+                    </TableCell>
+                    <TableCell sx={{ pl: 2, pr: 3, py: 2.5, textAlign: 'center' }}>
+                      <Stack direction="row" spacing={1} justifyContent="center">
+                        <Button
                           onClick={() => handleEditUser(user)}
-                          style={{
-                            padding: '8px 16px',
+                          size="small"
+                          sx={{
+                            px: 1.25,
+                            py: 0.5,
+                            minHeight: 0,
                             background: '#667eea',
-                            border: 'none',
-                            borderRadius: '8px',
+                            borderRadius: 2,
                             color: '#fff',
-                            fontSize: '0.85rem',
+                            fontSize: 13,
                             fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
+                            textTransform: 'none',
+                            minWidth: 0,
+                            '&:hover': {
+                              background: '#5568d3',
+                            }
                           }}
-                          onMouseEnter={(e) => e.target.style.background = '#5568d3'}
-                          onMouseLeave={(e) => e.target.style.background = '#667eea'}
                         >
                           Edit
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => handleDeleteClick(user)}
-                          style={{
-                            padding: '8px 16px',
+                          size="small"
+                          sx={{
+                            px: 1.25,
+                            py: 0.5,
+                            minHeight: 0,
                             background: '#ef4444',
-                            border: 'none',
-                            borderRadius: '8px',
+                            borderRadius: 2,
                             color: '#fff',
-                            fontSize: '0.85rem',
+                            fontSize: 13,
                             fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
+                            textTransform: 'none',
+                            minWidth: 0,
+                            '&:hover': {
+                              background: '#dc2626',
+                            }
                           }}
-                          onMouseEnter={(e) => e.target.style.background = '#dc2626'}
-                          onMouseLeave={(e) => e.target.style.background = '#ef4444'}
                         >
                           Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                        </Button>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
+              </TableBody>
+            </Table>
+          </Paper>
+        </Box>
+      </Box>
       {/* Add/Edit User Modal */}
-      {showModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
+      <Modal open={showModal} onClose={() => setShowModal(false)}>
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: '#fff',
+          borderRadius: 2.5,
+          p: 4,
+          maxWidth: 'sm',
+          width: '90%',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
         }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '20px',
-            padding: '32px',
-            maxWidth: '500px',
-            width: '90%',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-          }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: 700,
-              color: '#1a1f36',
-              marginBottom: '24px',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              {modalMode === 'add' ? 'Add New User' : 'Edit User'}
-            </h2>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748' }}>Name</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748' }}>Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748' }}>Role</label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              >
-                <option value="UMKM">UMKM</option>
-                <option value="Influencer">Influencer</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748' }}>Status</label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              >
-                <option value="Active">Active</option>
-                <option value="Banned">Banned</option>
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={() => setShowModal(false)}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  background: '#e2e8f0',
-                  border: 'none',
-                  borderRadius: '10px',
-                  color: '#2d3748',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveUser}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  background: COLORS.gradient,
-                  border: 'none',
-                  borderRadius: '10px',
-                  color: '#fff',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+          <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1f36', mb: 3, fontFamily: 'Inter, sans-serif' }}>
+            {modalMode === 'add' ? 'Add New User' : 'Edit User'}
+          </Typography>
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              fullWidth
+              label="Name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              variant="outlined"
+              size="medium"
+              sx={{
+                background: '#fff',
+                borderRadius: 1.25,
+                fontSize: 15,
+                fontFamily: 'Inter, sans-serif',
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 1.25,
+                }
+              }}
+            />
+          </Box>
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              variant="outlined"
+              size="medium"
+              sx={{
+                background: '#fff',
+                borderRadius: 1.25,
+                fontSize: 15,
+                fontFamily: 'Inter, sans-serif',
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 1.25,
+                }
+              }}
+            />
+          </Box>
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              select
+              fullWidth
+              label="Role"
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              variant="outlined"
+              size="medium"
+              sx={{
+                background: '#fff',
+                borderRadius: 1.25,
+                fontSize: 15,
+                fontFamily: 'Inter, sans-serif',
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 1.25,
+                }
+              }}
+            >
+              <MenuItem value="UMKM">UMKM</MenuItem>
+              <MenuItem value="Influencer">Influencer</MenuItem>
+              <MenuItem value="Admin">Admin</MenuItem>
+            </TextField>
+          </Box>
+          <Box sx={{ mb: 3 }}>
+            <TextField
+              select
+              fullWidth
+              label="Status"
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              variant="outlined"
+              size="medium"
+              sx={{
+                background: '#fff',
+                borderRadius: 1.25,
+                fontSize: 15,
+                fontFamily: 'Inter, sans-serif',
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 1.25,
+                }
+              }}
+            >
+              <MenuItem value="Active">Active</MenuItem>
+              <MenuItem value="Banned">Banned</MenuItem>
+            </TextField>
+          </Box>
+          <Stack direction="row" spacing={1}>
+            <Button
+              onClick={() => setShowModal(false)}
+              sx={{
+                flex: 1,
+                py: 1.5,
+                background: '#e2e8f0',
+                borderRadius: 1.25,
+                color: '#2d3748',
+                fontSize: 15,
+                fontWeight: 600,
+                fontFamily: 'Inter, sans-serif',
+                textTransform: 'none',
+                '&:hover': {
+                  background: '#cbd5e1',
+                }
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveUser}
+              sx={{
+                flex: 1,
+                py: 1.5,
+                backgroundImage: COLORS.gradientPrimary,
+                borderRadius: 1.25,
+                color: '#fff',
+                fontSize: 15,
+                fontWeight: 600,
+                fontFamily: 'Inter, sans-serif',
+                textTransform: 'none',
+                '&:hover': {
+                  backgroundImage: COLORS.gradientPrimary,
+                  opacity: 0.9
+                }
+              }}
+            >
+              Save
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
       {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
+      <Modal open={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: '#fff',
+          borderRadius: 2.5,
+          p: 4,
+          maxWidth: 50,
+          width: '90%',
+          textAlign: 'center',
         }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '20px',
-            padding: '32px',
-            maxWidth: '400px',
-            width: '90%',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: 700,
-              color: '#1a1f36',
-              marginBottom: '12px',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              Delete User?
-            </h2>
-            <p style={{
-              fontSize: '0.95rem',
-              color: '#6c757d',
-              marginBottom: '24px',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              Are you sure you want to delete <strong>{userToDelete?.name}</strong>? This action cannot be undone.
-            </p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  background: '#e2e8f0',
-                  border: 'none',
-                  borderRadius: '10px',
-                  color: '#2d3748',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  background: '#ef4444',
-                  border: 'none',
-                  borderRadius: '10px',
-                  color: '#fff',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+          <Box sx={{ fontSize: 36, mb: 2 }}>⚠️</Box>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1.5, fontFamily: 'Inter, sans-serif' }}>
+            Delete User?
+          </Typography>
+          <Typography sx={{ fontSize: 15, color: '#6c757d', mb: 3, fontFamily: 'Inter, sans-serif' }}>
+            Are you sure you want to delete <strong>{userToDelete?.name}</strong>? This action cannot be undone.
+          </Typography>
+          <Stack direction="row" spacing={1}>
+            <Button
+              onClick={() => setShowDeleteModal(false)}
+              sx={{
+                flex: 1,
+                py: 1.5,
+                background: '#e2e8f0',
+                borderRadius: 1.25,
+                color: '#2d3748',
+                fontSize: 15,
+                fontWeight: 600,
+                fontFamily: 'Inter, sans-serif',
+                textTransform: 'none',
+                '&:hover': {
+                  background: '#cbd5e1',
+                }
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              sx={{
+                flex: 1,
+                py: 1.5,
+                background: '#ef4444',
+                borderRadius: 1.25,
+                color: '#fff',
+                fontSize: 15,
+                fontWeight: 600,
+                fontFamily: 'Inter, sans-serif',
+                textTransform: 'none',
+                '&:hover': {
+                  background: '#dc2626',
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
+    </Box>
   );
 }
 

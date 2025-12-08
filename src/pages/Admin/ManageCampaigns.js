@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import AdminSidebar from '../../components/admin/AdminSidebar';
-import AdminTopbar from '../../components/admin/AdminTopbar';
+import CloseIcon from '@mui/icons-material/Close';
+import CancelIcon from '@mui/icons-material/Cancel';
+import { Sidebar, Topbar } from '../../components/common';
 import { COLORS } from '../../constants/colors';
 import ApplicantIcon from '@mui/icons-material/People';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import CompletedIcon from '@mui/icons-material/CheckCircle';
 import OngoingIcon from '@mui/icons-material/HourglassEmpty';
+import {
+  Box,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Button,
+  Modal,
+  Stack
+} from '@mui/material';
 
 function ManageCampaigns() {
   const [campaigns, setCampaigns] = useState([]);
@@ -103,39 +119,27 @@ function ManageCampaigns() {
   };
 
   return (
-    <div style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
-      <AdminSidebar />
-      
-      <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
-        <AdminTopbar />
-        
-        <div style={{ marginTop: '72px', padding: '32px' }}>
+    <Box sx={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
+      <Sidebar />
+      <Box sx={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+        <Topbar />
+        <Box sx={{ mt: 9, p: 4 }}>
           {/* Page Header */}
-          <div style={{ marginBottom: '32px' }}>
-            <h1 style={{
-              fontSize: '2rem',
-              fontWeight: 700,
-              color: '#1a1f36',
-              marginBottom: '8px',
-              fontFamily: "'Inter', sans-serif"
-            }}>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: "'Inter', sans-serif", fontSize: 32 }}>
               Manage Campaigns
-            </h1>
-            <p style={{
-              fontSize: '0.95rem',
-              color: '#6c757d',
-              fontFamily: "'Inter', sans-serif"
-            }}>
+            </Typography>
+            <Typography sx={{ fontSize: '0.95rem', color: '#6c757d', fontFamily: "'Inter', sans-serif" }}>
               Monitor and manage all campaigns on the platform
-            </p>
-          </div>
+            </Typography>
+          </Box>
 
           {/* Stats Overview */}
-          <div style={{
+          <Box sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '20px',
-            marginBottom: '32px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(25ch, 1fr))',
+            gap: 2.5,
+            mb: 4
           }}>
             {[
               { label: 'Total Campaigns', value: stats.total, IconComponent: CampaignIcon, bgColor: '#e0e7ff', iconColor: '#4338ca' },
@@ -143,406 +147,344 @@ function ManageCampaigns() {
               { label: 'Completed', value: stats.completed, IconComponent: CompletedIcon, bgColor: '#fcffd1ff', iconColor: '#bdaa33ff' },
               { label: 'Pending', value: stats.draft, IconComponent: ApplicantIcon, bgColor: '#f9e9ffff', iconColor: '#6f3ec5ff' }
             ].map((stat, index) => (
-              <div
+              <Box
                 key={index}
-                style={{
+                sx={{
                   background: '#fff',
-                  borderRadius: '16px',
-                  padding: '20px',
+                  borderRadius: 5,
+                  p: 3,
                   border: '1px solid #e2e8f0',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '16px'
+                  gap: 2,
+                  minWidth: 0,
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  cursor: 'pointer',
+                  boxShadow: 0,
+                  '&:hover': {
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                    transform: 'translateY(-4px)'
+                  }
                 }}
               >
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: stat.bgColor,
+                <Box sx={{
+                  minWidth: 48,
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2,
+                  bgcolor: stat.bgColor,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  flexShrink: 0
                 }}>
                   <stat.IconComponent sx={{ fontSize: 28, color: stat.iconColor }} />
-                </div>
-                <div>
-                  <div style={{
-                    fontSize: '0.85rem',
-                    color: '#6c757d',
-                    marginBottom: '4px',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', mb: '4px', fontFamily: "'Inter', sans-serif" }}>
                     {stat.label}
-                  </div>
-                  <div style={{
-                    fontSize: '1.75rem',
-                    fontWeight: 700,
-                    color: '#1a1f36',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
+                  </Typography>
+                  <Typography sx={{ fontSize: '1.75rem', fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
                     {stat.value}
-                  </div>
-                </div>
-              </div>
+                  </Typography>
+                </Box>
+              </Box>
             ))}
-          </div>
+          </Box>
 
           {/* Filters */}
-          <div style={{
+          <Box sx={{
             background: '#fff',
-            borderRadius: '16px',
-            padding: '24px',
-            marginBottom: '24px',
+            borderRadius: 2,
+            p: 3,
+            mb: 3,
             border: '1px solid #e2e8f0',
             display: 'flex',
-            gap: '16px',
+            gap: 2,
             alignItems: 'center'
           }}>
-            <div style={{ flex: 1 }}>
-              <input
-                type="text"
+            <Box sx={{ flex: 1 }}>
+              <TextField
+                fullWidth
+                variant="outlined"
                 placeholder="Search campaigns..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
+                sx={{
                   fontFamily: "'Inter', sans-serif"
                 }}
               />
-            </div>
-            <div>
-              <select
+            </Box>
+            <Box>
+              <Select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                style={{
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif",
-                  minWidth: '150px'
-                }}
+                variant="outlined"
+                sx={{ minWidth: 19, fontFamily: "'Inter', sans-serif" }}
               >
-                <option value="All">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Draft">Draft</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </div>
-          </div>
+                <MenuItem value="All">All Status</MenuItem>
+                <MenuItem value="Active">Active</MenuItem>
+                <MenuItem value="Draft">Draft</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+                <MenuItem value="Cancelled">Cancelled</MenuItem>
+              </Select>
+            </Box>
+          </Box>
 
           {/* Campaigns Table */}
-          <div style={{
+          <Box sx={{
             background: '#fff',
-            borderRadius: '16px',
+            borderRadius: 2,
             border: '1px solid #e2e8f0',
             overflow: 'hidden'
           }}>
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              <thead>
-                <tr style={{ background: '#f7fafc' }}>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>ID</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Campaign Title</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>UMKM Name</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Status</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Influencers</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table sx={{ width: '100%', fontFamily: "'Inter', sans-serif" }}>
+              <TableHead>
+                <TableRow sx={{ background: '#f7fafc' }}>
+                  <TableCell sx={{ px: 2, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>ID</TableCell>
+                  <TableCell sx={{ px: 2, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Campaign Title</TableCell>
+                  <TableCell sx={{ px: 2, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>UMKM Name</TableCell>
+                  <TableCell sx={{ px: 2, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Status</TableCell>
+                  <TableCell sx={{ px: 2, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Influencers</TableCell>
+                  <TableCell sx={{ px: 2, py: 2, textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {filteredCampaigns.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: '#6c757d' }}>
+                  <TableRow>
+                    <TableCell colSpan={6} sx={{ px: 5, py: 5, textAlign: 'center', color: '#6c757d' }}>
                       No campaigns found
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   filteredCampaigns.map((campaign) => {
                     const statusStyle = getStatusColor(campaign.status);
                     return (
-                      <tr
-                        key={campaign.id}
-                        style={{ borderBottom: '1px solid #e2e8f0' }}
-                      >
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#2d3748' }}>#{campaign.id}</td>
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', fontWeight: 600, color: '#1a1f36' }}>
+                      <TableRow key={campaign.id} sx={{ borderBottom: '1px solid #e2e8f0' }}>
+                        <TableCell sx={{ px: 2.5, py: 2.5, fontSize: 14, color: '#2d3748' }}>#{campaign.id}</TableCell>
+                        <TableCell sx={{ px: 2.5, py: 2.5, fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
                           {campaign.campaign_title || 'Untitled Campaign'}
-                        </td>
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#6c757d' }}>
+                        </TableCell>
+                        <TableCell sx={{ px: 2.5, py: 2.5, fontSize: 14, color: '#6c757d' }}>
                           {campaign.business_name || 'N/A'}
-                        </td>
-                        <td style={{ padding: '20px 24px' }}>
-                          <span style={{
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            fontSize: '0.8rem',
+                        </TableCell>
+                        <TableCell sx={{ px: 2.5, py: 2.5 }}>
+                          <Box component="span" sx={{
+                            px: 1.5,
+                            py: 0.75,
+                            borderRadius: 2,
+                            fontSize: 13,
                             fontWeight: 600,
                             background: statusStyle.bg,
-                            color: statusStyle.color
+                            color: statusStyle.color,
+                            display: 'inline-block'
                           }}>
                             {campaign.status}
-                          </span>
-                        </td>
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#6c757d' }}>
+                          </Box>
+                        </TableCell>
+                        <TableCell sx={{ px: 2.5, py: 2.5, fontSize: 14, color: '#6c757d' }}>
                           {campaign.influencer_count || 0}
-                        </td>
-                        <td style={{ padding: '20px 24px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <button
-                              onClick={() => handleViewDetail(campaign)}
-                              style={{
-                                padding: '8px 16px',
-                                background: '#667eea',
-                                border: 'none',
-                                borderRadius: '8px',
+                        </TableCell>
+                        <TableCell sx={{ px: 2.5, py: 2.5, textAlign: 'center' }}>
+                          <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap">
+                            <Button
+                              variant="contained"
+                              size="small"
+                              sx={{
+                                bgcolor: '#667eea',
+                                borderRadius: 2,
                                 color: '#fff',
-                                fontSize: '0.85rem',
+                                fontSize: 13,
                                 fontWeight: 600,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
+                                textTransform: 'none',
+                                boxShadow: 'none',
+                                minWidth: 10,
+                                py: 1,
+                                px: 2,
+                                '&:hover': { bgcolor: '#5a67d8' }
                               }}
+                              onClick={() => handleViewDetail(campaign)}
                             >
                               View
-                            </button>
+                            </Button>
                             {campaign.status === 'Active' && (
-                              <button
-                                onClick={() => handleDeactivate(campaign.id)}
-                                style={{
-                                  padding: '8px 16px',
-                                  background: '#f59e0b',
-                                  border: 'none',
-                                  borderRadius: '8px',
+                              <Button
+                                variant="contained"
+                                size="small"
+                                sx={{
+                                  bgcolor: '#f59e0b',
+                                  borderRadius: 2,
                                   color: '#fff',
-                                  fontSize: '0.85rem',
+                                  fontSize: 13,
                                   fontWeight: 600,
-                                  cursor: 'pointer',
-                                  transition: 'all 0.2s'
+                                  textTransform: 'none',
+                                  boxShadow: 'none',
+                                  minWidth: 10,
+                                  py: 1,
+                                  px: 2,
+                                  '&:hover': { bgcolor: '#d97706' }
                                 }}
+                                onClick={() => handleDeactivate(campaign.id)}
                               >
                                 Deactivate
-                              </button>
+                              </Button>
                             )}
-                          </div>
-                        </td>
-                      </tr>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
                     );
                   })
                 )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+              </TableBody>
+            </Table>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Campaign Detail Modal */}
-      {showDetailModal && selectedCampaign && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '20px'
+      <Modal open={showDetailModal && !!selectedCampaign} onClose={() => setShowDetailModal(false)}>
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: '#fff',
+          borderRadius: 3,
+          maxWidth: 'sm',
+          width: '90%',
+          maxHeight: '90vh',
+          overflow: 'auto',
+          boxShadow: 6
         }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '20px',
-            maxWidth: '700px',
-            width: '100%',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-          }}>
-            {/* Modal Header */}
-            <div style={{
-              padding: '32px',
-              borderBottom: '1px solid #e2e8f0'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <div>
-                  <h2 style={{
-                    fontSize: '1.75rem',
-                    fontWeight: 700,
-                    color: '#1a1f36',
-                    marginBottom: '8px',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
-                    {selectedCampaign.campaign_title}
-                  </h2>
-                  <div style={{
-                    fontSize: '0.9rem',
-                    color: '#6c757d',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
-                    {selectedCampaign.business_name}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  style={{
-                    background: '#f7fafc',
-                    border: 'none',
-                    borderRadius: '10px',
-                    width: '36px',
-                    height: '36px',
-                    cursor: 'pointer',
-                    fontSize: '1.25rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div style={{ padding: '32px' }}>
-              <div style={{ marginBottom: '24px' }}>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: 700,
+          {/* Modal Header */}
+          <Box sx={{ p: 4, borderBottom: '1px solid #e2e8f0' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: "'Inter', sans-serif" }}>
+                  {selectedCampaign?.campaign_title || 'Untitled Campaign'}
+                </Typography>
+                <Typography sx={{ fontSize: '0.9rem', color: '#6c757d', fontFamily: "'Inter', sans-serif" }}>
+                  {selectedCampaign?.business_name || 'Unnamed UMKM'}
+                </Typography>
+              </Box>
+              <Button
+                onClick={() => setShowDetailModal(false)}
+                sx={{
+                  bgcolor: '#f7fafc',
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
                   color: '#1a1f36',
-                  marginBottom: '12px',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  Campaign Description
-                </h3>
-                <p style={{
-                  fontSize: '0.95rem',
-                  color: '#6c757d',
-                  lineHeight: '1.6',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {selectedCampaign.description || 'No description provided.'}
-                </p>
-              </div>
+                  boxShadow: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 0,
+                  p: 0,
+                  '&:hover': { bgcolor: '#e2e8f0' }
+                }}
+              >
+                <CloseIcon sx={{ fontSize: 24 }} />
+              </Button>
+            </Box>
+          </Box>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '20px',
-                marginBottom: '24px'
-              }}>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Budget</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1f36' }}>
-                    Rp {(selectedCampaign.total_budget || 0).toLocaleString('id-ID')}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Price Per Post</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1f36' }}>
-                    Rp {(selectedCampaign.price_per_post || 0).toLocaleString('id-ID')}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Influencers Needed</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1f36' }}>
-                    {selectedCampaign.influencer_count || 0}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Status</div>
-                  <div>
-                    <span style={{
-                      padding: '8px 16px',
-                      borderRadius: '10px',
-                      fontSize: '0.9rem',
-                      fontWeight: 700,
-                      background: getStatusColor(selectedCampaign.status).bg,
-                      color: getStatusColor(selectedCampaign.status).color,
-                      display: 'inline-block'
-                    }}>
-                      {selectedCampaign.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          {/* Modal Body */}
+          <Box sx={{ p: 4 }}>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: "'Inter', sans-serif" }}>
+                Campaign Description
+              </Typography>
+              <Typography sx={{ fontSize: '0.95rem', color: '#6c757d', lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>
+                {selectedCampaign?.description || 'No description provided.'}
+              </Typography>
+            </Box>
 
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-                {selectedCampaign.status === 'Draft' && (
-                  <>
-                    <button
-                      onClick={handleApproveCampaign}
-                      style={{
-                        flex: 1,
-                        padding: '14px',
-                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                        border: 'none',
-                        borderRadius: '12px',
-                        color: '#fff',
-                        fontSize: '0.95rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontFamily: "'Inter', sans-serif"
-                      }}
-                    >
-                      ✅ Approve Campaign
-                    </button>
-                    <button
-                      onClick={handleRejectCampaign}
-                      style={{
-                        flex: 1,
-                        padding: '14px',
-                        background: '#ef4444',
-                        border: 'none',
-                        borderRadius: '12px',
-                        color: '#fff',
-                        fontSize: '0.95rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontFamily: "'Inter', sans-serif"
-                      }}
-                    >
-                      ❌ Reject Campaign
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  style={{
-                    flex: selectedCampaign.status === 'Draft' ? 0 : 1,
-                    padding: '14px',
-                    background: '#e2e8f0',
-                    border: 'none',
-                    borderRadius: '12px',
-                    color: '#2d3748',
-                    fontSize: '0.95rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontFamily: "'Inter', sans-serif",
-                    minWidth: selectedCampaign.status === 'Draft' ? 'auto' : '100%'
-                  }}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2.5, mb: 3 }}>
+              <Box>
+                <Typography sx={{ fontSize: 13, color: '#6c757d', mb: 0.5 }}>Budget</Typography>
+                <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1a1f36' }}>
+                  Rp {(selectedCampaign?.total_budget || 0).toLocaleString('id-ID')}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: 13, color: '#6c757d', mb: 0.5 }}>Price Per Post</Typography>
+                <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1a1f36' }}>
+                  Rp {(selectedCampaign?.price_per_post || 0).toLocaleString('id-ID')}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: 13, color: '#6c757d', mb: 0.5 }}>Influencers Needed</Typography>
+                <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1a1f36' }}>
+                  {selectedCampaign?.influencer_count || 0}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: 13, color: '#6c757d', mb: 0.5 }}>Status</Typography>
+                <Box component="span" sx={{
+                  px: 2,
+                  py: 1,
+                  borderRadius: 2,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  background: getStatusColor(selectedCampaign?.status).bg,
+                  color: getStatusColor(selectedCampaign?.status).color,
+                  display: 'inline-block'
+                }}>
+                  {selectedCampaign?.status}
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Action Buttons */}
+            <Stack direction="row" spacing={1.5} sx={{ mt: 4 }}>
+              {selectedCampaign?.status === 'Draft' && (
+                <>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    sx={{
+                      bgcolor: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      borderRadius: 2,
+                      color: '#fff',
+                      fontSize: 15,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      boxShadow: 'none',
+                      fontFamily: "'Inter', sans-serif",
+                      py: 1.5,
+                      '&:hover': { bgcolor: '#059669' }
+                    }}
+                    onClick={handleApproveCampaign}
+                  >
+                    <CompletedIcon sx={{ mr: 1, fontSize: 22 }} /> Approve Campaign
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    sx={{
+                      bgcolor: '#ef4444',
+                      borderRadius: 2,
+                      color: '#fff',
+                      fontSize: 15,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      boxShadow: 'none',
+                      fontFamily: "'Inter', sans-serif",
+                      py: 1.5,
+                      '&:hover': { bgcolor: '#dc2626' }
+                    }}
+                    onClick={handleRejectCampaign}
+                  >
+                    <CancelIcon sx={{ mr: 1, fontSize: 22 }} /> Reject Campaign
+                  </Button>
+                </>
+              )}
+            </Stack>
+          </Box>
+        </Box>
+      </Modal>
+    </Box>
   );
 }
 

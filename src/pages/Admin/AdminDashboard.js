@@ -1,7 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import AdminSidebar from '../../components/admin/AdminSidebar';
-import AdminTopbar from '../../components/admin/AdminTopbar';
+import WavingHandIcon from '@mui/icons-material/WavingHand';
+import { Sidebar, Topbar } from '../../components/common';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import { COLORS } from '../../constants/colors';
+import {
+  Box,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Paper,
+  Typography,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Stack
+} from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
@@ -11,12 +27,24 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 function AdminDashboard() {
+    const theme = useTheme();
+    const isDesktop = useMediaQuery('(min-width:1000px)');
+    const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
+
+    // Keep sidebarOpen in sync with screen size
+    useEffect(() => {
+      setSidebarOpen(isDesktop);
+    }, [isDesktop]);
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeCampaigns: 0,
     pendingReview: 0,
     reportsFiled: 0
   });
+
+  // Get user name from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userName = user.name || 'User';
 
   useEffect(() => {
     // Load data from localStorage
@@ -85,244 +113,255 @@ function AdminDashboard() {
   ];
 
   return (
-    <div style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
-      <AdminSidebar />
-      
-      <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
-        <AdminTopbar />
+    <Box sx={{ 
+      display: 'flex', 
+      fontFamily: "'Inter', sans-serif",
+      width: '100vw',
+      maxWidth: '100%',
+      overflowX: 'hidden'
+    }}>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Box
+        sx={{
+          marginLeft: isDesktop && sidebarOpen ? '260px' : 0,
+          width: isDesktop && sidebarOpen ? 'calc(100% - 260px)' : '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+          overflow: 'hidden'
+        }}
+      >
+        <Topbar />
         
-        <div style={{ marginTop: '72px', padding: '32px' }}>
+        <Box
+          sx={{
+            marginTop: 9,
+            width: '100%',
+            maxWidth: '100%',
+            padding: 4,
+            backgroundColor: '#f8f9fa',
+            minHeight: 'calc(100vh - 72px)',
+            boxSizing: 'border-box',
+            overflowX: 'hidden'
+          }}
+        >
           {/* Page Header */}
-          <div style={{ marginBottom: '32px' }}>
-            <h1 style={{
-              fontSize: '2rem',
+          <Box sx={{ marginBottom: 4 }}>
+            <Typography variant="h4" sx={{
+              fontSize: 32,
               fontWeight: 700,
               color: '#1a1f36',
-              marginBottom: '8px',
-              fontFamily: "'Inter', sans-serif"
+              marginBottom: 1
             }}>
-              Dashboard Overview
-            </h1>
-            <p style={{
-              fontSize: '0.95rem',
-              color: '#6c757d',
-              fontFamily: "'Inter', sans-serif"
+                Welcome, {userName}!
+                <WavingHandIcon sx={{ fontSize: 32, transform: 'scaleX(-1)', color: '#fbbf24', ml: 1 }} />
+            </Typography>
+            <Typography sx={{
+              fontSize: 15, // 0.95rem ≈ 15px
+              color: '#6c757d'
             }}>
-              Welcome back! Here's what's happening with your platform today.
-            </p>
-          </div>
+              Here's what's happening with your platform today.
+            </Typography>
+          </Box>
 
           {/* Stats Cards */}
-          <div style={{
+          <Box sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '24px',
-            marginBottom: '32px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: 2.5,
+            marginBottom: 4
           }}>
             {statCards.map((card, index) => (
-              <div
+              <Box
                 key={index}
-                style={{
+                sx={{
                   background: '#fff',
-                  borderRadius: '16px',
-                  padding: '24px',
+                  borderRadius: 5,
+                  padding: 2.5,
                   border: '1px solid #e2e8f0',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  transition: 'all 0.3s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  minWidth: 0,
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  cursor: 'pointer',
+                  boxShadow: 0,
+                  '&:hover': {
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                    transform: 'translateY(-4px)'
+                  }
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <div style={{
-                      fontSize: '0.85rem',
-                      color: '#6c757d',
-                      marginBottom: '8px',
-                      fontWeight: 500,
-                      fontFamily: "'Inter', sans-serif"
-                    }}>
-                      {card.title}
-                    </div>
-                    <div style={{
-                      fontSize: '2rem',
-                      fontWeight: 700,
-                      color: '#1a1f36',
-                      marginBottom: '8px',
-                      fontFamily: "'Inter', sans-serif"
-                    }}>
-                      {card.value}
-                    </div>
-                    <div style={{
-                      fontSize: '0.8rem',
-                      color: card.changeType === 'positive' ? '#10b981' : card.changeType === 'negative' ? '#ef4444' : '#6c757d',
-                      fontWeight: 600
-                    }}>
-                      {card.change}
-                    </div>
-                  </div>
-                  <div style={{
-                    width: '56px',
-                    height: '56px',
-                    borderRadius: '14px',
-                    background: card.bgColor,
+                <Box sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2,
+                  background: card.bgColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <card.IconComponent sx={{ fontSize: 28, color: card.color }} />
+                </Box>
+                <Box>
+                  <Typography sx={{
+                    fontSize: '0.85rem',
+                    color: '#6c757d',
+                    marginBottom: '4px',
+                    fontFamily: "'Inter', sans-serif"
+                  }}>
+                    {card.title}
+                  </Typography>
+                  <Typography sx={{
+                    fontSize: '1.75rem',
+                    fontWeight: 700,
+                    color: '#1a1f36',
+                    fontFamily: "'Inter', sans-serif"
+                  }}>
+                    {card.value}
+                  </Typography>
+                  <Typography sx={{
+                    fontSize: '0.85rem',
+                    color: '#a0aec0',
+                    fontFamily: "'Inter', sans-serif"
+                  }}>
+                    {card.change}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+
+          {/* Recent Activities */}
+          <Paper sx={{
+            background: '#fff',
+            borderRadius: 2,
+            padding: 3,
+            border: '1px solid #e2e8f0'
+          }}>
+            <Typography variant="h6" sx={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: '#1a1f36',
+              marginBottom: 2
+            }}>
+              Recent Activities
+            </Typography>
+            <Stack spacing={1}>
+              {recentActivities.map((activity, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    padding: 2,
+                    background: '#f7fafc',
+                    borderRadius: 1.5,
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      background: '#edf2f7'
+                    }
+                  }}
+                >
+                  <Box sx={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 1,
+                    background: activity.color + '20',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '1.75rem'
+                    flexShrink: 0
                   }}>
-                    <card.IconComponent sx={{ fontSize: 32, color: card.color }} />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Main Content Grid */}
-          <div style={{
-            gap: '24px'
-          }}>
-            {/* Recent Activities */}
-            <div style={{
-              background: '#fff',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #e2e8f0'
-            }}>
-              <h2 style={{
-                fontSize: '1.25rem',
-                fontWeight: 700,
-                color: '#1a1f36',
-                marginBottom: '20px',
-                fontFamily: "'Inter', sans-serif"
-              }}>
-                Recent Activities
-              </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {recentActivities.map((activity, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '16px',
-                      padding: '16px',
-                      background: '#f7fafc',
-                      borderRadius: '12px',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#edf2f7'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#f7fafc'}
-                  >
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '10px',
-                      background: activity.color + '20',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.25rem',
-                      flexShrink: 0
-                    }}>
-                      <activity.IconComponent sx={{ fontSize: 22, color: activity.color }} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{
-                        fontSize: '0.9rem',
-                        fontWeight: 600,
-                        color: '#1a1f36',
-                        marginBottom: '4px',
-                        fontFamily: "'Inter', sans-serif"
-                      }}>
-                        {activity.action}
-                      </div>
-                      <div style={{
-                        fontSize: '0.85rem',
-                        color: '#6c757d'
-                      }}>
-                        {activity.user}
-                      </div>
-                    </div>
-                    <div style={{
-                      fontSize: '0.8rem',
-                      color: '#6c757d',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {activity.time}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            {/* <div style={{
-              background: '#fff',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #e2e8f0'
-            }}>
-              <h2 style={{
-                fontSize: '1.25rem',
-                fontWeight: 700,
-                color: '#1a1f36',
-                marginBottom: '20px',
-                fontFamily: "'Inter', sans-serif"
-              }}>
-                Quick Actions
-              </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {[
-                  { label: 'Add New User', icon: '➕👤', color: COLORS.gradient },
-                  { label: 'Verify Campaign', icon: '✅', color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' },
-                  { label: 'View Reports', icon: '📊', color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
-                  { label: 'Export Data', icon: '📥', color: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' }
-                ].map((action, index) => (
-                  <button
-                    key={index}
-                    style={{
-                      width: '100%',
-                      padding: '16px',
-                      background: action.color,
-                      border: 'none',
-                      borderRadius: '12px',
-                      color: '#fff',
-                      fontSize: '0.95rem',
+                    <activity.IconComponent sx={{ fontSize: '1.375rem', color: activity.color }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography sx={{
+                      fontSize: 14,
                       fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '10px',
-                      transition: 'all 0.3s',
-                      fontFamily: "'Inter', sans-serif"
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = 'none';
-                    }}
-                  >
-                    <span style={{ fontSize: '1.25rem' }}>{action.icon}</span>
-                    {action.label}
-                  </button>
-                ))}
-              </div>
-            </div> */}
-          </div>
-        </div>
-      </div>
-    </div>
+                      color: '#1a1f36',
+                      marginBottom: 0.5
+                    }}>
+                      {activity.action}
+                    </Typography>
+                    <Typography sx={{
+                      fontSize: 13,
+                      color: '#6c757d'
+                    }}>
+                      {activity.user}
+                    </Typography>
+                  </Box>
+                  <Typography sx={{
+                    fontSize: 12,
+                    color: '#6c757d',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {activity.time}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          </Paper>
+          {/* Quick Actions */}
+          {/* <div style={{
+            background: '#fff',
+            borderRadius: '16px',
+            padding: '24px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <h2 style={{
+              fontSize: '1.25rem',
+              fontWeight: 700,
+              color: '#1a1f36',
+              marginBottom: '20px',
+              fontFamily: "'Inter', sans-serif"
+            }}>
+              Quick Actions
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[
+                { label: 'Add New User', icon: '➕👤', color: COLORS.gradient },
+                { label: 'Verify Campaign', icon: '✅', color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' },
+                { label: 'View Reports', icon: '📊', color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
+                { label: 'Export Data', icon: '📥', color: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' }
+              ].map((action, index) => (
+                <button
+                  key={index}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    background: action.color,
+                    border: 'none',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '0.95rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    transition: 'all 0.3s',
+                    fontFamily: "'Inter', sans-serif"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  <span style={{ fontSize: '1.25rem' }}>{action.icon}</span>
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          </div> */}
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
