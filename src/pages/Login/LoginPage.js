@@ -1,6 +1,7 @@
-import LockOutlineIcon from '@mui/icons-material/LockOutline';
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import LockOutlineIcon from '@mui/icons-material/LockOutlined';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
 import { useToast } from '../../hooks/useToast';
 import { SubmitButton } from '../../components/common';
@@ -9,6 +10,7 @@ import eyeOffIcon from '../../assets/auth/eye-off.svg';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +18,20 @@ function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [errors, setErrors] = useState({ email: [], password: [] });
+
+  // Check for success message from registration
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      if (location.state?.email) {
+        setEmail(location.state.email);
+      }
+      // Clear the state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,8 +55,8 @@ function LoginPage() {
     if (!password) {
       newErrors.password.push('Password tidak boleh kosong');
       hasError = true;
-    } else if (password.length < 6) {
-      newErrors.password.push('Password minimal 6 karakter');
+    } else if (password.length < 4) {
+      newErrors.password.push('Password minimal 4 karakter');
       hasError = true;
     }
 
@@ -49,28 +64,63 @@ function LoginPage() {
     if (hasError) return;
     setIsLoading(true);
     
-    setTimeout(() => {
-      const validCredentials = {
-        'umkm@influent.com': { password: 'umkm123', role: 'umkm', name: 'UMKM Demo' },
-        'admin@influent.com': { password: 'admin123', role: 'admin', name: 'Admin Influent' },
-        'student@influent.com': { password: 'student123', role: 'student', name: 'Student Demo' }
-      };
-      const user = validCredentials[email.toLowerCase()];
-      
-      if (user && user.password === password) {
-        localStorage.setItem('user', JSON.stringify({ email, role: user.role, name: user.name, rememberMe }));
-        showToast(`Selamat datang, ${user.name}!`, 'success');
-        setIsLoading(false);
-        let dashboardPath = '/umkm/dashboard';
-        if (user.role === 'admin') dashboardPath = '/admin/dashboard';
-        if (user.role === 'student') dashboardPath = '/student/dashboard';
-        setTimeout(() => navigate(dashboardPath), 1000);
-      } else {
-        setIsLoading(false);
-        setLoginError('Email atau password salah. Coba lagi.');
-        showToast('Login gagal. Periksa kembali kredensial Anda.', 'error');
+    try {
+      // Call real API
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
       }
-    }, 1500);
+
+      // Store token
+      const token = data.token || data.access_token;
+      if (token) {
+        localStorage.setItem('token', token);
+      }
+
+      // Store user data
+      const userData = data.user || data.data || {};
+      const userRole = userData.role || 'student';
+      const userName = userData.name || userData.email || 'User';
+      
+      localStorage.setItem('user', JSON.stringify({
+        ...userData,
+        email: userData.email || email,
+        role: userRole,
+        name: userName,
+        rememberMe
+      }));
+
+      // Store refresh token if provided
+      if (data.refresh_token) {
+        localStorage.setItem('refreshToken', data.refresh_token);
+      }
+
+      showToast(`Selamat datang, ${userName}!`, 'success');
+
+      // Redirect based on role
+      let dashboardPath = '/umkm/dashboard';
+      if (userRole === 'admin') dashboardPath = '/admin/dashboard';
+      if (userRole === 'student') dashboardPath = '/student/dashboard';
+      
+      setTimeout(() => navigate(dashboardPath), 1000);
+
+    } catch (error) {
+      console.error('Login error:', error);
+      setLoginError(error.message || 'Email atau password salah. Coba lagi.');
+      showToast('Login gagal. Periksa kembali kredensial Anda.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -89,6 +139,13 @@ function LoginPage() {
           <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '8px', color: '#2d3748', letterSpacing: '-0.5px', fontFamily: "'Montserrat', sans-serif" }}>Masuk ke Akun Influent</h1>
           <p style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 400, fontFamily: "'Montserrat', sans-serif" }}>Kelola campaign dan kolaborasi dengan mudah</p>
         </div>
+
+        {successMessage && (
+          <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', border: '1px solid #86efac', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <CheckCircleIcon sx={{ fontSize: '1.25rem', color: '#16a34a' }} />
+            <span style={{ color: '#16a34a', fontSize: '0.9rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{successMessage}</span>
+          </div>
+        )}
 
         {loginError && (
           <div style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)', border: '1px solid #fc8181', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>

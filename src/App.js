@@ -10,6 +10,7 @@ import CampaignDetail from './pages/Campaign/CampaignDetail';
 import LoginPage from './pages/Login/LoginPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import ForgotPasswordPage from './pages/Login/ForgotPasswordPage';
+import VerifyEmailPage from './pages/Auth/VerifyEmailPage';
 import ChatPage from './pages/Chat/ChatPage';
 import NotificationsPage from './pages/Notifications/NotificationsPage';
 import UserPage from './pages/User/UserPage';
@@ -17,6 +18,8 @@ import TransactionsPage from './pages/Transactions/TransactionsPage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ManageUsers from './pages/Admin/ManageUsers';
 import ManageCampaigns from './pages/Admin/ManageCampaigns';
+import AdminTransactions from './pages/Admin/AdminTransactions';
+import ManageWithdrawals from './pages/Admin/ManageWithdrawals';
 import Reports from './pages/Admin/Reports';
 import UMKMDashboard from './pages/UMKM/UMKMDashboard';
 // import StudentDashboard from './pages/Student/StudentDashboard';
@@ -40,6 +43,7 @@ function App() {
           <Route path="/register/:role" element={<RegisterPage />} />
           <Route path="/register-umkm" element={<RegisterPage />} />
           <Route path="/forget-password" element={<ForgotPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/user" element={<UserPage />} />
@@ -57,6 +61,8 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<ManageUsers />} />
           <Route path="/admin/campaigns" element={<ManageCampaigns />} />
+          <Route path="/admin/transactions" element={<AdminTransactions />} />
+          <Route path="/admin/withdrawals" element={<ManageWithdrawals />} />
           <Route path="/admin/reports" element={<Reports />} />
           
           {/* UMKM Routes */}

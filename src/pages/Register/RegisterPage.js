@@ -205,40 +205,61 @@ function RegisterPage() {
 
     setIsLoading(true);
     
-    // Simulasi registrasi
-    setTimeout(() => {
-      // Simpan data user jika rememberMe diaktifkan
-      const userData = {
+    try {
+      // Prepare registration data
+      const registrationData = {
         email: formData.email,
-        role: userRole,
-        noTelp: formData.noTelp,
-        rememberMe: rememberMe
+        password: formData.password,
+        role: userRole === 'umkm' ? 'company' : 'student',
+        phone: formData.noTelp || undefined
       };
 
       if (userRole === 'umkm') {
-        userData.name = formData.namaPemilik;
-        userData.namaUsaha = formData.namaUsaha;
+        registrationData.name = formData.namaPemilik;
+        registrationData.company_name = formData.namaUsaha;
       } else {
-        userData.name = formData.nama;
-        userData.universitas = formData.universitas;
+        registrationData.name = formData.nama;
+        registrationData.university = formData.universitas;
       }
       
-      if (rememberMe) {
-        // Simpan kredensial ke localStorage
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('rememberedEmail', formData.email);
-        localStorage.setItem('rememberedPassword', formData.password); // Note: Dalam production, jangan simpan password plain text!
+      // Call real API
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
       }
-      
+
       const roleText = userRole === 'umkm' ? 'UMKM' : 'Influencer';
-      showToast(`Registrasi ${roleText} berhasil! Silakan login.`, 'success');
-      setIsLoading(false);
+      showToast(
+        data.message || `Registrasi ${roleText} berhasil! Silakan cek email untuk verifikasi.`,
+        'success'
+      );
       
-      // Navigate to unified login page
+      // Navigate to login or verification page
       setTimeout(() => {
-        navigate('/login');
-      }, 1000);
-    }, 1500);
+        navigate('/login', { 
+          state: { 
+            message: 'Registrasi berhasil! Silakan cek email untuk verifikasi akun Anda.',
+            email: formData.email 
+          } 
+        });
+      }, 1500);
+
+    } catch (error) {
+      console.error('Registration error:', error);
+      showToast(error.message || 'Registrasi gagal. Silakan coba lagi.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

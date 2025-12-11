@@ -1,4 +1,6 @@
-// Lightweight auth helpers: parse JWT, check expiry, and simple token helpers.
+// Authentication service for handling login, register, and token management
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
 
 export function parseJwt(token) {
   try {
@@ -29,8 +31,8 @@ export function isTokenExpired(token, offsetSeconds = 10) {
 
 export function clearAuth() {
   localStorage.removeItem("token");
-  // If you stored refreshToken earlier, remove it as well.
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
 }
 
 /**
@@ -43,9 +45,176 @@ export function ensureValidToken() {
   return !isTokenExpired(token);
 }
 
+/**
+ * Login user with email and password
+ * @param {string} email 
+ * @param {string} password 
+ * @returns {Promise<Object>} Response with token and user data
+ */
+export async function login(email, password) {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Login failed');
+  }
+
+  const data = await response.json();
+  
+  // Store token and user data
+  if (data.token || data.access_token) {
+    const token = data.token || data.access_token;
+    localStorage.setItem('token', token);
+    
+    // Parse user data from response or token
+    const userData = data.user || data.data || parseJwt(token);
+    if (userData) {
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
+    
+    // Store refresh token if provided
+    if (data.refresh_token) {
+      localStorage.setItem('refreshToken', data.refresh_token);
+    }
+  }
+  
+  return data;
+}
+
+/**
+ * Register new user
+ * @param {Object} userData - { name, email, password, role }
+ * @returns {Promise<Object>} Response with success message
+ */
+export async function register(userData) {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Registration failed');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Verify email with token
+ * @param {string} token - Verification token from email
+ * @returns {Promise<Object>} Response with verification status
+ */
+export async function verifyEmail(token) {
+  const response = await fetch(`${API_BASE_URL}/auth/verify-email?token=${token}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Verification failed');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Request password reset
+ * @param {string} email 
+ * @returns {Promise<Object>} Response with success message
+ */
+export async function forgotPassword(email) {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to send reset email');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Reset password with token
+ * @param {string} token - Reset token from email
+ * @param {string} newPassword - New password
+ * @returns {Promise<Object>} Response with success message
+ */
+export async function resetPassword(token, newPassword) {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ token, password: newPassword }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to reset password');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Get current user profile
+ * @returns {Promise<Object>} User profile data
+ */
+export async function getCurrentUser() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to get user data');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Logout user
+ */
+export function logout() {
+  clearAuth();
+  window.location.href = '/login';
+}
+
 export default {
   parseJwt,
   isTokenExpired,
   clearAuth,
   ensureValidToken,
+  login,
+  register,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+  getCurrentUser,
+  logout,
 };
