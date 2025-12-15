@@ -1,6 +1,6 @@
 import authFetch from './apiClient';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://influent-api-1fnn.vercel.app/api/v1';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
 
 // User Management
 export const adminUserService = {
@@ -75,6 +75,38 @@ export const adminCampaignService = {
   deleteCampaign: async (id) => {
     const response = await authFetch(`${API_BASE_URL}/campaigns/${id}`, {
       method: 'DELETE'
+    });
+    return response.json();
+  }
+};
+
+// Admin Review Management (Campaign Approval/Rejection)
+export const adminReviewService = {
+  // Get campaigns pending admin review
+  getPendingCampaigns: async (params = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    
+    const response = await authFetch(`${API_BASE_URL}/admin/review/pending?${queryParams}`);
+    return response.json();
+  },
+
+  // Approve campaign (Admin only)
+  approveCampaign: async (id) => {
+    const response = await authFetch(`${API_BASE_URL}/admin/review/${id}/approve`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return response.json();
+  },
+
+  // Reject campaign (Admin only)
+  rejectCampaign: async (id, cancellationReason) => {
+    const response = await authFetch(`${API_BASE_URL}/admin/review/${id}/reject`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cancellation_reason: cancellationReason })
     });
     return response.json();
   }
@@ -223,7 +255,7 @@ export const adminAnalyticsService = {
       // Calculate detailed stats
       const usersList = Array.isArray(users) ? users : (users.users || users.data || []);
       const totalStudents = usersList.filter(u => u.role === 'student').length;
-      const totalCompanies = usersList.filter(u => u.role === 'company').length;
+      const totalCompanies = usersList.filter(u => u.role === 'umkm' || u.role === 'company').length;
 
       const campaignsList = Array.isArray(campaigns) ? campaigns : (campaigns.campaigns || campaigns.data || []);
       const activeCampaigns = campaignsList.filter(c => c.status === 'active').length;
@@ -276,6 +308,7 @@ export const adminAnalyticsService = {
 export default {
   users: adminUserService,
   campaigns: adminCampaignService,
+  review: adminReviewService,
   withdrawals: adminWithdrawalService,
   transactions: adminTransactionService,
   students: adminStudentService,

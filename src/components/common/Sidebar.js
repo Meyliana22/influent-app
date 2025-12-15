@@ -49,12 +49,13 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
   // Define menu items based on role
   const getMenuItems = () => {
     switch (userRole) {
+      case 'company':
       case 'umkm':
         return [
           { icon: DashboardIcon, label: 'Dashboard', path: '/umkm/dashboard' },
-          { icon: ListIcon, label: 'My Campaigns', path: '/campaigns' },
-          { icon: TransactionsIcon, label: 'Transactions', path: '/transactions' },
-          { icon: ChatIcon, label: 'Chat', path: '/chat' },
+          { icon: ListIcon, label: 'Daftar Kampanye', path: '/campaigns' },
+          { icon: TransactionsIcon, label: 'Riwayat Transaksi', path: '/transactions' },
+          { icon: ChatIcon, label: 'Pesan', path: '/chat' },
         ];
       case 'admin':
         return [
@@ -67,6 +68,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
           { icon: ChatIcon, label: 'Chat', path: '/chat' },
         ];
       case 'influencer':
+      case 'student':
       default:
         return [
           { icon: DashboardIcon, label: 'Dashboard', path: '/student/dashboard' },
@@ -82,10 +84,12 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
   const getSidebarLabel = () => {
     switch (userRole) {
       case 'umkm':
+      case 'company':
         return 'UMKM Dashboard';
       case 'admin':
         return 'Admin Dashboard';
       case 'influencer':
+      case 'student':
       default:
         return 'Influencer Dashboard';
     }
@@ -95,10 +99,12 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
   const getDashboardPath = () => {
     switch (userRole) {
       case 'umkm':
+      case 'company':
         return '/umkm/dashboard';
       case 'admin':
         return '/admin/dashboard';
       case 'influencer':
+      case 'student':
       default:
         return '/student/dashboard';
     }

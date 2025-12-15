@@ -210,7 +210,7 @@ function RegisterPage() {
       const registrationData = {
         email: formData.email,
         password: formData.password,
-        role: userRole === 'umkm' ? 'company' : 'student',
+        role: userRole, // Use 'umkm' or 'student' directly
         phone: formData.noTelp || undefined
       };
 
@@ -285,32 +285,6 @@ function RegisterPage() {
         zIndex: 1,
         backdropFilter: 'blur(20px)'
       }}>
-        {/* Back Button */}
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          disabled={isLoading}
-          style={{
-            position: 'absolute',
-            top: '24px',
-            left: '24px',
-            background: 'none',
-            border: 'none',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            padding: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '20px',
-            opacity: isLoading ? 0.5 : 1,
-            transition: 'transform 0.2s, opacity 0.2s',
-          }}
-          onMouseEnter={(e) => !isLoading && (e.currentTarget.style.transform = 'translateX(-4px)')}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateX(0)'}
-        >
-          ← 
-        </button>
-
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1 style={{

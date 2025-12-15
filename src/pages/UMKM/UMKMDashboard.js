@@ -21,21 +21,72 @@ import {
 import CampaignIcon from '@mui/icons-material/Campaign';
 import OngoingIcon from '@mui/icons-material/HourglassEmpty';
 import CompletedIcon from '@mui/icons-material/CheckCircle';
-import ApplicantIcon from '@mui/icons-material/People';
 import PersonIcon from '@mui/icons-material/Person';
+import PaymentIcon from '@mui/icons-material/Payment';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import campaignService from '../../services/campaignService';
+import { BarChart3 } from 'lucide-react';
+
+// Get status badge style
+const getStatusStyle = (status) => {
+  const styles = {
+    'admin_review': {
+      background: '#fff3cd',
+      color: '#856404',
+      boxShadow: '0 2px 8px rgba(255, 193, 7, 0.3)'
+    },
+    'pending_payment': {
+      background: '#cfe2ff',
+      color: '#084298',
+      boxShadow: '0 2px 8px rgba(13, 110, 253, 0.3)'
+    },
+    'cancelled': {
+      background: '#ffe5e5',
+      color: '#c41e3a',
+      boxShadow: '0 2px 8px rgba(196, 30, 58, 0.3)'
+    },
+    'draft': {
+      background: '#e2e8f0',
+      color: '#6c757d',
+      boxShadow: '0 2px 8px rgba(143, 143, 143, 0.3)'
+    },
+    'active': { 
+      background: '#d1fae5', 
+      color: '#155724',
+      boxShadow: '0 2px 8px rgba(132, 250, 176, 0.3)'
+    },
+    'completed': {
+      background: '#e0d4ff',
+      color: '#5b21b6',
+      boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)'
+    }
+  };
+  return styles[status?.toLowerCase()] || styles['draft'];
+};
+
+// Get status display text (Bahasa Indonesia)
+const getStatusText = (status) => {
+  const statusTexts = {
+    'admin_review': 'Ditinjau Admin',
+    'pending_payment': 'Menunggu Pembayaran',
+    'cancelled': 'Dibatalkan',
+    'draft': 'Draft',
+    'active': 'Aktif',
+    'completed': 'Selesai'
+  };
+  return statusTexts[status?.toLowerCase()] || status || 'Tidak Diketahui';
+};
 
 function UMKMDashboard() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 992);
   const [stats, setStats] = useState({
-    totalCampaigns: 0,
     ongoingCampaigns: 0,
-    completedCampaigns: 0,
-    totalApplicants: 0
+    totalSpendThisMonth: 0,
+    influencersEngaged: 0,
+    completedCampaigns: 0
   });
   const [recentCampaigns, setRecentCampaigns] = useState([]);
 
@@ -44,6 +95,7 @@ function UMKMDashboard() {
   const userName = user.name || 'User';
 
   useEffect(() => {
+    // Load dashboard data once on mount
     loadDashboardData();
     
     // Handle window resize for responsive layout
@@ -53,12 +105,28 @@ function UMKMDashboard() {
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps array - only run once on mount to avoid double API calls
 
   const loadDashboardData = async () => {
     try {
-      // Fetch campaigns from API
-      const response = await campaignService.getCampaigns();
+      // Fetch dashboard stats from API
+      // Best practice: Use dedicated dashboard endpoint that returns aggregated stats
+      const statsResponse = await campaignService.getDashboardStats();
+      
+        if (statsResponse?.data) {
+          setStats({
+            ongoingCampaigns: statsResponse.data.ongoing_campaigns || 0,
+            totalSpendThisMonth: statsResponse.data.total_spend_this_month || 0,
+            influencersEngaged: statsResponse.data.influencers_engaged || 0,
+            completedCampaigns: statsResponse.data.completed_campaigns || 0
+          });
+        }      // Fetch campaigns from API for recent campaigns list - sorted by newest first
+      const response = await campaignService.getCampaigns({ 
+        limit: 3, 
+        sort: 'campaign_id',
+        order: 'DESC'
+      });
       // Handle different response structures
       let campaigns = [];
       if (Array.isArray(response)) {
@@ -68,39 +136,18 @@ function UMKMDashboard() {
       } else if (response?.data?.data && Array.isArray(response.data.data)) {
         campaigns = response.data.data;
       }
-      const applicants = []; // TODO: Load from applicants API when available
-
-      // Calculate stats
-      const total = campaigns.length;
-      const activeCampaigns = campaigns.filter(c => c.status === 'active');
-      const completedCampaigns = campaigns.filter(c => c.status === 'completed');
-      const ongoing = activeCampaigns.length;
-      const completed = completedCampaigns.length;
-      const totalApplicants = applicants.length;
-      setStats({
-        totalCampaigns: total,
-        ongoingCampaigns: ongoing,
-        completedCampaigns: completed,
-        totalApplicants
-      });
-
-      // Get recent 3 campaigns - sort by created_at descending
-      const sortedCampaigns = [...campaigns].sort((a, b) => {
-        const dateA = new Date(a.created_at || 0);
-        const dateB = new Date(b.created_at || 0);
-        return dateB - dateA; // Most recent first
-      });
       
-      const recentThree = sortedCampaigns.slice(0, 3);
-      setRecentCampaigns(recentThree);
+      setRecentCampaigns(campaigns.slice(0, 3));
+
+
     } catch (error) {
       console.error('❌ Error loading dashboard data:', error);
       // Fallback to empty state
       setStats({
-        totalCampaigns: 0,
         ongoingCampaigns: 0,
-        completedCampaigns: 0,
-        totalApplicants: 0
+        totalSpendThisMonth: 0,
+        influencersEngaged: 0,
+        completedCampaigns: 0
       });
       setRecentCampaigns([]);
     }
@@ -108,37 +155,44 @@ function UMKMDashboard() {
 
   const statCards = [
     {
-      title: 'Total Campaigns',
-      value: stats.totalCampaigns,
-      IconComponent: CampaignIcon,
-      bgColor: '#e0e7ff',
-      iconColor: '#4c51bf', // Darker indigo to match light indigo background
-      description: 'All time campaigns'
+      title: 'Total Pengeluaran',
+      value: `Rp ${stats.totalSpendThisMonth.toLocaleString('id-ID')}`,
+      IconComponent: PaymentIcon,
+      bgColor: '#d1fae5',
+      iconColor: '#059669',
+      description: 'Budget bulan ini',
+      filterPath: '/transactions',
+      filterType: 'expense'
     },
     {
-      title: 'Ongoing Campaigns',
+      title: 'Campaign Sedang Berjalan',
       value: stats.ongoingCampaigns,
       IconComponent: OngoingIcon,
       bgColor: '#ffebebff',
-      iconColor: '#dc2626', // Darker red to match light red background
-      description: 'Currently active'
+      iconColor: '#dc2626',
+      description: 'Sedang aktif',
+      filterPath: '/umkm/campaigns',
+      filterType: 'active'
     },
     {
-      title: 'Completed Campaigns',
+      title: 'Influencer Terlibat',
+      value: stats.influencersEngaged,
+      IconComponent: PersonIcon,
+      bgColor: '#f9e9ffff',
+      iconColor: '#6f3ec5ff',
+      description: 'Kolaborasi aktif',
+      filterPath: '/umkm/campaigns',
+      filterType: 'active'
+    },
+    {
+      title: 'Campaign Selesai',
       value: stats.completedCampaigns,
       IconComponent: CompletedIcon,
-      color: '#fce1e1ff',
       bgColor: '#fcffd1ff',
-      iconColor: '#bdaa33ff', // Darker yellow to match light yellow background
-      description: 'Successfully finished'
-    },
-    {
-      title: 'Total Applicants',
-      value: stats.totalApplicants,
-      IconComponent: ApplicantIcon,
-      bgColor: '#f9e9ffff',
-      iconColor: '#6f3ec5ff', // Darker purple to match light purple background
-      description: 'All time applicants'
+      iconColor: '#bdaa33ff',
+      description: 'Berhasil diselesaikan',
+      filterPath: '/umkm/campaigns',
+      filterType: 'completed'
     }
   ];
 
@@ -205,14 +259,13 @@ function UMKMDashboard() {
               alignItems: 'center',
               gap: 1
             }}>
-              Welcome, {userName}!
-              <WavingHandIcon sx={{ fontSize: '2rem', transform: 'scaleX(-1)', color: '#fbbf24', ml: 1 }} />
+              Selamat Datang, {userName}!
             </Typography>
             <Typography sx={{
               fontSize: '0.95rem',
               color: '#6c757d'
             }}>
-              Here's what's happening with your campaigns today.
+              Berikut aktivitas campaign Anda hari ini.
             </Typography>
           </Box>
 
@@ -228,16 +281,8 @@ function UMKMDashboard() {
                     pr: 5,
                     border: '1px solid',
                     borderColor: 'divider',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer',
                     display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-start',
-                    width: '100%',
-                    '&:hover': {
-                      boxShadow: 3,
-                      transform: 'translateY(-2px)'
-                    }
+                    width: '100%'
                   }}
                 >
                   <CardContent
@@ -325,7 +370,7 @@ function UMKMDashboard() {
                 fontWeight: 700,
                 color: '#1a1f36'
               }}>
-                Recent Campaigns
+                Campaign Terbaru
               </Typography>
               <Button
                 onClick={() => navigate('/campaigns')}
@@ -342,7 +387,7 @@ function UMKMDashboard() {
                   }
                 }}
               >
-                View All
+                Lihat Semua
               </Button>
             </Box>
 
@@ -354,10 +399,10 @@ function UMKMDashboard() {
               }}>
                 <CampaignIcon sx={{ fontSize: '4rem', color: '#9ca3af', mb: 1, display: 'block', mx: 'auto' }} />
                 <Typography sx={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-                  No campaigns yet
+                  Belum ada campaign
                 </Typography>
                 <Typography sx={{ fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-                  Create your first campaign to get started
+                  Buat campaign pertama Anda untuk memulai
                 </Typography>
                 <Button
                   onClick={() => navigate('/campaign-create')}
@@ -370,7 +415,7 @@ function UMKMDashboard() {
                     fontWeight: 600
                   }}
                 >
-                  Create Campaign
+                  Buat Campaign
                 </Button>
               </Box>
             ) : (
@@ -403,17 +448,18 @@ function UMKMDashboard() {
                         fontWeight: 600,
                         color: '#1a1f36'
                       }}>
-                        {campaign.title || 'Untitled Campaign'}
+                        {campaign.title || 'Campaign Tanpa Judul'}
                       </Typography>
                       <Box sx={{
-                        padding: '0.25rem 0.75rem',
-                        borderRadius: '0.375rem',
-                        fontSize: '0.75rem',
+                        ...getStatusStyle(campaign.status),
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 5,
+                        fontSize: 12,
                         fontWeight: 600,
-                        background: campaign.status === 'active' ? '#d1fae5' : campaign.status === 'inactive' ? '#e2e8f0' : '#fff',
-                        color: campaign.status === 'active' ? '#065f46' : campaign.status === 'inactive' ? '#6c757d' : '#000'
+                        letterSpacing: '0.5px'
                       }}>
-                        {campaign.status === 'active' ? 'Active' : campaign.status === 'inactive' ? 'Inactive' : campaign.status}
+                        {getStatusText(campaign.status)}
                       </Box>
                     </Box>
                     <Typography sx={{
@@ -421,7 +467,7 @@ function UMKMDashboard() {
                       color: '#6c757d',
                       marginBottom: '0.5rem'
                     }}>
-                      {campaign.product_desc?.substring(0, 80) || 'No description'}...
+                      {campaign.product_desc?.substring(0, 80) || 'Tidak ada deskripsi'}...
                     </Typography>
                     <Box sx={{
                       display: 'flex',
@@ -431,12 +477,15 @@ function UMKMDashboard() {
                       alignItems: 'center'
                     }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <AttachMoneyIcon sx={{ fontSize: '1rem' }} /> 
+                        <PersonIcon sx={{ fontSize: '1rem' }} /> 
+                        {campaign.influencer_count || 0} influencer
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         Rp {(campaign.price_per_post || 0).toLocaleString('id-ID')}
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <ApplicantIcon sx={{ fontSize: '1rem' }} /> 
-                        {campaign.influencer_count || 0} influencers
+                        <BarChart3 size={13} color={COLORS.textSecondary} />
+                        {campaign.min_followers ? `${parseInt(campaign.min_followers).toLocaleString('id-ID')}+ followers` : 'No min'}
                       </Box>
                     </Box>
                   </Paper>

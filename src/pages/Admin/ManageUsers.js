@@ -401,7 +401,7 @@ function ManageUsers() {
                                   width: 40,
                                   height: 40,
                                   borderRadius: '50%',
-                                  bgcolor: user.role === 'student' ? '#dbeafe' : user.role === 'company' ? '#fce7f3' : '#ede9fe',
+                                  bgcolor: user.role === 'student' ? '#dbeafe' : (user.role === 'umkm' || user.role === 'company') ? '#fce7f3' : '#ede9fe',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center'

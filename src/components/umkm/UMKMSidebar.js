@@ -7,6 +7,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import NotificationIcon from '@mui/icons-material/Notifications';
 import ProfileIcon from '@mui/icons-material/Person';
 import ListIcon from '@mui/icons-material/List';
+import RateReviewIcon from '@mui/icons-material/RateReview';
 import logoIcon from '../../assets/logoIcon.svg';
 
 import { COLORS } from '../../constants/colors';
@@ -28,9 +29,9 @@ function UMKMSidebar({ isOpen = false, onClose = () => {} }) {
 
   const menuItems = [
     { icon: DashboardIcon, label: 'Dashboard', path: '/umkm/dashboard' },
-    { icon: ListIcon, label: 'My Campaigns', path: '/campaigns' },
-    { icon: TransactionsIcon, label: 'Transactions', path: '/transactions' },
-    { icon: ChatIcon, label: 'Chat', path: '/chat' },
+    { icon: ListIcon, label: 'Daftar Kampanye', path: '/campaigns' },
+    { icon: TransactionsIcon, label: 'Riwayat Transaksi', path: '/transactions' },
+    { icon: ChatIcon, label: 'Pesan', path: '/chat' },
   ];
 
   const isActive = (path) => {

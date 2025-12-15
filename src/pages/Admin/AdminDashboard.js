@@ -22,7 +22,11 @@ import {
   Refresh as RefreshIcon,
   School as StudentIcon,
   Business as CompanyIcon,
-  WavingHand as WavingHandIcon
+  WavingHand as WavingHandIcon,
+  Person as PersonIcon,
+  CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon,
+  Payment as PaymentIcon
 } from '@mui/icons-material';
 import { Sidebar, Topbar } from '../../components/common';
 import adminService from '../../services/adminService';
@@ -162,6 +166,14 @@ function AdminDashboard() {
       bgColor: 'rgba(139, 92, 246, 0.1)',
       path: '/admin/reports'
     }
+  ];
+
+  const recentActivities = [
+    { action: 'New campaign created', user: 'Scarlett Beauty', time: '5 min ago', IconComponent: CampaignIcon, color: '#667eea' },
+    { action: 'User registered', user: '@beautyguru', time: '15 min ago', IconComponent: PersonIcon, color: '#10b981' },
+    { action: 'Campaign completed', user: 'Gaming Pro Campaign', time: '1 hour ago', IconComponent: CheckCircleIcon, color: '#10b981' },
+    { action: 'Report submitted', user: 'Campaign #1234', time: '2 hours ago', IconComponent: WarningIcon, color: '#ef4444' },
+    { action: 'Payment processed', user: 'Rp 5.000.000', time: '3 hours ago', IconComponent: PaymentIcon, color: '#f59e0b' }
   ];
 
   return (

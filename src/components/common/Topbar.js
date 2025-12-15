@@ -10,14 +10,13 @@ import {
   Typography,
   Divider,
   ListItemIcon,
-  Badge
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
+import NotificationBell from './NotificationBell';
 
-function Topbar({ onMenuClick = () => {}, unreadCount = 0 }) {
+function Topbar({ onMenuClick = () => {} }) {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
@@ -42,7 +41,7 @@ function Topbar({ onMenuClick = () => {}, unreadCount = 0 }) {
   // Get role label based on role
   const getRoleLabel = () => {
     switch (userRole) {
-      case 'umkm':
+      case 'company':
         return 'UMKM Account';
       case 'admin':
         return 'Admin Account';
@@ -69,10 +68,6 @@ function Topbar({ onMenuClick = () => {}, unreadCount = 0 }) {
   const handleProfileClick = () => {
     handleMenuClose();
     navigate('/user');
-  };
-
-  const handleNotificationsClick = () => {
-    navigate('/notifications');
   };
 
   return (
@@ -113,39 +108,8 @@ function Topbar({ onMenuClick = () => {}, unreadCount = 0 }) {
 
       {/* Right Section */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginLeft: 'auto' }}>
-        {/* Notifications Button */}
-        <IconButton
-          onClick={handleNotificationsClick}
-          sx={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            color: '#1a1f36',
-            padding: 0,
-            '&:hover': {
-              backgroundColor: '#e2e8f0'
-            }
-          }}
-        >
-          <Badge
-            variant="dot"
-            color="error"
-            overlap="circular"
-            sx={{
-              '& .MuiBadge-dot': {
-                width: 7,
-                height: 7,
-                minWidth: 0,
-                borderRadius: '50%',
-                top: 2,
-                right: 2,
-              }
-            }}
-            invisible={unreadCount === 0}
-          >
-            <NotificationsNoneIcon />
-          </Badge>
-        </IconButton>
+        {/* Notification Bell with Dropdown */}
+        <NotificationBell />
 
         {/* Profile Button */}
         <Box

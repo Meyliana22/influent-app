@@ -7,6 +7,7 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ChatIcon from '@mui/icons-material/Chat';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import GavelIcon from '@mui/icons-material/Gavel';
 import logoIcon from '../../assets/logoIcon.svg';
 
 function AdminSidebar() {
@@ -17,6 +18,7 @@ function AdminSidebar() {
     { path: '/admin/dashboard', icon: DashboardIcon, label: 'Dashboard' },
     { path: '/admin/users', icon: PeopleIcon, label: 'Manage Users' },
     { path: '/admin/campaigns', icon: CampaignIcon, label: 'Manage Campaigns' },
+    { path: '/admin/review-submissions', icon: GavelIcon, label: 'Review Submissions' },
     { path: '/admin/reports', icon: BarChartIcon, label: 'Reports' },
     { path: '/chat', icon: ChatIcon, label: 'Chat' },
   ];

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Container, Stack, Grid, Card, CardContent, Typography, Button, TextField, Select, MenuItem, InputAdornment, Paper } from '@mui/material';
-import StatCard from '../../components/common/StatCard';
+import { Box, Container, Stack, Grid, Typography, Button, TextField, Select, MenuItem, InputAdornment, Paper } from '@mui/material';
 import ApplicantCard from '../../components/common/ApplicantCard';
 import Modal from '../../components/common/Modal';
-import SelectionConfirmModal from '../../components/common/SelectionConfirmModal';
 import ApplicantDetailModal from '../../components/common/ApplicantDetailModal';
 import Sidebar from '../../components/common/Sidebar';
 import Topbar from '../../components/common/Topbar';
@@ -20,6 +18,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 import applicantStorageHelper from '../../utils/applicantStorageHelper';
 import campaignService from '../../services/campaignService';
+import applicantService from '../../services/applicantService';
 import { toast } from 'react-toastify';
 
 function ViewApplicants() {
@@ -30,6 +29,7 @@ function ViewApplicants() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [stats, setStats] = useState({ total: 0, pending: 0, accepted: 0, rejected: 0, selected: 0 });
+  const [isLoading, setIsLoading] = useState(false);
   
   // Responsive state for sidebar
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1000);
@@ -56,8 +56,7 @@ function ViewApplicants() {
     variant: 'default'
   });
 
-  // New modal states for selection and detail
-  const [showSelectionModal, setShowSelectionModal] = useState(false);
+  // Modal states for detail
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
 
@@ -66,18 +65,19 @@ function ViewApplicants() {
   }, [campaignId]);
 
   const loadData = async () => {
-    // Load campaign details from API
+    setIsLoading(true);
     try {
       if (!campaignId) {
         console.error('❌ No campaignId provided!');
+        toast.error('Campaign ID tidak valid');
         setTimeout(() => navigate('/campaigns'), 100);
         return;
       }
       
       // Fetch campaign from API
       const response = await campaignService.getCampaignById(campaignId);
-      // Handle different response structures
       let campaignData = response?.data?.data || response?.data || response;
+      
       if (campaignData && campaignData.campaign_id) {
         setCampaign(campaignData);
       } else {
@@ -87,27 +87,80 @@ function ViewApplicants() {
         return;
       }
 
-      // Load applicants for this campaign from localStorage
-      const allApplicants = JSON.parse(localStorage.getItem('applicants') || '[]');
-      // Use the found campaign's ID for filtering
-      const actualCampaignId = campaignData.campaign_id;
-      const applicantsData = allApplicants.filter(a => 
-        a.campaignId === actualCampaignId || 
-        String(a.campaignId) === String(actualCampaignId) ||
-        parseInt(a.campaignId) === parseInt(actualCampaignId)
-      );
-      setApplicants(applicantsData);
+      // Load applicants from API
+      let applicantsResponse = await applicantService.getCampaignApplicants(campaignId);
+      let applicantsData = Array.isArray(applicantsResponse) ? applicantsResponse : [];
+      
+      // Transform API data to match frontend format
+      const transformedApplicants = applicantsData.map(app => {
+        // Safely parse niche_category
+        let nicheArray = [];
+        try {
+          if (app.user?.student?.niche_category) {
+            const parsed = JSON.parse(app.user.student.niche_category);
+            nicheArray = Array.isArray(parsed) ? parsed : [];
+          } else if (app.student?.category) {
+            nicheArray = [app.student.category];
+          }
+        } catch (e) {
+          nicheArray = [];
+        }
+
+        // Handle both API format and dummy format
+        const studentData = app.user?.student || app.student || {};
+        const userData = app.user || studentData.user || {};
+
+        return {
+          id: app.id,
+          campaignId: app.campaign_id,
+          influencerName: userData.name || 'Unknown',
+          fullName: userData.name || 'Unknown',
+          location: studentData.location || 'N/A',
+          age: studentData.age || 0,
+          gender: studentData.gender || 'N/A',
+          followers: studentData.follower_count || 0,
+          engagementRate: studentData.engagement_rate || 0,
+          status: app.application_status ? 
+                  (app.application_status === 'pending' ? 'Pending' : 
+                   app.application_status === 'accepted' ? 'Accepted' : 'Rejected') :
+                  (app.status === 'pending' ? 'Pending' :
+                   app.status === 'selected' ? 'Pending' :
+                   app.status === 'accepted' ? 'Accepted' : 'Rejected'),
+          appliedDate: app.applied_at,
+          bio: studentData.bio || '',
+          instagram: studentData.instagram_username || '',
+          email: userData.email || '',
+          phone: studentData.phone || '',
+          niche: nicheArray,
+          notes: app.application_notes || app.notes || '',
+          profileImage: userData.profile_image || 'https://i.pravatar.cc/150',
+          previousBrands: [],
+          isSelected: applicantStorageHelper.isSelected(app.id)
+        };
+      });
+
+      // Sync with localStorage selection state
+      transformedApplicants.forEach(app => {
+        const stored = applicantStorageHelper.getApplicantById(app.id);
+        if (!stored) {
+          applicantStorageHelper.addApplicant(app);
+        }
+      });
+      
+      setApplicants(transformedApplicants);
 
       // Calculate statistics
-      const total = applicantsData.length;
-      const pending = applicantsData.filter(a => a.status === 'Pending').length;
-      const accepted = applicantsData.filter(a => a.status === 'Accepted').length;
-      const rejected = applicantsData.filter(a => a.status === 'Rejected').length;
-      const selected = applicantsData.filter(a => a.isSelected === true).length;
+      const total = transformedApplicants.length;
+      const pending = transformedApplicants.filter(a => a.status === 'Pending').length;
+      const accepted = transformedApplicants.filter(a => a.status === 'Accepted').length;
+      const rejected = transformedApplicants.filter(a => a.status === 'Rejected').length;
+      const selected = transformedApplicants.filter(a => a.isSelected === true).length;
       setStats({ total, pending, accepted, rejected, selected });
     } catch (error) {
-      console.error('Failed to load data from localStorage:', error);
-      setTimeout(() => navigate('/campaigns'), 100);
+      console.error('Failed to load data:', error);
+      toast.error('Gagal memuat data applicants');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -123,18 +176,18 @@ function ViewApplicants() {
     setShowModal(true);
   };
 
-  const confirmAccept = (applicantId) => {
+  const confirmAccept = async (applicantId) => {
     try {
-      // Update applicant status in localStorage
-      const allApplicants = JSON.parse(localStorage.getItem('applicants') || '[]');
-      const updatedApplicants = allApplicants.map(a => 
-        a.id === applicantId ? { ...a, status: 'Accepted' } : a
-      );
-      localStorage.setItem('applicants', JSON.stringify(updatedApplicants));
-      loadData();
+      setIsLoading(true);
+      await applicantService.acceptApplicant(applicantId, 'Applicant has been accepted');
+      toast.success('Applicant berhasil diterima!');
+      await loadData();
       setShowModal(false);
     } catch (error) {
       console.error('Failed to accept applicant:', error);
+      toast.error('Gagal menerima applicant');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -150,18 +203,18 @@ function ViewApplicants() {
     setShowModal(true);
   };
 
-  const confirmReject = (applicantId) => {
+  const confirmReject = async (applicantId) => {
     try {
-      // Update applicant status in localStorage
-      const allApplicants = JSON.parse(localStorage.getItem('applicants') || '[]');
-      const updatedApplicants = allApplicants.map(a => 
-        a.id === applicantId ? { ...a, status: 'Rejected' } : a
-      );
-      localStorage.setItem('applicants', JSON.stringify(updatedApplicants));
-      loadData();
+      setIsLoading(true);
+      await applicantService.rejectApplicant(applicantId, 'Thank you for your interest');
+      toast.success('Applicant berhasil ditolak');
+      await loadData();
       setShowModal(false);
     } catch (error) {
       console.error('Failed to reject applicant:', error);
+      toast.error('Gagal menolak applicant');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -177,35 +230,27 @@ function ViewApplicants() {
     setShowModal(true);
   };
 
-  const confirmCancel = (applicantId) => {
+  const confirmCancel = async (applicantId) => {
     try {
-      // Update applicant status in localStorage
-      const allApplicants = JSON.parse(localStorage.getItem('applicants') || '[]');
-      const updatedApplicants = allApplicants.map(a => 
-        a.id === applicantId ? { ...a, status: 'Pending' } : a
-      );
-      localStorage.setItem('applicants', JSON.stringify(updatedApplicants));
-      loadData();
+      setIsLoading(true);
+      await applicantService.reconsiderApplicant(applicantId);
+      toast.success('Applicant berhasil dikembalikan ke status pending');
+      await loadData();
       setShowModal(false);
     } catch (error) {
-      console.error('Failed to revert applicant status:', error);
+      console.error('Failed to reconsider applicant:', error);
+      toast.error('Gagal mengubah status applicant');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Handle Toggle Selection
+  // Handle Toggle Selection - Direct toggle without popup
   const handleToggleSelection = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowSelectionModal(true);
-  };
-
-  const confirmToggleSelection = () => {
-    if (selectedApplicant) {
-      const newSelectionState = !selectedApplicant.isSelected;
-      applicantStorageHelper.toggleSelection(selectedApplicant.id, newSelectionState);
-      loadData();
-      setShowSelectionModal(false);
-      setSelectedApplicant(null);
-    }
+    const newSelectionState = !applicant.isSelected;
+    applicantStorageHelper.toggleSelection(applicant.id, newSelectionState);
+    loadData();
+    toast.success(newSelectionState ? `${applicant.fullName} ditandai sebagai favorit` : `${applicant.fullName} dihapus dari favorit`);
   };
 
   // Handle Show Detail
@@ -232,12 +277,15 @@ function ViewApplicants() {
         a.fullName.toLowerCase().includes(search.toLowerCase()) ||
         a.location.toLowerCase().includes(search.toLowerCase());
       
-      const matchesFilter = filter ? a.status === filter : true;
+      // Handle "Selected" filter separately (based on isSelected flag)
+      const matchesFilter = filter 
+        ? (filter === 'Selected' ? a.isSelected === true : a.status === filter)
+        : true;
       
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
-      // Sort priority: Pending > Accepted > Rejected
+      // Sort priority: Selected > Pending > Accepted > Rejected
       const statusPriority = { 'Pending': 1, 'Accepted': 2, 'Rejected': 3 };
       if (statusPriority[a.status] !== statusPriority[b.status]) {
         return statusPriority[a.status] - statusPriority[b.status];
@@ -293,23 +341,125 @@ function ViewApplicants() {
               </Stack>
             </Paper>
             {/* Statistics Cards */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 4, width: '100%' }}>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <StatCard title="Total Applicants" value={stats.total} IconComponent={PeopleIcon} gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <StatCard title="Selected" value={stats.selected} IconComponent={StarIcon} gradient="linear-gradient(135deg, #f6d365 0%, #fda085 100%)" />
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <StatCard title="Pending Review" value={stats.pending} IconComponent={HourglassEmptyIcon} gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <StatCard title="Accepted" value={stats.accepted} IconComponent={CheckCircleIcon} gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" />
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <StatCard title="Rejected" value={stats.rejected} IconComponent={CancelIcon} gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)" />
-              </Box>
-            </Box>
+            <Paper elevation={0} sx={{ p: 3, bgcolor: '#fff', border: '1px solid #e0e0e0', borderRadius: 2, mb: 4 }}>
+              <Grid container spacing={3}>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '12px', 
+                      bgcolor: '#f5f7ff', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <PeopleIcon sx={{ fontSize: 24, color: '#667eea' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                        {stats.total}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                        Total
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '12px', 
+                      bgcolor: '#fff8f0', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <StarIcon sx={{ fontSize: 24, color: '#ffa726' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                        {stats.selected}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                        Selected
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '12px', 
+                      bgcolor: '#f5f7f9', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <HourglassEmptyIcon sx={{ fontSize: 24, color: '#78909c' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                        {stats.pending}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                        Pending
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '12px', 
+                      bgcolor: '#f1f8f4', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <CheckCircleIcon sx={{ fontSize: 24, color: '#66bb6a' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                        {stats.accepted}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                        Accepted
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '12px', 
+                      bgcolor: '#fef5f5', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <CancelIcon sx={{ fontSize: 24, color: '#ef5350' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                        {stats.rejected}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                        Rejected
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+              </Grid>
+            </Paper>
             {/* Search & Filter */}
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={4} flexWrap="wrap">
               <Box sx={{ flex: '1 1 400px', position: 'relative' }}>
@@ -341,9 +491,13 @@ function ViewApplicants() {
                     <HourglassEmptyIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: COLORS.textSecondary }} />
                     Pending
                   </MenuItem>
-                  <MenuItem value="Accepted">
-                    <CheckCircleIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: COLORS.textSecondary }} />
+                  <MenuItem value="Selected">
+                    <StarIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#ffa726' }} />
                     Selected
+                  </MenuItem>
+                  <MenuItem value="Accepted">
+                    <CheckCircleIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#66bb6a' }} />
+                    Accepted
                   </MenuItem>
                   <MenuItem value="Rejected">
                     <CancelIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: COLORS.textSecondary }} />
@@ -351,14 +505,6 @@ function ViewApplicants() {
                   </MenuItem>
                 </Select>
               </Box>
-              <Button
-                variant="contained"
-                onClick={() => navigate(`/campaign/${campaignId}/select-applicants`)}
-                startIcon={<CheckCircleIcon />}
-                sx={{ borderRadius: 2, fontWeight: 600, minWidth: 25, textTransform: 'none', fontSize: 16, bgcolor: '#667eea', color: '#fff', '&:hover': { bgcolor: '#5568d3' } }}
-              >
-                Select Applicants
-              </Button>
             </Stack>
             {/* Results Count */}
             <Typography sx={{ mb: 2, fontSize: 15, color: COLORS.textSecondary, fontWeight: 600 }}>
@@ -384,11 +530,11 @@ function ViewApplicants() {
                     onAccept={handleAccept}
                     onReject={handleReject}
                     onCancel={handleCancel}
-                    onToggleSelection={handleToggleSelection}
+                    onToggleFavorite={handleToggleSelection}
                     onChat={handleChat}
                     onShowDetail={handleShowDetail}
                     showActions={true}
-                    showSelection={true}
+                    canSelectApplicants={true}
                   />
                 ))}
               </Box>
@@ -407,18 +553,6 @@ function ViewApplicants() {
                 {modalConfig.message}
               </Typography>
             </Modal>
-            {/* Selection Confirmation Modal */}
-            <SelectionConfirmModal
-              isOpen={showSelectionModal}
-              onClose={() => {
-                setShowSelectionModal(false);
-                setSelectedApplicant(null);
-              }}
-              applicantName={selectedApplicant?.fullName}
-              influencerName={selectedApplicant?.influencerName}
-              currentSelection={selectedApplicant?.isSelected || false}
-              onConfirm={confirmToggleSelection}
-            />
             {/* Applicant Detail Modal */}
             <ApplicantDetailModal
               isOpen={showDetailModal}

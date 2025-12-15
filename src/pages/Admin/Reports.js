@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar, Topbar } from '../../components/common';
 import { COLORS } from '../../constants/colors';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import PaymentIcon from '@mui/icons-material/Payment';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleIcon from '@mui/icons-material/People';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -128,7 +128,7 @@ function Reports() {
               {
                 title: 'Total Revenue',
                 value: `Rp ${analytics.totalRevenue.toLocaleString('id-ID')}`,
-                IconComponent: AttachMoneyIcon,
+                IconComponent: PaymentIcon,
                 color: '#10b981',
                 bgColor: '#d1fae5'
               },

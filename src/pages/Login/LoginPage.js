@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
 import { useToast } from '../../hooks/useToast';
 import { SubmitButton } from '../../components/common';
+import authService from '../../services/authService';
 import eyeIcon from '../../assets/auth/eye.svg';
 import eyeOffIcon from '../../assets/auth/eye-off.svg';
 
@@ -62,11 +63,14 @@ function LoginPage() {
 
     setErrors(newErrors);
     if (hasError) return;
+    
     setIsLoading(true);
     
     try {
       // Call real API
       const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+      console.log('🔐 Login attempt to:', `${API_BASE_URL}/auth/login`);
+      
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -74,6 +78,17 @@ function LoginPage() {
         },
         body: JSON.stringify({ email, password }),
       });
+
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', response.headers.get('content-type'));
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('❌ Non-JSON response:', text.substring(0, 200));
+        throw new Error('Server error. Please make sure backend is running on port 8000.');
+      }
 
       const data = await response.json();
 
@@ -108,9 +123,10 @@ function LoginPage() {
       showToast(`Selamat datang, ${userName}!`, 'success');
 
       // Redirect based on role
-      let dashboardPath = '/umkm/dashboard';
+      let dashboardPath = '/umkm/dashboard'; // Default for umkm - ALWAYS dashboard first
       if (userRole === 'admin') dashboardPath = '/admin/dashboard';
-      if (userRole === 'student') dashboardPath = '/student/dashboard';
+      else if (userRole === 'student') dashboardPath = '/student/dashboard';
+      else if (userRole === 'umkm' || userRole === 'company') dashboardPath = '/umkm/dashboard'; // Changed from /campaigns
       
       setTimeout(() => navigate(dashboardPath), 1000);
 
@@ -165,7 +181,7 @@ function LoginPage() {
                 setLoginError(''); 
                 if (errors.email.length > 0) setErrors({ ...errors, email: [] }); 
               }} 
-              placeholder="nama@example.com" 
+              placeholder="Masukkan email" 
               disabled={isLoading} 
               style={{ 
                 width: '100%', 
@@ -306,7 +322,7 @@ function LoginPage() {
         </div> */}
 
         <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          <button type="button" onClick={() => navigate('/')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#6c757d', fontSize: '0.9rem', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 600, padding: '8px 16px', borderRadius: '8px', transition: 'all 0.2s', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>? Kembali ke Beranda</button>
+          <button type="button" onClick={() => navigate('/')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#667eea', fontSize: '0.9rem', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 600, padding: '8px 16px', borderRadius: '8px', transition: 'all 0.2s', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>Kembali ke Beranda</button>
         </div>
       </div>
     </div>

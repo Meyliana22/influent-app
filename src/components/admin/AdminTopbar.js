@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
-import Badge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';
 import Avatar from '@mui/material/Avatar';
+import NotificationBell from '../common/NotificationBell';
 
 function AdminTopbar() {
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ function AdminTopbar() {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
-    navigate('/login-umkm');
+    navigate('/login');
   };
 
   return (
@@ -41,23 +40,8 @@ function AdminTopbar() {
         alignItems: 'center',
         gap: '16px'
       }}>
-        {/* Notifications */}
-        <IconButton
-          onClick={() => navigate('/notifications')}
-          sx={{
-            width: 44,
-            height: 44,
-            borderRadius: '12px',
-            background: '#f7fafc',
-            '&:hover': {
-              background: '#edf2f7'
-            }
-          }}
-        >
-          <Badge badgeContent={3} color="error">
-            <NotificationsIcon sx={{ color: '#2d3748', fontSize: 22 }} />
-          </Badge>
-        </IconButton>
+        {/* Notification Bell with Dropdown */}
+        <NotificationBell />
 
         {/* Admin Profile */}
         <div style={{ position: 'relative' }}>

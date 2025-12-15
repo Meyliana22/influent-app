@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
-import { Bell } from 'lucide-react';
+import NotificationBell from '../common/NotificationBell';
 
 function UMKMTopbar({ onMenuClick = () => {} }) {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ function UMKMTopbar({ onMenuClick = () => {} }) {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
-    navigate('/login-umkm');
+    navigate('/login');
   };
 
   const handleSearch = (e) => {
@@ -81,35 +81,8 @@ function UMKMTopbar({ onMenuClick = () => {} }) {
 
       {/* Right Section */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: 'auto' }}>
-        {/* Notifications Button */}
-        <button
-          onClick={() => navigate('/notifications')}
-          style={{
-            position: 'relative',
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            border: 'none',
-            background: '#f7fafc',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s'
-          }}
-        >
-          <Bell size={20} />
-          <span style={{
-            position: 'absolute',
-            top: '8px',
-            right: '8px',
-            width: '8px',
-            height: '8px',
-            background: '#ef4444',
-            borderRadius: '50%',
-            border: '2px solid #fff'
-          }} />
-        </button>
+        {/* Notification Bell with Dropdown */}
+        <NotificationBell />
 
         {/* Profile Dropdown */}
         <div style={{ position: 'relative' }}>

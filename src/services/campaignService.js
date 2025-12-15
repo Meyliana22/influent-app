@@ -3,7 +3,9 @@
  * Handles all API calls related to campaigns
  */
 
-const API_BASE_URL = "https://influent-api-1fnn.vercel.app/api/v1";
+import authFetch from './apiClient';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
 
 /**
  * API Response Helper
@@ -15,7 +17,7 @@ const handleResponse = async (response) => {
 
 export const payment = async (params = {}) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/payments/`, {
+    const response = await authFetch(`${API_BASE_URL}/payments/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -24,7 +26,7 @@ export const payment = async (params = {}) => {
     });
     return await handleResponse(response);
   } catch (error) {
-    console.error("Error fetching campaigns:", error);
+    console.error("Error creating payment:", error);
     throw error;
   }
 };
@@ -34,12 +36,29 @@ export const payment = async (params = {}) => {
  */
 export const getCampaigns = async (params = {}) => {
   try {
-    const queryParams = new URLSearchParams({
-      limit: params.limit || 50,
-      ...params,
+    // Build query object from all params
+    let queryObj = {};
+    
+    Object.keys(params).forEach(key => {
+      if (key === 'sort' && typeof params[key] === 'string' && params[key].includes(':')) {
+        // Split "created_at:desc" into sort and order
+        const [sortField, orderDir] = params[key].split(':');
+        queryObj.sort = sortField;
+        queryObj.order = orderDir;
+      } else {
+        queryObj[key] = params[key];
+      }
     });
+    
+    // Default limit if not provided
+    if (!queryObj.limit) {
+      queryObj.limit = 50;
+    }
+    
+    const queryParams = new URLSearchParams(queryObj);
+    console.log('🌐 Final API URL:', `${API_BASE_URL}/campaigns?${queryParams}`);
 
-    const response = await fetch(`${API_BASE_URL}/campaigns?${queryParams}`);
+    const response = await authFetch(`${API_BASE_URL}/campaigns?${queryParams}`);
     return await handleResponse(response);
   } catch (error) {
     console.error("Error fetching campaigns:", error);
@@ -52,7 +71,7 @@ export const getCampaigns = async (params = {}) => {
  */
 export const getCampaignById = async (campaignId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/campaigns/${campaignId}`);
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${campaignId}`);
     return await handleResponse(response);
   } catch (error) {
     console.error("Error fetching campaign:", error);
@@ -82,7 +101,18 @@ export const createCampaign = async (campaignData) => {
       product_desc: campaignData.productDesc || null,
       start_date: campaignData.start_date || null,
       end_date: campaignData.end_date || null,
+      registration_deadline: campaignData.registration_deadline || null,
       submission_deadline: campaignData.submission_deadline || null,
+      revision_duration: campaignData.revision_duration
+        ? parseInt(campaignData.revision_duration)
+        : null,
+      max_revisions: campaignData.max_revisions
+        ? parseInt(campaignData.max_revisions)
+        : 1,
+      enable_revision:
+        campaignData.enable_revision !== undefined
+          ? campaignData.enable_revision
+          : true,
       content_guidelines: campaignData.content_guidelines || null,
       caption_guidelines: campaignData.caption_guidelines || null,
       content_reference: campaignData.contentReference || null,
@@ -93,8 +123,11 @@ export const createCampaign = async (campaignData) => {
       min_followers: campaignData.min_followers
         ? parseInt(campaignData.min_followers)
         : null,
+      is_free: campaignData.isFree || false,
       selected_gender: campaignData.selectedGender || null,
-      selected_age: campaignData.selectedAge || null,
+      selected_age: Array.isArray(campaignData.selectedAge)
+        ? JSON.stringify(campaignData.selectedAge)
+        : campaignData.selectedAge || null,
       criteria_desc: campaignData.criteriaDesc || null,
       banner_image: campaignData.image || null,
       reference_images: campaignData.referenceFiles
@@ -111,7 +144,8 @@ export const createCampaign = async (campaignData) => {
             )
           : null,
     };
-    const response = await fetch(`${API_BASE_URL}/campaigns`, {
+    
+    const response = await authFetch(`${API_BASE_URL}/campaigns`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -149,7 +183,18 @@ export const updateCampaign = async (campaignId, campaignData) => {
       product_desc: campaignData.productDesc || null,
       start_date: campaignData.start_date || null,
       end_date: campaignData.end_date || null,
+      registration_deadline: campaignData.registration_deadline || null,
       submission_deadline: campaignData.submission_deadline || null,
+      revision_duration: campaignData.revision_duration
+        ? parseInt(campaignData.revision_duration)
+        : null,
+      max_revisions: campaignData.max_revisions
+        ? parseInt(campaignData.max_revisions)
+        : 1,
+      enable_revision:
+        campaignData.enable_revision !== undefined
+          ? campaignData.enable_revision
+          : true,
       content_guidelines: campaignData.content_guidelines || null,
       caption_guidelines: campaignData.caption_guidelines || null,
       content_reference: campaignData.contentReference || null,
@@ -160,8 +205,11 @@ export const updateCampaign = async (campaignId, campaignData) => {
       min_followers: campaignData.min_followers
         ? parseInt(campaignData.min_followers)
         : null,
+      is_free: campaignData.isFree || false,
       selected_gender: campaignData.selectedGender || null,
-      selected_age: campaignData.selectedAge || null,
+      selected_age: Array.isArray(campaignData.selectedAge)
+        ? JSON.stringify(campaignData.selectedAge)
+        : campaignData.selectedAge || null,
       criteria_desc: campaignData.criteriaDesc || null,
       banner_image: campaignData.image || null,
       reference_images: campaignData.referenceFiles
@@ -179,7 +227,7 @@ export const updateCampaign = async (campaignId, campaignData) => {
           : null,
     };
 
-    const response = await fetch(`${API_BASE_URL}/campaigns/${campaignId}`, {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${campaignId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -199,7 +247,7 @@ export const updateCampaign = async (campaignId, campaignData) => {
  */
 export const deleteCampaign = async (campaignId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/campaigns/${campaignId}`, {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${campaignId}`, {
       method: "DELETE",
     });
 
@@ -269,6 +317,83 @@ export const mapApiToFrontend = (apiCampaign) => {
   };
 };
 
+/**
+ * Activate campaign (change status to active)
+ */
+export const activateCampaign = async (campaignId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${campaignId}/activate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error activating campaign:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get dashboard statistics for UMKM
+ * Best Practice: Single endpoint that returns aggregated dashboard data
+ * This reduces multiple API calls and improves performance
+ * 
+ * Expected API Response:
+ * {
+ *   success: true,
+ *   data: {
+ *     ongoing_campaigns: 5,        // Campaigns with status 'ongoing'
+ *     pending_applicants: 12,      // Applicants with status 'pending' or 'applied'
+ *     content_to_review: 8,        // Work submissions with status 'submitted' or 'pending_review'
+ *     completed_campaigns: 3       // Campaigns with status 'completed'
+ *   }
+ * }
+ * 
+ * Backend endpoint should be: GET /api/v1/umkm/dashboard/stats
+ * or GET /api/v1/campaigns/dashboard-stats (if campaigns controller)
+ */
+export const getDashboardStats = async () => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/umkm/dashboard/stats`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    throw error;
+  }
+};
+
+/**
+ * Campaign Payment Timer - Process payment for approved campaign
+ */
+export const processPayment = async (campaignId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-payment/process`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaign_id: campaignId })
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error processing payment:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get payment status and timer info
+ */
+export const getPaymentStatus = async (campaignId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-payment/status/${campaignId}`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error fetching payment status:", error);
+    throw error;
+  }
+};
+
 export default {
   getCampaigns,
   getCampaignById,
@@ -277,4 +402,8 @@ export default {
   deleteCampaign,
   mapApiToFrontend,
   payment,
+  activateCampaign,
+  getDashboardStats,
+  processPayment,
+  getPaymentStatus,
 };

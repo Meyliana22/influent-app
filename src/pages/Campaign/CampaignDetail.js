@@ -585,6 +585,109 @@ function CampaignDetail() {
                 }}
               />
             </Card>
+
+            {/* Cancellation Reason Alert */}
+            {campaign.status === 'cancelled' && campaign.cancellation_reason && (
+              <Card sx={{ 
+                p: 3, 
+                mb: 3, 
+                background: '#fee2e2', 
+                border: '2px solid #ef4444',
+                borderRadius: 2
+              }}>
+                <Stack direction="row" spacing={2} alignItems="flex-start">
+                  <Box sx={{ 
+                    fontSize: '32px', 
+                    lineHeight: 1,
+                    mt: -0.5
+                  }}>
+                    ⚠️
+                  </Box>
+                  <Box flex={1}>
+                    <Typography 
+                      variant="h6" 
+                      fontWeight={700} 
+                      color="#dc2626" 
+                      mb={1}
+                    >
+                      Campaign Dibatalkan
+                    </Typography>
+                    <Typography 
+                      fontSize={15} 
+                      color="#7f1d1d" 
+                      lineHeight={1.6}
+                    >
+                      <strong>Alasan:</strong> {campaign.cancellation_reason}
+                    </Typography>
+                    <Typography 
+                      fontSize={14} 
+                      color="#991b1b" 
+                      mt={2}
+                      fontStyle="italic"
+                    >
+                      💡 Anda dapat membuat campaign baru dengan memperbaiki masalah di atas.
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Card>
+            )}
+
+            {/* Pending Review Info */}
+            {campaign.status === 'pending_review' && (
+              <Card sx={{ 
+                p: 3, 
+                mb: 3, 
+                background: '#fff3cd', 
+                border: '2px solid #ffc107',
+                borderRadius: 2
+              }}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box sx={{ fontSize: '28px' }}>⏳</Box>
+                  <Box flex={1}>
+                    <Typography 
+                      variant="h6" 
+                      fontWeight={700} 
+                      color="#856404" 
+                      mb={0.5}
+                    >
+                      Campaign Dalam Review
+                    </Typography>
+                    <Typography fontSize={15} color="#856404">
+                      Campaign Anda sedang ditinjau oleh tim admin. Mohon tunggu konfirmasi.
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Card>
+            )}
+
+            {/* Pending Payment Success */}
+            {campaign.status === 'pending_payment' && (
+              <Card sx={{ 
+                p: 3, 
+                mb: 3, 
+                background: '#d1fae5', 
+                border: '2px solid #10b981',
+                borderRadius: 2
+              }}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box sx={{ fontSize: '28px' }}>✅</Box>
+                  <Box flex={1}>
+                    <Typography 
+                      variant="h6" 
+                      fontWeight={700} 
+                      color="#065f46" 
+                      mb={0.5}
+                    >
+                      Campaign Disetujui!
+                    </Typography>
+                    <Typography fontSize={15} color="#065f46">
+                      Selamat! Campaign Anda telah disetujui. Silakan lakukan pembayaran untuk mengaktifkan campaign.
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Card>
+            )}
+
             {/* Phase-specific Content */}
             {renderPhaseContent()}
           </Box>

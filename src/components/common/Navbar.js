@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
 import logo from '../../assets/logo.svg';
 import ChatIcon from '@mui/icons-material/Chat';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PersonIcon from '@mui/icons-material/Person';
+import Badge from '@mui/material/Badge';
 
 
 /**
@@ -12,8 +13,27 @@ import PersonIcon from '@mui/icons-material/Person';
  * @param {string} userType - Type of user: 'umkm' or 'student'
  * @param {boolean} showAuth - If true, show login/register buttons
  */
-const Navbar = ({ userType = 'umkm', showAuth = false }) => {
+const Navbar = ({ userType = 'umkm', showAuth = false, unreadCount = 0 }) => {
   const navigate = useNavigate();
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    // Get user from localStorage to determine role
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserRole(user.role);
+      } catch (err) {
+        console.error('Error parsing user from localStorage:', err);
+      }
+    }
+  }, []);
+
+  // All roles use single notifications route
+  const getNotificationsPath = () => {
+    return '/notifications'; // Single route for all roles (admin, company, influencer)
+  };
 
   const navItems = userType === 'umkm' 
     ? [
@@ -108,15 +128,28 @@ const Navbar = ({ userType = 'umkm', showAuth = false }) => {
               }}
               onClick={() => navigate('/chat')}
             />
-            <NotificationsIcon
-              sx={{ 
-                fontSize: 28, 
-                color: COLORS.textSecondary, 
+            <Badge 
+              badgeContent={unreadCount} 
+              color="error"
+              sx={{
                 cursor: 'pointer',
-                '&:hover': { color: COLORS.primary }
+                '& .MuiBadge-badge': {
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  minWidth: '18px',
+                  height: '18px'
+                }
               }}
-              onClick={() => navigate('/notifications')}
-            />
+              onClick={() => navigate(getNotificationsPath())}
+            >
+              <NotificationsIcon
+                sx={{ 
+                  fontSize: 28, 
+                  color: COLORS.textSecondary, 
+                  '&:hover': { color: COLORS.primary }
+                }}
+              />
+            </Badge>
             <PersonIcon
               sx={{ 
                 fontSize: 30, 

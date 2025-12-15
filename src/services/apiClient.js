@@ -1,6 +1,6 @@
 // auth-aware fetch wrapper. Use this in place of window.fetch for calls that
 // require authentication.
-import { ensureValidToken, clearAuth } from "./authService";
+import { ensureValidToken, clearAuth } from "./authHelper";
 
 /**
  * Perform a fetch with Authorization header. If token is expired, try to

@@ -1,29 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Sidebar, Topbar } from '../../components/common';
-import {
-  Box,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
+import { 
+  Box, 
+  Container, 
+  Typography, 
+  Button, 
+  TextField, 
+  Select, 
+  MenuItem, 
+  Card, 
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
-  TableContainer,
-  Button,
+  Stack,
+  InputAdornment,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Stack,
   Chip,
   IconButton,
   CircularProgress,
   Alert,
   Pagination,
-  InputAdornment,
   useTheme,
   useMediaQuery,
   Divider,
@@ -46,6 +47,7 @@ import {
   Payment as TransactionsIcon,
   Receipt as ReceiptIcon
 } from '@mui/icons-material';
+import { AdminSidebar, AdminTopbar } from '../../components/admin';
 import adminService from '../../services/adminService';
 
 function ManageCampaigns() {
@@ -84,6 +86,9 @@ function ManageCampaigns() {
   const [showTransactionsModal, setShowTransactionsModal] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
 
   // Edit form data
   const [editFormData, setEditFormData] = useState({
@@ -110,31 +115,28 @@ function ManageCampaigns() {
 
   useEffect(() => {
     loadCampaigns();
-  }, []);
+  }, [page, filterStatus, searchQuery]);
 
   const loadCampaigns = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await adminService.campaigns.getAllCampaigns();
-      console.log('Fetched campaigns:', response);
+      const response = await adminService.campaigns.getAllCampaigns({
+        page,
+        limit,
+        status: filterStatus || undefined,
+        search: searchQuery || undefined
+      });
 
-      // Handle different response structures
-      let allCampaigns = [];
-      if (Array.isArray(response)) {
-        allCampaigns = response;
-      } else if (response.campaigns && Array.isArray(response.campaigns)) {
-        allCampaigns = response.campaigns;
-      } else if (response.data && Array.isArray(response.data)) {
-        allCampaigns = response.data;
-      }
-
-      setCampaigns(allCampaigns);
-      setTotalCampaigns(allCampaigns.length);
-    } catch (err) {
-      console.error('Error loading campaigns:', err);
-      setError(err.message || 'Failed to load campaigns');
+      const campaignsList = response?.data || response?.campaigns || [];
+      setCampaigns(Array.isArray(campaignsList) ? campaignsList : []);
+      setTotalCampaigns(response?.total || campaignsList.length);
+      setTotalPages(response?.totalPages || Math.ceil(campaignsList.length / limit));
+    } catch (error) {
+      console.error('Error loading campaigns:', error);
+      setError('Failed to load campaigns');
+      setCampaigns([]);
     } finally {
       setLoading(false);
     }
@@ -253,19 +255,53 @@ function ManageCampaigns() {
   const handleUpdateStatus = async (campaignId, newStatus) => {
     try {
       setSubmitting(true);
-      // Map status names for API
-      const statusMap = {
-        'active': 'active',
-        'rejected': 'rejected',
-        'approved': 'active'
-      };
-      await adminService.campaigns.updateCampaign(campaignId, { status: statusMap[newStatus] || newStatus });
-      setSuccessMessage(`Campaign ${newStatus} successfully`);
+      
+      // For approval, use dedicated admin review endpoint
+      if (newStatus === 'pending_payment') {
+        await adminService.review.approveCampaign(campaignId);
+        setSuccessMessage('Campaign berhasil disetujui! Notifikasi telah dikirim ke UMKM.');
+      } else {
+        // For other status updates (active, cancelled)
+        const statusMap = {
+          'active': 'active',
+          'cancelled': 'cancelled'
+        };
+        await adminService.campaigns.updateCampaign(campaignId, { status: statusMap[newStatus] || newStatus });
+        setSuccessMessage('Status campaign berhasil diupdate!');
+      }
+      
       setShowDetailModal(false);
       loadCampaigns();
     } catch (err) {
       console.error('Error updating campaign:', err);
       setError(err.message || 'Failed to update campaign');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRejectCampaign = async () => {
+    if (!cancellationReason && !customReason) {
+      setError('Harap pilih atau tulis alasan pembatalan');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const finalReason = cancellationReason === 'other' ? customReason : cancellationReason;
+      
+      // Use dedicated admin review endpoint to cancel campaign
+      await adminService.review.rejectCampaign(selectedCampaign.campaign_id, finalReason);
+      
+      setSuccessMessage('Campaign berhasil dibatalkan. Notifikasi telah dikirim ke UMKM.');
+      setShowRejectDialog(false);
+      setShowDetailModal(false);
+      setCancellationReason('');
+      setCustomReason('');
+      loadCampaigns();
+    } catch (err) {
+      console.error('Error cancelling campaign:', err);
+      setError(err.message || 'Failed to cancel campaign');
     } finally {
       setSubmitting(false);
     }
@@ -296,32 +332,29 @@ function ManageCampaigns() {
     switch (status?.toLowerCase()) {
       case 'active':
         return { bg: '#d1fae5', color: '#065f46' };
-      case 'draft':
-        return { bg: '#e5e7eb', color: '#374151' };
       case 'admin_review':
-        return { bg: '#dbeafe', color: '#1e40af' };
+        return { bg: '#fff3cd', color: '#856404' };
       case 'pending_payment':
-        return { bg: '#fef3c7', color: '#92400e' };
+        return { bg: '#cfe2ff', color: '#084298' };
       case 'completed':
-        return { bg: '#c7d2fe', color: '#3730a3' };
-      case 'rejected':
-      case 'canceled':
-        return { bg: '#fee2e2', color: '#991b1b' };
+        return { bg: '#e0d4ff', color: '#5b21b6' };
+      case 'cancelled':
+        return { bg: '#ffe5e5', color: '#c41e3a' };
       default:
         return { bg: '#e5e7eb', color: '#374151' };
     }
   };
 
   const stats = {
-    total: totalCampaigns,
+    total: campaigns.length,
     active: campaigns.filter(c => c.status?.toLowerCase() === 'active').length,
     completed: campaigns.filter(c => c.status?.toLowerCase() === 'completed').length,
-    pending: campaigns.filter(c => ['draft', 'admin_review', 'pending_payment'].includes(c.status?.toLowerCase())).length
+    pending: campaigns.filter(c => c.status?.toLowerCase() === 'admin_review' || c.status?.toLowerCase() === 'pending_payment').length
   };
 
   return (
     <Box sx={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <Box
         sx={{
           marginLeft: isDesktop && sidebarOpen ? 32.5 : 0,
@@ -330,7 +363,7 @@ function ManageCampaigns() {
           boxSizing: 'border-box'
         }}
       >
-        <Topbar />
+        <AdminTopbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <Box sx={{ mt: 9, p: 4, backgroundColor: '#f8f9fa', minHeight: 'calc(100vh - 72px)' }}>
           {/* Page Header */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
@@ -488,16 +521,14 @@ function ManageCampaigns() {
                 }}
                 size="small"
                 displayEmpty
-                sx={{ minWidth: 180 }}
+                sx={{ minWidth: 200 }}
               >
-                <MenuItem value="">All Status</MenuItem>
-                <MenuItem value="draft">Draft</MenuItem>
-                <MenuItem value="admin_review">Admin Review</MenuItem>
-                <MenuItem value="rejected">Rejected</MenuItem>
-                <MenuItem value="pending_payment">Pending Payment</MenuItem>
-                <MenuItem value="canceled">Canceled</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
+                <MenuItem value="">Semua</MenuItem>
+                <MenuItem value="active">Aktif</MenuItem>
+                <MenuItem value="admin_review">Ditinjau Admin</MenuItem>
+                <MenuItem value="pending_payment">Menunggu Pembayaran</MenuItem>
+                <MenuItem value="completed">Selesai</MenuItem>
+                <MenuItem value="cancelled">Dibatalkan</MenuItem>
               </Select>
             </Stack>
           </Box>
@@ -618,28 +649,6 @@ function ManageCampaigns() {
                                   title="View Details"
                                 >
                                   <ViewIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleEditClick(campaign)}
-                                  sx={{
-                                    color: '#10b981',
-                                    '&:hover': { bgcolor: 'rgba(16, 185, 129, 0.1)' }
-                                  }}
-                                  title="Edit Campaign"
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleDeleteClick(campaign)}
-                                  sx={{
-                                    color: '#ef4444',
-                                    '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
-                                  }}
-                                  title="Delete Campaign"
-                                >
-                                  <DeleteIcon fontSize="small" />
                                 </IconButton>
                               </Stack>
                             </TableCell>
@@ -874,24 +883,29 @@ function ManageCampaigns() {
                 disabled={submitting}
                 sx={{ textTransform: 'none' }}
               >
-                Close
+                Tutup
               </Button>
-              {selectedCampaign?.status?.toLowerCase() === 'pending' && (
+              {selectedCampaign?.status?.toLowerCase() === 'admin_review' && (
                 <>
                   <Button
-                    onClick={() => handleUpdateStatus(selectedCampaign._id, 'rejected')}
+                    onClick={() => {
+                      setShowDetailModal(false);
+                      setShowRejectDialog(true);
+                    }}
                     disabled={submitting}
                     startIcon={<RejectIcon />}
                     sx={{
                       textTransform: 'none',
                       color: '#ef4444',
-                      '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
+                      bgcolor: '#fff5f5',
+                      fontWeight: 600,
+                      '&:hover': { bgcolor: '#fee2e2' }
                     }}
                   >
-                    {submitting ? <CircularProgress size={20} /> : 'Reject'}
+                    Tolak Campaign
                   </Button>
                   <Button
-                    onClick={() => handleUpdateStatus(selectedCampaign._id, 'active')}
+                    onClick={() => handleUpdateStatus(selectedCampaign.campaign_id, 'pending_payment')}
                     disabled={submitting}
                     variant="contained"
                     startIcon={<ApproveIcon />}
@@ -1218,6 +1232,140 @@ function ManageCampaigns() {
             <DialogActions sx={{ p: 2 }}>
               <Button onClick={() => setShowTransactionsModal(false)} sx={{ textTransform: 'none' }}>
                 Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Reject Campaign Dialog */}
+          <Dialog
+            open={showRejectDialog}
+            onClose={() => !submitting && setShowRejectDialog(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <WarningIcon sx={{ color: '#ef4444' }} />
+              <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Tolak Campaign</Typography>
+            </DialogTitle>
+            <DialogContent dividers>
+              <Typography sx={{ color: '#6c757d', fontSize: 15, mb: 3 }}>
+                Pilih alasan pembatalan campaign <strong>{selectedCampaign?.title}</strong>:
+              </Typography>
+              
+              <Stack spacing={2}>
+                <Box 
+                  onClick={() => setCancellationReason('Konten campaign tidak sesuai dengan panduan komunitas')}
+                  sx={{
+                    p: 2,
+                    border: cancellationReason === 'Konten campaign tidak sesuai dengan panduan komunitas' ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    bgcolor: cancellationReason === 'Konten campaign tidak sesuai dengan panduan komunitas' ? '#fff5f5' : '#fff',
+                    '&:hover': { bgcolor: '#f7fafc' }
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Konten tidak sesuai panduan</Typography>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>Campaign melanggar panduan komunitas</Typography>
+                </Box>
+
+                <Box 
+                  onClick={() => setCancellationReason('Informasi campaign tidak lengkap atau tidak jelas')}
+                  sx={{
+                    p: 2,
+                    border: cancellationReason === 'Informasi campaign tidak lengkap atau tidak jelas' ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    bgcolor: cancellationReason === 'Informasi campaign tidak lengkap atau tidak jelas' ? '#fff5f5' : '#fff',
+                    '&:hover': { bgcolor: '#f7fafc' }
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Informasi tidak lengkap</Typography>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>Detail campaign kurang jelas atau tidak memadai</Typography>
+                </Box>
+
+                <Box 
+                  onClick={() => setCancellationReason('Budget atau kompensasi tidak sesuai standar')}
+                  sx={{
+                    p: 2,
+                    border: cancellationReason === 'Budget atau kompensasi tidak sesuai standar' ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    bgcolor: cancellationReason === 'Budget atau kompensasi tidak sesuai standar' ? '#fff5f5' : '#fff',
+                    '&:hover': { bgcolor: '#f7fafc' }
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Budget tidak sesuai</Typography>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>Kompensasi tidak memenuhi standar minimum</Typography>
+                </Box>
+
+                <Box 
+                  onClick={() => setCancellationReason('Produk atau layanan melanggar ketentuan')}
+                  sx={{
+                    p: 2,
+                    border: cancellationReason === 'Produk atau layanan melanggar ketentuan' ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    bgcolor: cancellationReason === 'Produk atau layanan melanggar ketentuan' ? '#fff5f5' : '#fff',
+                    '&:hover': { bgcolor: '#f7fafc' }
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Produk melanggar ketentuan</Typography>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>Produk/layanan yang dipromosikan tidak diizinkan</Typography>
+                </Box>
+
+                <Box 
+                  onClick={() => setCancellationReason('other')}
+                  sx={{
+                    p: 2,
+                    border: cancellationReason === 'other' ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    bgcolor: cancellationReason === 'other' ? '#fff5f5' : '#fff',
+                    '&:hover': { bgcolor: '#f7fafc' }
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Alasan lainnya</Typography>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>Tulis alasan pembatalan sendiri</Typography>
+                </Box>
+
+                {cancellationReason === 'other' && (
+                  <TextField
+                    label="Alasan Pembatalan"
+                    multiline
+                    rows={4}
+                    fullWidth
+                    value={customReason}
+                    onChange={(e) => setCustomReason(e.target.value)}
+                    placeholder="Tulis alasan pembatalan campaign..."
+                    sx={{ mt: 2 }}
+                  />
+                )}
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button
+                onClick={() => {
+                  setShowRejectDialog(false);
+                  setCancellationReason('');
+                  setCustomReason('');
+                }}
+                disabled={submitting}
+                sx={{ textTransform: 'none' }}
+              >
+                Batal
+              </Button>
+              <Button
+                onClick={handleRejectCampaign}
+                variant="contained"
+                disabled={submitting || !cancellationReason || (cancellationReason === 'other' && !customReason)}
+                sx={{
+                  bgcolor: '#ef4444',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '&:hover': { bgcolor: '#dc2626' }
+                }}
+              >
+                {submitting ? <CircularProgress size={24} /> : 'Batalkan Campaign'}
               </Button>
             </DialogActions>
           </Dialog>

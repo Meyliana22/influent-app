@@ -2,16 +2,38 @@
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
 
+/**
+ * Parse JWT token to get payload
+ * @param {string} token 
+ * @returns {Object|null} Decoded token payload
+ */
 export function parseJwt(token) {
   try {
-    const [, payloadBase64] = token.split(".");
-    const payload = JSON.parse(
-      atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/"))
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
     );
-    return payload;
+    return JSON.parse(jsonPayload);
   } catch (e) {
     return null;
   }
+}
+
+/**
+ * API Response Helper
+ */
+const handleResponse = async (response) => {
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'Request failed');
+  }
+  
+  return data;
 }
 
 /**
@@ -205,7 +227,7 @@ export function logout() {
   window.location.href = '/login';
 }
 
-export default {
+const authService = {
   parseJwt,
   isTokenExpired,
   clearAuth,
@@ -218,3 +240,5 @@ export default {
   getCurrentUser,
   logout,
 };
+
+export default authService;
