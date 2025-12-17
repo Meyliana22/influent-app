@@ -19,10 +19,10 @@ import ManageUsers from './pages/Admin/ManageUsers';
 import ManageCampaigns from './pages/Admin/ManageCampaigns';
 import Reports from './pages/Admin/Reports';
 import UMKMDashboard from './pages/UMKM/UMKMDashboard';
-// import StudentDashboard from './pages/Student/StudentDashboard';
-// import BrowseCampaigns from './pages/Student/BrowseCampaigns';
-// import Collaborations from './pages/Student/Collaborations';
-// import Transactions from './pages/Student/Transactions';
+import StudentDashboard from './pages/Student/StudentDashboard';
+import BrowseCampaigns from './pages/Student/BrowseCampaigns';
+import Collaborations from './pages/Student/Collaborations';
+import Transactions from './pages/Student/Transactions';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -63,10 +63,10 @@ function App() {
           <Route path="/umkm/dashboard" element={<UMKMDashboard />} />
           
           {/* Student Routes */}
-          {/* <Route path="/student/dashboard" element={<StudentDashboard />} />
+          <Route path="/student/dashboard" element={<StudentDashboard />} />
           <Route path="/student/browse-campaigns" element={<BrowseCampaigns />} />
           <Route path="/student/collaborations" element={<Collaborations />} />
-          <Route path="/student/transactions" element={<Transactions />} /> */}
+          <Route path="/student/transactions" element={<Transactions />} />
           
           <Route path="/" element={<LandingPage />} />
         </Routes>

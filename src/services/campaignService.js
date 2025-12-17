@@ -48,6 +48,24 @@ export const getCampaigns = async (params = {}) => {
 };
 
 /**
+ * Get campaigns by category
+ */
+export const getCampaignsByCategory = async (category, params = {}) => {
+  try {
+    const queryParams = new URLSearchParams({
+      limit: params.limit || 50,
+      ...params,
+    });
+
+    const response = await fetch(`${API_BASE_URL}/campaigns/category/${encodeURIComponent(category)}?${queryParams}`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error('Error fetching campaigns by category:', error);
+    throw error;
+  }
+};
+
+/**
  * Get single campaign by ID
  */
 export const getCampaignById = async (campaignId) => {
@@ -271,6 +289,7 @@ export const mapApiToFrontend = (apiCampaign) => {
 
 export default {
   getCampaigns,
+  getCampaignsByCategory,
   getCampaignById,
   createCampaign,
   updateCampaign,
