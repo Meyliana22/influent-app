@@ -17,7 +17,7 @@ const handleResponse = async (response) => {
 
 export const payment = async (params = {}) => {
   try {
-    const response = await authFetch(`${API_BASE_URL}/payments/`, {
+    const response = await authFetch(`${API_BASE_URL}/payments/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -67,6 +67,24 @@ export const getCampaigns = async (params = {}) => {
 };
 
 /**
+ * Get campaigns by category
+ */
+export const getCampaignsByCategory = async (category, params = {}) => {
+  try {
+    const queryParams = new URLSearchParams({
+      limit: params.limit || 50,
+      ...params,
+    });
+
+    const response = await fetch(`${API_BASE_URL}/campaigns/category/${encodeURIComponent(category)}?${queryParams}`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error('Error fetching campaigns by category:', error);
+    throw error;
+  }
+};
+
+/**
  * Get single campaign by ID
  */
 export const getCampaignById = async (campaignId) => {
@@ -75,6 +93,108 @@ export const getCampaignById = async (campaignId) => {
     return await handleResponse(response);
   } catch (error) {
     console.error("Error fetching campaign:", error);
+    throw error;
+  }
+};
+
+/**
+ * Upload campaign banner
+ */
+export const uploadBanner = async (campaignId, imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append('banner_image', imageFile);
+
+    const response = await authFetch(`${API_BASE_URL}/upload/campaign/${campaignId}/banner`, {
+      method: "POST",
+      body: formData,
+      // Note: Do not set Content-Type header when sending FormData, 
+      // let browser set it with boundary
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error uploading banner:", error);
+    throw error;
+  }
+};
+
+/**
+ * Apply to a campaign
+ */
+export const applyToCampaign = async (data) => {
+  try {
+    const payload = {
+      campaign_id: data.campaign_id,
+      student_id: data.student_id,
+      application_status: "pending",
+      application_notes: data.application_notes || "",
+      // accepted_at: null,
+      // rejected_at: null
+    };
+
+    const response = await authFetch(`${API_BASE_URL}/campaign-users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error applying to campaign:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get campaign users (my applications)
+ */
+export const getCampaignUsers = async () => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-users`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error fetching campaign users:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update campaign user (cancel application etc)
+ */
+export const updateCampaignUser = async (id, data) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-users/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error updating campaign user:", error);
+    throw error;
+  }
+};
+
+/**
+ * Upload campaign references
+ */
+export const uploadCampaignReferences = async (campaignId, files) => {
+  try {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('reference_images', file);
+    });
+
+    const response = await authFetch(`${API_BASE_URL}/upload/campaign/${campaignId}/references`, {
+      method: "POST",
+      body: formData,
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error uploading references:", error);
     throw error;
   }
 };
@@ -99,6 +219,7 @@ export const createCampaign = async (campaignData) => {
         ? parseInt(campaignData.productValue)
         : null,
       product_desc: campaignData.productDesc || null,
+      description: campaignData.productDesc || null,
       start_date: campaignData.start_date || null,
       end_date: campaignData.end_date || null,
       registration_deadline: campaignData.registration_deadline || null,
@@ -133,7 +254,7 @@ export const createCampaign = async (campaignData) => {
       reference_images: campaignData.referenceFiles
         ? JSON.stringify(campaignData.referenceFiles)
         : null,
-      status: campaignData.status || "inactive", // Default to inactive (unpaid)
+      status:"admin_review", // Default to inactive (unpaid)
       contentTypes:
         campaignData.contentItems && campaignData.contentItems.length > 0
           ? JSON.stringify(
@@ -181,6 +302,7 @@ export const updateCampaign = async (campaignId, campaignData) => {
         ? parseInt(campaignData.productValue)
         : null,
       product_desc: campaignData.productDesc || null,
+      description: campaignData.productDesc || null,
       start_date: campaignData.start_date || null,
       end_date: campaignData.end_date || null,
       registration_deadline: campaignData.registration_deadline || null,
@@ -396,6 +518,7 @@ export const getPaymentStatus = async (campaignId) => {
 
 export default {
   getCampaigns,
+  getCampaignsByCategory,
   getCampaignById,
   createCampaign,
   updateCampaign,
@@ -406,4 +529,9 @@ export default {
   getDashboardStats,
   processPayment,
   getPaymentStatus,
+  uploadBanner,
+  uploadCampaignReferences,
+  applyToCampaign,
+  getCampaignUsers,
+  updateCampaignUser,
 };

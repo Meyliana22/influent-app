@@ -51,12 +51,16 @@ export const getApplicantById = async (applicantId) => {
  */
 export const acceptApplicant = async (applicantId, notes = '') => {
   try {
-    const response = await authFetch(`${API_BASE_URL}/campaign-users/${applicantId}/accept`, {
-      method: 'POST',
+    const response = await authFetch(`${API_BASE_URL}/campaign-users/${applicantId}`, {
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ notes }),
+      body: JSON.stringify({ 
+        application_status: 'accepted',
+        application_notes: notes,
+        accepted_at: new Date().toISOString()
+      }),
     });
     return await handleResponse(response);
   } catch (error) {
@@ -70,12 +74,16 @@ export const acceptApplicant = async (applicantId, notes = '') => {
  */
 export const rejectApplicant = async (applicantId, notes = '') => {
   try {
-    const response = await authFetch(`${API_BASE_URL}/campaign-users/${applicantId}/reject`, {
-      method: 'POST',
+    const response = await authFetch(`${API_BASE_URL}/campaign-users/${applicantId}`, {
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ notes }),
+      body: JSON.stringify({ 
+        application_status: 'rejected',
+        application_notes: notes,
+        rejected_at: new Date().toISOString()
+      }),
     });
     return await handleResponse(response);
   } catch (error) {

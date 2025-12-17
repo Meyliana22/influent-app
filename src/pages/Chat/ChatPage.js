@@ -94,7 +94,7 @@ function ChatPage() {
       }
       const data = await res.json();
       // normalize into sidebar items
-      const normalized = data.map((row) => ({
+      const normalized = data.data.map((row) => ({
         id: row.room.id ?? row.room.room_id ?? row.room.id,
         name: row.room.name ?? `Chat ${row.room.id}`,
         lastMessage: row.lastMessage

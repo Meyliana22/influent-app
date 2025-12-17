@@ -1,15 +1,16 @@
 import React from 'react';
+import { Button as MuiButton } from '@mui/material';
 import { COLORS } from '../../constants/colors';
 
 /**
  * Reusable Button Component
- * @param {string} variant - Button style variant: 'primary', 'secondary', 'outline', 'danger', 'success'
+ * @param {string} variant - Button style variant: 'primary', 'secondary', 'outline', 'danger', 'success', 'ghost'
  * @param {string} size - Button size: 'small', 'medium', 'large'
  * @param {boolean} fullWidth - If true, button takes full width
  * @param {boolean} disabled - If true, button is disabled
  * @param {function} onClick - Click handler
  * @param {React.ReactNode} children - Button content
- * @param {object} style - Additional inline styles
+ * @param {object} sx - Additional styles
  */
 const Button = ({ 
   variant = 'primary', 
@@ -18,85 +19,86 @@ const Button = ({
   disabled = false,
   onClick,
   children,
-  style = {},
+  sx = {},
   ...props
 }) => {
-  const getVariantStyles = () => {
-    const variants = {
-      primary: {
+  const getMuiVariant = () => {
+    switch (variant) {
+      case 'outline':
+        return 'outlined';
+      case 'ghost':
+        return 'text';
+      default:
+        return 'contained';
+    }
+  };
+
+  const getMuiColor = () => {
+    switch (variant) {
+      case 'danger':
+        return 'error';
+      case 'success':
+        return 'success';
+      case 'secondary':
+        return 'secondary';
+      case 'primary':
+      default:
+        return 'primary';
+    }
+  };
+
+  const getCustomStyles = () => {
+    const baseSx = {
+      borderRadius: 2,
+      textTransform: 'none',
+      fontWeight: 600,
+      fontFamily: "'Montserrat', sans-serif",
+      boxShadow: variant === 'ghost' || variant === 'outline' ? 'none' : undefined,
+    };
+
+    if (variant === 'primary') {
+      return {
+        ...baseSx,
         background: COLORS.gradientPrimary,
         color: COLORS.textWhite,
-        border: 'none',
-      },
-      secondary: {
+        '&:hover': {
+          opacity: 0.9,
+          background: COLORS.gradientPrimary
+        }
+      };
+    }
+
+    if (variant === 'secondary') {
+      return {
+        ...baseSx,
         background: COLORS.gradientSecondary,
         color: COLORS.textWhite,
-        border: 'none',
-      },
-      outline: {
-        background: 'transparent',
-        color: COLORS.primary,
-        border: `2px solid ${COLORS.primary}`,
-      },
-      danger: {
-        background: COLORS.danger,
-        color: COLORS.textWhite,
-        border: 'none',
-      },
-      success: {
-        background: COLORS.success,
-        color: COLORS.textWhite,
-        border: 'none',
-      },
-      ghost: {
-        background: 'transparent',
-        color: COLORS.textSecondary,
-        border: 'none',
-      },
-    };
-    return variants[variant] || variants.primary;
-  };
+        '&:hover': {
+          opacity: 0.9,
+          background: COLORS.gradientSecondary
+        }
+      };
+    }
 
-  const getSizeStyles = () => {
-    const sizes = {
-      small: {
-        padding: '8px 16px',
-        fontSize: '0.875rem',
-      },
-      medium: {
-        padding: '12px 24px',
-        fontSize: '1rem',
-      },
-      large: {
-        padding: '16px 32px',
-        fontSize: '1.1rem',
-      },
-    };
-    return sizes[size] || sizes.medium;
-  };
-
-  const buttonStyles = {
-    ...getVariantStyles(),
-    ...getSizeStyles(),
-    borderRadius: '10px',
-    fontWeight: 600,
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    transition: 'all 0.2s',
-    fontFamily: 'Montserrat, Arial, sans-serif',
-    opacity: disabled ? 0.6 : 1,
-    width: fullWidth ? '100%' : 'auto',
-    ...style,
+    return baseSx;
   };
 
   return (
-    <button
-      style={buttonStyles}
-      onClick={disabled ? undefined : onClick}
+    <MuiButton
+      variant={getMuiVariant()}
+      color={getMuiColor()}
+      size={size}
+      fullWidth={fullWidth}
       disabled={disabled}
+      onClick={onClick}
+      sx={{
+        ...getCustomStyles(),
+        ...sx,
+      }}
       {...props}
     >
       {children}
-    </button>
+    </MuiButton>
   );
 };
 

@@ -26,9 +26,10 @@ import Reports from './pages/Admin/Reports';
 import AdminReviewSubmissions from './pages/Admin/AdminReviewSubmissions';
 import UMKMDashboard from './pages/UMKM/UMKMDashboard';
 // import StudentDashboard from './pages/Student/StudentDashboard';
-// import BrowseCampaigns from './pages/Student/BrowseCampaigns';
-// import Collaborations from './pages/Student/Collaborations';
-// import Transactions from './pages/Student/Transactions';
+import BrowseCampaigns from './pages/Student/BrowseCampaigns';
+import MyApplications from './pages/Student/MyApplications';
+import Collaborations from './pages/Student/Collaborations';
+import Transactions from './pages/Student/Transactions';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -78,6 +79,7 @@ function App() {
           <Route path="/campaign-edit/:id" element={<CampaignCreate />} />
           <Route path="/campaign/:id/payment" element={<PaymentConfirmation />} />
           <Route path="/campaign/:id/payment-success" element={<PaymentSuccess />} />
+          <Route path="/success" element={<PaymentSuccess />} />
           <Route path="/campaign/:campaignId/applicants" element={<ViewApplicants />} />
           <Route path="/campaign/:campaignId/select-applicants" element={<SelectApplicants />} />
           <Route path="/campaign/:campaignId/review-submissions" element={<ReviewSubmissions />} />
@@ -99,9 +101,10 @@ function App() {
           
           {/* Student Routes */}
           {/* <Route path="/student/dashboard" element={<StudentDashboard />} /> */}
-          {/* <Route path="/student/browse-campaigns" element={<BrowseCampaigns />} /> */}
-          {/* <Route path="/student/collaborations" element={<Collaborations />} /> */}
-          {/* <Route path="/student/transactions" element={<Transactions />} /> */}
+          <Route path="/student/browse-campaigns" element={<BrowseCampaigns />} />
+          <Route path="/student/my-applications" element={<MyApplications />} />
+          <Route path="/student/collaborations" element={<Collaborations />} />
+          <Route path="/student/transactions" element={<Transactions />} />
           
           <Route path="/" element={<LandingPage />} />
         </Routes>

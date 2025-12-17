@@ -1,4 +1,12 @@
 import React from 'react';
+import { 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions,
+  Typography,
+  Box
+} from '@mui/material';
 import { COLORS } from '../../constants/colors';
 import Button from './Button';
 
@@ -24,80 +32,62 @@ const Modal = ({
   variant = 'default',
   showActions = true,
 }) => {
-  if (!isOpen) return null;
-
-  const getVariantColor = () => {
-    const variants = {
-      default: 'primary',
-      danger: 'danger',
-      success: 'success',
-    };
-    return variants[variant] || 'primary';
+  const getConfirmVariant = () => {
+    switch (variant) {
+      case 'danger':
+        return 'danger';
+      case 'success':
+        return 'success';
+      default:
+        return 'primary';
+    }
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          background: COLORS.white,
-          borderRadius: '16px',
-          padding: '32px',
-          maxWidth: '500px',
-          width: '90%',
-          maxHeight: '90vh',
-          overflow: 'auto',
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 4,
+          p: 2,
           boxShadow: `0 8px 32px ${COLORS.shadowLarge}`,
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        {title && (
-          <h3
-            style={{
-              margin: '0 0 20px 0',
-              fontSize: '1.5rem',
-              fontWeight: 700,
-              color: COLORS.textPrimary,
-            }}
-          >
-            {title}
-          </h3>
-        )}
+        }
+      }}
+    >
+      {title && (
+        <DialogTitle sx={{ 
+          pb: 1, 
+          pt: 1,
+          fontWeight: 700, 
+          fontSize: '1.5rem',
+          color: COLORS.textPrimary 
+        }}>
+          {title}
+        </DialogTitle>
+      )}
 
-        {/* Content */}
-        <div style={{ marginBottom: showActions ? '24px' : 0 }}>
+      <DialogContent sx={{ py: 2 }}>
+        <Box sx={{ color: COLORS.textSecondary }}>
           {children}
-        </div>
+        </Box>
+      </DialogContent>
 
-        {/* Actions */}
-        {showActions && (
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <Button variant="outline" onClick={onClose}>
-              {cancelText}
+      {showActions && (
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="outline" onClick={onClose} sx={{ mr: 1 }}>
+            {cancelText}
+          </Button>
+          {onConfirm && (
+            <Button variant={getConfirmVariant()} onClick={onConfirm}>
+              {confirmText}
             </Button>
-            {onConfirm && (
-              <Button variant={getVariantColor()} onClick={onConfirm}>
-                {confirmText}
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+          )}
+        </DialogActions>
+      )}
+    </Dialog>
   );
 };
 

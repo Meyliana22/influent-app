@@ -19,6 +19,7 @@ import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied
 import applicantStorageHelper from '../../utils/applicantStorageHelper';
 import campaignService from '../../services/campaignService';
 import applicantService from '../../services/applicantService';
+import chatService from '../../services/chatService';
 import { toast } from 'react-toastify';
 
 function ViewApplicants() {
@@ -76,9 +77,28 @@ function ViewApplicants() {
       
       // Fetch campaign from API
       const response = await campaignService.getCampaignById(campaignId);
+      // Handle the nested data structure { success: true, data: { ... } }
       let campaignData = response?.data?.data || response?.data || response;
       
+      // Additional check if the object is directly the campaign or wrapped
       if (campaignData && campaignData.campaign_id) {
+        // Parse JSON strings if necessary
+        try {
+           if (typeof campaignData.influencer_category === 'string' && campaignData.influencer_category.startsWith('[')) {
+             campaignData.influencer_category = JSON.parse(campaignData.influencer_category);
+           }
+           if (typeof campaignData.selected_age === 'string' && campaignData.selected_age.startsWith('[')) {
+             campaignData.selected_age = JSON.parse(campaignData.selected_age);
+           }
+           if (typeof campaignData.reference_images === 'string' && campaignData.reference_images.startsWith('"')) {
+              // Handle double encoded JSON string from the example
+              campaignData.reference_images = JSON.parse(JSON.parse(campaignData.reference_images));
+           } else if (typeof campaignData.reference_images === 'string' && campaignData.reference_images.startsWith('[')) {
+              campaignData.reference_images = JSON.parse(campaignData.reference_images);
+           }
+        } catch (e) {
+          console.warn('Error evaluating JSON fields:', e);
+        }
         setCampaign(campaignData);
       } else {
         console.error('❌ Campaign not found with ID:', campaignId);
@@ -89,50 +109,43 @@ function ViewApplicants() {
 
       // Load applicants from API
       let applicantsResponse = await applicantService.getCampaignApplicants(campaignId);
-      let applicantsData = Array.isArray(applicantsResponse) ? applicantsResponse : [];
+      // Handle response structure { success: true, data: [...] }
+      let applicantsData = Array.isArray(applicantsResponse) ? applicantsResponse : 
+                           (applicantsResponse?.data && Array.isArray(applicantsResponse.data) ? applicantsResponse.data : []);
       
       // Transform API data to match frontend format
       const transformedApplicants = applicantsData.map(app => {
-        // Safely parse niche_category
-        let nicheArray = [];
-        try {
-          if (app.user?.student?.niche_category) {
-            const parsed = JSON.parse(app.user.student.niche_category);
-            nicheArray = Array.isArray(parsed) ? parsed : [];
-          } else if (app.student?.category) {
-            nicheArray = [app.student.category];
-          }
-        } catch (e) {
-          nicheArray = [];
-        }
-
-        // Handle both API format and dummy format
-        const studentData = app.user?.student || app.student || {};
-        const userData = app.user || studentData.user || {};
-
+        // Extract user data from the 'user' field in the response
+        const userData = app.user || {};
+        
+        // Note: The provided API response doesn't seem to have nested 'student' details 
+        // (like followers, engagement, niche). We'll try to use what's available or default.
+        const studentData = app.student || userData.student || {}; 
+        
         return {
           id: app.id,
+          userId: userData.user_id || app.student_id,
           campaignId: app.campaign_id,
           influencerName: userData.name || 'Unknown',
           fullName: userData.name || 'Unknown',
-          location: studentData.location || 'N/A',
-          age: studentData.age || 0,
-          gender: studentData.gender || 'N/A',
-          followers: studentData.follower_count || 0,
-          engagementRate: studentData.engagement_rate || 0,
+          // Defaulting missing fields that aren't in the basic user object
+          location: studentData.location || userData.location || '-',
+          age: studentData.age || userData.age || 0,
+          gender: studentData.gender || userData.gender || '-',
+          followers: studentData.follower_count || userData.follower_count || 0,
+          engagementRate: studentData.engagement_rate || userData.engagement_rate || 0,
           status: app.application_status ? 
-                  (app.application_status === 'pending' ? 'Pending' : 
-                   app.application_status === 'accepted' ? 'Accepted' : 'Rejected') :
-                  (app.status === 'pending' ? 'Pending' :
-                   app.status === 'selected' ? 'Pending' :
-                   app.status === 'accepted' ? 'Accepted' : 'Rejected'),
-          appliedDate: app.applied_at,
-          bio: studentData.bio || '',
-          instagram: studentData.instagram_username || '',
+                  (app.application_status.toLowerCase() === 'pending' ? 'Pending' : 
+                   (app.application_status.toLowerCase() === 'accepted' || app.application_status.toLowerCase() === 'approved') ? 'Accepted' : 
+                   (app.application_status.toLowerCase() === 'rejected') ? 'Rejected' : 
+                   app.application_status) : 'Pending',
+          appliedDate: app.applied_at || app.created_at || new Date().toISOString(),
+          bio: studentData.bio || userData.bio || '',
+          instagram: studentData.instagram_username || userData.instagram_username || '',
           email: userData.email || '',
-          phone: studentData.phone || '',
-          niche: nicheArray,
-          notes: app.application_notes || app.notes || '',
+          phone: studentData.phone || userData.phone || '',
+          niche: [], // Niche category not present in basic user object
+          notes: app.application_notes || '',
           profileImage: userData.profile_image || 'https://i.pravatar.cc/150',
           previousBrands: [],
           isSelected: applicantStorageHelper.isSelected(app.id)
@@ -259,14 +272,58 @@ function ViewApplicants() {
     setShowDetailModal(true);
   };
 
-  // Handle Chat - Open WhatsApp
-  const handleChat = (applicant) => {
-    const phone = applicant.phone.replace(/[^0-9]/g, ''); // Remove non-numeric characters
-    const message = encodeURIComponent(
-      `Halo ${applicant.fullName}, saya tertarik untuk berkolaborasi dengan Anda untuk campaign "${campaign.title}". Apakah Anda tersedia untuk diskusi lebih lanjut?`
-    );
-    const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
+  // Get current user ID from token
+  const [currentUserId, setCurrentUserId] = useState(null);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const [, payloadBase64] = token.split(".");
+        const payload = JSON.parse(atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/")));
+        if (payload?.sub) setCurrentUserId(Number(payload.sub));
+      } catch (e) {
+        console.error("Invalid token:", e);
+      }
+    }
+  }, []);
+
+  // Handle Chat - Create Chat Room
+  const handleChat = async (applicant) => {
+    try {
+      if (!applicant.userId) {
+        toast.error('User ID tidak ditemukan pada applicant ini');
+        return;
+      }
+      if (!currentUserId) {
+        toast.error('Sesi anda tidak valid, silakan login ulang');
+        return;
+      }
+      
+      setIsLoading(true);
+      
+      // 1. Create Private Chat Room with participants
+      // name is optional for private chats usually, but we can set one for clarity
+      const roomName = `${campaign.title} - ${applicant.fullName}`.substring(0, 50);
+      
+      const payload = {
+        name: roomName,
+        type: "private",
+        participants: [applicant.userId, currentUserId]
+      };
+
+      await chatService.createChatRoom(payload);
+
+      toast.success('Chat started! Redirecting...');
+      
+      // 2. Navigate to Chat Page
+      navigate('/chat');
+      
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      toast.error('Gagal memulai chat');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Filter applicants
@@ -323,20 +380,70 @@ function ViewApplicants() {
             <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 2, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden', boxShadow: 6 }}>
               {/* Decorative gradient line */}
               <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: COLORS.gradient }} />
-              <Stack direction="row" alignItems="center" spacing={3}>
-                <Box sx={{ width: 100, height: 100, borderRadius: 2, background: COLORS.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 3 }}>
-                  <AssignmentIcon sx={{ fontSize: 56, color: '#000' }} />
+              <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" spacing={3}>
+                <Box sx={{ 
+                  width: { xs: '100%', md: 120 }, 
+                  height: { xs: 200, md: 120 }, 
+                  borderRadius: 2, 
+                  overflow: 'hidden',
+                  boxShadow: 3,
+                  position: 'relative'
+                }}>
+                  {campaign.banner_image ? (
+                    <Box 
+                      component="img" 
+                      src={campaign.banner_image} 
+                      alt={campaign.title}
+                      sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <Box sx={{ width: '100%', height: '100%', background: COLORS.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <AssignmentIcon sx={{ fontSize: 56, color: '#000' }} />
+                    </Box>
+                  )}
                 </Box>
+                
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, mb: 1 }}>
-                    View Applicants
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: COLORS.primary, mb: 1 }}>
-                    {campaign.title}
-                  </Typography>
-                  <Typography sx={{ fontSize: 15, color: COLORS.textSecondary }}>
-                    Campaign Status: <Box component="span" sx={{ fontWeight: 600, color: campaign.status === 'Active' ? '#28a745' : '#6c757d', display: 'inline' }}>{campaign.status}</Box>
-                  </Typography>
+                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
+                      {campaign.title}
+                    </Typography>
+                    <Paper 
+                      sx={{ 
+                        px: 1.5, py: 0.5, 
+                        bgcolor: campaign.status?.toLowerCase() === 'active' ? '#e6fffa' : '#f0f0f0',
+                        color: campaign.status?.toLowerCase() === 'active' ? '#047857' : '#64748b',
+                        borderRadius: 1,
+                        fontSize: '0.75rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      {campaign.status}
+                    </Paper>
+                  </Stack>
+                  
+                  {campaign.user && (
+                     <Typography sx={{ fontSize: 14, color: COLORS.textSecondary, mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                       By <Box component="span" sx={{ fontWeight: 600, color: COLORS.primary }}>{campaign.user.name}</Box>
+                     </Typography>
+                  )}
+
+                  <Stack direction="row" flexWrap="wrap" gap={2} sx={{ mb: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 14, color: COLORS.textSecondary }}>
+                       <strong>Price:</strong> {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(campaign.price_per_post || 0)} / post
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 14, color: COLORS.textSecondary }}>
+                       <strong>Deadline:</strong> {campaign.submission_deadline ? new Date(campaign.submission_deadline).toLocaleDateString() : '-'}
+                    </Box>
+                  </Stack>
+
+                  <Stack direction="row" spacing={1}>
+                    {Array.isArray(campaign.influencer_category) && campaign.influencer_category.map((cat, idx) => (
+                      <Paper key={idx} sx={{ px: 1.5, py: 0.5, bgcolor: '#f3f4f6', fontSize: 12, borderRadius: 4 }}>
+                        {cat}
+                      </Paper>
+                    ))}
+                  </Stack>
                 </Box>
               </Stack>
             </Paper>

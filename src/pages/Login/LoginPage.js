@@ -97,19 +97,20 @@ function LoginPage() {
       }
 
       // Store token
-      const token = data.token || data.access_token;
+      const token = data.data.token
+      console.log('Token:', token);
       if (token) {
         localStorage.setItem('token', token);
       }
-
+      console.log('User data:', data);
       // Store user data
-      const userData = data.user || data.data || {};
-      const userRole = userData.role || 'student';
-      const userName = userData.name || userData.email || 'User';
+      const userData = data.data.user 
+      const userRole = userData.role 
+      const userName = userData.name 
       
       localStorage.setItem('user', JSON.stringify({
         ...userData,
-        email: userData.email || email,
+        email: userData.email,
         role: userRole,
         name: userName,
         rememberMe

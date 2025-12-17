@@ -17,6 +17,7 @@ import CreateIcon from '@mui/icons-material/AddCircleOutline';
 import BrowseIcon from '@mui/icons-material/Search';
 import CollaborationsIcon from '@mui/icons-material/Handshake';
 import TransactionsIcon from '@mui/icons-material/Payment';
+import GavelIcon from '@mui/icons-material/Gavel';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import ChatIcon from '@mui/icons-material/Chat';
 import PeopleIcon from '@mui/icons-material/People';
@@ -62,6 +63,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
           { icon: DashboardIcon, label: 'Dashboard', path: '/admin/dashboard' },
           { icon: PeopleIcon, label: 'Manage Users', path: '/admin/users' },
           { icon: CampaignIcon, label: 'Manage Campaigns', path: '/admin/campaigns' },
+          { icon: GavelIcon, label: 'Review Submissions', path: '/admin/review-submissions' },
           { icon: TransactionsIcon, label: 'Transactions', path: '/admin/transactions' },
           { icon: AccountBalanceWalletIcon, label: 'Withdrawals', path: '/admin/withdrawals' },
           { icon: BarChartIcon, label: 'Reports', path: '/admin/reports' },

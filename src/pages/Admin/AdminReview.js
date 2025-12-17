@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography, Button, Card, Stack, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
-import AdminSidebar from '../../components/admin/AdminSidebar';
-import AdminTopbar from '../../components/admin/AdminTopbar';
+import { Sidebar, Topbar } from '../../components/common';
 import { COLORS } from '../../constants/colors';
 import adminReviewService from '../../services/adminReviewService';
 import { toast } from 'react-toastify';
@@ -15,7 +14,7 @@ function AdminReview() {
   const [campaigns, setCampaigns] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     total: 0,
@@ -32,7 +31,11 @@ function AdminReview() {
   });
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1000);
+    const handleResize = () => {
+        const mobile = window.innerWidth < 1000;
+        setIsMobile(mobile);
+        setSidebarOpen(!mobile);
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -125,9 +128,14 @@ function AdminReview() {
 
   return (
     <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <Box sx={{ flex: 1, ml: isMobile ? 0 : 32.5 }}>
-        <AdminTopbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Box sx={{ 
+          flex: 1, 
+          ml: !isMobile ? '260px' : 0, 
+          width: !isMobile ? 'calc(100% - 260px)' : '100%',
+          transition: 'margin-left 0.3s ease-in-out, width 0.3s ease-in-out'
+      }}>
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <Box sx={{ mt: 9, bgcolor: '#f7fafc', minHeight: 'calc(100vh - 72px)' }}>
           <Container maxWidth={false} sx={{ py: 4 }}>
             <Typography variant="h5" sx={{ fontWeight: 600, color: COLORS.textPrimary, mb: 4 }}>

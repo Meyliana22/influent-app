@@ -69,10 +69,16 @@ function PaymentConfirmation() {
         campaign_id: campaign.campaign_id,
         user_id: campaign.student_id,
       });
-      const redirectUrl = data?.snap.redirect_url;
-      window.open(redirectUrl, "_blank");
-      toast.success("✅ Pembayaran berhasil! Campaign Anda sekarang aktif dan dapat menerima pendaftaran dari influencer.");
-      navigate("/campaigns");
+      // Handle nested data structure from backend response
+      console.log("data", data);
+      const redirectUrl = data?.data?.snap.redirect_url;
+      console.log("redirectUrl", redirectUrl);
+      if (redirectUrl) {
+        // Full redirect to payment page
+        window.location.href = redirectUrl;
+      } else {
+        toast.error("Gagal mendapatkan link pembayaran");
+      }
     } catch (err) {
       toast.error("Error processing payment. Please try again.");
     }

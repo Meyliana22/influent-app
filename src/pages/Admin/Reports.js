@@ -101,11 +101,28 @@ function Reports() {
     ? reports 
     : reports.filter(r => r.status === filterStatus);
 
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1000);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1000;
+      setIsMobile(mobile);
+      setSidebarOpen(!mobile);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <Box sx={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
-      <Sidebar />
-      <Box sx={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
-        <Topbar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Box sx={{ 
+          marginLeft: !isMobile ? '260px' : 0, 
+          width: !isMobile ? 'calc(100% - 260px)' : '100%',
+          transition: 'margin-left 0.3s ease-in-out, width 0.3s ease-in-out'
+      }}>
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <Box sx={{ mt: 9, p: 4 }}>
           {/* Page Header */}
           <Box sx={{ mb: 4 }}>

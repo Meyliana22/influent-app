@@ -1,4 +1,5 @@
 import React from 'react';
+import { TextField, Box, Typography } from '@mui/material';
 import { COLORS } from '../../constants/colors';
 
 /**
@@ -12,7 +13,7 @@ import { COLORS } from '../../constants/colors';
  * @param {boolean} disabled - If true, input is disabled
  * @param {string} error - Error message to display (single string)
  * @param {array} errors - Multiple error messages to display (array of strings)
- * @param {object} style - Additional inline styles
+ * @param {object} sx - Additional styles
  */
 const Input = ({
   type = 'text',
@@ -24,95 +25,79 @@ const Input = ({
   disabled = false,
   error,
   errors = [],
-  style = {},
+  sx = {},
   ...props
 }) => {
-  const hasError = error || errors.length > 0;
+  const hasError = Boolean(error || errors.length > 0);
   
-  const inputStyles = {
-    width: '100%',
-    padding: '12px 16px',
-    border: `2px solid ${hasError ? COLORS.danger : COLORS.border}`,
-    borderRadius: '10px',
-    fontSize: '1rem',
-    fontFamily: 'Montserrat, Arial, sans-serif',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-    backgroundColor: disabled ? COLORS.backgroundLight : COLORS.white,
-    cursor: disabled ? 'not-allowed' : 'text',
-    boxSizing: 'border-box',
-    ...style,
-  };
-
-  const labelStyles = {
-    display: 'block',
-    marginBottom: '8px',
-    fontWeight: 600,
-    color: COLORS.textPrimary,
-    fontSize: '0.95rem',
-  };
-
-  const errorStyles = {
-    marginTop: '8px',
-    fontSize: '0.85rem',
-    color: COLORS.danger,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-  };
-
-  const errorItemStyles = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    marginBottom: '4px',
-  };
+  // Combine error messages
+  const errorMessage = error || (errors.length > 0 ? errors[0] : null);
+  
+  // Additional errors if any
+  const additionalErrors = errors.length > 1 ? errors.slice(1) : [];
 
   return (
-    <div style={{ marginBottom: '20px' }}>
+    <Box sx={{ mb: 2.5, width: '100%', ...sx }}>
       {label && (
-        <label style={labelStyles}>
+        <Typography
+          variant="subtitle2"
+          sx={{
+            mb: 1,
+            fontWeight: 600,
+            color: COLORS.textPrimary,
+            fontSize: '0.95rem'
+          }}
+        >
           {label}
           {required && <span style={{ color: COLORS.danger }}> *</span>}
-        </label>
+        </Typography>
       )}
-      <input
+      <TextField
         type={type}
+        fullWidth
         placeholder={placeholder}
         value={value}
         onChange={onChange}
         required={required}
         disabled={disabled}
-        style={inputStyles}
-        onFocus={(e) => {
-          if (!hasError) {
-            e.target.style.borderColor = COLORS.primary;
-          }
-        }}
-        onBlur={(e) => {
-          if (!hasError) {
-            e.target.style.borderColor = COLORS.border;
+        error={hasError}
+        helperText={errorMessage}
+        variant="outlined"
+        size="medium"
+        InputProps={{
+          sx: {
+            borderRadius: '10px',
+            bgcolor: disabled ? COLORS.backgroundLight : COLORS.white,
+            fontSize: '1rem',
+            '& fieldset': {
+              borderColor: hasError ? COLORS.danger : COLORS.border,
+            },
+            '&:hover fieldset': {
+              borderColor: hasError ? COLORS.danger : COLORS.primary,
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: hasError ? COLORS.danger : COLORS.primary,
+            },
           }
         }}
         {...props}
       />
-      {error && (
-        <div style={errorStyles}>
-          <span style={{ fontSize: '1rem' }}>❌</span>
-          {error}
-        </div>
-      )}
-      {errors.length > 0 && (
-        <div style={{ marginTop: '8px' }}>
-          {errors.map((err, index) => (
-            <div key={index} style={errorItemStyles}>
-              <span style={{ fontSize: '1rem', color: COLORS.danger }}>❌</span>
-              <span style={{ fontSize: '0.85rem', color: COLORS.danger }}>{err}</span>
-            </div>
+      
+      {additionalErrors.length > 0 && (
+        <Box sx={{ mt: 0.5 }}>
+          {additionalErrors.map((err, index) => (
+            <Typography 
+              key={index} 
+              variant="caption" 
+              color="error" 
+              sx={{ display: 'block', ml: 1.5 }}
+            >
+              {err}
+            </Typography>
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

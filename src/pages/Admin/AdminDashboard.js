@@ -104,21 +104,19 @@ function AdminDashboard() {
         status: 'pending', 
         limit: 5 
       });
+      console.log("Withdrawals Data : " , withdrawalsData);
       setRecentWithdrawals(
-        Array.isArray(withdrawalsData) ? withdrawalsData : 
-        (withdrawalsData.withdrawals || withdrawalsData.data || [])
-      );
+        Array.isArray(withdrawalsData.data.withdrawals) ? withdrawalsData.data.withdrawals : [])
+      
 
       // Fetch recent campaigns
       const campaignsData = await adminService.campaigns.getAllCampaigns();
-      const allCampaigns = Array.isArray(campaignsData) ? campaignsData : 
-        (campaignsData.campaigns || campaignsData.data || []);
+      const allCampaigns = Array.isArray(campaignsData.data) ? campaignsData.data : []
       setRecentCampaigns(allCampaigns.slice(0, 5));
 
       // Fetch recent users
       const usersData = await adminService.users.getAllUsers();
-      const allUsers = Array.isArray(usersData) ? usersData : 
-        (usersData.users || usersData.data || []);
+      const allUsers = Array.isArray(usersData.data) ? usersData.data : []
       setRecentUsers(allUsers.slice(0, 5));
 
     } catch (err) {

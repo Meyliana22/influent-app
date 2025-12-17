@@ -40,8 +40,7 @@ import {
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { COLORS } from '../../constants/colors';
-import AdminTopbar from '../../components/admin/AdminTopbar';
-import AdminSidebar from '../../components/admin/AdminSidebar';
+import { Sidebar, Topbar } from '../../components/common';
 import Loading from '../../components/common/Loading';
 import workSubmissionService from '../../services/workSubmissionService';
 
@@ -55,13 +54,18 @@ const AdminReviewSubmissions = () => {
   const [submissions, setSubmissions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [reviewModal, setReviewModal] = useState({ open: false, action: null });
   const [reviewNotes, setReviewNotes] = useState('');
   const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1000);
+    const handleResize = () => {
+        const mobile = window.innerWidth < 1000;
+        setIsMobile(mobile);
+        setSidebarOpen(!mobile);
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -148,10 +152,15 @@ const AdminReviewSubmissions = () => {
 
   return (
     <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
-      <AdminSidebar />
-      <Box sx={{ flex: 1, ml: isMobile ? 0 : 32.5, overflow: 'hidden' }}>
-        <AdminTopbar />
-        <Box sx={{ mt: 9, bgcolor: '#f5f5f5', minHeight: 'calc(100vh - 72px)', overflow: 'hidden' }}>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Box sx={{ 
+          flex: 1, 
+          ml: !isMobile ? '260px' : 0, 
+          width: !isMobile ? 'calc(100% - 260px)' : '100%',
+          transition: 'margin-left 0.3s ease-in-out, width 0.3s ease-in-out'
+      }}>
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Box sx={{ mt: 9, bgcolor: '#f5f5f5', minHeight: 'calc(100vh - 72px)' }}>
           <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, flexGrow: 1 }}>
           {/* Header */}
           <Box sx={{ mb: 4 }}>

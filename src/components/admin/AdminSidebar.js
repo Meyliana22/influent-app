@@ -1,18 +1,28 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { 
+  Box, 
+  List, 
+  ListItem, 
+  ListItemButton, 
+  ListItemIcon, 
+  ListItemText, 
+  Typography,
+  useTheme 
+} from '@mui/material';
 import { COLORS } from '../../constants/colors';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ChatIcon from '@mui/icons-material/Chat';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import GavelIcon from '@mui/icons-material/Gavel';
 import logoIcon from '../../assets/logoIcon.svg';
 
 function AdminSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
 
   const menuItems = [
     { path: '/admin/dashboard', icon: DashboardIcon, label: 'Dashboard' },
@@ -26,146 +36,122 @@ function AdminSidebar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div style={{
-      width: '260px',
-      minHeight: '100vh',
-      background: '#1a1f36',
-      padding: '24px 0',
-      position: 'fixed',
-      left: 0,
-      top: 0,
-      overflowY: 'auto'
-    }}>
-      {/* Logo */}
-      <div style={{
-        padding: '0 24px 32px',
-        borderBottom: '1px solid rgba(255,255,255,0.1)'
-      }}>
-        <div style={{
+    <Box
+      sx={{
+        width: 260,
+        height: '100vh',
+        bgcolor: '#1a1f36',
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        borderRight: '1px solid rgba(255,255,255,0.1)'
+      }}
+    >
+      {/* Logo Section */}
+      <Box
+        sx={{
+          p: 3,
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px'
-        }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
+          gap: 1.5
+        }}
+      >
+        <Box
+          sx={{
+            width: 40,
+            height: 40,
             background: COLORS.gradient,
-            borderRadius: '12px',
+            borderRadius: 3,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0
-          }}>
-            <img 
-              src={logoIcon} 
-              alt="Influent Logo" 
-              style={{ 
-                width: '24px', 
-                height: '24px',
-                objectFit: 'contain'
-              }} 
-            />
-          </div>
-          <div>
-            <div style={{
+          }}
+        >
+          <img 
+            src={logoIcon} 
+            alt="Influent Logo" 
+            style={{ 
+              width: 24, 
+              height: 24,
+              objectFit: 'contain'
+            }} 
+          />
+        </Box>
+        <Box>
+          <Typography
+            sx={{
               fontSize: '1.25rem',
               fontWeight: 700,
               color: '#fff',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              Influent
-            </div>
-            <div style={{
+              fontFamily: "'Inter', sans-serif",
+              lineHeight: 1.2
+            }}
+          >
+            Influent
+          </Typography>
+          <Typography
+            sx={{
               fontSize: '0.75rem',
               color: 'rgba(255,255,255,0.6)',
               fontWeight: 500
-            }}>
-              Admin Dashboard
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Menu Items */}
-      <div style={{ padding: '24px 0' }}>
-        {menuItems.map((item) => (
-          <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            style={{
-              width: '100%',
-              padding: '12px 24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              background: isActive(item.path) 
-                ? 'rgba(102, 126, 234, 0.15)' 
-                : 'transparent',
-              border: 'none',
-              borderLeft: isActive(item.path) 
-                ? '3px solid #667eea' 
-                : '3px solid transparent',
-              color: isActive(item.path) 
-                ? '#fff' 
-                : 'rgba(255,255,255,0.7)',
-              cursor: 'pointer',
-              fontSize: '0.95rem',
-              fontWeight: isActive(item.path) ? 600 : 500,
-              fontFamily: "'Inter', sans-serif",
-              transition: 'all 0.2s',
-              textAlign: 'left'
-            }}
-            onMouseEnter={(e) => {
-              if (!isActive(item.path)) {
-                e.target.style.background = 'rgba(255,255,255,0.05)';
-                e.target.style.color = '#fff';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isActive(item.path)) {
-                e.target.style.background = 'transparent';
-                e.target.style.color = 'rgba(255,255,255,0.7)';
-              }
             }}
           >
-            <item.icon 
-              sx={{
-                fontSize: 22,
-                color: isActive(item.path) ? '#fff' : 'rgba(255,255,255,0.7)'
-              }}
-            />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </div>
+            Admin Dashboard
+          </Typography>
+        </Box>
+      </Box>
 
-      {/* Bottom Section */}
-      {/* <div style={{
-        position: 'absolute',
-        bottom: '24px',
-        left: '24px',
-        right: '24px',
-        padding: '16px',
-        background: 'rgba(255,255,255,0.05)',
-        borderRadius: '12px',
-        border: '1px solid rgba(255,255,255,0.1)'
-      }}>
-        <div style={{
-          fontSize: '0.85rem',
-          color: 'rgba(255,255,255,0.6)',
-          marginBottom: '4px'
-        }}>
-          Version
-        </div>
-        <div style={{
-          fontSize: '0.9rem',
-          fontWeight: 600,
-          color: '#fff'
-        }}>
-          v1.0.0
-        </div>
-      </div> */}
-    </div>
+      {/* Menu Items */}
+      <List sx={{ py: 3 }}>
+        {menuItems.map((item) => (
+          <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton
+              onClick={() => navigate(item.path)}
+              sx={{
+                px: 3,
+                py: 1.5,
+                background: isActive(item.path) 
+                  ? 'rgba(102, 126, 234, 0.15)' 
+                  : 'transparent',
+                borderLeft: '3px solid',
+                borderColor: isActive(item.path) 
+                  ? '#667eea' 
+                  : 'transparent',
+                transition: 'all 0.2s',
+                '&:hover': {
+                  background: isActive(item.path) 
+                    ? 'rgba(102, 126, 234, 0.25)' 
+                    : 'rgba(255,255,255,0.05)',
+                }
+              }}
+            >
+              <ListItemIcon 
+                sx={{ 
+                  minWidth: 40,
+                  color: isActive(item.path) ? '#fff' : 'rgba(255,255,255,0.7)'
+                }}
+              >
+                <item.icon sx={{ fontSize: 22 }} />
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.label}
+                primaryTypographyProps={{
+                  fontSize: '0.95rem',
+                  fontWeight: isActive(item.path) ? 600 : 500,
+                  color: isActive(item.path) ? '#fff' : 'rgba(255,255,255,0.7)',
+                  fontFamily: "'Inter', sans-serif"
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Box>
   );
 }
 

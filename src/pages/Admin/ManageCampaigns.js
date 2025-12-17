@@ -47,7 +47,7 @@ import {
   Payment as TransactionsIcon,
   Receipt as ReceiptIcon
 } from '@mui/icons-material';
-import { AdminSidebar, AdminTopbar } from '../../components/admin';
+import { Sidebar, Topbar } from '../../components/common';
 import adminService from '../../services/adminService';
 
 function ManageCampaigns() {
@@ -354,16 +354,17 @@ function ManageCampaigns() {
 
   return (
     <Box sx={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <Box
         sx={{
-          marginLeft: isDesktop && sidebarOpen ? 32.5 : 0,
+          marginLeft: isDesktop && sidebarOpen ? '260px' : 0,
           width: isDesktop && sidebarOpen ? 'calc(100% - 260px)' : '100%',
           maxWidth: '100%',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          transition: 'margin-left 0.3s, width 0.3s'
         }}
       >
-        <AdminTopbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <Box sx={{ mt: 9, p: 4, backgroundColor: '#f8f9fa', minHeight: 'calc(100vh - 72px)' }}>
           {/* Page Header */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
@@ -639,17 +640,39 @@ function ManageCampaigns() {
                             </TableCell>
                             <TableCell>
                               <Stack direction="row" spacing={1} justifyContent="center">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleViewDetail(campaign)}
-                                  sx={{
-                                    color: '#667eea',
-                                    '&:hover': { bgcolor: 'rgba(102, 126, 234, 0.1)' }
-                                  }}
-                                  title="View Details"
-                                >
-                                  <ViewIcon fontSize="small" />
-                                </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleViewDetail(campaign)}
+                                    sx={{
+                                      color: '#667eea',
+                                      '&:hover': { bgcolor: 'rgba(102, 126, 234, 0.1)' }
+                                    }}
+                                    title="View Details"
+                                  >
+                                    <ViewIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleEditClick(campaign)}
+                                    sx={{
+                                      color: '#ed8936',
+                                      '&:hover': { bgcolor: 'rgba(237, 137, 54, 0.1)' }
+                                    }}
+                                    title="Edit Campaign"
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDeleteClick(campaign)}
+                                    sx={{
+                                      color: '#ef4444',
+                                      '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
+                                    }}
+                                    title="Delete Campaign"
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
                               </Stack>
                             </TableCell>
                           </TableRow>
@@ -1112,7 +1135,8 @@ function ManageCampaigns() {
                   fullWidth
                 >
                   <MenuItem value="draft">Draft</MenuItem>
-                  <MenuItem value="pending_review">Pending Review</MenuItem>
+                  <MenuItem value="admin_review">Admin Review</MenuItem>
+                  <MenuItem value="pending_payment">Pending Payment</MenuItem>
                   <MenuItem value="active">Active</MenuItem>
                   <MenuItem value="completed">Completed</MenuItem>
                   <MenuItem value="cancelled">Cancelled</MenuItem>
