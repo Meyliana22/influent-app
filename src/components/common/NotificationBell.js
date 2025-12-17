@@ -74,22 +74,22 @@ const NotificationBell = () => {
   };
 
   // Polling mechanism - every 15 seconds
-  useEffect(() => {
-    // Initial fetch
-    fetchUnreadCount();
+  // useEffect(() => {
+  //   // Initial fetch
+  //   fetchUnreadCount();
 
-    // Start polling
-    pollingIntervalRef.current = setInterval(() => {
-      fetchUnreadCount();
-    }, 15000); // 15 seconds
+  //   // Start polling
+  //   pollingIntervalRef.current = setInterval(() => {
+  //     fetchUnreadCount();
+  //   }, 15000); // 15 seconds
 
-    // Cleanup on unmount
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-      }
-    };
-  }, []);
+  //   // Cleanup on unmount
+  //   return () => {
+  //     if (pollingIntervalRef.current) {
+  //       clearInterval(pollingIntervalRef.current);
+  //     }
+  //   };
+  // }, []);
 
   // Handle bell icon click
   const handleClick = (event) => {

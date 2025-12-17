@@ -132,13 +132,18 @@ export async function register(userData) {
 }
 
 /**
- * Verify email with token
- * @param {string} token - Verification token from email
+ * Verify email with OTP
+ * @param {string} email - User email
+ * @param {string} otp - Verification code
  * @returns {Promise<Object>} Response with verification status
  */
-export async function verifyEmail(token) {
-  const response = await fetch(`${API_BASE_URL}/auth/verify-email?token=${token}`, {
-    method: 'GET',
+export async function verifyEmail(email, otp) {
+  const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, otp }),
   });
 
   if (!response.ok) {

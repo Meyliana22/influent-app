@@ -406,7 +406,7 @@ export const mapApiToFrontend = (apiCampaign) => {
       : "",
     content_guidelines: apiCampaign.content_guidelines || "",
     caption_guidelines: apiCampaign.caption_guidelines || "",
-    contentReference: apiCampaign.content_reference || "",
+    content_reference: apiCampaign.content_reference || "",
     influencer_count: apiCampaign.influencer_count || 1,
     price_per_post: apiCampaign.price_per_post
       ? String(apiCampaign.price_per_post)
@@ -459,22 +459,6 @@ export const activateCampaign = async (campaignId) => {
 
 /**
  * Get dashboard statistics for UMKM
- * Best Practice: Single endpoint that returns aggregated dashboard data
- * This reduces multiple API calls and improves performance
- * 
- * Expected API Response:
- * {
- *   success: true,
- *   data: {
- *     ongoing_campaigns: 5,        // Campaigns with status 'ongoing'
- *     pending_applicants: 12,      // Applicants with status 'pending' or 'applied'
- *     content_to_review: 8,        // Work submissions with status 'submitted' or 'pending_review'
- *     completed_campaigns: 3       // Campaigns with status 'completed'
- *   }
- * }
- * 
- * Backend endpoint should be: GET /api/v1/umkm/dashboard/stats
- * or GET /api/v1/campaigns/dashboard-stats (if campaigns controller)
  */
 export const getDashboardStats = async () => {
   try {
@@ -516,6 +500,25 @@ export const getPaymentStatus = async (campaignId) => {
   }
 };
 
+/**
+ * Distribute payment to all eligible students (work around)
+ */
+export const distributePayment = async (campaignId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-payments/pay-all`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ campaign_id: campaignId }),
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error distributing payment:", error);
+    throw error;
+  }
+};
+
 export default {
   getCampaigns,
   getCampaignsByCategory,
@@ -534,4 +537,5 @@ export default {
   applyToCampaign,
   getCampaignUsers,
   updateCampaignUser,
+  distributePayment,
 };

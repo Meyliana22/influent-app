@@ -42,52 +42,63 @@ export const getSubmissionById = async (submissionId) => {
 };
 
 /**
- * Review a submission (approve/reject/request revision)
+ * Approve a submission
  */
-export const reviewSubmission = async (submissionId, reviewData) => {
+export const approveSubmission = async (submissionId, notes = '') => {
   try {
-    const response = await authFetch(`${API_BASE_URL}/work-submissions/${submissionId}/review`, {
+    const response = await authFetch(`${API_BASE_URL}/work-submissions/${submissionId}/approve`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(reviewData),
+      body: JSON.stringify({ review_notes: notes }),
     });
+    console.log(`Approved submission ${submissionId}`);
     return await handleResponse(response);
   } catch (error) {
-    console.error("Error reviewing submission:", error);
+    console.error("Error approving submission:", error);
     throw error;
   }
-};
-
-/**
- * Approve a submission
- */
-export const approveSubmission = async (submissionId, notes = '') => {
-  return reviewSubmission(submissionId, {
-    status: 'approved',
-    review_notes: notes,
-  });
 };
 
 /**
  * Reject a submission
  */
 export const rejectSubmission = async (submissionId, notes) => {
-  return reviewSubmission(submissionId, {
-    status: 'rejected',
-    review_notes: notes,
-  });
+  try {
+    const response = await authFetch(`${API_BASE_URL}/work-submissions/${submissionId}/reject`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ review_notes: notes }),
+    });
+    console.log(`Rejected submission ${submissionId}`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error rejecting submission:", error);
+    throw error;
+  }
 };
 
 /**
  * Request revision for a submission
  */
 export const requestRevision = async (submissionId, notes) => {
-  return reviewSubmission(submissionId, {
-    status: 'revision_requested',
-    review_notes: notes,
-  });
+  try {
+    const response = await authFetch(`${API_BASE_URL}/work-submissions/${submissionId}/request-revisions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ review_notes: notes }),
+    });
+    console.log(`Requested revision for submission ${submissionId}`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error requesting revision:", error);
+    throw error;
+  }
 };
 
 /**
@@ -103,12 +114,51 @@ export const getRejectedSubmissions = async () => {
   }
 };
 
+/**
+ * Create a new work submission
+ */
+export const createWorkSubmission = async (data) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/work-submissions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error creating submission:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update an existing work submission
+ */
+export const updateWorkSubmission = async (id, data) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/work-submissions/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error updating submission:", error);
+    throw error;
+  }
+};
+
 export default {
   getCampaignSubmissions,
   getSubmissionById,
-  reviewSubmission,
   approveSubmission,
   rejectSubmission,
   requestRevision,
   getRejectedSubmissions,
+  createWorkSubmission,
+  updateWorkSubmission,
 };

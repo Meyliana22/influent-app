@@ -33,6 +33,13 @@ import Button from '@mui/material/Button';
 
 import { useToast } from '../../hooks/useToast';
 
+const API_BASE_URL = 'http://localhost:8000/api/uploads';
+
+const getImageUrl = (imageName) => {
+  console.log(`${API_BASE_URL}/${imageName}`);
+  return `${API_BASE_URL}/${imageName}`;
+};
+
 function BrowseCampaigns() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -500,7 +507,7 @@ function BrowseCampaigns() {
 
                 return (
                   <Paper key={campaign.campaign_id} elevation={0} sx={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', transition: 'all 0.3s', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', cursor: 'pointer', height: '100%', '&:hover': { boxShadow: '0 8px 24px rgba(0,0,0,0.12)', transform: 'translateY(-4px)' } }}>
-                    <Box sx={{ background: campaign.banner_image ? `url(${campaign.banner_image}) center/cover` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', height: '160px', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', p: '12px', position: 'relative' }}>
+                    <Box sx={{ background: campaign.banner_image ? `url(${getImageUrl(campaign.banner_image)}) center/cover` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', height: '160px', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', p: '12px', position: 'relative' }}>
                       <Box sx={{ ...statusStyle, p: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize' }}>{campaign.status}</Box>
 
                       {campaign.rating && (
@@ -614,7 +621,7 @@ function BrowseCampaigns() {
           <Box sx={{ maxHeight: '70vh', overflowY: 'auto' }}>
             {/* Banner Image */}
             {selectedCampaign.banner_image && (
-              <Box sx={{ width: '100%', height: '200px', background: `url(${selectedCampaign.banner_image}) center/cover`, borderRadius: '12px', mb: '24px' }} />
+              <Box sx={{ width: '100%', height: '200px', background: `url(${getImageUrl(selectedCampaign.banner_image)}) center/cover`, borderRadius: '12px', mb: '24px' }} />
             )}
 
             {/* Campaign Details Grid */}

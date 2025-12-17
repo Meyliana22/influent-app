@@ -89,6 +89,27 @@ function CampaignList() {
     }
   };
 
+  const handleDistributePayment = async (campaignId) => {
+    try {
+      if (!window.confirm("Are you sure you want to distribute payments to all eligible influencers for this campaign?")) return;
+      
+      await campaignService.distributePayment(campaignId);
+      toast.success("Payments distributed successfully!");
+      
+      // Refresh list
+      const params = { page: currentPage, limit: 10 };   
+      if (filter) params.status = filter;
+      if (search) params.title = search;
+      params.sort = 'updated_at';
+      params.order = 'DESC';
+      const response = await campaignService.getCampaigns(params);
+      setCampaigns(response.data || []);
+    } catch (error) {
+      console.error("Payment distribution failed:", error);
+      toast.error("Failed to distribute payments");
+    }
+  };
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1000);
     window.addEventListener('resize', handleResize);
@@ -567,27 +588,50 @@ function CampaignList() {
                       </>
                     )}
                     {campaign.status && campaign.status.toLowerCase() === 'completed' && (
-                      <Button
-                        variant="contained"
-                        startIcon={<AssessmentIcon />}
-                        onClick={e => {
-                          e.stopPropagation();
-                          navigate(`/campaign/${campaign.campaign_id}/report`);
-                        }}
-                        sx={{
-                          bgcolor: '#8b5cf6',
-                          color: '#fff',
-                          fontWeight: 600,
-                          borderRadius: 2,
-                          textTransform: 'none',
-                          fontSize: 14,
-                          boxShadow: 'none',
-                          flex: 1,
-                          '&:hover': { bgcolor: '#7c3aed' }
-                        }}
-                      >
-                        Lihat Laporan
-                      </Button>
+                      <>
+                        <Button
+                          variant="contained"
+                          startIcon={<CreditCardIcon />}
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleDistributePayment(campaign.campaign_id);
+                          }}
+                          sx={{
+                            bgcolor: '#059669',
+                            color: '#fff',
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontSize: 14,
+                            boxShadow: 'none',
+                            flex: 1,
+                            '&:hover': { bgcolor: '#047857' }
+                          }}
+                        >
+                          Distribute Payment
+                        </Button>
+                        <Button
+                          variant="contained"
+                          startIcon={<AssessmentIcon />}
+                          onClick={e => {
+                            e.stopPropagation();
+                            navigate(`/campaign/${campaign.campaign_id}/report`);
+                          }}
+                          sx={{
+                            bgcolor: '#8b5cf6',
+                            color: '#fff',
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontSize: 14,
+                            boxShadow: 'none',
+                            flex: 1,
+                            '&:hover': { bgcolor: '#7c3aed' }
+                          }}
+                        >
+                          Lihat Laporan
+                        </Button>
+                      </>
                     )}
                   </Stack>
                 </Box>

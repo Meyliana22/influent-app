@@ -25,11 +25,13 @@ import ManageWithdrawals from './pages/Admin/ManageWithdrawals';
 import Reports from './pages/Admin/Reports';
 import AdminReviewSubmissions from './pages/Admin/AdminReviewSubmissions';
 import UMKMDashboard from './pages/UMKM/UMKMDashboard';
-// import StudentDashboard from './pages/Student/StudentDashboard';
+import StudentDashboard from './pages/Student/StudentDashboard';
 import BrowseCampaigns from './pages/Student/BrowseCampaigns';
 import MyApplications from './pages/Student/MyApplications';
 import Collaborations from './pages/Student/Collaborations';
 import Transactions from './pages/Student/Transactions';
+import CampaignWorkPage from './pages/Student/CampaignWorkPage';
+import StudentProfile from './pages/Student/StudentProfile';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -100,9 +102,13 @@ function App() {
           <Route path="/umkm/campaigns" element={<CampaignList />} />
           
           {/* Student Routes */}
-          {/* <Route path="/student/dashboard" element={<StudentDashboard />} /> */}
+          <Route path="/student/dashboard" element={<StudentDashboard />} />
           <Route path="/student/browse-campaigns" element={<BrowseCampaigns />} />
           <Route path="/student/my-applications" element={<MyApplications />} />
+          <Route path="/student/campaign/:id/work" element={<CampaignWorkPage />} />
+
+
+          <Route path="/student/profile" element={<StudentProfile />} />
           <Route path="/student/collaborations" element={<Collaborations />} />
           <Route path="/student/transactions" element={<Transactions />} />
           

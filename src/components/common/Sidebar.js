@@ -75,7 +75,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
         return [
           { icon: DashboardIcon, label: 'Dashboard', path: '/student/dashboard' },
           { icon: BrowseIcon, label: 'Browse Campaigns', path: '/student/browse-campaigns' },
-          { icon: CollaborationsIcon, label: 'My Collaborations', path: '/student/collaborations' },
+          { icon: CollaborationsIcon, label: 'My Collaborations', path: '/student/my-applications' },
           { icon: TransactionsIcon, label: 'Transactions', path: '/student/transactions' },
           { icon: ChatIcon, label: 'Chat', path: '/chat' },
         ];

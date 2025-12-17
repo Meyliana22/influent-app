@@ -8,17 +8,29 @@ import {
   Paper, 
   Button, 
   CircularProgress, 
-  Grid,
   Chip,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import { 
+  Visibility as VisibilityIcon, 
+  Cancel as CancelIcon,
+  Assignment as AssignmentIcon
+} from '@mui/icons-material';
 import * as campaignService from '../../services/campaignService';
 import { useToast } from '../../hooks/useToast';
 
 const MyApplications = () => {
   const navigate = useNavigate();
-  const toast = useToast();
+  const { showToast } = useToast(); // Fix destructuring
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -49,7 +61,7 @@ const MyApplications = () => {
       setApplications(data);
     } catch (error) {
       console.error('Error fetching applications:', error);
-      toast.showToast('Failed to load applications', 'error');
+      showToast('Failed to load applications', 'error');
     } finally {
       setLoading(false);
     }
@@ -57,6 +69,7 @@ const MyApplications = () => {
 
   useEffect(() => {
     fetchApplications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCancel = async (applicationId) => {
@@ -66,11 +79,11 @@ const MyApplications = () => {
       await campaignService.updateCampaignUser(applicationId, {
         application_status: 'cancelled'
       });
-      toast.showToast('Application cancelled', 'success');
+      showToast('Application cancelled', 'success');
       fetchApplications();
     } catch (error) {
       console.error('Cancel error:', error);
-      toast.showToast('Failed to cancel application', 'error');
+      showToast('Failed to cancel application', 'error');
     }
   };
 
@@ -141,111 +154,90 @@ const MyApplications = () => {
               </Button>
             </Paper>
           ) : (
-            <Grid container spacing={3}>
-              {applications.map((app) => (
-                <Grid item xs={12} md={6} lg={4} key={app.id || app.campaign_user_id}>
-                  <Paper 
-                    elevation={0}
-                    sx={{ 
-                      p: 3, 
-                      borderRadius: 3,
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      border: '1px solid #e2e8f0',
-                      transition: 'transform 0.2s, box-shadow 0.2s',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-                      }
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box>
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 3 }}>
+              <Table sx={{ minWidth: 650 }}>
+                <TableHead sx={{ bgcolor: '#f8fafc' }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Campaign</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Date Applied</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="right">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {applications.map((app) => (
+                    <TableRow 
+                      key={app.id || app.campaign_user_id}
+                      sx={{ '&:hover': { bgcolor: '#f8f9fa' } }}
+                    >
+                      <TableCell>
+                         <Typography variant="body1" fontWeight={600}>
+                            {app.campaign?.title || app.campaign_title || `Campaign #${app.campaign_id}`}
+                         </Typography>
+                         {app.campaign?.price_per_post && (
+                            <Typography variant="caption" color="textSecondary">
+                              Rp {Number(app.campaign.price_per_post).toLocaleString('id-ID')} / post
+                            </Typography>
+                         )}
+                      </TableCell>
+                      <TableCell>
+                         <Chip 
+                            label={app.campaign?.campaign_category || 'Campaign'} 
+                            size="small" 
+                            variant="outlined" 
+                            sx={{ borderRadius: 1 }}
+                         />
+                      </TableCell>
+                      <TableCell>
                         <Chip 
-                          label={app.campaign?.campaign_category || 'Campaign'} 
-                          size="small" 
-                          sx={{ 
-                            fontSize: '0.7rem', 
-                            height: 20, 
-                            mb: 1,
-                            bgcolor: '#f0f4ff',
-                            color: '#667eea',
-                            fontWeight: 600
-                          }} 
-                        />
-                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', lineHeight: 1.3 }}>
-                          {app.campaign?.title || app.campaign_title || `Campaign #${app.campaign_id}`}
-                        </Typography>
-                      </Box>
-                      <Chip 
-                        label={app.application_status || 'Pending'} 
-                        color={getStatusColor(app.application_status)}
-                        size="small"
-                        sx={{ fontWeight: 600, fontSize: '0.75rem', height: 24 }}
-                      />
-                    </Box>
-
-                    <Box sx={{ mb: 2, flexGrow: 1 }}>
-                      <Typography variant="body2" color="textSecondary" sx={{ mb: 0.5 }}>
-                        Applied: {new Date(app.created_at || app.applied_at || Date.now()).toLocaleDateString()}
-                      </Typography>
-                      {app.campaign?.price_per_post && (
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1a1f36' }}>
-                          Rp {Number(app.campaign.price_per_post).toLocaleString('id-ID')} / post
-                        </Typography>
-                      )}
-                    </Box>
-                    
-                    {app.application_notes && (
-                      <Box sx={{ bgcolor: '#f8fafc', p: 1.5, borderRadius: 2, border: '1px solid #e2e8f0', mb: 2 }}>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mb: 0.5 }}>
-                          My Notes:
-                        </Typography>
-                        <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#334155' }}>
-                          {app.application_notes}
-                        </Typography>
-                      </Box>
-                    )}
-
-                    <Box sx={{ display: 'flex', gap: 1, mt: 'auto', pt: 2, borderTop: '1px solid #f1f5f9' }}>
-                      {app.application_status === 'pending' && (
-                        <Button 
-                          variant="outlined" 
-                          color="error" 
+                          label={app.application_status || 'Pending'} 
+                          color={getStatusColor(app.application_status)}
                           size="small"
-                          fullWidth
-                          onClick={() => handleCancel(app.id || app.campaign_user_id)}
-                          sx={{ borderRadius: 1.5, textTransform: 'none', fontWeight: 600 }}
-                        >
-                          Cancel
-                        </Button>
-                      )}
-                      
-                      <Button 
-                        variant={app.application_status === 'accepted' ? "contained" : "outlined"}
-                        size="small"
-                        fullWidth
-                        sx={{ 
-                          borderRadius: 1.5, 
-                          textTransform: 'none', 
-                          fontWeight: 600,
-                          bgcolor: app.application_status === 'accepted' ? '#667eea' : 'transparent',
-                          borderColor: app.application_status === 'accepted' ? '#667eea' : '#e2e8f0',
-                          color: app.application_status === 'accepted' ? '#fff' : '#64748b',
-                          '&:hover': {
-                            bgcolor: app.application_status === 'accepted' ? '#5a67d8' : '#f8fafc'
-                          }
-                        }}
-                        onClick={() => navigate(`/campaign/${app.campaign_id}/detail`)} // Verify route exists
-                      >
-                        Details
-                      </Button>
-                    </Box>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
+                          sx={{ fontWeight: 600, textTransform: 'capitalize' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {new Date(app.created_at || app.applied_at || Date.now()).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell align="right">
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                          {app.application_status === 'pending' && (
+                            <Tooltip title="Cancel Application">
+                               <IconButton 
+                                 size="small" 
+                                 color="error"
+                                 onClick={() => handleCancel(app.id || app.campaign_user_id)}
+                               >
+                                 <CancelIcon fontSize="small" />
+                               </IconButton>
+                            </Tooltip>
+                          )}
+                          
+                          <Button 
+                            variant="outlined"
+                            size="small"
+                            startIcon={app.application_status === 'accepted' ? <AssignmentIcon /> : <VisibilityIcon />}
+                            sx={{ borderRadius: 2, textTransform: 'none' }}
+                            onClick={() => {
+                              if (app.application_status === 'accepted') {
+                                 navigate(`/student/campaign/${app.campaign_id || app.campaign?.id}/work`);
+                              } else {
+                                 // Original detail or maybe just a summary view?
+                                 // For now let's show info or navigate to public detail if available
+                                 showToast('Wait for acceptance to submit work', 'info');
+                              }
+                            }}
+                          >
+                            {app.application_status === 'accepted' ? 'Work' : 'Details'}
+                          </Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </Container>
       </Box>

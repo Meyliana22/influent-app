@@ -22,6 +22,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import RateReviewIcon from '@mui/icons-material/RateReview';
+import { toast } from 'react-toastify';
 
 function CampaignDetail() {
   const { id } = useParams();
@@ -34,7 +36,7 @@ function CampaignDetail() {
     pending: 0,
     progressPercentage: 0
   });
-  
+
   // Responsive state for sidebar
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1000);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
@@ -154,7 +156,7 @@ function CampaignDetail() {
         if (today > endDate) {
           // Campaign ended, check if payouts are done
           if (campaign.payoutCompleted) return 'closed';
-          return 'awaiting-payout';
+          return 'completed';
         }
       }
       
@@ -245,6 +247,15 @@ function CampaignDetail() {
                 View Applicants
               </Button>
               <Button
+                variant="contained"
+                color="success"
+                onClick={() => navigate(`/campaign/${id}/review-submissions`)}
+                sx={{ flex: 1, py: 1.5, fontWeight: 700, color: 'white' }}
+                startIcon={<RateReviewIcon />}
+              >
+                Review Submissions
+              </Button>
+              <Button
                 variant="outlined"
                 color="primary"
                 onClick={() => navigate(`/campaign-edit/${id}`)}
@@ -321,15 +332,27 @@ function CampaignDetail() {
                   </Typography>
                 </Grid>
               </Grid>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => navigate(`/campaign/${id}/applicants`)}
-                fullWidth
-                sx={{ py: 1.5, fontWeight: 700 }}
-              >
-                Lihat Detail Campaign
-              </Button>
+              <Stack spacing={2}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => navigate(`/campaign/${id}/applicants`)}
+                  fullWidth
+                  sx={{ py: 1.5, fontWeight: 700 }}
+                >
+                  Lihat Applicants
+                </Button>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => navigate(`/campaign/${id}/review-submissions`)}
+                  fullWidth
+                  sx={{ py: 1.5, fontWeight: 700, color: 'white' }}
+                  startIcon={<RateReviewIcon />}
+                >
+                  Review Submissions
+                </Button>
+              </Stack>
             </Card>
             {/* Influencer Status */}
             {selectedInfluencers.length > 0 && (
@@ -372,7 +395,7 @@ function CampaignDetail() {
           </Box>
         );
 
-      case 'awaiting-payout':
+      case 'completed':
         return (
           <Card sx={{ p: 4, mt: 3 }}>
             <Stack direction="row" alignItems="center" spacing={2} mb={3}>
@@ -443,10 +466,21 @@ function CampaignDetail() {
                 <Typography color={COLORS.textSecondary}>Sudah Upload:</Typography>
                 <Typography fontWeight={600} color={COLORS.success}>{stats.completed}</Typography>
               </Stack>
-              <Stack direction="row" justifyContent="space-between">
+              <Stack direction="row" justifyContent="space-between" mb={2}>
                 <Typography color={COLORS.textSecondary}>Belum Upload:</Typography>
                 <Typography fontWeight={600} color={COLORS.danger}>{stats.pending}</Typography>
               </Stack>
+              
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => navigate(`/campaign/${id}/review-submissions`)}
+                fullWidth
+                sx={{ mt: 2, fontWeight: 700, color: 'white' }}
+                startIcon={<RateReviewIcon />}
+              >
+                Review Submissions
+              </Button>
             </Paper>
           </Card>
         );
@@ -689,6 +723,7 @@ function CampaignDetail() {
             )}
 
             {/* Phase-specific Content */}
+            
             {renderPhaseContent()}
           </Box>
         </Box>
