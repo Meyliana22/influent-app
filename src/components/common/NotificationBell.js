@@ -64,8 +64,11 @@ const NotificationBell = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const response = await getNotifications({ limit: 5, page: 1 });
-      setNotifications(response.data || []);
+      // Fetch all and slice for dropdown
+      const data = await getNotifications({ order: 'DESC' });
+      // Ensure data is an array before slicing
+      const list = Array.isArray(data.data) ? data.data : [];
+      setNotifications(list.slice(0, 5));
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -74,22 +77,22 @@ const NotificationBell = () => {
   };
 
   // Polling mechanism - every 15 seconds
-  // useEffect(() => {
-  //   // Initial fetch
-  //   fetchUnreadCount();
+  useEffect(() => {
+    // Initial fetch
+    fetchUnreadCount();
 
-  //   // Start polling
-  //   pollingIntervalRef.current = setInterval(() => {
-  //     fetchUnreadCount();
-  //   }, 15000); // 15 seconds
+    // Start polling
+    pollingIntervalRef.current = setInterval(() => {
+      fetchUnreadCount();
+    }, 15000); // 15 seconds
 
-  //   // Cleanup on unmount
-  //   return () => {
-  //     if (pollingIntervalRef.current) {
-  //       clearInterval(pollingIntervalRef.current);
-  //     }
-  //   };
-  // }, []);
+    // Cleanup on unmount
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Handle bell icon click
   const handleClick = (event) => {
@@ -306,78 +309,76 @@ const NotificationBell = () => {
             </Typography>
           </Box>
         ) : (
-          <>
-            {notifications.map((notification) => (
-              <MenuItem
-                key={notification.notification_id}
-                onClick={() => handleNotificationClick(notification)}
-                sx={{
-                  px: 2,
-                  py: 1.5,
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 1.5,
-                  bgcolor: notification.is_read ? 'transparent' : 'rgba(102, 126, 234, 0.05)',
-                  borderLeft: notification.is_read ? 'none' : '3px solid #667eea',
-                  '&:hover': {
-                    bgcolor: 'rgba(102, 126, 234, 0.1)',
-                  },
-                }}
-              >
-                {/* Icon */}
-                <Box sx={{ fontSize: 24, flexShrink: 0, mt: 0.5 }}>
-                  {getNotificationIcon(notification.type)}
-                </Box>
+          notifications.map((notification) => (
+            <MenuItem
+              key={notification.notification_id || notification.id}
+              onClick={() => handleNotificationClick(notification)}
+              sx={{
+                px: 2,
+                py: 1.5,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 1.5,
+                bgcolor: notification.is_read ? 'transparent' : 'rgba(102, 126, 234, 0.05)',
+                borderLeft: notification.is_read ? 'none' : '3px solid #667eea',
+                '&:hover': {
+                  bgcolor: 'rgba(102, 126, 234, 0.1)',
+                },
+              }}
+            >
+              {/* Icon */}
+              <Box sx={{ fontSize: 24, flexShrink: 0, mt: 0.5 }}>
+                {getNotificationIcon(notification.type)}
+              </Box>
 
-                {/* Content */}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    sx={{
-                      fontSize: 13,
-                      fontWeight: notification.is_read ? 500 : 700,
-                      color: '#333',
-                      mb: 0.5,
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {notification.title}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: 12,
-                      color: '#666',
-                      mb: 0.5,
-                      lineHeight: 1.4,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                    }}
-                  >
-                    {notification.message}
-                  </Typography>
-                  <Typography sx={{ fontSize: 11, color: '#999', mt: 0.5 }}>
-                    {formatTimeAgo(notification.created_at)}
-                  </Typography>
-                </Box>
+              {/* Content */}
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography
+                  sx={{
+                    fontSize: 13,
+                    fontWeight: notification.is_read ? 500 : 700,
+                    color: '#333',
+                    mb: 0.5,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {notification.title}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: 12,
+                    color: '#666',
+                    mb: 0.5,
+                    lineHeight: 1.4,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {notification.message}
+                </Typography>
+                <Typography sx={{ fontSize: 11, color: '#999', mt: 0.5 }}>
+                  {formatTimeAgo(notification.created_at)}
+                </Typography>
+              </Box>
 
-                {/* Read indicator */}
-                {!notification.is_read && (
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      bgcolor: '#667eea',
-                      flexShrink: 0,
-                      mt: 1,
-                    }}
-                  />
-                )}
-              </MenuItem>
-            ))}
-          </>
+              {/* Read indicator */}
+              {!notification.is_read && (
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    bgcolor: '#667eea',
+                    flexShrink: 0,
+                    mt: 1,
+                  }}
+                />
+              )}
+            </MenuItem>
+          ))
         )}
       </Menu>
     </>

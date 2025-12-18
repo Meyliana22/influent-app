@@ -9,16 +9,15 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api
 
 /**
  * Get all notifications for current user
- * @param {Object} params - Query parameters (page, limit, is_read, type)
+ * @param {Object} params - Query parameters (is_read, sort, order)
  */
 export const getNotifications = async (params = {}) => {
   try {
     const queryParams = new URLSearchParams();
     
-    if (params.page) queryParams.append('page', params.page);
-    if (params.limit) queryParams.append('limit', params.limit);
     if (params.is_read !== undefined) queryParams.append('is_read', params.is_read);
-    if (params.type) queryParams.append('type', params.type);
+    if (params.sort) queryParams.append('sort', params.sort);
+    if (params.order) queryParams.append('order', params.order);
 
     const queryString = queryParams.toString();
     const url = `${API_BASE_URL}/notifications${queryString ? `?${queryString}` : ''}`;
@@ -32,13 +31,28 @@ export const getNotifications = async (params = {}) => {
 };
 
 /**
+ * Get unread notifications
+ */
+export const getUnreadNotifications = async () => {
+    try {
+      const response = await authFetch(`${API_BASE_URL}/notifications/unread`);
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching unread notifications:', error);
+      throw error;
+    }
+};
+
+/**
  * Get unread notification count (for badge)
+ * Wrapper around getUnreadNotifications
  */
 export const getUnreadCount = async () => {
   try {
-    const response = await authFetch(`${API_BASE_URL}/notifications/unread-count`);
-    const data = await response.json();
-    return data.unread_count || 0;
+    const response = await getUnreadNotifications();
+    // Handle both array response and { data: [] } response structure
+    const notifications = Array.isArray(response) ? response : (Array.isArray(response?.data) ? response.data : []);
+    return notifications.length;
   } catch (error) {
     console.error('Error fetching unread count:', error);
     return 0;
@@ -52,7 +66,7 @@ export const getUnreadCount = async () => {
 export const markAsRead = async (notificationId) => {
   try {
     const response = await authFetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
-      method: 'PATCH',
+      method: 'PUT',
     });
     return await response.json();
   } catch (error) {
@@ -67,7 +81,7 @@ export const markAsRead = async (notificationId) => {
 export const markAllAsRead = async () => {
   try {
     const response = await authFetch(`${API_BASE_URL}/notifications/mark-all-read`, {
-      method: 'PATCH',
+      method: 'POST',
     });
     return await response.json();
   } catch (error) {
@@ -76,26 +90,10 @@ export const markAllAsRead = async () => {
   }
 };
 
-/**
- * Delete notification
- * @param {number} notificationId
- */
-export const deleteNotification = async (notificationId) => {
-  try {
-    const response = await authFetch(`${API_BASE_URL}/notifications/${notificationId}`, {
-      method: 'DELETE',
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Error deleting notification:', error);
-    throw error;
-  }
-};
-
 export default {
   getNotifications,
+  getUnreadNotifications,
   getUnreadCount,
   markAsRead,
   markAllAsRead,
-  deleteNotification,
 };
