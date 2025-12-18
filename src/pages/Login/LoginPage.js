@@ -1,13 +1,17 @@
-﻿import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import LockOutlineIcon from '@mui/icons-material/LockOutlined';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
 import { useToast } from '../../hooks/useToast';
 import { SubmitButton } from '../../components/common';
+import authService from '../../services/authService';
 import eyeIcon from '../../assets/auth/eye.svg';
 import eyeOffIcon from '../../assets/auth/eye-off.svg';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +19,20 @@ function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [errors, setErrors] = useState({ email: [], password: [] });
+
+  // Check for success message from registration
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      if (location.state?.email) {
+        setEmail(location.state.email);
+      }
+      // Clear the state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -39,33 +56,88 @@ function LoginPage() {
     if (!password) {
       newErrors.password.push('Password tidak boleh kosong');
       hasError = true;
-    } else if (password.length < 6) {
-      newErrors.password.push('Password minimal 6 karakter');
+    } else if (password.length < 4) {
+      newErrors.password.push('Password minimal 4 karakter');
       hasError = true;
     }
 
     setErrors(newErrors);
     if (hasError) return;
+    
     setIsLoading(true);
     
-    setTimeout(() => {
-      const validCredentials = {
-        'umkm@influent.com': { password: 'umkm123', role: 'umkm', name: 'UMKM Demo' },
-        'admin@influent.com': { password: 'admin123', role: 'admin', name: 'Admin Influent' }
-      };
-      const user = validCredentials[email.toLowerCase()];
+    try {
+      // Call real API
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+      console.log('🔐 Login attempt to:', `${API_BASE_URL}/auth/login`);
       
-      if (user && user.password === password) {
-        localStorage.setItem('user', JSON.stringify({ email, role: user.role, name: user.name, rememberMe }));
-        showToast(`Selamat datang, ${user.name}!`, 'success');
-        setIsLoading(false);
-        setTimeout(() => navigate(user.role === 'admin' ? '/admin/dashboard' : '/umkm/dashboard'), 1000);
-      } else {
-        setIsLoading(false);
-        setLoginError('Email atau password salah. Coba lagi.');
-        showToast('Login gagal. Periksa kembali kredensial Anda.', 'error');
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', response.headers.get('content-type'));
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('❌ Non-JSON response:', text.substring(0, 200));
+        throw new Error('Server error. Please make sure backend is running on port 8000.');
       }
-    }, 1500);
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store token
+      const token = data.data.token
+      console.log('Token:', token);
+      if (token) {
+        localStorage.setItem('token', token);
+      }
+      console.log('User data:', data);
+      // Store user data
+      const userData = data.data.user 
+      const userRole = userData.role 
+      const userName = userData.name 
+      
+      localStorage.setItem('user', JSON.stringify({
+        ...userData,
+        email: userData.email,
+        role: userRole,
+        name: userName,
+        rememberMe
+      }));
+
+      // Store refresh token if provided
+      if (data.refresh_token) {
+        localStorage.setItem('refreshToken', data.refresh_token);
+      }
+
+      showToast(`Selamat datang, ${userName}!`, 'success');
+
+      // Redirect based on role
+      let dashboardPath = '/umkm/dashboard'; // Default for umkm - ALWAYS dashboard first
+      if (userRole === 'admin') dashboardPath = '/admin/dashboard';
+      else if (userRole === 'student') dashboardPath = '/student/dashboard';
+      else if (userRole === 'umkm' || userRole === 'company') dashboardPath = '/umkm/dashboard'; // Changed from /campaigns
+      
+      setTimeout(() => navigate(dashboardPath), 1000);
+
+    } catch (error) {
+      console.error('Login error:', error);
+      setLoginError(error.message || 'Email atau password salah. Coba lagi.');
+      showToast('Login gagal. Periksa kembali kredensial Anda.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -85,9 +157,16 @@ function LoginPage() {
           <p style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 400, fontFamily: "'Montserrat', sans-serif" }}>Kelola campaign dan kolaborasi dengan mudah</p>
         </div>
 
+        {successMessage && (
+          <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', border: '1px solid #86efac', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <CheckCircleIcon sx={{ fontSize: '1.25rem', color: '#16a34a' }} />
+            <span style={{ color: '#16a34a', fontSize: '0.9rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{successMessage}</span>
+          </div>
+        )}
+
         {loginError && (
           <div style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)', border: '1px solid #fc8181', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '1.25rem' }}>⚠️</span>
+            <LockOutlineIcon sx={{ fontSize: '1.25rem', color: '#c53030' }} />
             <span style={{ color: '#c53030', fontSize: '0.9rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{loginError}</span>
           </div>
         )}
@@ -103,7 +182,7 @@ function LoginPage() {
                 setLoginError(''); 
                 if (errors.email.length > 0) setErrors({ ...errors, email: [] }); 
               }} 
-              placeholder="nama@example.com" 
+              placeholder="Masukkan email" 
               disabled={isLoading} 
               style={{ 
                 width: '100%', 
@@ -133,7 +212,7 @@ function LoginPage() {
                   setLoginError(''); 
                   if (errors.password.length > 0) setErrors({ ...errors, password: [] }); 
                 }} 
-                placeholder="••••••••" 
+                placeholder="Masukkan password"
                 disabled={isLoading} 
                 style={{ 
                   width: '100%', 
@@ -192,12 +271,51 @@ function LoginPage() {
           </div>
 
           <div style={{ textAlign: 'center', fontSize: '0.95rem', color: '#6c757d', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>
-            Belum punya akun? <button type="button" onClick={() => navigate('/register-umkm')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#667eea', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer', fontSize: '0.95rem', textDecoration: 'none', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>Daftar sekarang</button>
+            Belum punya akun? Daftar sekarang sebagai{' '}
+            <button 
+              type="button" 
+              onClick={() => navigate('/register/umkm')} 
+              disabled={isLoading} 
+              style={{ 
+                background: 'transparent', 
+                border: 'none', 
+                color: '#667eea', 
+                fontWeight: 700, 
+                cursor: isLoading ? 'not-allowed' : 'pointer', 
+                fontSize: '0.95rem', 
+                opacity: isLoading ? 0.5 : 1, 
+                fontFamily: "'Montserrat', sans-serif",
+                padding: 0,
+                margin: 0
+              }}
+            >
+              UMKM
+            </button>
+            {' / '}
+            <button 
+              type="button" 
+              onClick={() => navigate('/register/influencer')} 
+              disabled={isLoading} 
+              style={{ 
+                background: 'transparent', 
+                border: 'none', 
+                color: '#667eea', 
+                fontWeight: 700, 
+                cursor: isLoading ? 'not-allowed' : 'pointer', 
+                fontSize: '0.95rem', 
+                opacity: isLoading ? 0.5 : 1, 
+                fontFamily: "'Montserrat', sans-serif",
+                padding: 0,
+                margin: 0
+              }}
+            >
+              Influencer
+            </button>
           </div>
         </form>
 
         {/* <div style={{ marginTop: '32px', padding: '16px', background: 'linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%)', borderRadius: '12px', border: '1px solid #cbd5e0' }}>
-          <div style={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600, marginBottom: '8px', fontFamily: "'Montserrat', sans-serif" }}>💡 Demo Credentials:</div>
+          <div style={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600, marginBottom: '8px', fontFamily: "'Montserrat', sans-serif" }}>?? Demo Credentials:</div>
           <div style={{ fontSize: '0.8rem', color: '#6c757d', lineHeight: '1.6', fontFamily: "'Montserrat', sans-serif" }}>
             <div><strong>UMKM:</strong> umkm@influent.com / umkm123</div>
             <div><strong>Admin:</strong> admin@influent.com / admin123</div>
@@ -205,7 +323,7 @@ function LoginPage() {
         </div> */}
 
         <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          <button type="button" onClick={() => navigate('/')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#6c757d', fontSize: '0.9rem', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 600, padding: '8px 16px', borderRadius: '8px', transition: 'all 0.2s', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>← Kembali ke Beranda</button>
+          <button type="button" onClick={() => navigate('/')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#667eea', fontSize: '0.9rem', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 600, padding: '8px 16px', borderRadius: '8px', transition: 'all 0.2s', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>Kembali ke Beranda</button>
         </div>
       </div>
     </div>

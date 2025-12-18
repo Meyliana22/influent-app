@@ -120,13 +120,26 @@ export const applicantStorageHelper = {
       console.error('Error reading applicant:', error);
       return null;
     }
+  },
+
+  /**
+   * Check if applicant is selected
+   */
+  isSelected: (applicantId) => {
+    try {
+      const applicants = JSON.parse(localStorage.getItem('applicants') || '[]');
+      const applicant = applicants.find(a => a.id === applicantId);
+      return applicant?.isSelected || false;
+    } catch (error) {
+      console.error('Error checking selection:', error);
+      return false;
+    }
   }
 };
 
 // Make available in console
 if (typeof window !== 'undefined') {
   window.applicantStorage = applicantStorageHelper;
-  console.log('👥 Applicant Storage Helper loaded! Use window.applicantStorage in console');
 }
 
 export default applicantStorageHelper;

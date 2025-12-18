@@ -15,7 +15,7 @@ function ForgotPasswordPage() {
     return emailRegex.test(email);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -32,16 +32,36 @@ function ForgotPasswordPage() {
 
     setIsLoading(true);
     
-    // Simulasi kirim email reset password
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Call real API
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Gagal mengirim email reset password');
+      }
+
       setIsSubmitted(true);
       
-      // Redirect setelah 4 detik
+      // Redirect setelah 5 detik
       setTimeout(() => {
-        navigate('/login-umkm');
-      }, 4000);
-    }, 1500);
+        navigate('/login');
+      }, 5000);
+
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      setError(err.message || 'Terjadi kesalahan. Silakan coba lagi.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -194,7 +214,7 @@ function ForgotPasswordPage() {
                 Ingat password Anda? {' '}
                 <button
                   type="button"
-                  onClick={() => navigate('/login-umkm')}
+                  onClick={() => navigate('/login')}
                   disabled={isLoading}
                   style={{
                     background: 'transparent',
@@ -292,7 +312,7 @@ function ForgotPasswordPage() {
               </p>
 
               <button
-                onClick={() => navigate('/login-umkm')}
+                onClick={() => navigate('/login')}
                 style={{
                   background: 'transparent',
                   border: '2px solid #667eea',

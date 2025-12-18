@@ -3,24 +3,21 @@
  * Handles all API calls related to campaigns
  */
 
-const API_BASE_URL = "https://influent-api-1fnn.vercel.app/api/v1";
+import authFetch from './apiClient';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
 
 /**
  * API Response Helper
  */
 const handleResponse = async (response) => {
   const data = await response.json();
-
-  //   if (!response.ok) {
-  //     throw new Error(data.message || 'API request failed');
-  //   }
-
   return data;
 };
 
 export const payment = async (params = {}) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/payments/`, {
+    const response = await authFetch(`${API_BASE_URL}/payments/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -29,7 +26,7 @@ export const payment = async (params = {}) => {
     });
     return await handleResponse(response);
   } catch (error) {
-    console.error("Error fetching campaigns:", error);
+    console.error("Error creating payment:", error);
     throw error;
   }
 };
@@ -39,15 +36,50 @@ export const payment = async (params = {}) => {
  */
 export const getCampaigns = async (params = {}) => {
   try {
+    // Build query object from all params
+    let queryObj = {};
+    
+    Object.keys(params).forEach(key => {
+      if (key === 'sort' && typeof params[key] === 'string' && params[key].includes(':')) {
+        // Split "created_at:desc" into sort and order
+        const [sortField, orderDir] = params[key].split(':');
+        queryObj.sort = sortField;
+        queryObj.order = orderDir;
+      } else {
+        queryObj[key] = params[key];
+      }
+    });
+    
+    // Default limit if not provided
+    if (!queryObj.limit) {
+      queryObj.limit = 50;
+    }
+    
+    const queryParams = new URLSearchParams(queryObj);
+    console.log('🌐 Final API URL:', `${API_BASE_URL}/campaigns?${queryParams}`);
+
+    const response = await authFetch(`${API_BASE_URL}/campaigns?${queryParams}`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error fetching campaigns:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get campaigns by category
+ */
+export const getCampaignsByCategory = async (category, params = {}) => {
+  try {
     const queryParams = new URLSearchParams({
       limit: params.limit || 50,
       ...params,
     });
 
-    const response = await fetch(`${API_BASE_URL}/campaigns?${queryParams}`);
+    const response = await fetch(`${API_BASE_URL}/campaigns/category/${encodeURIComponent(category)}?${queryParams}`);
     return await handleResponse(response);
   } catch (error) {
-    console.error("Error fetching campaigns:", error);
+    console.error('Error fetching campaigns by category:', error);
     throw error;
   }
 };
@@ -57,10 +89,112 @@ export const getCampaigns = async (params = {}) => {
  */
 export const getCampaignById = async (campaignId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/campaigns/${campaignId}`);
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${campaignId}`);
     return await handleResponse(response);
   } catch (error) {
     console.error("Error fetching campaign:", error);
+    throw error;
+  }
+};
+
+/**
+ * Upload campaign banner
+ */
+export const uploadBanner = async (campaignId, imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append('banner_image', imageFile);
+
+    const response = await authFetch(`${API_BASE_URL}/upload/campaign/${campaignId}/banner`, {
+      method: "POST",
+      body: formData,
+      // Note: Do not set Content-Type header when sending FormData, 
+      // let browser set it with boundary
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error uploading banner:", error);
+    throw error;
+  }
+};
+
+/**
+ * Apply to a campaign
+ */
+export const applyToCampaign = async (data) => {
+  try {
+    const payload = {
+      campaign_id: data.campaign_id,
+      student_id: data.student_id,
+      application_status: "pending",
+      application_notes: data.application_notes || "",
+      // accepted_at: null,
+      // rejected_at: null
+    };
+
+    const response = await authFetch(`${API_BASE_URL}/campaign-users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error applying to campaign:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get campaign users (my applications)
+ */
+export const getCampaignUsers = async () => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-users`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error fetching campaign users:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update campaign user (cancel application etc)
+ */
+export const updateCampaignUser = async (id, data) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-users/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error updating campaign user:", error);
+    throw error;
+  }
+};
+
+/**
+ * Upload campaign references
+ */
+export const uploadCampaignReferences = async (campaignId, files) => {
+  try {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('reference_images', file);
+    });
+
+    const response = await authFetch(`${API_BASE_URL}/upload/campaign/${campaignId}/references`, {
+      method: "POST",
+      body: formData,
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error uploading references:", error);
     throw error;
   }
 };
@@ -85,9 +219,21 @@ export const createCampaign = async (campaignData) => {
         ? parseInt(campaignData.productValue)
         : null,
       product_desc: campaignData.productDesc || null,
+      description: campaignData.productDesc || null,
       start_date: campaignData.start_date || null,
       end_date: campaignData.end_date || null,
+      registration_deadline: campaignData.registration_deadline || null,
       submission_deadline: campaignData.submission_deadline || null,
+      revision_duration: campaignData.revision_duration
+        ? parseInt(campaignData.revision_duration)
+        : null,
+      max_revisions: campaignData.max_revisions
+        ? parseInt(campaignData.max_revisions)
+        : 1,
+      enable_revision:
+        campaignData.enable_revision !== undefined
+          ? campaignData.enable_revision
+          : true,
       content_guidelines: campaignData.content_guidelines || null,
       caption_guidelines: campaignData.caption_guidelines || null,
       content_reference: campaignData.contentReference || null,
@@ -98,14 +244,17 @@ export const createCampaign = async (campaignData) => {
       min_followers: campaignData.min_followers
         ? parseInt(campaignData.min_followers)
         : null,
+      is_free: campaignData.isFree || false,
       selected_gender: campaignData.selectedGender || null,
-      selected_age: campaignData.selectedAge || null,
+      selected_age: Array.isArray(campaignData.selectedAge)
+        ? JSON.stringify(campaignData.selectedAge)
+        : campaignData.selectedAge || null,
       criteria_desc: campaignData.criteriaDesc || null,
       banner_image: campaignData.image || null,
       reference_images: campaignData.referenceFiles
         ? JSON.stringify(campaignData.referenceFiles)
         : null,
-      status: campaignData.status || "inactive", // Default to inactive (unpaid)
+      status:"admin_review", // Default to inactive (unpaid)
       contentTypes:
         campaignData.contentItems && campaignData.contentItems.length > 0
           ? JSON.stringify(
@@ -116,11 +265,8 @@ export const createCampaign = async (campaignData) => {
             )
           : null,
     };
-
-    console.log("🚀 Creating campaign with status:", apiData.status);
-    console.log("📦 Full API data:", apiData);
-
-    const response = await fetch(`${API_BASE_URL}/campaigns`, {
+    
+    const response = await authFetch(`${API_BASE_URL}/campaigns`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -129,12 +275,6 @@ export const createCampaign = async (campaignData) => {
     });
 
     const result = await handleResponse(response);
-    console.log("✅ API Response:", result);
-    console.log(
-      "📋 Campaign created with ID:",
-      result?.data?.campaign_id || result?.campaign_id
-    );
-
     return result;
   } catch (error) {
     console.error("Error creating campaign:", error);
@@ -162,9 +302,21 @@ export const updateCampaign = async (campaignId, campaignData) => {
         ? parseInt(campaignData.productValue)
         : null,
       product_desc: campaignData.productDesc || null,
+      description: campaignData.productDesc || null,
       start_date: campaignData.start_date || null,
       end_date: campaignData.end_date || null,
+      registration_deadline: campaignData.registration_deadline || null,
       submission_deadline: campaignData.submission_deadline || null,
+      revision_duration: campaignData.revision_duration
+        ? parseInt(campaignData.revision_duration)
+        : null,
+      max_revisions: campaignData.max_revisions
+        ? parseInt(campaignData.max_revisions)
+        : 1,
+      enable_revision:
+        campaignData.enable_revision !== undefined
+          ? campaignData.enable_revision
+          : true,
       content_guidelines: campaignData.content_guidelines || null,
       caption_guidelines: campaignData.caption_guidelines || null,
       content_reference: campaignData.contentReference || null,
@@ -175,8 +327,11 @@ export const updateCampaign = async (campaignId, campaignData) => {
       min_followers: campaignData.min_followers
         ? parseInt(campaignData.min_followers)
         : null,
+      is_free: campaignData.isFree || false,
       selected_gender: campaignData.selectedGender || null,
-      selected_age: campaignData.selectedAge || null,
+      selected_age: Array.isArray(campaignData.selectedAge)
+        ? JSON.stringify(campaignData.selectedAge)
+        : campaignData.selectedAge || null,
       criteria_desc: campaignData.criteriaDesc || null,
       banner_image: campaignData.image || null,
       reference_images: campaignData.referenceFiles
@@ -194,7 +349,7 @@ export const updateCampaign = async (campaignId, campaignData) => {
           : null,
     };
 
-    const response = await fetch(`${API_BASE_URL}/campaigns/${campaignId}`, {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${campaignId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -214,7 +369,7 @@ export const updateCampaign = async (campaignId, campaignData) => {
  */
 export const deleteCampaign = async (campaignId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/campaigns/${campaignId}`, {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${campaignId}`, {
       method: "DELETE",
     });
 
@@ -251,7 +406,7 @@ export const mapApiToFrontend = (apiCampaign) => {
       : "",
     content_guidelines: apiCampaign.content_guidelines || "",
     caption_guidelines: apiCampaign.caption_guidelines || "",
-    contentReference: apiCampaign.content_reference || "",
+    content_reference: apiCampaign.content_reference || "",
     influencer_count: apiCampaign.influencer_count || 1,
     price_per_post: apiCampaign.price_per_post
       ? String(apiCampaign.price_per_post)
@@ -284,12 +439,103 @@ export const mapApiToFrontend = (apiCampaign) => {
   };
 };
 
+/**
+ * Activate campaign (change status to active)
+ */
+export const activateCampaign = async (campaignId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${campaignId}/activate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error activating campaign:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get dashboard statistics for UMKM
+ */
+export const getDashboardStats = async () => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/umkm/dashboard/stats`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    throw error;
+  }
+};
+
+/**
+ * Campaign Payment Timer - Process payment for approved campaign
+ */
+export const processPayment = async (campaignId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-payment/process`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaign_id: campaignId })
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error processing payment:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get payment status and timer info
+ */
+export const getPaymentStatus = async (campaignId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-payment/status/${campaignId}`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error fetching payment status:", error);
+    throw error;
+  }
+};
+
+/**
+ * Distribute payment to all eligible students (work around)
+ */
+export const distributePayment = async (campaignId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-payments/pay-all`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ campaign_id: campaignId }),
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error distributing payment:", error);
+    throw error;
+  }
+};
+
 export default {
   getCampaigns,
+  getCampaignsByCategory,
   getCampaignById,
   createCampaign,
   updateCampaign,
   deleteCampaign,
   mapApiToFrontend,
   payment,
+  activateCampaign,
+  getDashboardStats,
+  processPayment,
+  getPaymentStatus,
+  uploadBanner,
+  uploadCampaignReferences,
+  applyToCampaign,
+  getCampaignUsers,
+  updateCampaignUser,
+  distributePayment,
 };

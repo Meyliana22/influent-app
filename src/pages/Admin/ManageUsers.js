@@ -1,551 +1,627 @@
 import React, { useState, useEffect } from 'react';
-import AdminSidebar from '../../components/admin/AdminSidebar';
-import AdminTopbar from '../../components/admin/AdminTopbar';
-import { COLORS } from '../../constants/colors';
+import { Sidebar, Topbar } from '../../components/common';
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TableContainer,
+  InputLabel,
+  FormControl,
+  Stack,
+  Chip,
+  IconButton,
+  CircularProgress,
+  Alert,
+  Pagination,
+  InputAdornment,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Search as SearchIcon,
+  Refresh as RefreshIcon,
+  Person as PersonIcon,
+  School as StudentIcon,
+  Business as CompanyIcon,
+  AdminPanelSettings as AdminIcon,
+  Warning as WarningIcon
+} from '@mui/icons-material';
+import adminService from '../../services/adminService';
 
 function ManageUsers() {
+  const theme = useTheme();
+  const isDesktop = useMediaQuery('(min-width:1000px)');
+  const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
+
+  useEffect(() => {
+    setSidebarOpen(isDesktop);
+  }, [isDesktop]);
+
+  // State management
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [filterRole, setFilterRole] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
+  
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const limit = 10;
+
+  // Filters
+  const [filterRole, setFilterRole] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+
+  // Modal states
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
+  const [modalMode, setModalMode] = useState('edit');
   const [selectedUser, setSelectedUser] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'UMKM',
-    status: 'Active'
+    password: '',
+    role: 'student',
+    status: 'active'
   });
 
   useEffect(() => {
     loadUsers();
   }, []);
 
-  useEffect(() => {
-    filterUsers();
-  }, [users, filterRole, searchQuery]);
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const loadUsers = () => {
-    // Mock users data
-    const mockUsers = [
-      { id: 1, name: 'Scarlett Beauty', email: 'scarlett@beauty.com', role: 'UMKM', status: 'Active' },
-      { id: 2, name: 'Gaming Pro', email: 'gaming@pro.com', role: 'UMKM', status: 'Active' },
-      { id: 3, name: 'Sarah Johnson', email: 'sarah@influencer.com', role: 'Influencer', status: 'Active' },
-      { id: 4, name: 'Mike Chen', email: 'mike@influencer.com', role: 'Influencer', status: 'Active' },
-      { id: 5, name: 'Admin User', email: 'admin@influent.com', role: 'Admin', status: 'Active' },
-      { id: 6, name: 'Jessica Lee', email: 'jessica@influencer.com', role: 'Influencer', status: 'Banned' },
-    ];
-    setUsers(mockUsers);
+      const response = await adminService.users.getAllUsers();
+      console.log('Fetched users:', response);
+      
+      // Handle different response structures
+      let allUsers = [];
+      if (Array.isArray(response)) {
+        allUsers = response;
+      } else if (response.users && Array.isArray(response.users)) {
+        allUsers = response.users;
+      } else if (response.data && Array.isArray(response.data)) {
+        allUsers = response.data;
+      }
+
+      setUsers(allUsers);
+      setTotalUsers(allUsers.length);
+    } catch (err) {
+      console.error('Error loading users:', err);
+      setError(err.message || 'Failed to load users');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filterUsers = () => {
-    let filtered = [...users];
-
-    if (filterRole !== 'All') {
-      filtered = filtered.filter(user => user.role === filterRole);
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter(user =>
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    setFilteredUsers(filtered);
-  };
-
-  const handleAddUser = () => {
-    setModalMode('add');
-    setFormData({ name: '', email: '', role: 'UMKM', status: 'Active' });
-    setShowModal(true);
+  const handleSearch = () => {
+    setSearchQuery(searchInput);
+    setPage(1); // Reset to first page on new search
   };
 
   const handleEditUser = (user) => {
     setModalMode('edit');
     setSelectedUser(user);
-    setFormData({ ...user });
+    setFormData({ 
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status || 'active',
+      password: '' // Don't pre-fill password
+    });
     setShowModal(true);
   };
 
   const handleDeleteClick = (user) => {
+    console.log('Preparing to delete user:', user);
     setUserToDelete(user);
-    setShowDeleteModal(true);
+    setShowDeleteDialog(true);
   };
 
-  const confirmDelete = () => {
-    setUsers(users.filter(u => u.id !== userToDelete.id));
-    setShowDeleteModal(false);
-    setUserToDelete(null);
-  };
-
-  const handleSaveUser = () => {
-    if (modalMode === 'add') {
-      const newUser = {
-        ...formData,
-        id: users.length + 1
-      };
-      setUsers([...users, newUser]);
-    } else {
-      setUsers(users.map(u => u.id === selectedUser.id ? { ...formData, id: selectedUser.id } : u));
+  const confirmDelete = async () => {
+    try {
+      setSubmitting(true);
+      console.log(userToDelete);
+      await adminService.users.deleteUser(userToDelete.user_id);
+      setSuccessMessage('User deleted successfully');
+      setShowDeleteDialog(false);
+      setUserToDelete(null);
+      loadUsers();
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError(err.message || 'Failed to delete user');
+    } finally {
+      setSubmitting(false);
     }
-    setShowModal(false);
   };
+
+  const handleSaveUser = async () => {
+    try {
+      setSubmitting(true);
+      setError(null);
+
+      if (!formData.name || !formData.email) {
+        setError('Name and email are required');
+        return;
+      }
+
+      const updateData = {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        status: formData.status
+      };
+      
+      if (formData.password) {
+        updateData.password = formData.password;
+      }
+
+      await adminService.users.updateUser(selectedUser._id, updateData);
+      setSuccessMessage('User updated successfully');
+      setShowModal(false);
+      loadUsers();
+    } catch (err) {
+      console.error('Error saving user:', err);
+      setError(err.message || 'Failed to save user');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const getRoleIcon = (role) => {
+    switch (role) {
+      case 'student':
+        return <StudentIcon sx={{ fontSize: 20, color: '#1e40af' }} />;
+      case 'company':
+        return <CompanyIcon sx={{ fontSize: 20, color: '#9f1239' }} />;
+      case 'admin':
+        return <AdminIcon sx={{ fontSize: 20, color: '#7c3aed' }} />;
+      default:
+        return <PersonIcon sx={{ fontSize: 20 }} />;
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active':
+        return { bg: '#d1fae5', color: '#065f46' };
+      case 'inactive':
+        return { bg: '#fee2e2', color: '#991b1b' };
+      case 'suspended':
+        return { bg: '#fef3c7', color: '#d97706' };
+      default:
+        return { bg: '#e5e7eb', color: '#374151' };
+    }
+  };
+
+  // Filter users based on role, status, and search
+  const filteredUsers = users.filter(user => {
+    const matchesRole = !filterRole || user.role === filterRole;
+    const matchesStatus = !filterStatus || user.status === filterStatus;
+    const matchesSearch = !searchQuery || 
+      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesRole && matchesStatus && matchesSearch;
+  });
+
+  // Frontend pagination
+  const paginatedUsers = filteredUsers.slice((page - 1) * limit, page * limit);
+  const calculatedTotalPages = Math.ceil(filteredUsers.length / limit);
 
   return (
-    <div style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
-      <AdminSidebar />
-      
-      <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
-        <AdminTopbar />
-        
-        <div style={{ marginTop: '72px', padding: '32px' }}>
+    <Box sx={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Box
+        sx={{
+          marginLeft: isDesktop && sidebarOpen ? 32.5 : 0,
+          width: isDesktop && sidebarOpen ? 'calc(100% - 260px)' : '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box'
+        }}
+      >
+        <Topbar />
+        <Box sx={{ mt: 9, p: 4, backgroundColor: '#f8f9fa', minHeight: 'calc(100vh - 72px)' }}>
           {/* Page Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '32px'
-          }}>
-            <div>
-              <h1 style={{
-                fontSize: '2rem',
-                fontWeight: 700,
-                color: '#1a1f36',
-                marginBottom: '8px',
-                fontFamily: "'Inter', sans-serif"
-              }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontSize: 32 }}>
                 Manage Users
-              </h1>
-              <p style={{
-                fontSize: '0.95rem',
-                color: '#6c757d',
-                fontFamily: "'Inter', sans-serif"
-              }}>
-                Total: {filteredUsers.length} users
-              </p>
-            </div>
-            <button
-              onClick={handleAddUser}
-              style={{
-                padding: '12px 24px',
-                background: COLORS.gradient,
-                border: 'none',
-                borderRadius: '12px',
-                color: '#fff',
-                fontSize: '0.95rem',
+              </Typography>
+              <Typography sx={{ fontSize: 16, color: '#6c757d' }}>
+                Total: {totalUsers} users
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={loadUsers}
+              disabled={loading}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none',
                 fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.3s',
-                fontFamily: "'Inter', sans-serif",
-                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                borderColor: '#667eea',
+                color: '#667eea',
+                '&:hover': {
+                  borderColor: '#5568d3',
+                  backgroundColor: 'rgba(102, 126, 234, 0.04)'
+                }
               }}
             >
-              <span style={{ fontSize: '1.25rem' }}>➕</span>
-              Add User
-            </button>
-          </div>
+              Refresh
+            </Button>
+          </Box>
+
+          {/* Alerts */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage('')}>
+              {successMessage}
+            </Alert>
+          )}
 
           {/* Filters */}
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            padding: '24px',
-            marginBottom: '24px',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            gap: '16px',
-            alignItems: 'center'
-          }}>
-            <div style={{ flex: 1 }}>
-              <input
-                type="text"
+          <Paper sx={{ p: 3, mb: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
+              <TextField
                 placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  fontFamily: "'Inter', sans-serif"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                size="small"
+                sx={{ flex: 1, minWidth: 200 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: '#6c757d' }} />
+                    </InputAdornment>
+                  )
                 }}
               />
-            </div>
-            <div>
-              <select
-                value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
-                style={{
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif",
-                  minWidth: '150px'
+              <Button
+                variant="contained"
+                onClick={handleSearch}
+                sx={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  minWidth: 100
                 }}
               >
-                <option value="All">All Roles</option>
-                <option value="UMKM">UMKM</option>
-                <option value="Influencer">Influencer</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
-          </div>
+                Search
+              </Button>
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <InputLabel>Role</InputLabel>
+                <Select
+                  value={filterRole}
+                  label="Role"
+                  onChange={(e) => {
+                    setFilterRole(e.target.value);
+                    setPage(1);
+                  }}
+                >
+                  <MenuItem value="">All Roles</MenuItem>
+                  <MenuItem value="student">Student</MenuItem>
+                  <MenuItem value="company">Company</MenuItem>
+                  <MenuItem value="admin">Admin</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={filterStatus}
+                  label="Status"
+                  onChange={(e) => {
+                    setFilterStatus(e.target.value);
+                    setPage(1);
+                  }}
+                >
+                  <MenuItem value="">All Status</MenuItem>
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="inactive">Inactive</MenuItem>
+                  <MenuItem value="suspended">Suspended</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          </Paper>
 
           {/* Users Table */}
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            border: '1px solid #e2e8f0',
-            overflow: 'hidden'
-          }}>
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              <thead>
-                <tr style={{ background: '#f7fafc' }}>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>ID</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Name</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Role</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    style={{ borderBottom: '1px solid #e2e8f0' }}
+          <Paper sx={{ borderRadius: 3, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+                <CircularProgress size={60} />
+              </Box>
+            ) : users.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <PersonIcon sx={{ fontSize: 64, color: '#cbd5e0', mb: 2 }} />
+                <Typography sx={{ fontSize: 18, color: '#6c757d', fontWeight: 500 }}>
+                  No users found
+                </Typography>
+                <Typography sx={{ fontSize: 14, color: '#a0aec0', mt: 1 }}>
+                  {searchQuery || filterRole || filterStatus ? 'Try adjusting your filters' : 'Users will appear here once registered'}
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#f7fafc' }}>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>User</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Email</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Role</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Joined</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14, textAlign: 'center' }}>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedUsers.map((user) => {
+                        const statusColors = getStatusColor(user.status || 'active');
+                        return (
+                          <TableRow
+                            key={user._id}
+                            sx={{
+                              '&:hover': { bgcolor: '#f7fafc' },
+                              transition: 'background-color 0.2s'
+                            }}
+                          >
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Box sx={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: '50%',
+                                  bgcolor: user.role === 'student' ? '#dbeafe' : (user.role === 'umkm' || user.role === 'company') ? '#fce7f3' : '#ede9fe',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}>
+                                  {getRoleIcon(user.role)}
+                                </Box>
+                                <Typography sx={{ fontWeight: 600, color: '#1a1f36', fontSize: 14 }}>
+                                  {user.name}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Typography sx={{ color: '#6c757d', fontSize: 14 }}>{user.email}</Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={user.role}
+                                size="small"
+                                sx={{
+                                  fontSize: 12,
+                                  textTransform: 'capitalize',
+                                  fontWeight: 600
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={user.status || 'active'}
+                                size="small"
+                                sx={{
+                                  bgcolor: statusColors.bg,
+                                  color: statusColors.color,
+                                  fontSize: 12,
+                                  textTransform: 'capitalize',
+                                  fontWeight: 600
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography sx={{ color: '#6c757d', fontSize: 14 }}>
+                                {user.created_at || user.createdAt 
+                                  ? new Date(user.created_at || user.createdAt).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric'
+                                    })
+                                  : 'N/A'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Stack direction="row" spacing={1} justifyContent="center">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleEditUser(user)}
+                                  sx={{
+                                    color: '#667eea',
+                                    '&:hover': { bgcolor: 'rgba(102, 126, 234, 0.1)' }
+                                  }}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleDeleteClick(user)}
+                                  sx={{
+                                    color: '#ef4444',
+                                    '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
+                                  }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                {/* Pagination */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                  <Pagination
+                    count={calculatedTotalPages}
+                    page={page}
+                    onChange={(e, value) => setPage(value)}
+                    color="primary"
+                    size="large"
+                  />
+                </Box>
+              </>
+            )}
+          </Paper>
+
+          {/* Edit User Dialog */}
+          <Dialog
+            open={showModal}
+            onClose={() => !submitting && setShowModal(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle sx={{ fontWeight: 700, fontSize: 20 }}>
+              Edit User
+            </DialogTitle>
+            <DialogContent dividers>
+              <Stack spacing={3} sx={{ pt: 1 }}>
+                <TextField
+                  label="Name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  fullWidth
+                  required
+                />
+                <TextField
+                  label="Email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  fullWidth
+                  required
+                />
+                <TextField
+                  label="Password (leave blank to keep current)"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  fullWidth
+                  placeholder="••••••••"
+                />
+                <FormControl fullWidth>
+                  <InputLabel>Role</InputLabel>
+                  <Select
+                    value={formData.role}
+                    label="Role"
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   >
-                    <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#2d3748' }}>#{user.id}</td>
-                    <td style={{ padding: '20px 24px', fontSize: '0.9rem', fontWeight: 600, color: '#1a1f36' }}>{user.name}</td>
-                    <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#6c757d' }}>{user.email}</td>
-                    <td style={{ padding: '20px 24px' }}>
-                      <span style={{
-                        padding: '6px 12px',
-                        borderRadius: '8px',
-                        fontSize: '0.8rem',
-                        fontWeight: 600,
-                        background: user.role === 'Admin' ? '#fef3c7' : user.role === 'UMKM' ? '#dbeafe' : '#d1fae5',
-                        color: user.role === 'Admin' ? '#92400e' : user.role === 'UMKM' ? '#1e40af' : '#065f46'
-                      }}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td style={{ padding: '20px 24px' }}>
-                      <span style={{
-                        padding: '6px 12px',
-                        borderRadius: '8px',
-                        fontSize: '0.8rem',
-                        fontWeight: 600,
-                        background: user.status === 'Active' ? '#d1fae5' : '#fee2e2',
-                        color: user.status === 'Active' ? '#065f46' : '#991b1b'
-                      }}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: '20px 24px', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                        <button
-                          onClick={() => handleEditUser(user)}
-                          style={{
-                            padding: '8px 16px',
-                            background: '#667eea',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: '#fff',
-                            fontSize: '0.85rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.target.style.background = '#5568d3'}
-                          onMouseLeave={(e) => e.target.style.background = '#667eea'}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(user)}
-                          style={{
-                            padding: '8px 16px',
-                            background: '#ef4444',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: '#fff',
-                            fontSize: '0.85rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.target.style.background = '#dc2626'}
-                          onMouseLeave={(e) => e.target.style.background = '#ef4444'}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Add/Edit User Modal */}
-      {showModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '20px',
-            padding: '32px',
-            maxWidth: '500px',
-            width: '90%',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-          }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: 700,
-              color: '#1a1f36',
-              marginBottom: '24px',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              {modalMode === 'add' ? 'Add New User' : 'Edit User'}
-            </h2>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748' }}>Name</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748' }}>Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748' }}>Role</label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              >
-                <option value="UMKM">UMKM</option>
-                <option value="Influencer">Influencer</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748' }}>Status</label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              >
-                <option value="Active">Active</option>
-                <option value="Banned">Banned</option>
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
+                    <MenuItem value="student">Student</MenuItem>
+                    <MenuItem value="company">Company</MenuItem>
+                    <MenuItem value="admin">Admin</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={formData.status}
+                    label="Status"
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  >
+                    <MenuItem value="active">Active</MenuItem>
+                    <MenuItem value="inactive">Inactive</MenuItem>
+                    <MenuItem value="suspended">Suspended</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button
                 onClick={() => setShowModal(false)}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  background: '#e2e8f0',
-                  border: 'none',
-                  borderRadius: '10px',
-                  color: '#2d3748',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
-                }}
+                disabled={submitting}
+                sx={{ textTransform: 'none' }}
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSaveUser}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  background: COLORS.gradient,
-                  border: 'none',
-                  borderRadius: '10px',
-                  color: '#fff',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
+                variant="contained"
+                disabled={submitting}
+                sx={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  textTransform: 'none',
+                  fontWeight: 600
                 }}
               >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                {submitting ? <CircularProgress size={24} /> : 'Save Changes'}
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '20px',
-            padding: '32px',
-            maxWidth: '400px',
-            width: '90%',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: 700,
-              color: '#1a1f36',
-              marginBottom: '12px',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              Delete User?
-            </h2>
-            <p style={{
-              fontSize: '0.95rem',
-              color: '#6c757d',
-              marginBottom: '24px',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              Are you sure you want to delete <strong>{userToDelete?.name}</strong>? This action cannot be undone.
-            </p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  background: '#e2e8f0',
-                  border: 'none',
-                  borderRadius: '10px',
-                  color: '#2d3748',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
-                }}
+          {/* Delete Confirmation Dialog */}
+          <Dialog
+            open={showDeleteDialog}
+            onClose={() => !submitting && setShowDeleteDialog(false)}
+            maxWidth="xs"
+            fullWidth
+          >
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <WarningIcon sx={{ color: '#ef4444' }} />
+              <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Confirm Delete</Typography>
+            </DialogTitle>
+            <DialogContent>
+              <Typography sx={{ color: '#6c757d', fontSize: 15 }}>
+                Are you sure you want to delete user <strong>{userToDelete?.name}</strong>? This action cannot be undone.
+              </Typography>
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button
+                onClick={() => setShowDeleteDialog(false)}
+                disabled={submitting}
+                sx={{ textTransform: 'none' }}
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={confirmDelete}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  background: '#ef4444',
-                  border: 'none',
-                  borderRadius: '10px',
-                  color: '#fff',
-                  fontSize: '0.95rem',
+                variant="contained"
+                disabled={submitting}
+                sx={{
+                  bgcolor: '#ef4444',
+                  textTransform: 'none',
                   fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif"
+                  '&:hover': { bgcolor: '#dc2626' }
                 }}
               >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+                {submitting ? <CircularProgress size={24} /> : 'Delete'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

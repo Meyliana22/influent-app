@@ -1,221 +1,117 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Box, Typography, Button, Container, Paper, Stack } from '@mui/material';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { COLORS } from '../../constants/colors';
-import { FaCheckCircle } from 'react-icons/fa';
-import { FileText, ClipboardList, Notebook, FileEdit } from 'lucide-react';
+import Confetti from 'react-confetti';
 
-function PaymentSuccess() {
+const PaymentSuccess = () => {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { id } = useParams(); // Campaign ID from URL
+  const [status, setStatus] = useState('pending');
+  const [orderId, setOrderId] = useState('');
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
 
-  // Add confetti animation effect
   useEffect(() => {
-    // Simple confetti animation using emojis
-    const confettiEmojis = ['🎉', '✨', '🎊', '⭐', '💫'];
-    const confettiElements = [];
-
-    for (let i = 0; i < 30; i++) {
-      const confetti = document.createElement('div');
-      confetti.innerText = confettiEmojis[Math.floor(Math.random() * confettiEmojis.length)];
-      confetti.style.position = 'fixed';
-      confetti.style.left = Math.random() * 100 + '%';
-      confetti.style.top = '-20px';
-      confetti.style.fontSize = '2rem';
-      confetti.style.opacity = '0.8';
-      confetti.style.pointerEvents = 'none';
-      confetti.style.zIndex = '9999';
-      confetti.style.animation = `fall ${2 + Math.random() * 3}s linear forwards`;
-      
-      document.body.appendChild(confetti);
-      confettiElements.push(confetti);
-    }
-
-    // Add keyframes for animation
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes fall {
-        to {
-          top: 100vh;
-          transform: rotate(${Math.random() * 360}deg);
-        }
-      }
-    `;
-    document.head.appendChild(style);
-
-    // Cleanup
-    return () => {
-      confettiElements.forEach(el => el.remove());
-      style.remove();
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
     };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    const order_id = searchParams.get('order_id');
+    const transaction_status = searchParams.get('status') || searchParams.get('transaction_status');
+
+    if (order_id) setOrderId(order_id);
+
+    if (transaction_status === 'settlement' || transaction_status === 'capture' || transaction_status === 'success') {
+      setStatus('success');
+    } else if (transaction_status === 'pending') {
+      setStatus('pending');
+    } else {
+      setStatus('failed');
+    }
+  }, [searchParams]);
+
+  const handleBackToCampaigns = () => {
+    navigate('/campaigns');
+  };
+
   return (
-    <div style={{ 
-      background: COLORS.background, 
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: 'Montserrat, Arial, sans-serif',
-      padding: '24px'
-    }}>
-      <div style={{ 
-        maxWidth: '550px', 
-        width: '100%',
-        background: COLORS.white,
-        borderRadius: '24px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-        padding: '48px 32px',
-        textAlign: 'center'
-      }}>
-        {/* Success Icon */}
-        <div style={{
-          width: '120px',
-          height: '120px',
-          margin: '0 auto 32px auto',
-          background: '#43e97b',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 10px 30px rgba(67, 233, 123, 0.3)',
-          animation: 'scaleIn 0.5s ease-out'
-        }}>
-          <FaCheckCircle style={{ 
-            fontSize: '4rem', 
-            color: COLORS.white 
-          }} />
-        </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: COLORS.background,
+        fontFamily: 'Montserrat, Arial, sans-serif'
+      }}
+    >
+      {status === 'success' && <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={200} />}
+      
+      <Container maxWidth="sm">
+        <Paper
+          elevation={3}
+          sx={{
+            p: 5,
+            textAlign: 'center',
+            borderRadius: 4,
+            boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)'
+          }}
+        >
+          {status === 'success' ? (
+            <CheckCircleOutlineIcon sx={{ fontSize: 100, color: '#10b981', mb: 2 }} />
+          ) : status === 'pending' ? (
+            <Box sx={{ fontSize: 80, mb: 2 }}>⏳</Box>
+          ) : (
+            <ErrorOutlineIcon sx={{ fontSize: 100, color: '#ef4444', mb: 2 }} />
+          )}
 
-        {/* Success Message */}
-        <h2 style={{ 
-          fontWeight: 700, 
-          fontSize: '1.8rem',
-          marginBottom: '16px',
-          color: COLORS.textPrimary,
-          lineHeight: '1.3'
-        }}>
-          Pembayaran Berhasil!
-        </h2>
-        
-        <p style={{ 
-          fontSize: '1.1rem',
-          color: COLORS.textSecondary,
-          marginBottom: '32px',
-          lineHeight: '1.6'
-        }}>
-          Campaign kamu sedang diproses dan akan segera aktif. Influencer dapat mulai mendaftar ke campaign Anda.
-        </p>
+          <Typography variant="h4" fontWeight={700} sx={{ mb: 1, color: COLORS.textPrimary }}>
+            {status === 'success' ? 'Pembayaran Berhasil!' : status === 'pending' ? 'Menunggu Pembayaran' : 'Pembayaran Gagal'}
+          </Typography>
 
-        {/* Info Box */}
-        <div style={{
-          padding: '16px',
-          background: COLORS.primaryLight,
-          borderRadius: '12px',
-          border: '1px solid rgba(102, 126, 234, 0.2)',
-          marginBottom: '32px',
-          textAlign: 'left'
-        }}>
-          <p style={{ 
-            margin: '0 0 8px 0', 
-            fontSize: '0.9rem',
-            color: COLORS.textPrimary,
-            fontWeight: 600,
-            display: 'flex', 
-            alignItems: 'center',
-          }}>
-            <FileText size={18} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Apa selanjutnya?
-          </p>
-          <ul style={{
-            margin: 0,
-            paddingLeft: '20px',
-            fontSize: '0.85rem',
-            color: COLORS.textSecondary,
-            lineHeight: '1.8'
-          }}>
-            <li>Influencer akan melihat dan mendaftar ke campaign Anda</li>
-            <li>Anda dapat melihat dan memilih influencer yang sesuai</li>
-            <li>Campaign akan berjalan sesuai timeline yang ditentukan</li>
-          </ul>
-        </div>
+          <Typography sx={{ color: COLORS.textSecondary, mb: 4 }}>
+            {status === 'success' 
+              ? `Terima kasih! Pembayaran Anda untuk Order ID #${orderId} telah berhasil diverifikasi.` 
+              : status === 'pending'
+              ? `Mohon selesaikan pembayaran Anda untuk Order ID #${orderId}.`
+              : `Maaf, pembayaran Anda untuk Order ID #${orderId} gagal. Silakan coba lagi.`}
+          </Typography>
 
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <button
-            onClick={() => navigate('/campaigns')}
-            style={{
-              background: '#667eea 100%',
-              borderRadius: '12px',
-              fontWeight: 700,
-              padding: '16px',
-              fontSize: '1rem',
-              boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
-              border: 'none',
-              color: '#fff',
-              cursor: 'pointer',
-              width: '100%',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-          >
-              mpaign Saya
-          </button>
-          
-          <button
-            onClick={() => navigate(`/campaign/${id}/applicants`)}
-            style={{
-              borderRadius: '12px',
-              fontWeight: 600,
-              padding: '16px',
-              fontSize: '1rem',
-              border: `2px solid ${COLORS.primary}`,
-              color: COLORS.primary,
-              background: 'transparent',
-              cursor: 'pointer',
-              width: '100%',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = COLORS.primary;
-              e.currentTarget.style.color = '#fff';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = COLORS.primary;
-            }}
-          >
-           Lihat Pelamar
-          </button>
-        </div>
-
-        {/* Additional Info */}
-        <p style={{ 
-          marginTop: '24px',
-          fontSize: '0.75rem',
-          color: COLORS.textLight,
-          lineHeight: '1.5'
-        }}>
-          Terima kasih telah menggunakan Influent!<br />
-          Notifikasi akan dikirim ketika ada influencer yang mendaftar.
-        </p>
-      </div>
-
-      {/* Animation Styles */}
-      <style>{`
-        @keyframes scaleIn {
-          from {
-            transform: scale(0);
-            opacity: 0;
-          }
-          to {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-      `}</style>
-    </div>
+          <Stack spacing={2}>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={handleBackToCampaigns}
+              sx={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                fontWeight: 600,
+                py: 1.5,
+                borderRadius: 2,
+                textTransform: 'none',
+                boxShadow: 2
+              }}
+            >
+              Kembali ke Campaign Saya
+            </Button>
+          </Stack>
+        </Paper>
+      </Container>
+    </Box>
   );
-}
+};
 
 export default PaymentSuccess;

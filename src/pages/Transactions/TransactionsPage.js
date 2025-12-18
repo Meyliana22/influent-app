@@ -1,9 +1,36 @@
 import React, { useState } from 'react';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
+import Sidebar from '../../components/common/Sidebar';
+import Topbar from '../../components/common/Topbar';
 import { COLORS } from '../../constants/colors';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { useToast } from '../../hooks/useToast';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import UndoIcon from '@mui/icons-material/Undo';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import DownloadIcon from '@mui/icons-material/Download';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 
 function TransactionsPage() {
   const { showToast } = useToast();
@@ -108,48 +135,33 @@ function TransactionsPage() {
   };
 
   return (
-    <div style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
-      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      <div style={{ marginLeft: !isMobile ? '260px' : '0', width: !isMobile ? 'calc(100% - 260px)' : '100%' }}>
-        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-
-        
-        <div style={{ marginTop: '72px', padding: '32px' }}>
-          {/* Page Header */}
-          <div style={{ marginBottom: '32px', maxWidth: '1400px', margin: '0 auto 32px' }}>
-            <h1 style={{
-              fontSize: isMobile ? '1.5rem' : '2rem',
-              fontWeight: 700,
-              color: '#1a1f36',
-              margin: '0px',
-              fontFamily: "'Inter', sans-serif"
-            }}>
+    <Box sx={{ display: 'flex', bgcolor: '#f7fafc', minHeight: '100vh' }}>
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Box sx={{ ml: !isMobile ? 32.5 : 0, width: '100%' }}>
+        <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Container
+          maxWidth="lg"
+          sx={{
+            mt: 9,
+            pb: 4,
+            height: 'calc(100vh - 72px)',
+            overflow: 'auto',
+          }}
+        >
+          <Box sx={{ mb: 4, mt: 4 }}>
+            <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700} sx={{ color: '#1a1f36', m: 0, fontFamily: 'Inter, sans-serif' }}>
               Transactions
-            </h1>
-            <p style={{
-              fontSize: '0.95rem',
-              color: '#6c757d',
-              fontFamily: "'Inter', sans-serif"
-            }}>
+            </Typography>
+            <Typography sx={{ fontSize: 15, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>
               View and manage all your campaign transactions
-            </p>
-          </div>
-
-          {/* Summary Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: isMobile ? '16px' : '20px',
-            marginBottom: '32px',
-            maxWidth: '1400px',
-            margin: '0 auto 32px'
-          }}>
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: isMobile ? 2 : 2.5, mb: 4, flexDirection: { xs: 'column', md: 'row' } }}>
             {[
               {
                 title: 'Total Paid',
                 value: `Rp ${totalPaid.toLocaleString('id-ID')}`,
-                icon: '✅',
+                IconComponent: CheckCircleIcon,
                 color: '#10b981',
                 bgColor: '#d1fae5',
                 count: transactions.filter(t => t.status === 'Paid').length
@@ -157,7 +169,7 @@ function TransactionsPage() {
               {
                 title: 'Total Refunded',
                 value: `Rp ${totalRefunded.toLocaleString('id-ID')}`,
-                icon: '↩️',
+                IconComponent: UndoIcon,
                 color: '#f59e0b',
                 bgColor: '#fef3c7',
                 count: transactions.filter(t => t.status === 'Refunded').length
@@ -165,390 +177,220 @@ function TransactionsPage() {
               {
                 title: 'All Transactions',
                 value: transactions.length,
-                icon: '💰',
+                IconComponent: AccountBalanceWalletIcon,
                 color: '#3b82f6',
                 bgColor: '#dbeafe',
                 count: 'Total'
               }
             ].map((stat, index) => (
-              <div
+              <Paper
                 key={index}
-                style={{
-                  background: '#fff',
-                  borderRadius: '16px',
-                  padding: '24px',
-                  border: '1px solid #e2e8f0'
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  bgcolor: '#fff',
+                  borderRadius: 2,
+                  p: 3,
+                  border: '1px solid #e2e8f0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
                 }}
               >
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '16px'
-                }}>
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: stat.bgColor,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.5rem'
-                  }}>
-                    {stat.icon}
-                  </div>
-                </div>
-                <div style={{
-                  fontSize: '0.85rem',
-                  color: '#6c757d',
-                  marginBottom: '8px',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {stat.title}
-                </div>
-                <div style={{
-                  fontSize: '1.75rem',
-                  fontWeight: 700,
-                  color: '#1a1f36',
-                  marginBottom: '4px',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {stat.value}
-                </div>
-                <div style={{
-                  fontSize: '0.8rem',
-                  color: '#6c757d',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {stat.count} transactions
-                </div>
-              </div>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                  <Box sx={{ width: 48, height: 48, borderRadius: 1.5, bgcolor: stat.bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <stat.IconComponent sx={{ fontSize: 28, color: stat.color }} />
+                  </Box>
+                </Stack>
+                <Typography sx={{ fontSize: 13, color: '#6c757d', mb: 1, fontFamily: 'Inter, sans-serif' }}>{stat.title}</Typography>
+                <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1a1f36', mb: 0.5, fontFamily: 'Inter, sans-serif' }}>{stat.value}</Typography>
+                <Typography sx={{ fontSize: 12.5, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>{stat.count} transactions</Typography>
+              </Paper>
             ))}
-          </div>
+          </Box>
 
           {/* Filters */}
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            padding: isMobile ? '16px' : '24px',
-            marginBottom: '24px',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            gap: '16px',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            maxWidth: '1400px',
-            margin: '0 auto 24px'
-          }}>
-            <div style={{ flex: 1, minWidth: isMobile ? '100%' : '300px' }}>
-              <input
-                type="text"
-                placeholder="Search transactions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              />
-            </div>
-            <div>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                style={{
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif",
-                  minWidth: '150px'
-                }}
-              >
-                <option value="all">All Status</option>
-                <option value="Paid">Paid</option>
-                <option value="Refunded">Refunded</option>
-              </select>
-            </div>
-          </div>
+          <Paper sx={{ bgcolor: '#fff', borderRadius: 2, p: { xs: 2, md: 3 }, mb: 3, border: '1px solid #e2e8f0' }}>
+            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+              <Box sx={{ flex: 1, minWidth: isMobile ? '100%' : 300 }}>
+                <TextField
+                  fullWidth
+                  placeholder="Search transactions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  size="medium"
+                  sx={{
+                    '& .MuiInputBase-root': { fontFamily: 'Inter, sans-serif' },
+                  }}
+                />
+              </Box>
+              <FormControl sx={{ minWidth: 150 }} size="medium">
+                <InputLabel id="filter-status-label">Status</InputLabel>
+                <Select
+                  labelId="filter-status-label"
+                  label="Status"
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                >
+                  <MenuItem value="all">All Status</MenuItem>
+                  <MenuItem value="Paid">Paid</MenuItem>
+                  <MenuItem value="Refunded">Refunded</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          </Paper>
 
           {/* Transactions Table */}
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            border: '1px solid #e2e8f0',
-            overflow: isMobile ? 'auto' : 'hidden',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontFamily: "'Inter', sans-serif",
-              minWidth: isMobile ? '800px' : 'auto'
-            }}>
-              <thead>
-                <tr style={{ background: '#f7fafc' }}>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>ID</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Campaign</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Amount</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Status</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Date</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+          <TableContainer component={Paper} sx={{ borderRadius: 2, border: '1px solid #e2e8f0', overflow: isMobile ? 'auto' : 'hidden' }}>
+            <Table sx={{ minWidth: isMobile ? 800 : 'auto', fontFamily: 'Inter, sans-serif' }}>
+              <TableHead>
+                <TableRow sx={{ bgcolor: '#f7fafc' }}>
+                  <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>ID</TableCell>
+                  <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Campaign</TableCell>
+                  <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Amount</TableCell>
+                  <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Status</TableCell>
+                  <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Date</TableCell>
+                  <TableCell align="center" sx={{ py: 2, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {filteredTransactions.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: '#6c757d' }}>
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 5, color: '#6c757d' }}>
                       No transactions found
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   filteredTransactions.map((trx) => {
                     const statusStyle = getStatusColor(trx.status);
                     return (
-                      <tr
-                        key={trx.id}
-                        style={{ borderBottom: '1px solid #e2e8f0' }}
-                      >
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', fontWeight: 600, color: '#667eea' }}>{trx.id}</td>
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', fontWeight: 600, color: '#1a1f36' }}>
-                          {trx.campaignName}
-                        </td>
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', fontWeight: 700, color: '#1a1f36' }}>
-                          Rp {trx.amount.toLocaleString('id-ID')}
-                        </td>
-                        <td style={{ padding: '20px 24px' }}>
-                          <span style={{
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
-                            background: statusStyle.bg,
-                            color: statusStyle.color
-                          }}>
-                            {trx.status}
-                          </span>
-                        </td>
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#6c757d' }}>
-                          {formatDate(trx.date)}
-                        </td>
-                        <td style={{ padding: '20px 24px', textAlign: 'center' }}>
-                          <button
+                      <TableRow key={trx.id} sx={{ borderBottom: '1px solid #e2e8f0' }}>
+                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 600, color: '#667eea' }}>{trx.id}</TableCell>
+                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>{trx.campaignName}</TableCell>
+                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 700, color: '#1a1f36' }}>Rp {trx.amount.toLocaleString('id-ID')}</TableCell>
+                        <TableCell sx={{ py: 2.5, pl: 3 }}>
+                          <Chip label={trx.status} sx={{ fontSize: 12, fontWeight: 600, bgcolor: statusStyle.bg, color: statusStyle.color }} />
+                        </TableCell>
+                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, color: '#6c757d' }}>{formatDate(trx.date)}</TableCell>
+                        <TableCell align="center" sx={{ py: 2.5 }}>
+                          <Button
                             onClick={() => handleViewDetails(trx)}
-                            style={{
-                              padding: '8px 16px',
-                              background: '#667eea',
-                              border: 'none',
-                              borderRadius: '8px',
-                              color: '#fff',
-                              fontSize: '0.85rem',
+                            variant="contained"
+                            sx={{
+                              bgcolor: '#667eea',
+                              borderRadius: 3,
                               fontWeight: 600,
-                              cursor: 'pointer',
-                              transition: 'all 0.2s'
+                              py: 1,
+                              px: 2,
+                              fontSize: 13,
+                              color: '#fff',
+                              textTransform: 'none'
                             }}
                           >
                             View Details
-                          </button>
-                        </td>
-                      </tr>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
                     );
                   })
                 )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Container>
+      </Box>
 
       {/* Transaction Detail Modal */}
       {showDetailModal && selectedTransaction && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '20px'
+        <Dialog open onClose={() => setShowDetailModal(false)} maxWidth="sm" fullWidth PaperProps={{
+          sx: {
+            borderRadius: 6,
+            bgcolor: '#f7fafc',
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)',
+            overflow: 'visible',
+          }
         }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '20px',
-            maxWidth: '600px',
-            width: '100%',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+          {/* Colored header with icon and close button */}
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            bgcolor: '#667eea',
+            color: '#fff',
+            px: 4,
+            py: 2.5,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            position: 'relative',
           }}>
-            {/* Modal Header */}
-            <div style={{
-              padding: '32px',
-              borderBottom: '1px solid #e2e8f0'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <div>
-                  <h2 style={{
-                    fontSize: '1.75rem',
-                    fontWeight: 700,
-                    color: '#1a1f36',
-                    marginBottom: '8px',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
-                    Transaction Details
-                  </h2>
-                  <div style={{
-                    fontSize: '0.9rem',
-                    color: '#6c757d',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
-                    {selectedTransaction.id}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  style={{
-                    background: '#f7fafc',
-                    border: 'none',
-                    borderRadius: '10px',
-                    width: '36px',
-                    height: '36px',
-                    cursor: 'pointer',
-                    fontSize: '1.25rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div style={{ padding: '32px' }}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '24px',
-                marginBottom: '24px'
-              }}>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Campaign</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1a1f36' }}>
-                    {selectedTransaction.campaignName}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Influencer</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1a1f36' }}>
-                    {selectedTransaction.influencer}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Amount</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1f36' }}>
-                    Rp {selectedTransaction.amount.toLocaleString('id-ID')}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Payment Method</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1a1f36' }}>
-                    {selectedTransaction.paymentMethod}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Date</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1a1f36' }}>
-                    {formatDate(selectedTransaction.date)}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Status</div>
-                  <div>
-                    <span style={{
-                      padding: '8px 16px',
-                      borderRadius: '10px',
-                      fontSize: '0.9rem',
-                      fontWeight: 700,
-                      background: getStatusColor(selectedTransaction.status).bg,
-                      color: getStatusColor(selectedTransaction.status).color,
-                      display: 'inline-block'
-                    }}>
-                      {selectedTransaction.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '24px' }}>
-                <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '8px' }}>Description</div>
-                <div style={{
-                  fontSize: '0.95rem',
-                  color: '#2d3748',
-                  lineHeight: '1.6',
-                  padding: '16px',
-                  background: '#f7fafc',
-                  borderRadius: '10px'
-                }}>
-                  {selectedTransaction.description}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-                <button
-                  onClick={() => showToast('Receipt downloaded!', 'success')}
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    background: COLORS.gradient,
-                    border: 'none',
-                    borderRadius: '12px',
-                    color: '#fff',
-                    fontSize: '0.95rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontFamily: "'Inter', sans-serif"
-                  }}
-                >
-                  📥 Download Receipt
-                </button>
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  style={{
-                    padding: '14px 24px',
-                    background: '#e2e8f0',
-                    border: 'none',
-                    borderRadius: '12px',
-                    color: '#2d3748',
-                    fontSize: '0.95rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontFamily: "'Inter', sans-serif"
-                  }}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <AccountBalanceWalletIcon sx={{ fontSize: 32, color: '#fff' }} />
+              <Box>
+                <Typography variant="h6" fontWeight={700} sx={{ color: '#fff', fontFamily: 'Inter, sans-serif', mb: 0.2 }}>Transaction Details</Typography>
+                <Typography sx={{ fontSize: 14, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif' }}>{selectedTransaction.id}</Typography>
+              </Box>
+            </Stack>
+            <Button onClick={() => setShowDetailModal(false)} sx={{
+              minWidth: 36,
+              minHeight: 36,
+              bgcolor: 'rgba(255,255,255,0.12)',
+              color: '#fff',
+              borderRadius: '50%',
+              boxShadow: 'none',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' },
+              position: 'absolute',
+              right: 18,
+              top: 18,
+              fontSize: 22,
+              p: 0,
+            }}>✕</Button>
+          </Box>
+          <DialogContent sx={{ pt: 4, pb: 2.5, px: 4, bgcolor: '#f7fafc' }}>
+            <Grid container spacing={3} sx={{ mb: 2.5 }}>
+              <Grid item xs={12} sm={6}>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Campaign</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>{selectedTransaction.campaignName}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Influencer</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>{selectedTransaction.influencer}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Amount</Typography>
+                <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#10b981' }}>Rp {selectedTransaction.amount.toLocaleString('id-ID')}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Payment Method</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>{selectedTransaction.paymentMethod}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Date</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>{formatDate(selectedTransaction.date)}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Status</Typography>
+                <Chip label={selectedTransaction.status} sx={{ fontSize: 13, fontWeight: 700, borderRadius: 1.5, bgcolor: getStatusColor(selectedTransaction.status).bg, color: getStatusColor(selectedTransaction.status).color, px: 1.5, py: 0.5 }} />
+              </Grid>
+            </Grid>
+            <Box sx={{ mb: 2.5 }}>
+              <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 1, fontWeight: 500 }}>Description</Typography>
+              <Box sx={{ fontSize: 14, color: '#2d3748', lineHeight: 1.7, p: 2.5, bgcolor: '#fff', borderRadius: 2, border: '1px solid #e2e8f0', minHeight: 56 }}>
+                {selectedTransaction.description}
+              </Box>
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ px: 4, pb: 3, bgcolor: '#f7fafc', borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+            <Button
+              onClick={() => showToast('Receipt downloaded!', 'success')}
+              sx={{ flex: 1, py: 1.2, bgcolor: COLORS.gradient, borderRadius: 1.5, color: '#667eea', fontWeight: 600, textTransform: 'none', boxShadow: 'none', '& .MuiButton-startIcon': { mr: 1 } }}
+              startIcon={<DownloadIcon sx={{ color: '#667eea' }} />}
+            >
+              Download Receipt
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
-    </div>
+    </Box>
   );
 }
 

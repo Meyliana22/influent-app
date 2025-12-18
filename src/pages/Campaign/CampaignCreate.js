@@ -1,12 +1,21 @@
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import RemoveIcon from '@mui/icons-material/Remove';
+import AddIcon from '@mui/icons-material/Add';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
 import { Button, TextField, Select, MenuItem, FormControl, InputLabel, RadioGroup, FormControlLabel, Radio, Checkbox, ListItemText, OutlinedInput, Chip, Box } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
+import { Sidebar, Topbar } from '../../components/common';
+import Card from '@mui/material/Card';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Container from '@mui/material/Container';
+import Stack from '@mui/material/Stack';
+import Grid from '@mui/material/Grid';
 import DeleteIcon from '../../assets/delete.svg';
-import BackIcon from '../../assets/back.svg';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import UploadIcon from '../../assets/upload.svg';
 import { useToast } from '../../hooks/useToast';
 import { Modal } from '../../components/common';
@@ -23,38 +32,41 @@ function CollapsibleSection({ title, children, status = '', defaultOpen = false,
   
   return (
     <div style={{ 
-      marginBottom: '24px', 
+      marginBottom: 3,
       background: '#fff', 
-      borderRadius: '12px', 
+      borderRadius: 3,
       boxShadow: '0 2px 8px #e3e3e3',
       opacity: disabled ? 0.5 : 1
     }}>
       <div
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
-          cursor: disabled ? 'not-allowed' : 'pointer', 
-          fontWeight: 600, 
-          fontSize: '1.2rem', 
-          padding: '18px 24px', 
+        style={{
+          fontSize: 19,
+          paddingTop: 2.25,
+          paddingBottom: 2.25,
+          paddingLeft: 3,
+          paddingRight: 3,
           borderBottom: open ? '1px solid #eee' : 'none',
-          color: disabled ? '#999' : 'inherit'
+          color: disabled ? '#999' : 'inherit',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          fontWeight: 600
         }}
         onClick={handleClick}
       >
         <span>
-          <span style={{ marginRight: '8px', color: disabled ? '#ccc' : 'inherit' }}>
+          <span style={{ marginRight: 1, color: disabled ? '#ccc' : 'inherit' }}>
             {disabled ? '▶' : (open ? '▼' : '▶')}
           </span>
           {title}
         </span>
-        <span style={{ color: status === 'done' ? 'green' : (disabled ? '#ccc' : '#888'), fontWeight: 600, fontSize: '1rem' }}>
+        <span style={{ color: status === 'done' ? 'green' : (disabled ? '#ccc' : '#888'), fontWeight: 600, fontSize: 16 }}>
           {status === 'done' ? <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Done <FaCheckCircle /></span> : status || ''}
         </span>
       </div>
       {open && !disabled && (
-        <div style={{ padding: '24px' }}>{children}</div>
+        <div style={{ padding: 3 }}>{children}</div>
       )}
     </div>
   );
@@ -62,9 +74,9 @@ function CollapsibleSection({ title, children, status = '', defaultOpen = false,
 
 function CampaignCreate() {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get campaign ID from URL params
-  const isEditMode = Boolean(id); // Check if we're in edit mode
-  const [isReadOnly, setIsReadOnly] = useState(false); // Check if campaign is paid (read-only)
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
+  const [isReadOnly, setIsReadOnly] = useState(false);
   
   // Responsive state for sidebar
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
@@ -74,9 +86,17 @@ function CampaignCreate() {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedGender, setSelectedGender] = useState('');
-  const [selectedAge, setSelectedAge] = useState('');
+  const [selectedAge, setSelectedAge] = useState([]);
+  
+  const [title, setTitle] = useState('');
 
-  // Handle image upload
+  // Helper component used for required labels in forms
+  const RequiredLabel = ({ children }) => (
+    <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center', fontWeight: 600 }}>
+      {children}
+      <Typography component="span" sx={{ color: 'error.main', ml: 0.5 }}>*</Typography>
+    </Typography>
+  );
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -87,38 +107,30 @@ function CampaignCreate() {
 
   // Handle reference file upload (multiple files)
   const handleReferenceFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length > 0) {
-      const newFiles = files.map(file => ({
+    const files = Array.from(e.target.files || []);
+    if (files.length) {
+      const newFiles = files.map((file) => ({
         file,
-        preview: (file.type.startsWith('image/') || file.type.startsWith('video/')) 
-          ? URL.createObjectURL(file) 
-          : null,
-        type: file.type.startsWith('image/') ? 'image' : (file.type.startsWith('video/') ? 'video' : 'other'),
-        name: file.name
+        preview:
+          file.type.startsWith('image/') || file.type.startsWith('video/')
+            ? URL.createObjectURL(file)
+            : null,
+        type: file.type.startsWith('image/')
+          ? 'image'
+          : file.type.startsWith('video/')
+          ? 'video'
+          : 'other',
+        name: file.name,
       }));
-      setReferenceFiles([...referenceFiles, ...newFiles]);
+      setReferenceFiles((prev) => [...prev, ...newFiles]);
     }
-    // Reset input value to allow re-selecting the same file
-    e.target.value = '';
+    if (e.target) e.target.value = '';
   };
 
-  // Remove reference file
+  // Remove a reference file by index
   const handleRemoveReferenceFile = (index) => {
-    const newFiles = referenceFiles.filter((_, i) => i !== index);
-    // Revoke object URL to free memory
-    if (referenceFiles[index].preview) {
-      URL.revokeObjectURL(referenceFiles[index].preview);
-    }
-    setReferenceFiles(newFiles);
+    setReferenceFiles((prev) => prev.filter((_, i) => i !== index));
   };
-
-  // Helper function untuk membuat label dengan asterisk merah
-  const RequiredLabel = ({ children }) => (
-    <span>
-      {children} <span style={{ color: 'red' }}>*</span>
-    </span>
-  );
 
   // Helper function untuk format currency
   const formatCurrency = (value) => {
@@ -138,8 +150,124 @@ function CampaignCreate() {
     return value.replace(/\D/g, '');
   };
 
-  // Form state
-  const [title, setTitle] = useState('');
+  // Helper function untuk get current date in Jakarta timezone
+  const getTodayJakarta = () => {
+    const now = new Date();
+    // Convert to Jakarta timezone (UTC+7)
+    const jakartaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+    return jakartaTime.toISOString().split('T')[0];
+  };
+
+  // Helper function untuk menghitung minimum date
+  const getMinDate = (daysFromNow) => {
+    const today = getTodayJakarta();
+    const date = new Date(today);
+    date.setDate(date.getDate() + daysFromNow);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Helper function untuk add days ke tanggal tertentu
+  const addDaysToDate = (dateString, days) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Helper function untuk add working days (exclude weekends)
+  const addWorkingDays = (dateString, workingDays) => {
+    if (!dateString) return '';
+    let date = new Date(dateString);
+    let daysAdded = 0;
+    
+    while (daysAdded < workingDays) {
+      date.setDate(date.getDate() + 1);
+      const dayOfWeek = date.getDay();
+      // Skip weekends (0 = Sunday, 6 = Saturday)
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        daysAdded++;
+      }
+    }
+    
+    return date.toISOString().split('T')[0];
+  };
+
+  // Special function for start posting date: adds working days + 1 buffer day
+  // Used to ensure UMKM has full working days for review before posting starts
+  const addWorkingDaysWithBuffer = (dateString, workingDays) => {
+    if (!dateString) return '';
+    let date = new Date(dateString);
+    let daysAdded = 0;
+    
+    // Count working days
+    while (daysAdded < workingDays) {
+      date.setDate(date.getDate() + 1);
+      const dayOfWeek = date.getDay();
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        daysAdded++;
+      }
+    }
+    
+    // Add 1 more day buffer
+    date.setDate(date.getDate() + 1);
+    
+    return date.toISOString().split('T')[0];
+  };
+
+  // Calculate total revision days based on max_revisions and revision_duration
+  const calculateTotalRevisionDays = () => {
+    if (!enable_revision || !revision_duration || !max_revisions) return 0;
+    const daysPerRevision = parseInt(revision_duration) || 0;
+    const totalRevisions = parseInt(max_revisions) || 0;
+    return daysPerRevision * totalRevisions;
+  };
+
+  // Calculate minimum dates based on dependencies
+  const getMinRegistrationDeadline = () => {
+    // Minimum 2 working days buffer - admin needs time to review
+    // Example: Sat Dec 14 → Mon 16 (day 1, disabled) + Tue 17 (day 2, disabled) → can select from Wed 18
+    const today = getTodayJakarta();
+    const todayDate = new Date(today);
+    const dayOfWeek = todayDate.getDay();
+    
+    let startDate = today;
+    // If today is Saturday (6), move to Monday
+    if (dayOfWeek === 6) {
+      startDate = addDaysToDate(today, 2); // Saturday + 2 = Monday
+    } else if (dayOfWeek === 0) {
+      // If today is Sunday (0), move to Monday
+      startDate = addDaysToDate(today, 1); // Sunday + 1 = Monday
+    }
+    
+    // Add 2 working days from Monday → Wednesday (Mon 16 + Tue 17 = 2 days, so Wed 18 selectable)
+    return addWorkingDays(startDate, 2);
+  };
+  const getMinSubmissionDeadline = () => {
+    // 2 working days AFTER registration deadline: 1 hari UMKM select + 1 hari student konfirmasi
+    // Example: Reg deadline Wed 10 → Thu 11 (select) + Fri 12 (confirm) + skip weekend → Mon 15
+    if (!registration_deadline) return addWorkingDays(getTodayJakarta(), 4);
+    const dayAfterRegistration = addDaysToDate(registration_deadline, 1);
+    return addWorkingDays(dayAfterRegistration, 2);
+  };
+  const getMinStartDate = () => {
+    if (!enable_revision) {
+      // If revision inactive, need 2 working days for UMKM review + 1 buffer day
+      // Deadline 22 → review 23-24 → can post from 25
+      return submission_deadline ? addWorkingDaysWithBuffer(submission_deadline, 2) : getMinDate(4);
+    }
+    // If revision active, must be after total revision period + 2 review days + 1 buffer
+    if (submission_deadline && revision_duration && max_revisions) {
+      const totalRevisionDays = calculateTotalRevisionDays();
+      // Add 2 working days for review + 1 buffer day
+      return addWorkingDaysWithBuffer(submission_deadline, totalRevisionDays + 2);
+    }
+    return getMinDate(4);
+  };
+  const getMinEndDate = () => {
+    return start_date ? addWorkingDays(start_date, 1) : getMinDate(5);
+  };
+                  
+                
   const [campaignCategory, setCampaignCategory] = useState('');
   const [category, setCategory] = useState([]); // Influencer categories (multi-select)
   const [hasProduct, setHasProduct] = useState(false); // Toggle untuk produk
@@ -150,11 +278,16 @@ function CampaignCreate() {
   // Modal state
   const [showBackModal, setShowBackModal] = useState(false);
   const [showHeaderBackModal, setShowHeaderBackModal] = useState(false);
+  const [isHoveringBatal, setIsHoveringBatal] = useState(false);
   
-  // Brief Campaign state
+  // Brief Campaign state - Updated with 5 new fields
+  const [registration_deadline, setRegistrationDeadline] = useState('');
+  const [submission_deadline, setSubmissionDeadline] = useState('');
+  const [revision_duration, setRevisionDuration] = useState('');
+  const [max_revisions, setMaxRevisions] = useState(1);
+  const [enable_revision, setEnableRevision] = useState(true);
   const [start_date, setStartDate] = useState('');
   const [end_date, setEndDate] = useState('');
-  const [submission_deadline, setContentDeadline] = useState('');
   const [content_guidelines, setPhotoRules] = useState('');
   const [caption_guidelines, setCaptionRules] = useState('');
   const [contentReference, setContentReference] = useState('');
@@ -167,6 +300,8 @@ function CampaignCreate() {
     { id: 1, post_count: 1, content_type: 'foto' }
   ]);
   const [min_followers, setMinFollowers] = useState('');
+  const [criteriaDesc, setCriteriaDesc] = useState(''); // Field "Lainnya.." untuk kriteria tambahan
+  const [isFree, setIsFree] = useState(false); // Toggle untuk campaign tidak berbayar (gratis)
   
   // Settings dropdown state
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
@@ -201,10 +336,10 @@ function CampaignCreate() {
 
   const validateStep2 = () => {
     const errors = [];
-    if (!category || category.length === 0) errors.push('Kategori Influencer');
+    if (!category || category.length === 0) errors.push('Kategori Akun UMKM');
     if (!min_followers) errors.push('Jumlah Minimum Followers');
     if (!selectedGender) errors.push('Target Gender');
-    if (!selectedAge) errors.push('Target Usia');
+    if (!selectedAge || selectedAge.length === 0) errors.push('Target Usia');
     
     if (errors.length > 0) {
       showToast(`Field wajib belum diisi: ${errors.join(', ')}`, 'error');
@@ -215,8 +350,12 @@ function CampaignCreate() {
 
   const validateStep3 = () => {
     const errors = [];
-    if (!influencer_count || influencer_count < 1) errors.push('Jumlah Influencer');
-    if (!price_per_post) errors.push('Harga per Task');
+    if (!influencer_count || influencer_count < 1) errors.push('Jumlah Mahasiswa');
+    
+    // Only validate price if campaign is not free (hasProduct = false means campaign is paid)
+    if (!hasProduct && !price_per_post) {
+      errors.push('Total Bayaran per Mahasiswa');
+    }
     
     if (errors.length > 0) {
       showToast(`Field wajib belum diisi: ${errors.join(', ')}`, 'error');
@@ -227,33 +366,22 @@ function CampaignCreate() {
 
   const validateStep4 = () => {
     const errors = [];
-    if (!submission_deadline) errors.push('Deadline Proposal Konten');
-    if (!start_date) errors.push('Tanggal Campaign Mulai');
-    if (!end_date) errors.push('Tanggal Campaign Selesai');
+    if (!registration_deadline) errors.push('Deadline Registrasi Campaign');
+    if (!submission_deadline) errors.push('Deadline Submit Konten');
     
-    // Validasi jarak tanggal minimal 1 minggu
-    if (start_date && end_date) {
-      const start = new Date(start_date);
-      const end = new Date(end_date);
-      const diffTime = end - start;
-      const diffDays = diffTime / (1000 * 60 * 60 * 24);
-      if (diffDays < 7) {
-        errors.push('Jarak antara tanggal mulai dan selesai minimal 1 minggu');
-      }
+    // Validate revision fields only if revision is enabled
+    if (enable_revision) {
+      if (!revision_duration) errors.push('Durasi Revisi');
+      if (!max_revisions) errors.push('Maksimal Revisi');
     }
     
-    if (start_date && submission_deadline) {
-      const start = new Date(start_date);
-      const deadline = new Date(submission_deadline);
-      const diffTime = start - deadline;
-      const diffDays = diffTime / (1000 * 60 * 60 * 24);
-      if (diffDays < 7) {
-        errors.push('Jarak antara deadline proposal dan tanggal mulai minimal 1 minggu');
-      }
-    }
+    if (!start_date) errors.push('Tanggal Mulai Posting');
+    if (!end_date) errors.push('Tanggal Selesai Posting');
+    
+    // Remove 1 week validation - dates are controlled by minimum date constraints
     
     if (errors.length > 0) {
-      showToast(`Validasi gagal: ${errors.join(', ')}`, 'error');
+      showToast(`Masih ada field wajib yang belum diisi atau validasi yang belum terpenuhi: ${errors.join(', ')}`, 'error');
       return false;
     }
     return true;
@@ -271,23 +399,10 @@ function CampaignCreate() {
       // Load campaign from API
       const fetchCampaign = async () => {
         try {
-          console.log('🔍 Fetching campaign with ID:', id);
           const response = await campaignService.getCampaignById(id);
-          console.log('✅ Campaign data fetched from API:', response);
-          
-          // if (!response || !response.data) {
-          //   console.log(response);
-          //   console.error('❌ Campaign not found');
-          //   showToast('Campaign tidak ditemukan', 'error');
-          //   setTimeout(() => navigate('/campaigns'), 500);
-          //   return;
-          // }
-          
           const data = response;
-          console.log('📋 Campaign data structure:', data);
-          
-          // Set read-only mode if campaign is active (paid)
-          if (data.status === 'active') {
+          // Set read-only mode if campaign is not draft
+          if (data.status !== 'draft') {
             setIsReadOnly(true);
           }
           
@@ -312,13 +427,30 @@ function CampaignCreate() {
           // Product fields
           setHasProduct(data.has_product || false);
           setProductName(data.product_name || '');
-          setProductValue(data.product_value ? data.product_value.toString() : '');
+          // Parse product_value - backend returns as DECIMAL (e.g., "28000.00")
+          // Convert to integer by removing decimal part
+          setProductValue(data.product_value ? Math.floor(parseFloat(data.product_value)).toString() : '');
           setProductDesc(data.product_desc || '');
           
+          // Helper function to convert ISO date to YYYY-MM-DD
+          const formatDateForInput = (isoDate) => {
+            if (!isoDate) return '';
+            try {
+              return isoDate.split('T')[0]; // Extract YYYY-MM-DD from ISO format
+            } catch (e) {
+              return '';
+            }
+          };
+          
           // Date fields
-          setStartDate(data.start_date || '');
-          setEndDate(data.end_date || '');
-          setContentDeadline(data.submission_deadline || '');
+          setRegistrationDeadline(formatDateForInput(data.registration_deadline));
+          setSubmissionDeadline(formatDateForInput(data.submission_deadline));
+          setStartDate(formatDateForInput(data.start_date));
+          setEndDate(formatDateForInput(data.end_date));
+          
+          setRevisionDuration(data.revision_duration ? data.revision_duration.toString() : '');
+          setMaxRevisions(data.max_revisions || 1);
+          setEnableRevision(data.enable_revision !== undefined ? data.enable_revision : true);
           
           // Guidelines
           setPhotoRules(data.content_guidelines || '');
@@ -327,12 +459,30 @@ function CampaignCreate() {
           
           // Budget & criteria
           setInfluencerCount(data.influencer_count || 1);
-          setPricePerPost(data.price_per_post ? data.price_per_post.toString() : '');
-          setMinFollowers(data.min_followers ? data.min_followers.toString() : '');
+          // Parse numeric values - backend may return as DECIMAL with .00
+          // Convert to integer by removing decimal part
+          setPricePerPost(data.price_per_post ? Math.floor(parseFloat(data.price_per_post)).toString() : '');
+          setMinFollowers(data.min_followers ? Math.floor(parseFloat(data.min_followers)).toString() : '');
+          setIsFree(data.is_free || false);
           
           // Demographics
           setSelectedGender(data.selected_gender || '');
-          setSelectedAge(data.selected_age || '');
+          // Parse selected_age - could be string or array
+          if (data.selected_age) {
+            if (Array.isArray(data.selected_age)) {
+              setSelectedAge(data.selected_age);
+            } else if (typeof data.selected_age === 'string') {
+              try {
+                const parsed = JSON.parse(data.selected_age);
+                setSelectedAge(Array.isArray(parsed) ? parsed : [data.selected_age]);
+              } catch {
+                setSelectedAge([data.selected_age]);
+              }
+            }
+          } else {
+            setSelectedAge([]);
+          }
+          setCriteriaDesc(data.criteria_desc || '');
           
           // Content types - parse if needed
           if (data.contentTypes && Array.isArray(data.contentTypes) && data.contentTypes.length > 0) {
@@ -414,6 +564,10 @@ function CampaignCreate() {
   // Calculate estimated budget based on influencer count and task price
   const estimatedBudget = influencer_count * (parseFloat(parseCurrency(price_per_post)) || 0);
   
+  // Total budget including admin fee (Rp 5.000)
+  const ADMIN_FEE = 5000;
+  const totalBudgetWithAdminFee = estimatedBudget + ADMIN_FEE;
+  
   // Check if form data has changed
   const hasChanges = () => {
     if (!originalData) return false;
@@ -464,14 +618,14 @@ function CampaignCreate() {
 
   // Updated options for category
   const categoryOptions = [
-    'Entertainment',
-    'Health & Sport',
-    'Lifestyle & Travel',
-    'Technology',
-    'Family & Parenting',
-    'Food & Beverages',
-    'Beauty & Fashion',
-    'Gaming'
+    'Gaming',
+    'Gaya Hidup & Travel',
+    'Hiburan',
+    'Kecantikan & Fashion',
+    'Keluarga & Parenting',
+    'Kesehatan & Olahraga',
+    'Makanan & Minuman',
+    'Teknologi'
   ];
 
   // Check if all required fields are filled for Step 1
@@ -485,7 +639,7 @@ function CampaignCreate() {
   const briefFilled = start_date && end_date && submission_deadline && content_guidelines && caption_guidelines;
 
   // Check if kriteria influencer fields are filled
-  const kriteriaFilled = category && category.length > 0 && min_followers && selectedGender && selectedAge;
+  const kriteriaFilled = category && category.length > 0 && min_followers && selectedGender && selectedAge && selectedAge.length > 0;
 
   // Check if konten & anggaran fields are filled
   const kontenFilled = influencer_count && price_per_post && contentItems && contentItems.length > 0;
@@ -504,41 +658,44 @@ function CampaignCreate() {
       campaignCategory,
       category,
       hasProduct,
-      productName,
-      productValue: productValue ? parseCurrency(productValue) : '',
-      productDesc,
+      productName: hasProduct ? productName : null,
+      productValue: hasProduct && productValue ? parseCurrency(productValue) : null,
+      productDesc: productDesc || null,
       start_date,
       end_date,
+      registration_deadline,
       submission_deadline,
+      revision_duration: revision_duration ? parseInt(revision_duration) : null,
+      max_revisions: max_revisions ? parseInt(max_revisions) : 1,
+      enable_revision,
       content_guidelines,
       caption_guidelines,
       contentReference,
       referenceFiles: referenceFiles.map(rf => rf.name),
       influencer_count,
-      price_per_post: price_per_post ? parseCurrency(price_per_post) : '',
-      min_followers: min_followers ? parseCurrency(min_followers) : '',
+      price_per_post: price_per_post ? parseCurrency(price_per_post) : null,
+      min_followers: min_followers ? parseCurrency(min_followers) : null,
+      isFree,
       selectedGender,
       selectedAge,
+      criteriaDesc,
       contentItems,
-      status: 'inactive', // Set to inactive for unpaid campaigns
+      status: 'draft', // Save as draft
       image: imagePreview
     };
     
     try {
       if (isEditMode) {
         // Update existing campaign as draft
-        console.log('Updating campaign as draft:', id);
         await campaignService.updateCampaign(id, campaignData);
         showToast('Campaign berhasil disimpan sebagai draft!', 'success');
       } else {
         // Create new campaign as draft
-        console.log('Creating new campaign as draft');
         await campaignService.createCampaign(campaignData);
         showToast('Campaign berhasil disimpan sebagai draft!', 'success');
       }
       
-      setShowHeaderBackModal(false);
-      setTimeout(() => navigate('/campaigns'), 500);
+      setTimeout(() => navigate('/campaigns'), 800);
     } catch (err) {
       console.error('save draft (API)', err);
       showToast(err.message || 'Gagal menyimpan draft ke server', 'error');
@@ -572,12 +729,16 @@ function CampaignCreate() {
       campaignCategory,
       category,
       hasProduct,
-      productName,
-      productValue: parseCurrency(productValue),
+      productName: hasProduct ? productName : null,
+      productValue: hasProduct && productValue ? parseCurrency(productValue) : null,
       productDesc,
       start_date,
       end_date,
+      registration_deadline,
       submission_deadline,
+      revision_duration: parseInt(revision_duration),
+      max_revisions: parseInt(max_revisions),
+      enable_revision,
       content_guidelines,
       caption_guidelines,
       contentReference,
@@ -585,19 +746,18 @@ function CampaignCreate() {
       influencer_count,
       price_per_post: parseCurrency(price_per_post),
       min_followers: parseCurrency(min_followers),
+      isFree,
       selectedGender,
       selectedAge,
+      criteriaDesc,
       contentItems: contentItems.map(item => ({
         id: item.id,
         post_count: item.post_count,
         content_type: item.content_type
       })),
-      status: 'inactive', // Set to inactive for unpaid campaigns, will be 'active' after payment
+      status: 'admin_review', // Submit to admin for review
       image: imagePreview
     };
-    
-    console.log('💾 Saving campaign with data:', campaignData);
-    console.log('🏷️ Campaign status before save:', campaignData.status);
     
     // Save to API
     try {
@@ -606,24 +766,17 @@ function CampaignCreate() {
       
       if (isEditMode) {
         // Update existing campaign
-        console.log('Updating campaign:', id);
         response = await campaignService.updateCampaign(id, campaignData);
         campaignId = id; // For update, use existing ID
-        showToast('Campaign berhasil diupdate!', 'success');
+        showToast('Campaign submitted for admin review!', 'success');
       } else {
         // Create new campaign
-        console.log('Creating new campaign');
         response = await campaignService.createCampaign(campaignData);
-        console.log('Create campaign response:', response);
-        
         // Try multiple ways to get campaign_id from response
         campaignId = response?.data?.campaign_id || 
                      response?.campaign_id || 
                      response?.insertId ||
                      response?.id;
-        
-        console.log('Campaign ID extracted:', campaignId);
-        
         // If campaignId is still not valid, try to extract from any nested structure
         if (!campaignId || campaignId === 'undefined') {
           // Try to find campaign_id in any level of the response
@@ -633,30 +786,11 @@ function CampaignCreate() {
             campaignId = response.result.campaign_id;
           }
         }
-        
-        console.log('Final Campaign ID:', campaignId);
-        showToast('Campaign berhasil dibuat!', 'success');
+        showToast('Campaign submitted for admin review!', 'success');
       }
       
-      // Check if campaign status is inactive (unpaid) - redirect to payment
-      if (campaignData.status === 'inactive') {
-        if (campaignId && campaignId !== 'undefined') {
-          console.log('✅ Campaign status is inactive, redirecting to payment page with ID:', campaignId);
-          setTimeout(() => navigate(`/campaign/${campaignId}/payment`), 1500);
-        } else {
-          console.error('❌ No valid campaign ID returned from API');
-          console.error('Full response:', JSON.stringify(response, null, 2));
-          showToast(isEditMode ? 'Campaign diupdate tapi tidak bisa redirect.' : 'Campaign dibuat tapi tidak bisa redirect.', 'warning');
-          setTimeout(() => navigate('/campaigns'), 1500);
-        }
-      } else {
-        // For paid campaigns (status = active), just show success and stay/go to list
-        console.log('✅ Campaign is active (paid), no payment needed');
-        if (isEditMode) {
-          showToast('Campaign aktif berhasil diupdate!', 'success');
-        }
-        setTimeout(() => navigate('/campaigns'), 1500);
-      }
+      // Redirect to campaigns list
+      setTimeout(() => navigate('/campaigns'), 1500);
     } catch (err) {
       console.error('save campaign (API)', err);
       showToast(err.message || 'Gagal menyimpan campaign ke server', 'error');
@@ -671,7 +805,6 @@ function CampaignCreate() {
   const confirmDelete = async () => {
     // Delete campaign from API
     try {
-      console.log('Deleting campaign:', id);
       await campaignService.deleteCampaign(id);
       showToast('Campaign berhasil dihapus', 'success');
       setShowDeletePopup(false);
@@ -769,1246 +902,1365 @@ function CampaignCreate() {
   };
 
   return (
-    <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      <div style={{ marginLeft: !isMobile ? '260px' : '0', flex: 1 }}>
-        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        
-        <div style={{ marginTop: '72px', background: '#f7fafc', minHeight: 'calc(100vh - 72px)', padding: '32px' }}>
-          <div style={{ maxWidth: isMobile ? '100%' : '900px', margin: '0 auto' }}>
-        <div style={{ background: '#fff', borderRadius: '20px', boxShadow: '0 4px 24px #e3e3e3', padding: isMobile ? '20px' : '32px', marginBottom: '32px' }}>
-          {/* Back Button */}
-          
-          {/* Header with Title and Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  // If read-only (paid/active), go directly back to campaign list
-                  if (isReadOnly) {
-                    navigate('/campaigns');
-                  } else {
-                    setShowHeaderBackModal(true);
-                  }
-                }}
-                aria-label="Kembali ke daftar campaign"
-                style={{
-                  background: 'rgba(102,126,234,0.12)', // soft purple
-                  border: 'none',
-                  borderRadius: '18px',
-                  width: '36px',
-                  height: '36px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 24px rgba(102,126,234,0.08)',
-                  cursor: 'pointer',
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(102,126,234,0.12)';
-                  e.currentTarget.style.boxShadow = '0 4px 24px rgba(102,126,234,0.08)';
-                }}
-              >
-                <img src={BackIcon} alt="Back" style={{ width: '16px', height: '16px' }} />
-              </button>
-              <h2 style={{ fontWeight: 600, margin: 0 }}>
-                {isReadOnly ? 'Campaign Details' : 
-                 isEditMode ? 'Edit Campaign' : 'Create Campaign'}
-              </h2>
-              {isEditMode && !isReadOnly && (
-                <img 
-                  onClick={handleDelete}
-                  src={DeleteIcon}
-                  alt="Campaign" 
-                  style={{ width: '20px', height: '20px', borderRadius: '50%' }} 
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Step Indicator */}
-          <div 
-            className="step-indicator-container"
-            style={{ 
-              background: '#f8f9fa', 
-              borderRadius: '12px', 
-              padding: '14px 16px', 
-              marginBottom: '24px',
-              overflowX: 'auto',
-              overflowY: 'hidden',
-              WebkitOverflowScrolling: 'touch',
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#cbd5e0 #f8f9fa'
-            }}>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '4px', 
-              flexWrap: 'nowrap',
-              width: '100%',
-              justifyContent: 'space-between'
-            }}>
-              {[
-                { num: 1, name: 'Detail Campaign', shortName: 'Detail', completed: allFilled },
-                { num: 2, name: 'Kriteria Influencer', shortName: 'Kriteria', completed: kriteriaFilled },
-                { num: 3, name: 'Konten & Anggaran', shortName: 'Konten', completed: kontenFilled },
-                { num: 4, name: 'Brief Campaign', shortName: 'Brief', completed: briefFilled }
-              ].map((step, index) => {
-                const isActive = currentStep === step.num;
-                // Bisa akses jika: edit mode, step saat ini, step sebelumnya, atau step yang sudah completed
-                const canAccess = isEditMode || 
-                  step.num === currentStep || 
-                  step.num < currentStep || 
-                  step.completed;
-                
-                return (
-                  <React.Fragment key={step.num}>
-                    <div 
-                      onClick={() => canAccess && goToStep(step.num)}
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '6px',
-                        cursor: canAccess ? 'pointer' : 'not-allowed',
-                        opacity: canAccess ? 1 : 0.5,
-                        transition: 'all 0.3s ease',
-                        flex: '1',
-                        minWidth: '0'
-                      }}
-                    >
-                      <div style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        background: isActive 
-                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
-                          : '#e9ecef',
-                        color: isActive ? 'white' : '#adb5bd',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.85rem',
-                        fontWeight: '700',
-                        boxShadow: isActive ? '0 4px 12px rgba(102, 126, 234, 0.4)' : 'none',
-                        transition: 'all 0.3s ease',
-                        flexShrink: 0,
-                        transform: isActive ? 'scale(1.05)' : 'scale(1)'
-                      }}>
-                        {step.num}
-                      </div>
-                      <span style={{ 
-                        fontSize: '0.75rem', 
-                        color: isActive ? '#667eea' : '#adb5bd',
-                        fontWeight: isActive ? '600' : '500',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        transition: 'all 0.3s ease'
-                      }}>
-                        {window.innerWidth < 768 ? step.shortName : step.name}
-                      </span>
-                    </div>
-                  </React.Fragment>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Step Content Card */}
-          {currentStep === 1 && (
-            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Detail Campaign</h3>
-            <form onSubmit={handleSave}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '18px', marginTop: '6px' }}>
-                <div style={{ 
-                  width: '180px', 
-                  height: '160px', 
-                  background: imagePreview ? '#fff' : '#f5f5f5',
-                  borderRadius: '8px', 
-                  marginRight: '18px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  overflow: 'hidden', 
-                  position: 'relative',
-                  border: '1px solid #ccc',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  if (!imagePreview) {
-                    e.currentTarget.style.borderColor = '#999';
-                    e.currentTarget.style.background = '#ebebeb';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!imagePreview) {
-                    e.currentTarget.style.borderColor = '#ccc';
-                    e.currentTarget.style.background = '#f5f5f5';
-                  }
-                }}
-                >
-                  {imagePreview ? (
-                    <>
-                      <img src={imagePreview} alt="Campaign" style={{ 
-                        maxWidth: '100%', 
-                        maxHeight: '100%', 
-                        width: 'auto', 
-                        height: 'auto', 
-                        objectFit: 'cover', 
-                        borderRadius: '14px'
-                      }} />
-                      <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        opacity: 0,
-                        transition: 'opacity 0.3s ease',
-                        borderRadius: '14px'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.opacity = '1';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.opacity = '0';
-                      }}
-                      >
-                        <div style={{ textAlign: 'center', color: '#fff' }}>
-                          <div style={{ fontSize: '1.5rem', marginBottom: '4px' }}>📷</div>
-                          <div style={{ fontSize: '0.8rem' }}>Change Image</div>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ textAlign: 'center', color: '#000000ff' }}>
-                      <img src={UploadIcon} alt="Upload" style={{ width: '32px', height: '32px', marginBottom: '8px' }} />
-                      <div style={{ fontSize: '0.9rem', fontWeight: '500', opacity: 0.9 }}><RequiredLabel>Upload Image</RequiredLabel></div>
-                      <div style={{ fontSize: '0.7rem', opacity: 0.7, marginTop: '4px' }}>Click to browse</div>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}
-                    title="Upload campaign image"
-                    disabled={isReadOnly}
-                  />
-                </div>
-                <TextField
-                  label={<RequiredLabel>Judul Campaign</RequiredLabel>}
+    <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Box sx={{ ml: !isMobile ? 32.5 : 0, flex: 1 }}>
+        <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Box sx={{ mt: 9, bgcolor: '#f7fafc', minHeight: 'calc(100vh - 72px)', py: 4 }}>
+          <Container maxWidth="md">
+            <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 2, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden', boxShadow: 6 }}>
+              {/* Header with Title and Buttons */}
+              <Stack direction="row" alignItems="center" spacing={2} mb={3}>
+                <Button
                   variant="outlined"
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                  style={{ flex: 1, marginBottom: '18px' }}
-                  InputLabelProps={{ shrink: true }}
-                  disabled={isReadOnly}
-                />
-              </div>
-              <div style={{ marginBottom: '18px', marginTop: '6px' }}>
-                <Autocomplete
-                  options={categoryOptions}
-                  value={campaignCategory}
-                  onChange={(event, newValue) => setCampaignCategory(newValue || '')}
-                  disabled={isReadOnly}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      label={<RequiredLabel>Jenis Campaign</RequiredLabel>}
-                      placeholder="Pilih jenis campaign"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
-                            borderColor: '#d1d5db',
-                            borderWidth: '1px'
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#667eea'
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#667eea',
-                            borderWidth: '2px'
-                          }
-                        }
-                      }}
-                    />
-                  )}
-                />
-              </div>
-              
-              {/* Toggle untuk produk */}
-              <div style={{ marginBottom: '18px' }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={hasProduct}
-                      onChange={(e) => setHasProduct(e.target.checked)}
-                      color="primary"
-                      disabled={isReadOnly}
-                    />
-                  }
-                  label="Campaign ini memiliki produk yang dipromosikan"
-                />
-              </div>
-              {hasProduct && (
-                <>
-                  <div style={{ marginBottom: '18px' }}>
-                    <TextField
-                      label={<RequiredLabel>Nama Produk</RequiredLabel>}
-                      variant="outlined"
-                      placeholder="Input nama produk"
-                      value={productName}
-                      onChange={e => setProductName(e.target.value)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                      disabled={isReadOnly}
-                    />
-                  </div>
-                  <div style={{ marginBottom: '18px' }}>
-                    <TextField
-                      label={<RequiredLabel>Nilai Produk</RequiredLabel>}
-                      variant="outlined"
-                      placeholder="Contoh: 89000"
-                      value={formatCurrency(productValue)}
-                      onChange={e => setProductValue(e.target.value)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                      InputProps={{
-                        startAdornment: <span style={{ marginRight: '4px', color: '#666' }}>Rp</span>,
-                      }}
-                      // helperText="Format otomatis: 89000 → Rp 89.000"
-                      disabled={isReadOnly}
-                    />
-                  </div>
-                </>
-              )}
-              
-              <div style={{ marginBottom: '18px' }}>
-                <TextField
-                  label={<RequiredLabel>{hasProduct ? 'Deskripsi Produk' : 'Deskripsi Campaign'}</RequiredLabel>}
-                  variant="outlined"
-                  placeholder={hasProduct 
-                    ? "Tulis detail produk yang akan dipromosikan (kandungan, manfaat, dll)..."
-                    : "Tulis tujuan dan detail campaign di sini..."
-                  }
-                  value={productDesc}
-                  onChange={e => setProductDesc(e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={4}
-                  InputLabelProps={{ shrink: true }}
-                  disabled={isReadOnly}
-                />
-              </div>
-            </form>
-            
-            {/* Navigation Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
-              <div></div>
-              <Button
-                onClick={handleNext}
-                variant="contained"
-                color="primary"
-                size="large"
-                style={{ 
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  padding: '12px 32px',
-                  background: '#667eea',
-                  border: 'none'
-                }}
-              >
-                Next →
-              </Button>
-            </div>
-          </div>
-          )}
-
-          {/* Step 2: Kriteria Influencer */}
-          {currentStep === 2 && (
-            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Kriteria Influencer</h3>
-            <form>
-              <div style={{ marginBottom: '18px', marginTop: '6px' }}>
-                <Autocomplete
-                  multiple
-                  options={[
-                    'Entertainment',
-                    'Health & Sport',
-                    'Lifestyle & Travel',
-                    'Technology',
-                    'Family & Parenting',
-                    'Food & Beverages',
-                    'Beauty & Fashion',
-                    'Gaming'
-                  ]}
-                  value={category}
-                  onChange={(event, newValue) => setCategory(newValue)}
-                  disabled={isReadOnly}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => {
-                      const { key, ...tagProps } = getTagProps({ index });
-                      return (
-                        <Chip
-                          key={key}
-                          label={option}
-                          {...tagProps}
-                          onDelete={isReadOnly ? undefined : () => {
-                            setCategory(category.filter((cat) => cat !== option));
-                          }}
-                          style={{
-                            backgroundColor: '#f0f0f0',
-                            border: '1px solid #ccc',
-                            borderRadius: '16px'
-                          }}
-                        />
-                      );
-                    })
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      label={<RequiredLabel>Kategori Influencer</RequiredLabel>}
-                      placeholder="Pilih kategori"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
-                            borderColor: '#d1d5db',
-                            borderWidth: '1px'
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#667eea'
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#667eea',
-                            borderWidth: '2px'
-                          }
-                        }
-                      }}
-                    />
-                  )}
-                />
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <TextField
-                  label={<RequiredLabel>Minimal Jumlah Followers</RequiredLabel>}
-                  variant="outlined"
-                  placeholder="Contoh: 10000"
-                  value={min_followers}
-                  onChange={e => setMinFollowers(e.target.value)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  helperText="💡 Tentukan minimal followers yang dibutuhkan influencer (contoh: 1000, 10000, dst)"
-                  disabled={isReadOnly}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': {
-                        borderColor: '#d1d5db',
-                        borderWidth: '1px'
-                      },
-                      '&:hover fieldset': {
-                        borderColor: '#667eea'
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#667eea',
-                        borderWidth: '2px'
-                      }
+                  color="primary"
+                  onClick={async () => {
+                    if (isReadOnly) {
+                      navigate('/campaigns');
+                    } else {
+                      // Save as draft when navigating back during create/edit
+                      await handleSaveAsDraft();
                     }
                   }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '4px' }}>
-                  <RequiredLabel>Target Gender</RequiredLabel>
-                </label>
-                <RadioGroup
-                  row
-                  value={selectedGender}
-                  onChange={(e) => setSelectedGender(e.target.value)}
-                  style={{ marginBottom: '12px' }}
+                  sx={{ minWidth: 36, minHeight: 36, borderRadius: 2, p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  <FormControlLabel value="male" control={<Radio disabled={isReadOnly} />} label="Laki-Laki" />
-                  <FormControlLabel value="female" control={<Radio disabled={isReadOnly} />} label="Perempuan" />
-                </RadioGroup>
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>
-                  <RequiredLabel>Target Usia</RequiredLabel>
-                </label>
-                <RadioGroup
-                  row
-                  value={selectedAge}
-                  onChange={(e) => setSelectedAge(e.target.value)}
-                  style={{ marginBottom: '12px' }}
-                >
-                  <FormControlLabel value="< 18 tahun" control={<Radio disabled={isReadOnly} />} label="< 18 tahun" />
-                  <FormControlLabel value="18-24 tahun" control={<Radio disabled={isReadOnly} />} label="18-24 tahun" />
-                  <FormControlLabel value="25-34 tahun" control={<Radio disabled={isReadOnly} />} label="25-34 tahun" />
-                  <FormControlLabel value="35-49 tahun" control={<Radio disabled={isReadOnly} />} label="35-49 tahun" />
-                  <FormControlLabel value="> 50 tahun" control={<Radio disabled={isReadOnly} />} label="> 50 tahun" />
-                </RadioGroup>
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600 }}>Lainnya..</label>
-                <TextField
-                  placeholder="Tambahkan kriteria lainnya jika ada"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={2}
-                  style={{ marginTop: '6px' }}
-                  disabled={isReadOnly}
-                />
-              </div>
-            </form>
-            
-            {/* Navigation Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
-              <Button
-                onClick={handleBack}
-                variant="outlined"
-                size="large"
-                style={{ 
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  padding: '12px 32px'
-                }}
-              >
-                ← Back
-              </Button>
-              <Button
-                onClick={handleNext}
-                variant="contained"
-                color="primary"
-                size="large"
-                style={{ 
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  padding: '12px 32px',
-                  background: '#667eea',
-                  border: 'none'
-                }}
-              >
-                Next →
-              </Button>
-            </div>
-          </div>
-          )}
-
-          {/* Step 3: Konten & Anggaran */}
-          {currentStep === 3 && (
-            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Konten & Anggaran</h3>
-            <form>
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Platform:</label>
-                <span style={{ fontSize: '1.1rem' }}>Instagram</span>
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>
-                  <RequiredLabel>Jumlah Influencer yang Dibutuhkan</RequiredLabel>
-                </label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Button 
-                    variant="outlined" 
-                    onClick={() => setInfluencerCount(Math.max(1, influencer_count - 1))}
-                    disabled={isReadOnly}
-                    style={{ 
-                      padding: '8px 16px',
-                      borderRadius: '8px',
-                      flex: '0 0 auto',
-                      minWidth: '40px',
-                      height: '40px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    -
+                  <ArrowBackIosNewIcon sx={{ fontSize: 20, color: '#667eea' }} />
+                </Button>
+                <Typography variant="h5" fontWeight={600} sx={{ flex: 1 }}>
+                  {isReadOnly ? 'Campaign Details' : isEditMode ? 'Edit Campaign' : 'Create Campaign'}
+                </Typography>
+                {isEditMode && !isReadOnly && (
+                  <Button onClick={handleDelete} sx={{ minWidth: 0, p: 0, borderRadius: '50%' }}>
+                    <img src={DeleteIcon} alt="Delete" style={{ width: 20, height: 20, borderRadius: '50%' }} />
                   </Button>
-                  <TextField
-                    type="number"
-                    min="1"
-                    value={influencer_count}
-                    onChange={(e) => setInfluencerCount(Math.max(1, parseInt(e.target.value) || 1))}
-                    style={{ width: '80px', padding: '8px', borderRadius: '8px', textAlign: 'center' }}
-                    disabled={isReadOnly}
-                  />
-                  <Button 
-                    variant="outlined" 
-                    onClick={() => setInfluencerCount(influencer_count + 1)}
-                    disabled={isReadOnly}
-                    style={{ 
-                      padding: '8px 16px',
-                      borderRadius: '8px',
-                      flex: '0 0 auto',
-                      minWidth: '40px',
-                      height: '40px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    +
-                  </Button>
-                </div>
-              </div>
-
-              {contentItems.map((item, index) => (
-                <div key={item.id} style={{ 
-                  marginBottom: '18px',
-                  padding: '16px',
-                  border: '1px solid #e3e3e3',
-                  borderRadius: '8px',
-                  background: '#fff'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h4 style={{ margin: 0, fontWeight: 600 }}>Konten {index + 1}</h4>
-                    {contentItems.length > 1 && !isReadOnly && (
-                      <Button
-                        variant="outlined"
-                        onClick={() => removeContentItem(item.id)}
-                        style={{ 
-                          padding: '4px 8px',
-                          borderColor: '#dc3545',
-                          color: '#dc3545',
-                          borderRadius: '4px',
-                          height: '36px',
-                          minWidth: '80px'
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end' }}>
-                    <div style={{ flex: '0 0 auto' }}>
-                      <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Jumlah Post</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Button
-                          variant="outlined"
-                          onClick={() => updateContentItem(item.id, 'post_count', Math.max(1, item.post_count - 1))}
-                          disabled={isReadOnly}
-                          style={{ 
-                            padding: '8px 16px',
-                            borderRadius: '8px',
-                            flex: '0 0 auto',
-                            minWidth: '40px',
-                            height: '40px',
+                )}
+              </Stack>
+              <Paper elevation={0} sx={{ bgcolor: '#f8f9fa', borderRadius: 3, px: 2, py: 1, mb: 3, overflowX: 'auto' }}>
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ width: '100%' }}>
+                  {[
+                    { num: 1, name: 'Detail Campaign', shortName: 'Detail', completed: allFilled },
+                    { num: 2, name: 'Kriteria Influencer', shortName: 'Kriteria', completed: kriteriaFilled },
+                    { num: 3, name: 'Konten & Anggaran', shortName: 'Konten', completed: kontenFilled },
+                    { num: 4, name: 'Brief Campaign', shortName: 'Brief', completed: briefFilled }
+                  ].map((step, index) => {
+                    const isActive = currentStep === step.num;
+                    // Bisa akses jika: edit mode, step saat ini, step sebelumnya, atau step yang sudah completed
+                    const canAccess = isEditMode || 
+                      step.num === currentStep || 
+                      step.num < currentStep || 
+                      step.completed;
+                    
+                    return (
+                      <React.Fragment key={step.num}>
+                        <Box
+                          onClick={() => canAccess && goToStep(step.num)}
+                          sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            gap: 1,
+                            cursor: canAccess ? 'pointer' : 'not-allowed',
+                            opacity: canAccess ? 1 : 0.6,
+                            flex: 1,
+                            minWidth: 0,
+                            py: 0.5,
                           }}
                         >
-                          -
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: '50%',
+                              background: isActive ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#e9ecef',
+                              color: isActive ? '#fff' : '#adb5bd',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 13,
+                              fontWeight: 700,
+                            }}
+                          >
+                            {step.num}
+                          </Box>
+                          <Typography
+                            sx={{
+                              fontSize: 12,
+                              color: isActive ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#adb5bd',
+                              fontWeight: isActive ? 600 : 500,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              background: isActive ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'none',
+                              WebkitBackgroundClip: isActive ? 'text' : 'none',
+                              WebkitTextFillColor: isActive ? 'transparent' : 'inherit',
+                            }}
+                          >
+                            {step.name}
+                          </Typography>
+                        </Box>
+                      </React.Fragment>
+                    );
+                  })}
+                </Stack>
+              </Paper>
+
+              {/* Cancellation Reason Alert */}
+              {isEditMode && originalData?.status === 'cancelled' && originalData?.cancellation_reason && (
+                <Box sx={{ 
+                  p: 3, 
+                  mb: 3, 
+                  background: '#fee2e2', 
+                  border: '2px solid #ef4444',
+                  borderRadius: 2
+                }}>
+                  <Stack direction="row" spacing={2} alignItems="flex-start">
+                    <Box sx={{ fontSize: '32px', lineHeight: 1, mt: -0.5 }}>⚠️</Box>
+                    <Box flex={1}>
+                      <Typography variant="h6" fontWeight={700} color="#dc2626" mb={1}>
+                        Campaign Dibatalkan oleh Admin
+                      </Typography>
+                      <Typography fontSize={15} color="#7f1d1d" lineHeight={1.6}>
+                        <strong>Alasan:</strong> {originalData.cancellation_reason}
+                      </Typography>
+                      <Typography fontSize={14} color="#991b1b" mt={2} fontStyle="italic">
+                        💡 Anda dapat membuat campaign baru dengan memperbaiki masalah di atas.
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Box>
+              )}
+
+              {/* Pending Review Info */}
+              {isEditMode && originalData?.status === 'pending_review' && (
+                <Box sx={{ 
+                  p: 3, 
+                  mb: 3, 
+                  background: '#fff3cd', 
+                  border: '2px solid #ffc107',
+                  borderRadius: 2
+                }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Box sx={{ fontSize: '28px' }}>⏳</Box>
+                    <Box flex={1}>
+                      <Typography variant="h6" fontWeight={700} color="#856404" mb={0.5}>
+                        Campaign Dalam Review
+                      </Typography>
+                      <Typography fontSize={15} color="#856404">
+                        Campaign Anda sedang ditinjau oleh tim admin. Mohon tunggu konfirmasi.
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Box>
+              )}
+
+              {/* Pending Payment Success */}
+              {isEditMode && originalData?.status === 'pending_payment' && (
+                <Box sx={{ 
+                  p: 3, 
+                  mb: 3, 
+                  background: '#d1fae5', 
+                  border: '2px solid #10b981',
+                  borderRadius: 2
+                }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Box sx={{ fontSize: '28px' }}>✅</Box>
+                    <Box flex={1}>
+                      <Typography variant="h6" fontWeight={700} color="#065f46" mb={0.5}>
+                        Campaign Disetujui!
+                      </Typography>
+                      <Typography fontSize={15} color="#065f46">
+                        Selamat! Campaign Anda telah disetujui. Silakan lakukan pembayaran untuk mengaktifkan campaign.
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Box>
+              )}
+
+              {/* Step Content Card */}
+              {currentStep === 1 && (
+                <Box sx={{ background: '#fff', p: '32px 28px', mb: 3, borderRadius: 3, boxShadow: '0 2px 8px #e3e3e3' }}>
+                  <Typography component="h3" sx={{ mt: 0, mb: 2.5, fontSize: 21, fontWeight: 600 }}>Detail Campaign</Typography>
+                  <form onSubmit={handleSave}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3, mb: 3 }}>
+                      <Box
+                        sx={{
+                          width: { xs: 180, sm: 220 },
+                          height: { xs: 140, sm: 180 },
+                          bgcolor: imagePreview ? '#fff' : '#f5f5f5',
+                          borderRadius: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          overflow: 'hidden',
+                          position: 'relative',
+                          border: '1px solid #ccc',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            borderColor: imagePreview ? '#ccc' : '#999',
+                            bgcolor: imagePreview ? '#fff' : '#ebebeb',
+                          },
+                        }}
+                      >
+                        {imagePreview ? (
+                          <>
+                            <img
+                              src={imagePreview}
+                              alt="Campaign"
+                              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'cover', borderRadius: 8 }}
+                            />
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                inset: 0,
+                                bgcolor: 'rgba(0,0,0,0.35)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                opacity: 0,
+                                transition: 'opacity 0.3s ease',
+                                borderRadius: 2,
+                                '&:hover': { opacity: 1 },
+                              }}
+                            >
+                              <Typography sx={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>Change Image</Typography>
+                            </Box>
+                          </>
+                        ) : (
+                          <Box sx={{ textAlign: 'center', color: '#1a1f36' }}>
+                            <img src={UploadIcon} alt="Upload" style={{ width: 24, height: 24, marginBottom: 8 }} />
+                            <Typography sx={{ fontSize: 14, fontWeight: 600 }}><RequiredLabel>Upload Image</RequiredLabel></Typography>
+                            <Typography sx={{ fontSize: 12, opacity: 0.7, mt: 0.5 }}>Click to browse</Typography>
+                          </Box>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}
+                          title="Upload campaign image"
+                          disabled={isReadOnly}
+                        />
+                      </Box>
+                      <TextField
+                        label={<RequiredLabel>Judul Campaign</RequiredLabel>}
+                        placeholder={"Launching Menu Baru: Nasi Mentai Edition"}
+                        variant="outlined"
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                        sx={{ flex: 1, mb: 2.25 }}
+                        InputLabelProps={{ shrink: true }}
+                        disabled={isReadOnly}
+                      />
+                    </Box>
+                    <Box sx={{ mb: 1.25, mt: 0 }}>
+                      <Autocomplete
+                        options={categoryOptions}
+                        value={campaignCategory}
+                        onChange={(event, newValue) => setCampaignCategory(newValue || '')}
+                        disabled={isReadOnly}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            variant="outlined"
+                            label={<RequiredLabel>Jenis Campaign</RequiredLabel>}
+                            placeholder="Pilih jenis campaign"
+                            InputLabelProps={{ shrink: true }}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                  borderColor: '#d1d5db',
+                                  borderWidth: 1
+                                },
+                                '&:hover fieldset': {
+                                  borderColor: '#667eea'
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#667eea',
+                                  borderWidth: 2
+                                }
+                              }
+                            }}
+                          />
+                        )}
+                      />
+                    </Box>
+                    {/* Toggle untuk produk */}
+                    <Box sx={{ mb: 1.25 }}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={hasProduct}
+                            onChange={(e) => {
+                              setHasProduct(e.target.checked);
+                            }}
+                            color="primary"
+                            disabled={isReadOnly}
+                          />
+                        }
+                        label="Campaign ini memiliki produk yang dipromosikan"
+                      />
+                    </Box>
+                    {hasProduct && (
+                      <>
+                        <Box sx={{ mb: 2.5, pl: 4 }}>
+                          <TextField
+                            label={<RequiredLabel>Nama Produk</RequiredLabel>}
+                            variant="outlined"
+                            placeholder="Input nama produk"
+                            value={productName}
+                            onChange={e => setProductName(e.target.value)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            disabled={isReadOnly}
+                          />
+                        </Box>
+                        <Box sx={{ mb: 2.5, pl: 4 }}>
+                          <TextField
+                            label={<RequiredLabel>Nilai Produk</RequiredLabel>}
+                            variant="outlined"
+                            placeholder="Contoh: 89000"
+                            value={formatCurrency(productValue)}
+                            onChange={e => setProductValue(e.target.value)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            InputProps={{
+                              startAdornment: <span style={{ marginRight: 1, color: '#666' }}>Rp</span>,
+                            }}
+                            disabled={isReadOnly}
+                          />
+                        </Box>
+                      </>
+                    )}
+                    <Box sx={{ mb: 2.5 }}>
+                      <TextField
+                        label={<RequiredLabel>{hasProduct ? 'Deskripsi Produk' : 'Deskripsi Campaign'}</RequiredLabel>}
+                        variant="outlined"
+                        placeholder={hasProduct 
+                          ? "Tulis detail produk yang akan dipromosikan (kandungan, manfaat, dll)..."
+                          : "Tulis tujuan dan detail campaign di sini..."
+                        }
+                        value={productDesc}
+                        onChange={e => setProductDesc(e.target.value)}
+                        fullWidth
+                        multiline
+                        rows={4}
+                        InputLabelProps={{ shrink: true }}
+                        disabled={isReadOnly}
+                      />
+                    </Box>
+                  </form>
+                  {/* Navigation Buttons - Step 1: No Back button, only Next */}
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2.5, mb: 2.5, pt: 2.5, borderTop: '1px solid #eee' }}>
+                    <Button
+                      onClick={handleNext}
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      disabled={!allFilled}
+                      sx={{ 
+                        borderRadius: 2,
+                        fontWeight: 600,
+                        pt: 1.5,
+                        pb: 1.5,
+                        pl: 4,
+                        pr: 4,
+                        background: allFilled ? '#667eea' : '#cbd5e0',
+                        border: 'none',
+                        color: allFilled ? '#fff' : '#a0aec0',
+                        '&:hover': {
+                          background: allFilled ? '#5568d3' : '#cbd5e0'
+                        }
+                      }}
+                    >
+                      Next →
+                    </Button>
+                  </Box>
+                </Box>
+              )}
+
+              {/* Step 2: Kriteria Influencer */}
+              {currentStep === 2 && (
+                <Box sx={{ background: '#fff', p: '32px 28px', mb: 3, borderRadius: 3, boxShadow: '0 2px 8px #e3e3e3' }}>
+                  <Typography component="h3" sx={{ m: 0, mb: 0.75, fontSize: 21, fontWeight: 600 }}>Kriteria Influencer</Typography>
+                  <Box component="section">
+                    <Box sx={{ mb: 2.5, mt: 1.75 }}>
+                      <Autocomplete
+                        multiple
+                        options={categoryOptions}
+                        value={category}
+                        onChange={(event, newValue) => setCategory(newValue)}
+                        disabled={isReadOnly}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            variant="outlined"
+                            label={<RequiredLabel>Kategori Akun Influencer</RequiredLabel>}
+                            placeholder="Pilih kategori akun Influencer"
+                            InputLabelProps={{ shrink: true }}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                  borderColor: '#d1d5db',
+                                  borderWidth: 1
+                                },
+                                '&:hover fieldset': {
+                                  borderColor: '#667eea'
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#667eea',
+                                  borderWidth: 2
+                                }
+                              }
+                            }}
+                          />
+                        )}
+                      />
+                    </Box>
+                    <Box sx={{ mb: 1.25 }}>
+                      <TextField
+                        label={<RequiredLabel>Minimal Jumlah Followers</RequiredLabel>}
+                        variant="outlined"
+                        placeholder="Contoh: 10000"
+                        value={min_followers}
+                        onChange={e => setMinFollowers(e.target.value)}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="Tentukan minimal followers yang dibutuhkan influencer (contoh: 1000, 10000, dst)"
+                        disabled={isReadOnly}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': {
+                              borderColor: '#d1d5db',
+                              borderWidth: 1
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#667eea'
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#667eea',
+                              borderWidth: 2
+                            }
+                          }
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ mb: 1.25 }}>
+                      <Typography sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
+                        <RequiredLabel>Target Gender</RequiredLabel>
+                      </Typography>
+                      <RadioGroup
+                        row
+                        value={selectedGender}
+                        onChange={(e) => setSelectedGender(e.target.value)}
+                        sx={{ mb: 1.5 }}
+                      >
+                        <FormControlLabel value="all" control={<Radio disabled={isReadOnly} />} label="Semua Gender" />
+                        <FormControlLabel value="male" control={<Radio disabled={isReadOnly} />} label="Laki-Laki" />
+                        <FormControlLabel value="female" control={<Radio disabled={isReadOnly} />} label="Perempuan" />
+                      </RadioGroup>
+                    </Box>
+                    <Box sx={{ mb: 2.5 }}>
+                      <Autocomplete
+                        multiple
+                        options={['< 18 tahun', '18-24 tahun', '25-34 tahun', '35-49 tahun', '> 50 tahun']}
+                        value={selectedAge}
+                        onChange={(event, newValue) => setSelectedAge(newValue)}
+                        disabled={isReadOnly}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            variant="outlined"
+                            label={<RequiredLabel>Target Usia</RequiredLabel>}
+                            placeholder="Pilih rentang usia"
+                            InputLabelProps={{ shrink: true }}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                  borderColor: '#d1d5db',
+                                  borderWidth: 1
+                                },
+                                '&:hover fieldset': {
+                                  borderColor: '#667eea'
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#667eea',
+                                  borderWidth: 2
+                                }
+                              }
+                            }}
+                          />
+                        )}
+                      />
+                    </Box>
+                    <Box sx={{ mb: 2.25 }}>
+                      <TextField
+                        label="Lainnya (Opsional)"
+                        placeholder="Tambahkan kriteria lainnya jika ada"
+                        variant="outlined"
+                        fullWidth
+                        multiline
+                        rows={2}
+                        value={criteriaDesc}
+                        onChange={(e) => setCriteriaDesc(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                        disabled={isReadOnly}
+                      />
+                    </Box>
+                  </Box>
+                  {/* Navigation Buttons */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2.5, mb: 2.5, pt: 2.5, borderTop: '1px solid #eee' }}>
+                    <Button
+                      onClick={handleBack}
+                      variant="outlined"
+                      size="large"
+                      sx={{ 
+                        borderRadius: 2,
+                        fontWeight: 600,
+                        pt: 1.5,
+                        pb: 1.5,
+                        pl: 4,
+                        pr: 4
+                      }}
+                    >
+                      ← Back
+                    </Button>
+                    <Button
+                      onClick={handleNext}
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      disabled={!kriteriaFilled}
+                      sx={{ 
+                        borderRadius: 2,
+                        fontWeight: 600,
+                        pt: 1.5,
+                        pb: 1.5,
+                        pl: 4,
+                        pr: 4,
+                        background: kriteriaFilled ? '#667eea' : '#cbd5e0',
+                        border: 'none',
+                        color: kriteriaFilled ? '#fff' : '#a0aec0',
+                        '&:hover': {
+                          background: kriteriaFilled ? '#5568d3' : '#cbd5e0'
+                        }
+                      }}
+                    >
+                      Next →
+                    </Button>
+                  </Box>
+                </Box>
+              )}
+
+              {/* Step 3: Konten & Anggaran */}
+              {currentStep === 3 && (
+                <Box sx={{ background: '#fff', p: '32px 28px', mb: 3, borderRadius: 3, boxShadow: '0 2px 8px #e3e3e3' }}>
+                  <Typography component="h3" sx={{ m: 0, mb: 2.5, fontSize: 21, fontWeight: 600 }}>Konten & Anggaran</Typography>
+                  <form>
+                    <Box sx={{ mb: 2.5 }}>
+                      <Typography sx={{ fontWeight: 600, display: 'block', mb: 0.75 }}>Platform:</Typography>
+                      <Typography sx={{ fontSize: 17 }}>Instagram</Typography>
+                    </Box>
+                    <Box sx={{ mb: 2.5 }}>
+                      <Typography sx={{ fontWeight: 600, display: 'block', mb: 0.75 }}>
+                        <RequiredLabel sx={{ fontWeight: 600 }}>Jumlah Mahasiswa yang Dibutuhkan</RequiredLabel>
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Button
+                          variant="outlined"
+                          onClick={() => setInfluencerCount(Math.max(1, influencer_count - 1))}
+                          disabled={isReadOnly}
+                          sx={{ 
+                            minWidth: '40px',
+                            width: '40px',
+                            height: '40px',
+                            p: 0,
+                            borderColor: '#d1d5db',
+                            '&:hover': {
+                              borderColor: '#667eea',
+                              bgcolor: '#f5f7ff'
+                            }
+                          }}
+                        >
+                          <RemoveIcon fontSize="small" />
                         </Button>
                         <TextField
                           type="number"
                           min="1"
-                          value={item.post_count}
-                          onChange={(e) => updateContentItem(item.id, 'post_count', parseInt(e.target.value) || 1)}
-                          style={{ width: '80px', padding: '8px', borderRadius: '8px', textAlign: 'center' }}
+                          value={influencer_count}
+                          onChange={(e) => setInfluencerCount(Math.max(1, parseInt(e.target.value) || 1))}
                           disabled={isReadOnly}
+                          sx={{ 
+                            width: '120px',
+                            '& input': { 
+                              textAlign: 'center',
+                              fontWeight: 600,
+                              fontSize: '16px'
+                            }
+                          }}
                         />
                         <Button
                           variant="outlined"
-                          onClick={() => updateContentItem(item.id, 'post_count', item.post_count + 1)}
+                          onClick={() => setInfluencerCount(influencer_count + 1)}
                           disabled={isReadOnly}
-                          style={{ 
-                            padding: '8px 16px',
-                            borderRadius: '8px',
-                            flex: '0 0 auto',
+                          sx={{ 
                             minWidth: '40px',
+                            width: '40px',
                             height: '40px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                            p: 0,
+                            borderColor: '#d1d5db',
+                            '&:hover': {
+                              borderColor: '#667eea',
+                              bgcolor: '#f5f7ff'
+                            }
                           }}
                         >
-                          +
+                          <AddIcon fontSize="small" />
                         </Button>
-                      </div>
-                    </div>
-
-                    <div style={{ flex: 1 }}>
-                      <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Jenis Konten</label>
-                      <FormControl fullWidth variant="outlined" disabled={isReadOnly}>
-                        <Select
-                          value={item.content_type}
-                          onChange={(e) => updateContentItem(item.id, 'content_type', e.target.value)}
-                          label="Jenis Konten"
-                          disabled={isReadOnly}
-                        >
-                          <MenuItem value="foto">Instagram Foto</MenuItem>
-                          <MenuItem value="video">Instagram Video</MenuItem>
-                          <MenuItem value="reels">Instagram Reels</MenuItem>
-                          <MenuItem value="story">Instagram Story</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {!isReadOnly && (
-              <div style={{ marginBottom: '18px' }}>
-                <Button 
-                  variant="outlined" 
-                  onClick={addContentItem}
-                  style={{ 
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px dashed #ccc',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    color: '#666',
-                    fontSize: '1rem'
-                  }}
-                >
-                  + Add Konten
-                </Button>
-              </div>
-              )}
-
-              <div style={{ marginBottom: '18px' }}>
-                <TextField
-                  label={<RequiredLabel>Harga per Task</RequiredLabel>}
-                  variant="outlined"
-                  placeholder="Contoh: 50000"
-                  value={formatCurrency(price_per_post)}
-                  onChange={e => setPricePerPost(e.target.value)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  InputProps={{
-                    startAdornment: <span style={{ marginRight: '4px', color: '#666' }}>Rp</span>,
-                  }}
-                  // helperText="💰 Format otomatis: 50000 → Rp 50.000"
-                  disabled={isReadOnly}
-                />
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Estimasi Total Anggaran</label>
-                <div style={{ 
-                  padding: '12px', 
-                  borderRadius: '8px', 
-                  background: '#f8f9fa',
-                  border: '1px solid #dee2e6',
-                  fontSize: '1.1rem'
-                }}>
-                  Rp {estimatedBudget.toLocaleString()}
-                </div>
-              </div>
-
-            </form>
-            
-            {/* Navigation Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
-              <Button
-                onClick={handleBack}
-                variant="outlined"
-                size="large"
-                style={{ 
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  padding: '12px 32px'
-                }}
-              >
-                ← Back
-              </Button>
-              <Button
-                onClick={handleNext}
-                variant="contained"
-                color="primary"
-                size="large"
-                style={{ 
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  padding: '12px 32px',
-                  background: '#667eea',
-                  border: 'none'
-                }}
-              >
-                Next →
-              </Button>
-            </div>
-          </div>
-          )}
-
-          {/* Step 4: Brief Campaign */}
-          {currentStep === 4 && (
-            <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px #e3e3e3', padding: '32px', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.3rem', fontWeight: 600 }}>Brief Campaign</h3>
-            <form>
-              <p style={{ color: '#666', marginBottom: '16px', fontSize: '14px' }}>
-                💡 <strong>Tips:</strong> Berikan waktu lebih jika campaign memerlukan pengiriman barang ke influencer. Minimal 1 minggu antar tanggal.
-              </p>
-              
-              <div style={{ marginBottom: '18px' }}>
-                <TextField
-                  label={<RequiredLabel>Deadline Proposal Konten</RequiredLabel>}
-                  type="date"
-                  value={submission_deadline}
-                  onChange={e => setContentDeadline(e.target.value)}
-                  fullWidth
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  variant="outlined"
-                  helperText="Batas waktu influencer mengirimkan proposal konten"
-                  disabled={isReadOnly}
-                />
-              </div>
-              
-              <div style={{ marginBottom: '18px' }}>
-                <TextField
-                  label={<RequiredLabel>Tanggal Campaign Mulai</RequiredLabel>}
-                  type="date"
-                  value={start_date}
-                  onChange={e => setStartDate(e.target.value)}
-                  fullWidth
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  variant="outlined"
-                  helperText="Minimal 1 minggu setelah deadline proposal"
-                  disabled={isReadOnly}
-                />
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <TextField
-                  label={<RequiredLabel>Tanggal Campaign Selesai</RequiredLabel>}
-                  type="date"
-                  value={end_date}
-                  onChange={e => setEndDate(e.target.value)}
-                  min={start_date}
-                  fullWidth
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  variant="outlined"
-                  helperText="Minimal 1 minggu setelah tanggal mulai"
-                  disabled={isReadOnly}
-                />
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <TextField
-                  label="Aturan Foto/Video (Opsional)"
-                  variant="outlined"
-                  placeholder="misalnya: wajib ada selfie"
-                  value={content_guidelines}
-                  onChange={e => setPhotoRules(e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={2}
-                  disabled={isReadOnly}
-                />
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <TextField
-                  label="Aturan Caption (Opsional)"
-                  variant="outlined"
-                  placeholder="misalnya: wajib mencantumkan #hashtagbrand"
-                  value={caption_guidelines}
-                  onChange={e => setCaptionRules(e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={2}
-                  disabled={isReadOnly}
-                />
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>
-                  Referensi Foto/Video (Opsional)
-                </label>
-                
-                {/* Upload Button */}
-                <div 
-                  style={{ 
-                    border: '2px solid #667eea', 
-                    borderRadius: '12px', 
-                    padding: '16px', 
-                    textAlign: 'center',
-                    background: '#fff',
-                    cursor: 'pointer',
-                    marginBottom: '16px',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onClick={() => document.getElementById('referenceFileInput').click()}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#f8f9ff';
-                    e.currentTarget.style.borderColor = '#5568d3';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#fff';
-                    e.currentTarget.style.borderColor = '#667eea';
-                  }}
-                >
-                  <input
-                    id="referenceFileInput"
-                    type="file"
-                    accept="image/*,video/*"
-                    multiple
-                    onChange={handleReferenceFileChange}
-                    style={{ display: 'none' }}
-                  />
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <img src={UploadIcon} alt="Upload" style={{ width: '24px', height: '24px', marginBottom: '4px' }} />
-                    <span style={{ color: '#667eea', fontWeight: 600, fontSize: '15px' }}>
-                      Cari foto atau video
-                    </span>
-                  </div>
-                </div>
-
-                {/* File Previews Grid */}
-                {referenceFiles.length > 0 && (
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', 
-                    gap: '12px',
-                    marginTop: '16px'
-                  }}>
-                    {referenceFiles.map((fileObj, index) => (
-                      <div 
-                        key={index}
-                        style={{ 
-                          position: 'relative',
-                          border: '1px solid #e0e0e0',
-                          borderRadius: '8px',
-                          padding: '8px',
-                          background: '#fff',
-                          overflow: 'hidden'
-                        }}
-                      >
-                        {/* Delete Button */}
-                        <button
-                          onClick={() => handleRemoveReferenceFile(index)}
-                          style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            background: '#fff',
-                            border: 'none',
-                            borderRadius: '50%',
-                            width: '28px',
-                            height: '28px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                            zIndex: 1,
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#ff4444';
-                            e.currentTarget.style.color = '#fff';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = '#fff';
-                            e.currentTarget.style.color = '#000';
-                          }}
-                        >
-                          <img 
-                            src={DeleteIcon} 
-                            alt="Delete" 
-                            style={{ width: '14px', height: '14px' }} 
-                          />
-                        </button>
-
-                        {/* Preview */}
-                        {fileObj.preview ? (
-                          <div style={{ 
-                            width: '100%', 
-                            height: '120px', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            background: '#f5f5f5',
-                            borderRadius: '4px',
-                            overflow: 'hidden'
-                          }}>
-                            {fileObj.type === 'image' ? (
-                              <img 
-                                src={fileObj.preview} 
-                                alt="Preview" 
-                                style={{ 
-                                  maxWidth: '100%', 
-                                  maxHeight: '100%', 
-                                  objectFit: 'cover' 
-                                }} 
-                              />
-                            ) : fileObj.type === 'video' ? (
-                              <video 
-                                src={fileObj.preview} 
-                                style={{ 
-                                  maxWidth: '100%', 
-                                  maxHeight: '100%', 
-                                  objectFit: 'cover' 
-                                }} 
-                              />
-                            ) : null}
-                          </div>
-                        ) : (
-                          <div style={{ 
-                            width: '100%', 
-                            height: '120px', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            background: '#f5f5f5',
-                            borderRadius: '4px'
-                          }}>
-                            <span style={{ fontSize: '32px' }}>📄</span>
-                          </div>
-                        )}
-
-                        {/* File Name */}
-                        <p style={{ 
-                          marginTop: '8px', 
-                          fontSize: '11px', 
-                          color: '#666',
-                          textAlign: 'center',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
+                      </Box>
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontWeight: 600, mb: 1, fontSize: '16px' }}>
+                        <RequiredLabel>Detail Konten yang Dibutuhkan</RequiredLabel>
+                      </Typography>
+                      <Typography sx={{ fontSize: '13px', color: '#666', mb: 2 }}>
+                        Tentukan jenis dan jumlah konten yang harus dibuat oleh setiap mahasiswa
+                      </Typography>
+                      {contentItems.map((item, index) => (
+                        <Box key={item.id} sx={{ 
+                          mb: 2,
+                          p: 2.5,
+                          border: '1px solid #e8eaf6',
+                          borderRadius: 2,
+                          // background: '#fafbff',
+                          position: 'relative'
                         }}>
-                          {fileObj.name}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </form>
-            
-            {/* Navigation Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
-              <Button
-                onClick={handleBack}
-                variant="outlined"
-                size="large"
-                style={{ 
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  padding: '12px 32px'
-                }}
-              >
-                ← Back
-              </Button>
-              {!isReadOnly && (
-              <Button
-                onClick={handleSave}
-                variant="contained"
-                color="primary"
-                size="large"
-                style={{ 
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  padding: '12px 32px',
-                  background: '#667eea',
-                  border: 'none'
-                }}
-              >
-                Save Campaign
-              </Button>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Grid container spacing={2}>
+                              <Grid item xs={12} sm={4}>
+                                <Typography sx={{ fontWeight: 600, display: 'block', mb: 1, fontSize: '14px' }}>
+                                  Jumlah Post
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Button
+                                    variant="outlined"
+                                    onClick={() => updateContentItem(item.id, 'post_count', Math.max(1, item.post_count - 1))}
+                                    disabled={isReadOnly}
+                                    sx={{ 
+                                      minWidth: '40px',
+                                      width: '40px',
+                                      height: '40px',
+                                      p: 0,
+                                      borderColor: '#d1d5db',
+                                      '&:hover': {
+                                        borderColor: '#667eea',
+                                        bgcolor: '#f5f7ff'
+                                      }
+                                    }}
+                                  >
+                                    <RemoveIcon fontSize="small" />
+                                  </Button>
+                                  <TextField
+                                    type="number"
+                                    min="1"
+                                    value={item.post_count}
+                                    onChange={(e) => updateContentItem(item.id, 'post_count', Math.max(1, parseInt(e.target.value) || 1))}
+                                    disabled={isReadOnly}
+                                    sx={{ 
+                                      width: '80px',
+                                      '& input': { 
+                                        textAlign: 'center',
+                                        fontWeight: 600,
+                                        fontSize: '16px'
+                                      }
+                                    }}
+                                  />
+                                  <Button
+                                    variant="outlined"
+                                    onClick={() => updateContentItem(item.id, 'post_count', item.post_count + 1)}
+                                    disabled={isReadOnly}
+                                    sx={{ 
+                                      minWidth: '40px',
+                                      width: '40px',
+                                      height: '40px',
+                                      p: 0,
+                                      borderColor: '#d1d5db',
+                                      '&:hover': {
+                                        borderColor: '#667eea',
+                                        bgcolor: '#f5f7ff'
+                                      }
+                                    }}
+                                  >
+                                    <AddIcon fontSize="small" />
+                                  </Button>
+                                </Box>
+                              </Grid>
+
+                              <Grid item xs={12} sm={8}>
+                                <FormControl fullWidth variant="outlined" disabled={isReadOnly}>
+                                  <Typography sx={{ fontWeight: 600, display: 'block', mb: 1, fontSize: '14px' }}>
+                                    Jenis Konten
+                                  </Typography>
+                                  <Select
+                                    value={item.content_type}
+                                    onChange={(e) => updateContentItem(item.id, 'content_type', e.target.value)}
+                                    label="Jenis Konten"
+                                    disabled={isReadOnly}
+                                  >
+                                    <MenuItem value="foto">Instagram Foto</MenuItem>
+                                    <MenuItem value="reels">Instagram Reels</MenuItem>
+                                    <MenuItem value="story">Instagram Story</MenuItem>
+                                    <MenuItem value="video">Instagram Video</MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                            </Grid>
+
+                            {contentItems.length > 1 && !isReadOnly && (
+                              <Button
+                                variant="outlined"
+                                onClick={() => removeContentItem(item.id)}
+                                sx={{ 
+                                  py: 0.5,
+                                  px: 1.5,
+                                  borderColor: '#dc3545',
+                                  color: '#dc3545',
+                                  fontSize: '13px',
+                                  '&:hover': {
+                                    borderColor: '#bd2130',
+                                    bgcolor: '#fff5f5'
+                                  }
+                                }}
+                              >
+                                Hapus
+                              </Button>
+                            )}
+                          </Box>
+
+                        </Box>
+                      ))}
+
+                      {!isReadOnly && (
+                      <Box sx={{ mb: 2.5 }}>
+                        <Button 
+                          variant="outlined" 
+                          onClick={addContentItem}
+                          disabled={contentItems.length >= 4}
+                          style={{ 
+                            width: '100%',
+                            paddingTop: 1.5,
+                            paddingBottom: 1.5,
+                            border: contentItems.length >= 4 ? '1px dashed #ccc' : '1px dashed #667eea',
+                            borderRadius: 2,
+                            cursor: contentItems.length >= 4 ? 'not-allowed' : 'pointer',
+                            color: contentItems.length >= 4 ? '#ccc' : '#667eea',
+                            fontSize: 16,
+                            opacity: contentItems.length >= 4 ? 0.5 : 1
+                          }}
+                        >
+                          + Tambah Konten Lain {contentItems.length >= 4 ? '(Maksimal 4)' : ''}
+                        </Button>
+                      </Box>
+                      )}
+                    </Box>
+
+                    {/* Toggle untuk campaign tidak berbayar */}
+                    <Box sx={{ mb: 2.5, mt: 2 }}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={isFree}
+                            onChange={(e) => setIsFree(e.target.checked)}
+                            color="primary"
+                            disabled={isReadOnly}
+                          />
+                        }
+                        label="Campaign ini tidak berbayar (gratis)"
+                      />
+                      <Typography sx={{ fontSize: '12px', color: '#666', ml: 4, mt: 0.5 }}>
+                        Centang opsi ini jika mahasiswa tidak menerima bayaran uang dari campaign ini.
+                      </Typography>
+                    </Box>
+
+                    {!isFree && (
+                      <>
+                        <Box sx={{ mb: 2.5, mt: 3, pl: 4 }}>
+                          <TextField
+                            label={<RequiredLabel>Total Bayaran per Mahasiswa</RequiredLabel>}
+                            variant="outlined"
+                            placeholder="Contoh: 50000"
+                            value={formatCurrency(price_per_post)}
+                            onChange={e => setPricePerPost(e.target.value)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            InputProps={{
+                              startAdornment: <span style={{ marginRight: 8, color: '#666', fontWeight: 600 }}>Rp</span>,
+                            }}
+                            helperText="Total bayaran yang diterima mahasiswa setelah menyelesaikan semua konten."
+                            disabled={isReadOnly}
+                          />
+                        </Box>
+
+                        <Box sx={{ mb: 2.5, pl: 4 }}>
+                          <Typography sx={{ fontWeight: 600, display: 'block', mb: 0.75 }}>Estimasi Total Anggaran</Typography>
+                          <Box sx={{ 
+                            paddingTop: 1.5,
+                            paddingBottom: 1.5,
+                            paddingLeft: 2,
+                            paddingRight: 2,
+                            borderRadius: 2,
+                            background: '#f8f9fa',
+                            border: '1px solid #dee2e6',
+                            fontSize: 17
+                          }}>
+                            Rp {estimatedBudget.toLocaleString()}
+                          </Box>
+                          <Typography sx={{ fontSize: '12px', color: '#666', mt: 1, fontStyle: 'italic' }}>
+                            Dihitung dari: {influencer_count} influencer × Rp {parseInt(parseCurrency(price_per_post) || 0).toLocaleString('id-ID')}
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+
+                    {/* Info biaya admin */}
+                    <Box sx={{ 
+                      mb: 2.5, 
+                      p: 2, 
+                      borderRadius: 2, 
+                      bgcolor: '#f0f4ff',
+                      border: '1px solid #d1d9ff',
+                      display: 'flex',
+                      gap: 1.5
+                    }}>
+                      <InfoOutlinedIcon sx={{ color: '#667eea', fontSize: '20px', mt: 0.2 }} />
+                      <Box>
+                        <Typography sx={{ fontSize: '13px', color: '#667eea', fontWeight: 600, mb: 0.5 }}>
+                          Informasi Biaya
+                        </Typography>
+                        <Typography sx={{ fontSize: '12px', color: '#666' }}>
+                          {isFree 
+                            ? 'Campaign akan dikenakan biaya admin sebesar Rp 5.000'
+                            : `Total yang harus dibayar: Rp ${totalBudgetWithAdminFee.toLocaleString('id-ID')} (termasuk biaya admin Rp 5.000)`
+                          }
+                        </Typography>
+                      </Box>
+                    </Box>
+
+
+                  </form>
+                  {/* Navigation Buttons */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2.5, mb: 2.5, pt: 2.5, borderTop: '1px solid #eee' }}>
+                    <Button
+                      onClick={handleBack}
+                      variant="outlined"
+                      size="large"
+                      sx={{ 
+                        borderRadius: 2,
+                        fontWeight: 600,
+                        pt: 1.5,
+                        pb: 1.5,
+                        pl: 4,
+                        pr: 4
+                      }}
+                    >
+                      ← Back
+                    </Button>
+                    <Button
+                      onClick={handleNext}
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      disabled={!kontenFilled}
+                      sx={{ 
+                        borderRadius: 2,
+                        fontWeight: 600,
+                        pt: 1.5,
+                        pb: 1.5,
+                        pl: 4,
+                        pr: 4,
+                        background: kontenFilled ? '#667eea' : '#cbd5e0',
+                        border: 'none',
+                        color: kontenFilled ? '#fff' : '#a0aec0',
+                        '&:hover': {
+                          background: kontenFilled ? '#5568d3' : '#cbd5e0'
+                        }
+                      }}
+                    >
+                      Next →
+                    </Button>
+                  </Box>
+                </Box>
               )}
-            </div>
-          </div>
-          )}
-        </div>
-      </div>
 
-      {/* Delete Confirmation Popup */}
-      {showDeletePopup && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999
-          }}
-          onClick={cancelDelete}
-        >
-          <div
-            style={{
-              background: '#fff',
-              borderRadius: '16px',
-              padding: '32px',
-              maxWidth: '450px',
-              width: '90%',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-              animation: 'slideIn 0.3s ease-out'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <div style={{ fontSize: '4rem', marginBottom: '16px' }}>🗑️</div>
-              <h3 style={{ margin: '0 0 12px 0', fontSize: '1.5rem', fontWeight: 600, color: '#333' }}>
-                Delete Campaign?
-              </h3>
-              <p style={{ margin: 0, color: '#666', fontSize: '0.95rem', lineHeight: '1.5' }}>
-                Are you sure you want to delete this campaign? This action cannot be undone and all data will be permanently removed.
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button
-                onClick={cancelDelete}
-                style={{
-                  flex: 1,
-                  padding: '12px 24px',
-                  border: '2px solid #ddd',
-                  background: '#fff',
-                  color: '#333',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#f8f9fa';
-                  e.target.style.borderColor = '#999';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = '#fff';
-                  e.target.style.borderColor = '#ddd';
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                style={{
-                  flex: 1,
-                  padding: '12px 24px',
-                  border: 'none',
-                  background: '#dc3545',
-                  color: '#fff',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#c82333';
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = '#dc3545';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              {/* Step 4: Brief Campaign */}
+              {currentStep === 4 && (
+                <Box sx={{ background: '#fff', borderRadius: 3, boxShadow: '0 2px 8px #e3e3e3', p: 4, mb: 3 }}>
+                  <Typography component="h3" sx={{ m: 0, mb: 3, fontSize: 21, fontWeight: 600 }}>Brief Campaign</Typography>
+                <form>
+                  <Typography sx={{ color: '#666', mb: 3, fontSize: 14, gap: 1 }}>
+                    <strong>Tips: </strong> Beri jeda waktu yang cukup di setiap tahap campaign. Sistem otomatis menentukan tanggal paling awal berdasarkan urutan proses.
+                  </Typography>
 
-      {/* Back Confirmation Modal */}
-      <Modal
-        isOpen={showBackModal}
-        onClose={() => setShowBackModal(false)}
-        title="Keluar dari Halaman Ini?"
-        showActions={false}
-      >
-        <div>
-          <p style={{ marginBottom: '24px', color: '#666' }}>
-            Apakah Anda ingin menyimpan draft atau keluar tanpa menyimpan?
-          </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <Button 
-              variant="secondary" 
-              onClick={() => setShowBackModal(false)}
-            >
-              Tetap di Halaman
-            </Button>
-            <Button 
-              variant="primary" 
-              onClick={() => {
-                setShowBackModal(false);
-                navigate('/campaigns');
-              }}
-            >
-              Keluar Tanpa Menyimpan
-            </Button>
-          </div>
-        </div>
-      </Modal>
+                  {/* 1. Deadline Registrasi Campaign */}
+                  <Box sx={{ mb: 2.5 }}>
+                    <TextField
+                      label={<RequiredLabel>Deadline Registrasi Campaign</RequiredLabel>}
+                      type="date"
+                      value={registration_deadline}
+                      onChange={e => setRegistrationDeadline(e.target.value)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ min: getMinRegistrationDeadline() }}
+                      variant="outlined"
+                      helperText="Minimal 2 hari kerja dari hari ini untuk admin meninjau campaign dan UMKM menyelesaikan pembayaran."
+                      disabled={isReadOnly}
+                    />
+                  </Box>
 
-      {/* Header Back Button Modal */}
-      <Modal
-        isOpen={showHeaderBackModal}
-        onClose={() => setShowHeaderBackModal(false)}
-        title="Simpan atau Keluar?"
-        showActions={false}
-      >
-        <div>
-          <p style={{ marginBottom: '24px', color: '#666' }}>
-            Apakah Anda ingin menyimpan campaign sebagai draft atau keluar tanpa menyimpan?
-          </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <Button 
-              variant="secondary"
-              style={{
-                background: '#d32020ff',
-                borderColor: '#ccc',
-                color: '#000000ff',
-                fontWeight: 'bold'
-              }}
-              onClick={() => setShowHeaderBackModal(false)}
-            >
-              Batal
-            </Button>
-            <Button 
-              variant="primary" 
-              style={{
-                background: '#16b751ff',
-                borderColor: '#ccc',
-                color: '#000000ff',
-                fontWeight: 'bold'
-              }}
-              onClick={handleSaveAsDraft}
-            >
-              Simpan sebagai Draft
-            </Button>
-          </div>
-        </div>
-      </Modal>
-        </div>
-      </div>
-    </div>
+                  {/* 2. Deadline Submit Konten */}
+                  <Box sx={{ mb: 2.5 }}>
+                    <TextField
+                      label={<RequiredLabel>Deadline Submit Konten</RequiredLabel>}
+                      type="date"
+                      value={submission_deadline}
+                      onChange={e => setSubmissionDeadline(e.target.value)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ min: getMinSubmissionDeadline() }}
+                      variant="outlined"
+                      helperText={registration_deadline 
+                        ? `Minimal 2 hari kerja setelah tanggal deadline registrasi untuk UMKM memilih student & student melakukan konfirmasi.`
+                        : "Pilih deadline registrasi terlebih dahulu"
+                      }
+                      disabled={isReadOnly || !registration_deadline}
+                    />
+                  </Box>
+
+                  {/* 3. Revision Settings */}
+                  <Box sx={{ mb: 2.5, borderRadius: 2 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={enable_revision}
+                          onChange={(e) => {
+                            setEnableRevision(e.target.checked);
+                            if (!e.target.checked) {
+                              setRevisionDuration('');
+                              setMaxRevisions(0);
+                            }
+                          }}
+                          color="primary"
+                          disabled={isReadOnly}
+                        />
+                      }
+                      label={<Typography sx={{ fontWeight: 600 }}>Aktifkan Periode Revisi Konten</Typography>}
+                    />
+                    
+                    {enable_revision && (
+                      <Box sx={{ mt: 2, pl: 4 }}>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <Typography sx={{ fontWeight: 600, display: 'block', mb: 0.75, fontSize: '14px' }}>
+                              <RequiredLabel>Maksimal Revisi</RequiredLabel>
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <Button
+                                variant="outlined"
+                                onClick={() => setMaxRevisions(Math.max(1, max_revisions - 1))}
+                                disabled={isReadOnly}
+                                sx={{ 
+                                  minWidth: '40px',
+                                  width: '40px',
+                                  height: '40px',
+                                  p: 0,
+                                  borderColor: '#d1d5db',
+                                  '&:hover': {
+                                    borderColor: '#667eea',
+                                    bgcolor: '#f5f7ff'
+                                  }
+                                }}
+                              >
+                                <RemoveIcon fontSize="small" />
+                              </Button>
+                              <TextField
+                                type="number"
+                                min="1"
+                                max="5"
+                                value={max_revisions}
+                                onChange={(e) => setMaxRevisions(Math.min(5, Math.max(1, parseInt(e.target.value) || 1)))}
+                                disabled={isReadOnly}
+                                sx={{ 
+                                  width: '80px',
+                                  '& input': { 
+                                    textAlign: 'center',
+                                    fontWeight: 600,
+                                    fontSize: '16px'
+                                  }
+                                }}
+                              />
+                              <Button
+                                variant="outlined"
+                                onClick={() => setMaxRevisions(Math.min(5, max_revisions + 1))}
+                                disabled={isReadOnly}
+                                sx={{ 
+                                  minWidth: '40px',
+                                  width: '40px',
+                                  height: '40px',
+                                  p: 0,
+                                  borderColor: '#d1d5db',
+                                  '&:hover': {
+                                    borderColor: '#667eea',
+                                    bgcolor: '#f5f7ff'
+                                  }
+                                }}
+                              >
+                                <AddIcon fontSize="small" />
+                              </Button>
+                            </Box>
+                            <Typography sx={{ fontSize: '12px', color: '#666', ml: 0.5 }}>
+                              Banyaknya revisi yang diizinkan (1–5 kali)
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <Typography sx={{ fontWeight: 600, display: 'block', mb: 0.75, fontSize: '14px' }}>
+                              <RequiredLabel>Durasi Revisi (Hari)</RequiredLabel>
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <Button
+                                variant="outlined"
+                                onClick={() => setRevisionDuration(Math.max(1, parseInt(revision_duration || 1) - 1).toString())}
+                                disabled={isReadOnly}
+                                sx={{ 
+                                  minWidth: '40px',
+                                  width: '40px',
+                                  height: '40px',
+                                  p: 0,
+                                  borderColor: '#d1d5db',
+                                  '&:hover': {
+                                    borderColor: '#667eea',
+                                    bgcolor: '#f5f7ff'
+                                  }
+                                }}
+                              >
+                                <RemoveIcon fontSize="small" />
+                              </Button>
+                              <TextField
+                                type="number"
+                                min="1"
+                                max="30"
+                                value={revision_duration}
+                                onChange={(e) => setRevisionDuration(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)).toString())}
+                                disabled={isReadOnly}
+                                sx={{ 
+                                  width: '80px',
+                                  '& input': { 
+                                    textAlign: 'center',
+                                    fontWeight: 600,
+                                    fontSize: '16px'
+                                  }
+                                }}
+                              />
+                              <Button
+                                variant="outlined"
+                                onClick={() => setRevisionDuration(Math.min(30, parseInt(revision_duration || 1) + 1).toString())}
+                                disabled={isReadOnly}
+                                sx={{ 
+                                  minWidth: '40px',
+                                  width: '40px',
+                                  height: '40px',
+                                  p: 0,
+                                  borderColor: '#d1d5db',
+                                  '&:hover': {
+                                    borderColor: '#667eea',
+                                    bgcolor: '#f5f7ff'
+                                  }
+                                }}
+                              >
+                                <AddIcon fontSize="small" />
+                              </Button>
+                            </Box>
+                            <Typography sx={{ fontSize: '12px', color: '#666', ml: 0.5 }}>
+                              Lama waktu untuk 1 kali revisi (hari kerja)
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    )}
+                  </Box>
+
+                  {/* 4. Start Posting */}
+                  <Box sx={{ mb: 2.5 }}>
+                    <TextField
+                      label={<RequiredLabel>Tanggal Mulai Posting</RequiredLabel>}
+                      type="date"
+                      value={start_date}
+                      onChange={e => setStartDate(e.target.value)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ min: getMinStartDate() }}
+                      variant="outlined"
+                      helperText={
+                        enable_revision && submission_deadline && revision_duration && max_revisions
+                          ? `Minimal 2 hari kerja setelah semua revisi selesai untuk UMKM konfirmasi konten. Sabtu-Minggu tidak termasuk hari kerja.`
+                          : !enable_revision && submission_deadline
+                          ? `Minimal 2 hari kerja setelah deadline submit untuk UMKM konfirmasi konten. Sabtu-Minggu tidak termasuk hari kerja.`
+                          : "Tentukan deadline submit konten dan pengaturan revisi terlebih dahulu"
+                      }
+                      disabled={isReadOnly || !submission_deadline || (enable_revision && (!revision_duration || !max_revisions))}
+                    />
+                  </Box>
+
+                  {/* 5. End Posting */}
+                  <Box sx={{ mb: 2.5 }}>
+                    <TextField
+                      label={<RequiredLabel>Tanggal Selesai Posting</RequiredLabel>}
+                      type="date"
+                      value={end_date}
+                      onChange={e => setEndDate(e.target.value)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ min: getMinEndDate() }}
+                      variant="outlined"
+                      helperText={start_date 
+                        ? `Minimal 1 hari kerja setelah mulai posting`
+                        : "Pilih tanggal mulai posting terlebih dahulu"
+                      }
+                      disabled={isReadOnly || !start_date}
+                    />
+                  </Box>
+
+                  {/* Aturan Konten */}
+                  <Box sx={{ mb: 2.25 }}>
+                    <TextField
+                      label="Aturan Foto/Video (Opsional)"
+                      variant="outlined"
+                      placeholder="Contoh: wajib ada selfie, lighting yang baik, background minimalis"
+                      value={content_guidelines}
+                      onChange={e => setPhotoRules(e.target.value)}
+                      fullWidth
+                      multiline
+                      rows={2}
+                      InputLabelProps={{ shrink: true }}
+                      disabled={isReadOnly}
+                    />
+                  </Box>
+                  <Box sx={{ mb: 2.25 }}>
+                    <TextField
+                      label="Aturan Caption (Opsional)"
+                      variant="outlined"
+                      placeholder="Contoh: wajib mencantumkan #hashtagbrand, tag akun @namabrand, minimal 50 kata"
+                      value={caption_guidelines}
+                      onChange={e => setCaptionRules(e.target.value)}
+                      fullWidth
+                      multiline
+                      rows={2}
+                      InputLabelProps={{ shrink: true }}
+                      disabled={isReadOnly}
+                    />
+                  </Box>
+                  <Box sx={{ mb: 2.25 }}>
+                    <Typography sx={{ fontWeight: 600, display: 'block', mb: 1 }}>
+                      Referensi Foto/Video (Opsional)
+                    </Typography>
+                    {/* Upload Button */}
+                    <Box 
+                      sx={{ 
+                        border: '2px solid #667eea', 
+                        borderRadius: 3, 
+                        padding: 2,
+                        textAlign: 'center',
+                        background: '#fff',
+                        cursor: 'pointer',
+                        marginBottom: 2,
+                        transition: 'all 0.3s ease'
+                      }}
+                      onClick={() => document.getElementById('referenceFileInput').click()}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f8f9ff';
+                        e.currentTarget.style.borderColor = '#5568d3';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#fff';
+                        e.currentTarget.style.borderColor = '#667eea';
+                      }}
+                    >
+                      <input
+                        id="referenceFileInput"
+                        type="file"
+                        accept="image/*,video/*"
+                        multiple
+                        onChange={handleReferenceFileChange}
+                        style={{ display: 'none' }}
+                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                        <UploadFileIcon sx={{ color: '#667eea', fontSize: 24, mb: 0.5 }} />
+                        <Typography sx={{ color: '#667eea', fontWeight: 600, fontSize: 15 }}>
+                          Upload foto atau video
+                        </Typography>
+                      </Box>
+                    </Box>
+                    {/* File Previews Grid */}
+                    {referenceFiles.length > 0 && (
+                      <Box sx={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(19, 1fr))', 
+                        gap: 1.5,
+                        marginTop: 2
+                      }}>
+                        {referenceFiles.map((fileObj, index) => (
+                          <Box 
+                            key={index}
+                            sx={{ 
+                              position: 'relative',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: 2,
+                              padding: 1,
+                              background: '#fff',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            {/* Delete Button */}
+                            <button
+                              onClick={() => handleRemoveReferenceFile(index)}
+                              style={{
+                                position: 'absolute',
+                                top: 1,
+                                right: 1,
+                                background: '#fff',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: 3.5,
+                                height: 3.5,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                zIndex: 1,
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#ff4444';
+                                e.currentTarget.style.color = '#fff';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#fff';
+                                e.currentTarget.style.color = '#000';
+                              }}
+                            >
+                              <img 
+                                src={DeleteIcon} 
+                                alt="Delete" 
+                                style={{ width: 1.75, height: 1.75 }} 
+                              />
+                            </button>
+                            {/* Preview */}
+                            {fileObj.preview ? (
+                              <Box sx={{ 
+                                width: '100%', 
+                                height: 15, 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                background: '#f5f5f5',
+                                borderRadius: 1,
+                                overflow: 'hidden'
+                              }}>
+                                {fileObj.type === 'image' ? (
+                                  <img 
+                                    src={fileObj.preview} 
+                                    alt="Preview" 
+                                    style={{ 
+                                      maxWidth: '100%', 
+                                      maxHeight: '100%', 
+                                      objectFit: 'cover' 
+                                    }} 
+                                  />
+                                ) : fileObj.type === 'video' ? (
+                                  <video 
+                                    src={fileObj.preview} 
+                                    style={{ 
+                                      maxWidth: '100%', 
+                                      maxHeight: '100%', 
+                                      objectFit: 'cover' 
+                                    }} 
+                                  />
+                                ) : null}
+                              </Box>
+                            ) : (
+                              <Box sx={{ 
+                                width: '100%', 
+                                height: 15, 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                background: '#f5f5f5',
+                                borderRadius: 1
+                              }}>
+                                <Typography sx={{ fontSize: 24 }}>📄</Typography>
+                              </Box>
+                            )}
+                            {/* File Name */}
+                            <Typography sx={{ 
+                              mt: 1, 
+                              fontSize: 11, 
+                              color: '#666',
+                              textAlign: 'center',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
+                            }}>
+                              {fileObj.name}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                </form>
+                {/* Navigation Buttons */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2.5, mb: 2.5, pt: 2.5, borderTop: '1px solid #eee' }}>
+                  <Button
+                    onClick={handleBack}
+                    variant="outlined"
+                    size="large"
+                    sx={{ 
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      pt: 1.5,
+                      pb: 1.5,
+                      pl: 4,
+                      pr: 4
+                    }}
+                  >
+                    ← Back
+                  </Button>
+                  {!isReadOnly && (
+                  <Button
+                    onClick={handleSave}
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    sx={{ 
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      pt: 1.5,
+                      pb: 1.5,
+                      pl: 4,
+                      pr: 4,
+                      background: '#667eea',
+                      border: 'none'
+                    }}
+                  >
+                    Save Campaign
+                  </Button>
+                  )}
+                </Box>
+              </Box>
+              )}
+            </Paper>
+          </Container>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

@@ -1,251 +1,184 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Box, 
+  IconButton, 
+  Avatar, 
+  Menu, 
+  MenuItem, 
+  Typography, 
+  Divider,
+  ListItemIcon,
+  ButtonBase,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
 import { COLORS } from '../../constants/colors';
-import { Bell } from 'lucide-react';
+import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
+import MenuIcon from '@mui/icons-material/Menu';
+import NotificationBell from '../common/NotificationBell';
 
 function UMKMTopbar({ onMenuClick = () => {} }) {
   const navigate = useNavigate();
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
-
-  // Handle window resize
-  React.useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1000);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userName = user.name || 'UMKM User';
-  const userEmail = user.email || '';
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    navigate('/login-umkm');
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/campaigns?search=${encodeURIComponent(searchQuery)}`);
-    }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    handleClose();
+    localStorage.removeItem('user');
+    navigate('/login');
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: !isMobile ? '260px' : '0',
-      right: 1,
-      height: '72px',
-      background: '#fff',
-      borderBottom: '1px solid #e2e8f0',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 32px',
-      zIndex: 90,
-      fontFamily: "'Inter', sans-serif",
-      transition: 'left 0.3s ease-in-out'
-    }}>
+    <Box
+      sx={{
+        position: 'fixed',
+        top: 0,
+        left: { xs: 0, md: 260 },
+        right: 0,
+        height: 72,
+        bgcolor: '#fff',
+        borderBottom: '1px solid #e2e8f0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        px: 4,
+        zIndex: 90,
+        transition: theme.transitions.create(['left'], {
+          easing: theme.transitions.easing.easeOut,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
+      }}
+    >
       {/* Hamburger Menu - Mobile Only */}
-      <button
+      <IconButton
         onClick={onMenuClick}
-        style={{
-          display: isMobile ? 'flex' : 'none',
-          width: '40px',
-          height: '40px',
-          borderRadius: '10px',
-          border: 'none',
-          background: '#f7fafc',
-          cursor: 'pointer',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1.5rem',
-          transition: 'all 0.2s',
-          color: '#1a1f36'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = '#e2e8f0';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = '#f7fafc';
+        sx={{
+          display: { xs: 'flex', md: 'none' },
+          mr: 2,
+          bgcolor: '#f7fafc',
+          borderRadius: 2,
+          '&:hover': { bgcolor: '#e2e8f0' }
         }}
       >
-        ☰
-      </button>
+        <MenuIcon />
+      </IconButton>
 
       {/* Right Section */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: 'auto' }}>
-        {/* Notifications Button */}
-        <button
-          onClick={() => navigate('/notifications')}
-          style={{
-            position: 'relative',
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            border: 'none',
-            background: '#f7fafc',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s'
-          }}
-        >
-          <Bell size={20} />
-          <span style={{
-            position: 'absolute',
-            top: '8px',
-            right: '8px',
-            width: '8px',
-            height: '8px',
-            background: '#ef4444',
-            borderRadius: '50%',
-            border: '2px solid #fff'
-          }} />
-        </button>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto' }}>
+        {/* Notification Bell */}
+        <NotificationBell />
 
         {/* Profile Dropdown */}
-        <div style={{ position: 'relative' }}>
-          <div
-            onClick={() => setShowDropdown(!showDropdown)}
-            style={{
+        <Box>
+          <ButtonBase
+            onClick={handleClick}
+            sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '8px 12px',
-              borderRadius: '10px',
-              cursor: 'pointer',
+              gap: 1.5,
+              p: 0.75,
+              pr: 1.5,
+              bgcolor: open ? '#edf2f7' : 'transparent',
+              borderRadius: 3,
               transition: 'all 0.2s',
-              background: showDropdown ? '#f7fafc' : 'transparent'
-            }}
-            onMouseEnter={(e) => {
-              if (!showDropdown) e.currentTarget.style.background = '#f7fafc';
-            }}
-            onMouseLeave={(e) => {
-              if (!showDropdown) e.currentTarget.style.background = 'transparent';
+              '&:hover': {
+                bgcolor: open ? '#edf2f7' : '#f7fafc'
+              }
             }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: COLORS.primary,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1rem',
-              fontWeight: 700,
-              color: '#fff'
-            }}>
+            <Avatar
+              sx={{
+                width: 36,
+                height: 36,
+                bgcolor: COLORS.primary,
+                fontSize: '1rem',
+                fontWeight: 700,
+                color: '#fff'
+              }}
+            >
               {userName.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <div style={{
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                color: '#2d3748'
-              }}>
+            </Avatar>
+            <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'left' }}>
+              <Typography
+                sx={{
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#2d3748',
+                  lineHeight: 1.2
+                }}
+              >
                 {userName}
-              </div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#6c757d'
-              }}>
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: '0.75rem',
+                  color: '#6c757d',
+                  lineHeight: 1.2
+                }}
+              >
                 UMKM Account
-              </div>
-            </div>
-            <span style={{
-              fontSize: '0.75rem',
-              color: '#6c757d',
-              transition: 'transform 0.2s',
-              transform: showDropdown ? 'rotate(180deg)' : 'rotate(0deg)'
-            }}>
-              ▼
-            </span>
-          </div>
+              </Typography>
+            </Box>
+          </ButtonBase>
 
           {/* Dropdown Menu */}
-          {showDropdown && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: '8px',
-              width: '200px',
-              background: '#fff',
-              borderRadius: '12px',
-              boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-              border: '1px solid #e2e8f0',
-              overflow: 'hidden',
-              zIndex: 1000
-            }}>
-              <div
-                onClick={() => {
-                  setShowDropdown(false);
-                  navigate('/user');
-                }}
-                style={{
-                  padding: '12px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontSize: '0.9rem',
-                  color: '#2d3748'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#f7fafc';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#fff';
-                }}
-              >
-                <span>👤</span>
-                Profile
-              </div>
-              <div style={{
-                height: '1px',
-                background: '#e2e8f0',
-                margin: '4px 0'
-              }} />
-              <div
-                onClick={() => {
-                  setShowDropdown(false);
-                  handleLogout();
-                }}
-                style={{
-                  padding: '12px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontSize: '0.9rem',
-                  color: '#ef4444'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#fff5f5';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#fff';
-                }}
-              >
-                <span>🚪</span>
-                Logout
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            PaperProps={{
+              elevation: 0,
+              sx: {
+                overflow: 'visible',
+                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.15))',
+                mt: 1.5,
+                minWidth: 200,
+                borderRadius: 3,
+                border: '1px solid #e2e8f0',
+                '& .MuiAvatar-root': {
+                  width: 32,
+                  height: 32,
+                  ml: -0.5,
+                  mr: 1,
+                },
+              },
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          >
+            <MenuItem onClick={() => { handleClose(); navigate('/user'); }}>
+              <ListItemIcon>
+                <PersonIcon fontSize="small" />
+              </ListItemIcon>
+              Profile
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleLogout} sx={{ color: '#ef4444' }}>
+              <ListItemIcon>
+                <LogoutIcon fontSize="small" sx={{ color: '#ef4444' }} />
+              </ListItemIcon>
+              Logout
+            </MenuItem>
+          </Menu>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

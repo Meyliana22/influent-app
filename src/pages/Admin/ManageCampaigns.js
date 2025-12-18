@@ -1,48 +1,150 @@
 import React, { useState, useEffect } from 'react';
-import AdminSidebar from '../../components/admin/AdminSidebar';
-import AdminTopbar from '../../components/admin/AdminTopbar';
-import { COLORS } from '../../constants/colors';
-import ApplicantIcon from '../../assets/dashboard-umkm/Applicant.svg';
-import CampaignIcon from '../../assets/dashboard-umkm/Campaign.svg';
-import CompletedIcon from '../../assets/dashboard-umkm/Completed.svg';
-import OngoingIcon from '../../assets/dashboard-umkm/Ongoing.svg';
+import { 
+  Box, 
+  Container, 
+  Typography, 
+  Button, 
+  TextField, 
+  Select, 
+  MenuItem, 
+  Card, 
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Stack,
+  InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Chip,
+  IconButton,
+  CircularProgress,
+  Alert,
+  Pagination,
+  useTheme,
+  useMediaQuery,
+  Divider,
+  Grid
+} from '@mui/material';
+import {
+  Campaign as CampaignIcon,
+  CheckCircle as CompletedIcon,
+  HourglassEmpty as OngoingIcon,
+  People as ApplicantIcon,
+  Visibility as ViewIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Search as SearchIcon,
+  Refresh as RefreshIcon,
+  Close as CloseIcon,
+  Warning as WarningIcon,
+  CheckCircle as ApproveIcon,
+  Cancel as RejectIcon,
+  Payment as TransactionsIcon,
+  Receipt as ReceiptIcon
+} from '@mui/icons-material';
+import { Sidebar, Topbar } from '../../components/common';
+import adminService from '../../services/adminService';
 
 function ManageCampaigns() {
+  const theme = useTheme();
+  const isDesktop = useMediaQuery('(min-width:1000px)');
+  const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
+
+  useEffect(() => {
+    setSidebarOpen(isDesktop);
+  }, [isDesktop]);
+
+  // State management
   const [campaigns, setCampaigns] = useState([]);
-  const [filteredCampaigns, setFilteredCampaigns] = useState([]);
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCampaigns, setTotalCampaigns] = useState(0);
+  const limit = 10;
+
+  // Filters
+  const [filterStatus, setFilterStatus] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+
+  // Modal states
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [campaignToDelete, setCampaignToDelete] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [showTransactionsModal, setShowTransactionsModal] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
+
+  // Edit form data
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    campaign_category: '',
+    influencer_category: [],
+    has_product: false,
+    product_name: '',
+    product_value: '',
+    product_desc: '',
+    startDate: '',
+    endDate: '',
+    submission_deadline: '',
+    content_guidelines: '',
+    caption_guidelines: '',
+    influencer_count: 0,
+    price_per_post: '',
+    min_followers: 0,
+    selected_gender: '',
+    selected_age: '',
+    criteria_desc: '',
+    status: ''
+  });
 
   useEffect(() => {
     loadCampaigns();
-  }, []);
+  }, [page, filterStatus, searchQuery]);
 
-  useEffect(() => {
-    filterCampaigns();
-  }, [campaigns, filterStatus, searchQuery]);
+  const loadCampaigns = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const loadCampaigns = () => {
-    const campaignsData = JSON.parse(localStorage.getItem('campaigns') || '[]');
-    setCampaigns(campaignsData);
+      const response = await adminService.campaigns.getAllCampaigns({
+        page,
+        limit,
+        status: filterStatus || undefined,
+        search: searchQuery || undefined
+      });
+
+      const campaignsList = response?.data || response?.campaigns || [];
+      setCampaigns(Array.isArray(campaignsList) ? campaignsList : []);
+      setTotalCampaigns(response?.total || campaignsList.length);
+      setTotalPages(response?.totalPages || Math.ceil(campaignsList.length / limit));
+    } catch (error) {
+      console.error('Error loading campaigns:', error);
+      setError('Failed to load campaigns');
+      setCampaigns([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filterCampaigns = () => {
-    let filtered = [...campaigns];
-
-    if (filterStatus !== 'All') {
-      filtered = filtered.filter(c => c.status === filterStatus);
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter(c =>
-        c.campaign_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.business_name?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    setFilteredCampaigns(filtered);
+  const handleSearch = () => {
+    setSearchQuery(searchInput);
+    setPage(1);
   };
 
   const handleViewDetail = (campaign) => {
@@ -50,507 +152,1291 @@ function ManageCampaigns() {
     setShowDetailModal(true);
   };
 
-  const handleApproveCampaign = () => {
-    if (selectedCampaign) {
-      const updated = campaigns.map(c =>
-        c.id === selectedCampaign.id ? { ...c, status: 'Active' } : c
-      );
-      setCampaigns(updated);
-      localStorage.setItem('campaigns', JSON.stringify(updated));
-      setShowDetailModal(false);
+  const handleEditClick = (campaign) => {
+    setSelectedCampaign(campaign);
+    
+    // Parse influencer_category if it's a JSON string
+    let influencerCategories = [];
+    if (campaign.influencer_category) {
+      try {
+        influencerCategories = typeof campaign.influencer_category === 'string' 
+          ? JSON.parse(campaign.influencer_category)
+          : campaign.influencer_category;
+      } catch (e) {
+        console.error('Error parsing influencer_category:', e);
+        influencerCategories = [];
+      }
+    }
+    
+    setEditFormData({
+      title: campaign.title || '',
+      campaign_category: campaign.campaign_category || '',
+      influencer_category: influencerCategories,
+      has_product: campaign.has_product || false,
+      product_name: campaign.product_name || '',
+      product_value: campaign.product_value || '',
+      product_desc: campaign.product_desc || '',
+      startDate: campaign.start_date ? campaign.start_date.split('T')[0] : '',
+      endDate: campaign.end_date ? campaign.end_date.split('T')[0] : '',
+      submission_deadline: campaign.submission_deadline ? campaign.submission_deadline.split('T')[0] : '',
+      content_guidelines: campaign.content_guidelines || '',
+      caption_guidelines: campaign.caption_guidelines || '',
+      influencer_count: campaign.influencer_count || 0,
+      price_per_post: campaign.price_per_post || '',
+      min_followers: campaign.min_followers || 0,
+      selected_gender: campaign.selected_gender || '',
+      selected_age: campaign.selected_age || '',
+      criteria_desc: campaign.criteria_desc || '',
+      status: campaign.status || 'draft'
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      setSubmitting(true);
+      setError(null);
+
+      if (!editFormData.title || !editFormData.price_per_post) {
+        setError('Title and price per post are required');
+        return;
+      }
+
+      // Map form data to API structure
+      const updateData = {
+        title: editFormData.title,
+        campaign_category: editFormData.campaign_category,
+        influencer_category: editFormData.influencer_category,
+        has_product: editFormData.has_product,
+        product_name: editFormData.product_name,
+        product_value: editFormData.product_value,
+        product_desc: editFormData.product_desc,
+        start_date: editFormData.startDate,
+        end_date: editFormData.endDate,
+        submission_deadline: editFormData.submission_deadline,
+        content_guidelines: editFormData.content_guidelines,
+        caption_guidelines: editFormData.caption_guidelines,
+        influencer_count: editFormData.influencer_count,
+        price_per_post: editFormData.price_per_post,
+        min_followers: editFormData.min_followers,
+        selected_gender: editFormData.selected_gender,
+        selected_age: editFormData.selected_age,
+        criteria_desc: editFormData.criteria_desc,
+        status: editFormData.status
+      };
+
+      await adminService.campaigns.updateCampaign(selectedCampaign.campaign_id, updateData);
+      setSuccessMessage('Campaign updated successfully');
+      setShowEditModal(false);
+      loadCampaigns();
+    } catch (err) {
+      console.error('Error updating campaign:', err);
+      setError(err.message || 'Failed to update campaign');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleRejectCampaign = () => {
-    if (selectedCampaign) {
-      const updated = campaigns.map(c =>
-        c.id === selectedCampaign.id ? { ...c, status: 'Cancelled' } : c
-      );
-      setCampaigns(updated);
-      localStorage.setItem('campaigns', JSON.stringify(updated));
-      setShowDetailModal(false);
+  const handleViewTransactions = async () => {
+    try {
+      setLoadingTransactions(true);
+      const response = await adminService.transactions.getAllTransactions({ limit: 100 });
+      const txList = Array.isArray(response) ? response : (response.transactions || response.data || []);
+      setTransactions(txList);
+      setShowTransactionsModal(true);
+    } catch (err) {
+      console.error('Error loading transactions:', err);
+      setError(err.message || 'Failed to load transactions');
+    } finally {
+      setLoadingTransactions(false);
     }
   };
 
-  const handleDeactivate = (campaignId) => {
-    const updated = campaigns.map(c =>
-      c.id === campaignId ? { ...c, status: 'Completed' } : c
-    );
-    setCampaigns(updated);
-    localStorage.setItem('campaigns', JSON.stringify(updated));
+  const handleUpdateStatus = async (campaignId, newStatus) => {
+    try {
+      setSubmitting(true);
+      
+      // For approval, use dedicated admin review endpoint
+      if (newStatus === 'pending_payment') {
+        await adminService.review.approveCampaign(campaignId);
+        setSuccessMessage('Campaign berhasil disetujui! Notifikasi telah dikirim ke UMKM.');
+      } else {
+        // For other status updates (active, cancelled)
+        const statusMap = {
+          'active': 'active',
+          'cancelled': 'cancelled'
+        };
+        await adminService.campaigns.updateCampaign(campaignId, { status: statusMap[newStatus] || newStatus });
+        setSuccessMessage('Status campaign berhasil diupdate!');
+      }
+      
+      setShowDetailModal(false);
+      loadCampaigns();
+    } catch (err) {
+      console.error('Error updating campaign:', err);
+      setError(err.message || 'Failed to update campaign');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRejectCampaign = async () => {
+    if (!cancellationReason && !customReason) {
+      setError('Harap pilih atau tulis alasan pembatalan');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const finalReason = cancellationReason === 'other' ? customReason : cancellationReason;
+      
+      // Use dedicated admin review endpoint to cancel campaign
+      await adminService.review.rejectCampaign(selectedCampaign.campaign_id, finalReason);
+      
+      setSuccessMessage('Campaign berhasil dibatalkan. Notifikasi telah dikirim ke UMKM.');
+      setShowRejectDialog(false);
+      setShowDetailModal(false);
+      setCancellationReason('');
+      setCustomReason('');
+      loadCampaigns();
+    } catch (err) {
+      console.error('Error cancelling campaign:', err);
+      setError(err.message || 'Failed to cancel campaign');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteClick = (campaign) => {
+    setCampaignToDelete(campaign);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setSubmitting(true);
+      await adminService.campaigns.deleteCampaign(campaignToDelete.campaign_id);
+      setSuccessMessage('Campaign deleted successfully');
+      setShowDeleteDialog(false);
+      setCampaignToDelete(null);
+      loadCampaigns();
+    } catch (err) {
+      console.error('Error deleting campaign:', err);
+      setError(err.message || 'Failed to delete campaign');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'Active':
+    switch (status?.toLowerCase()) {
+      case 'active':
         return { bg: '#d1fae5', color: '#065f46' };
-      case 'Draft':
-        return { bg: '#fef3c7', color: '#92400e' };
-      case 'Completed':
-        return { bg: '#dbeafe', color: '#1e40af' };
-      case 'Cancelled':
-        return { bg: '#fee2e2', color: '#991b1b' };
+      case 'admin_review':
+        return { bg: '#fff3cd', color: '#856404' };
+      case 'pending_payment':
+        return { bg: '#cfe2ff', color: '#084298' };
+      case 'completed':
+        return { bg: '#e0d4ff', color: '#5b21b6' };
+      case 'cancelled':
+        return { bg: '#ffe5e5', color: '#c41e3a' };
       default:
-        return { bg: '#e2e8f0', color: '#475569' };
+        return { bg: '#e5e7eb', color: '#374151' };
     }
   };
 
   const stats = {
     total: campaigns.length,
-    active: campaigns.filter(c => c.status === 'Active').length,
-    completed: campaigns.filter(c => c.status === 'Completed').length,
-    draft: campaigns.filter(c => c.status === 'Draft').length
+    active: campaigns.filter(c => c.status?.toLowerCase() === 'active').length,
+    completed: campaigns.filter(c => c.status?.toLowerCase() === 'completed').length,
+    pending: campaigns.filter(c => c.status?.toLowerCase() === 'admin_review' || c.status?.toLowerCase() === 'pending_payment').length
   };
 
   return (
-    <div style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
-      <AdminSidebar />
-      
-      <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
-        <AdminTopbar />
-        
-        <div style={{ marginTop: '72px', padding: '32px' }}>
+    <Box sx={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Box
+        sx={{
+          marginLeft: isDesktop && sidebarOpen ? '260px' : 0,
+          width: isDesktop && sidebarOpen ? 'calc(100% - 260px)' : '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+          transition: 'margin-left 0.3s, width 0.3s'
+        }}
+      >
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Box sx={{ mt: 9, p: 4, backgroundColor: '#f8f9fa', minHeight: 'calc(100vh - 72px)' }}>
           {/* Page Header */}
-          <div style={{ marginBottom: '32px' }}>
-            <h1 style={{
-              fontSize: '2rem',
-              fontWeight: 700,
-              color: '#1a1f36',
-              marginBottom: '8px',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              Manage Campaigns
-            </h1>
-            <p style={{
-              fontSize: '0.95rem',
-              color: '#6c757d',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              Monitor and manage all campaigns on the platform
-            </p>
-          </div>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontSize: 32 }}>
+                Manage Campaigns
+              </Typography>
+              <Typography sx={{ fontSize: 16, color: '#6c757d' }}>
+                Monitor and manage all campaigns on the platform
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={loadCampaigns}
+                disabled={loading}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  borderColor: '#667eea',
+                  color: '#667eea',
+                  '&:hover': {
+                    borderColor: '#5568d3',
+                    backgroundColor: 'rgba(102, 126, 234, 0.04)'
+                  }
+                }}
+              >
+                Refresh
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<TransactionsIcon />}
+                onClick={handleViewTransactions}
+                disabled={loadingTransactions}
+                sx={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600
+                }}
+              >
+                {loadingTransactions ? <CircularProgress size={20} /> : 'View Transactions'}
+              </Button>
+            </Stack>
+          </Box>
+
+          {/* Alerts */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage('')}>
+              {successMessage}
+            </Alert>
+          )}
 
           {/* Stats Overview */}
-          <div style={{
+          <Box sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '20px',
-            marginBottom: '32px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 3,
+            mb: 4
           }}>
             {[
-              { label: 'Total Campaigns', value: stats.total, icon: CampaignIcon, color: '#667eea' },
-              { label: 'Active', value: stats.active, icon: OngoingIcon, color: '#10b981' },
-              { label: 'Completed', value: stats.completed, icon: CompletedIcon, color: '#3b82f6' },
-              { label: 'Pending', value: stats.draft, icon: ApplicantIcon, color: '#f59e0b' }
+              { label: 'Total Campaigns', value: stats.total, IconComponent: CampaignIcon, bgColor: '#e0e7ff', iconColor: '#4338ca' },
+              { label: 'Active', value: stats.active, IconComponent: OngoingIcon, bgColor: '#d1fae5', iconColor: '#059669' },
+              { label: 'Completed', value: stats.completed, IconComponent: CompletedIcon, bgColor: '#dbeafe', iconColor: '#1e40af' },
+              { label: 'Pending', value: stats.pending, IconComponent: ApplicantIcon, bgColor: '#fef3c7', iconColor: '#d97706' }
             ].map((stat, index) => (
-              <div
+              <Box
                 key={index}
-                style={{
+                sx={{
                   background: '#fff',
-                  borderRadius: '16px',
-                  padding: '20px',
+                  borderRadius: 3,
+                  p: 3,
                   border: '1px solid #e2e8f0',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '16px'
+                  gap: 2,
+                  transition: 'all 0.3s',
+                  '&:hover': {
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                    transform: 'translateY(-4px)'
+                  }
                 }}
               >
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: `${stat.color}20`,
+                <Box sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 2,
+                  bgcolor: stat.bgColor,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <img 
-                    src={stat.icon} 
-                    alt={stat.label} 
-                    style={{ 
-                      width: '28px', 
-                      height: '28px',
-                      objectFit: 'contain'
-                    }} 
-                  />
-                </div>
-                <div>
-                  <div style={{
-                    fontSize: '0.85rem',
-                    color: '#6c757d',
-                    marginBottom: '4px',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
+                  <stat.IconComponent sx={{ fontSize: 28, color: stat.iconColor }} />
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: 14, color: '#6c757d', mb: 0.5 }}>
                     {stat.label}
-                  </div>
-                  <div style={{
-                    fontSize: '1.75rem',
-                    fontWeight: 700,
-                    color: '#1a1f36',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
+                  </Typography>
+                  <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1a1f36' }}>
                     {stat.value}
-                  </div>
-                </div>
-              </div>
+                  </Typography>
+                </Box>
+              </Box>
             ))}
-          </div>
+          </Box>
 
           {/* Filters */}
-          <div style={{
+          <Box sx={{
             background: '#fff',
-            borderRadius: '16px',
-            padding: '24px',
-            marginBottom: '24px',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            gap: '16px',
-            alignItems: 'center'
+            borderRadius: 3,
+            p: 3,
+            mb: 3,
+            border: '1px solid #e2e8f0'
           }}>
-            <div style={{ flex: 1 }}>
-              <input
-                type="text"
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
+              <TextField
                 placeholder="Search campaigns..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  fontFamily: "'Inter', sans-serif"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                size="small"
+                sx={{ flex: 1, minWidth: 200 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: '#6c757d' }} />
+                    </InputAdornment>
+                  )
                 }}
               />
-            </div>
-            <div>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                style={{
-                  padding: '12px 16px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif",
-                  minWidth: '150px'
+              <Button
+                variant="contained"
+                onClick={handleSearch}
+                sx={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  minWidth: 100
                 }}
               >
-                <option value="All">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Draft">Draft</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </div>
-          </div>
+                Search
+              </Button>
+              <Select
+                value={filterStatus}
+                onChange={(e) => {
+                  setFilterStatus(e.target.value);
+                  setPage(1);
+                }}
+                size="small"
+                displayEmpty
+                sx={{ minWidth: 200 }}
+              >
+                <MenuItem value="">Semua</MenuItem>
+                <MenuItem value="active">Aktif</MenuItem>
+                <MenuItem value="admin_review">Ditinjau Admin</MenuItem>
+                <MenuItem value="pending_payment">Menunggu Pembayaran</MenuItem>
+                <MenuItem value="completed">Selesai</MenuItem>
+                <MenuItem value="cancelled">Dibatalkan</MenuItem>
+              </Select>
+            </Stack>
+          </Box>
 
           {/* Campaigns Table */}
-          <div style={{
+          <Box sx={{
             background: '#fff',
-            borderRadius: '16px',
+            borderRadius: 3,
             border: '1px solid #e2e8f0',
             overflow: 'hidden'
           }}>
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              <thead>
-                <tr style={{ background: '#f7fafc' }}>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>ID</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Campaign Title</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>UMKM Name</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Status</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Influencers</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCampaigns.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: '#6c757d' }}>
-                      No campaigns found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredCampaigns.map((campaign) => {
-                    const statusStyle = getStatusColor(campaign.status);
-                    return (
-                      <tr
-                        key={campaign.id}
-                        style={{ borderBottom: '1px solid #e2e8f0' }}
-                      >
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#2d3748' }}>#{campaign.id}</td>
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', fontWeight: 600, color: '#1a1f36' }}>
-                          {campaign.campaign_title || 'Untitled Campaign'}
-                        </td>
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#6c757d' }}>
-                          {campaign.business_name || 'N/A'}
-                        </td>
-                        <td style={{ padding: '20px 24px' }}>
-                          <span style={{
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
-                            background: statusStyle.bg,
-                            color: statusStyle.color
-                          }}>
-                            {campaign.status}
-                          </span>
-                        </td>
-                        <td style={{ padding: '20px 24px', fontSize: '0.9rem', color: '#6c757d' }}>
-                          {campaign.influencer_count || 0}
-                        </td>
-                        <td style={{ padding: '20px 24px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <button
-                              onClick={() => handleViewDetail(campaign)}
-                              style={{
-                                padding: '8px 16px',
-                                background: '#667eea',
-                                border: 'none',
-                                borderRadius: '8px',
-                                color: '#fff',
-                                fontSize: '0.85rem',
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                              }}
-                            >
-                              View
-                            </button>
-                            {campaign.status === 'Active' && (
-                              <button
-                                onClick={() => handleDeactivate(campaign.id)}
-                                style={{
-                                  padding: '8px 16px',
-                                  background: '#f59e0b',
-                                  border: 'none',
-                                  borderRadius: '8px',
-                                  color: '#fff',
-                                  fontSize: '0.85rem',
-                                  fontWeight: 600,
-                                  cursor: 'pointer',
-                                  transition: 'all 0.2s'
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+                <CircularProgress size={60} />
+              </Box>
+            ) : (() => {
+              // Filter campaigns
+              const filteredCampaigns = campaigns.filter(campaign => {
+                const matchesStatus = !filterStatus || campaign.status?.toLowerCase() === filterStatus.toLowerCase();
+                const matchesSearch = !searchQuery || 
+                  campaign.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  campaign.campaign_category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  campaign.user?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesStatus && matchesSearch;
+              });
+
+              // Frontend pagination
+              const paginatedCampaigns = filteredCampaigns.slice((page - 1) * limit, page * limit);
+              const calculatedTotalPages = Math.ceil(filteredCampaigns.length / limit);
+
+              return filteredCampaigns.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <CampaignIcon sx={{ fontSize: 64, color: '#cbd5e0', mb: 2 }} />
+                <Typography sx={{ fontSize: 18, color: '#6c757d', fontWeight: 500 }}>
+                  No campaigns found
+                </Typography>
+                <Typography sx={{ fontSize: 14, color: '#a0aec0', mt: 1 }}>
+                  {searchQuery || filterStatus ? 'Try adjusting your filters' : 'Campaigns will appear here once created'}
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#f7fafc' }}>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Campaign</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Company</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Budget</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Created</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14, textAlign: 'center' }}>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedCampaigns.map((campaign) => {
+                        const statusColors = getStatusColor(campaign.status);
+                        return (
+                          <TableRow
+                            key={campaign.campaign_id}
+                            sx={{
+                              '&:hover': { bgcolor: '#f7fafc' },
+                              transition: 'background-color 0.2s'
+                            }}
+                          >
+                            <TableCell>
+                              <Typography sx={{ fontWeight: 600, color: '#1a1f36', fontSize: 14 }}>
+                                {campaign.title || 'Untitled'}
+                              </Typography>
+                              <Typography sx={{ fontSize: 12, color: '#6c757d' }}>
+                                {campaign.campaign_category || 'No category'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography sx={{ color: '#6c757d', fontSize: 14 }}>
+                                {campaign.user?.name || 'N/A'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography sx={{ fontWeight: 600, color: '#1a1f36', fontSize: 14 }}>
+                                Rp {((campaign.price_per_post * campaign.influencer_count) || 0).toLocaleString('id-ID')}
+                              </Typography>
+                              <Typography sx={{ fontSize: 11, color: '#6c757d' }}>
+                                {campaign.influencer_count} influencers
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={campaign.status?.replace('_', ' ') || 'draft'}
+                                size="small"
+                                sx={{
+                                  bgcolor: statusColors.bg,
+                                  color: statusColors.color,
+                                  fontSize: 12,
+                                  textTransform: 'capitalize',
+                                  fontWeight: 600
                                 }}
-                              >
-                                Deactivate
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography sx={{ color: '#6c757d', fontSize: 14 }}>
+                                {new Date(campaign.created_at).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Stack direction="row" spacing={1} justifyContent="center">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleViewDetail(campaign)}
+                                    sx={{
+                                      color: '#667eea',
+                                      '&:hover': { bgcolor: 'rgba(102, 126, 234, 0.1)' }
+                                    }}
+                                    title="View Details"
+                                  >
+                                    <ViewIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleEditClick(campaign)}
+                                    sx={{
+                                      color: '#ed8936',
+                                      '&:hover': { bgcolor: 'rgba(237, 137, 54, 0.1)' }
+                                    }}
+                                    title="Edit Campaign"
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDeleteClick(campaign)}
+                                    sx={{
+                                      color: '#ef4444',
+                                      '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
+                                    }}
+                                    title="Delete Campaign"
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
 
-      {/* Campaign Detail Modal */}
-      {showDetailModal && selectedCampaign && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '20px'
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '20px',
-            maxWidth: '700px',
-            width: '100%',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-          }}>
-            {/* Modal Header */}
-            <div style={{
-              padding: '32px',
-              borderBottom: '1px solid #e2e8f0'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <div>
-                  <h2 style={{
-                    fontSize: '1.75rem',
-                    fontWeight: 700,
-                    color: '#1a1f36',
-                    marginBottom: '8px',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
-                    {selectedCampaign.campaign_title}
-                  </h2>
-                  <div style={{
-                    fontSize: '0.9rem',
-                    color: '#6c757d',
-                    fontFamily: "'Inter', sans-serif"
-                  }}>
-                    {selectedCampaign.business_name}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  style={{
-                    background: '#f7fafc',
-                    border: 'none',
-                    borderRadius: '10px',
-                    width: '36px',
-                    height: '36px',
+                {/* Pagination */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                  <Pagination
+                    count={calculatedTotalPages}
+                    page={page}
+                    onChange={(e, value) => setPage(value)}
+                    color="primary"
+                    size="large"
+                  />
+                </Box>
+              </>
+            );
+            })()}
+          </Box>
+
+          {/* Campaign Detail Modal */}
+          <Dialog
+            open={showDetailModal}
+            onClose={() => !submitting && setShowDetailModal(false)}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle sx={{ fontWeight: 700, fontSize: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Campaign Details
+              <IconButton onClick={() => setShowDetailModal(false)} disabled={submitting}>
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+              {selectedCampaign && (
+                <Stack spacing={2}>
+                  <Box>
+                    <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                      Campaign Title
+                    </Typography>
+                    <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#1a1f36' }}>
+                      {selectedCampaign.title}
+                    </Typography>
+                  </Box>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Campaign Category
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
+                        {selectedCampaign.campaign_category || 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Company
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
+                        {selectedCampaign.user?.name || 'N/A'}
+                      </Typography>
+                      <Typography sx={{ fontSize: 12, color: '#94a3b8' }}>
+                        {selectedCampaign.user?.email || ''}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
+                  {selectedCampaign.influencer_category && (
+                    <Box>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Influencer Categories
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                        {(() => {
+                          try {
+                            const categories = typeof selectedCampaign.influencer_category === 'string' 
+                              ? JSON.parse(selectedCampaign.influencer_category)
+                              : selectedCampaign.influencer_category;
+                            return Array.isArray(categories) 
+                              ? categories.map((cat, idx) => (
+                                  <Chip key={idx} label={cat} size="small" sx={{ bgcolor: '#e0e7ff', color: '#4338ca' }} />
+                                ))
+                              : null;
+                          } catch (e) {
+                            return <Typography sx={{ fontSize: 14, color: '#6c757d' }}>N/A</Typography>;
+                          }
+                        })()}
+                      </Box>
+                    </Box>
+                  )}
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Price Per Post
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
+                        Rp {(selectedCampaign.price_per_post || 0).toLocaleString('id-ID')}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Influencer Count
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
+                        {selectedCampaign.influencer_count || 0}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={4}>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Start Date
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
+                        {selectedCampaign.start_date ? new Date(selectedCampaign.start_date).toLocaleDateString() : 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        End Date
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
+                        {selectedCampaign.end_date ? new Date(selectedCampaign.end_date).toLocaleDateString() : 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Deadline
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
+                        {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString() : 'N/A'}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Min Followers
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
+                        {(selectedCampaign.min_followers || 0).toLocaleString()}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Target Demographics
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
+                        {selectedCampaign.selected_gender} • {selectedCampaign.selected_age}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
+                  {selectedCampaign.has_product && (
+                    <Box sx={{ bgcolor: '#f7fafc', p: 2, borderRadius: 2 }}>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 1, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Product Information
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
+                        {selectedCampaign.product_name}
+                      </Typography>
+                      <Typography sx={{ fontSize: 13, color: '#6c757d' }}>
+                        Value: Rp {(selectedCampaign.product_value || 0).toLocaleString('id-ID')}
+                      </Typography>
+                      <Typography sx={{ fontSize: 13, color: '#6c757d', mt: 0.5 }}>
+                        {selectedCampaign.product_desc}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {selectedCampaign.content_guidelines && (
+                    <Box>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Content Guidelines
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, color: '#1a1f36', whiteSpace: 'pre-wrap' }}>
+                        {selectedCampaign.content_guidelines}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {selectedCampaign.caption_guidelines && (
+                    <Box>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Caption Guidelines
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, color: '#1a1f36', whiteSpace: 'pre-wrap' }}>
+                        {selectedCampaign.caption_guidelines}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {selectedCampaign.criteria_desc && (
+                    <Box>
+                      <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                        Criteria Description
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
+                        {selectedCampaign.criteria_desc}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  <Box>
+                    <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                      Status
+                    </Typography>
+                    <Chip
+                      label={selectedCampaign.status?.replace('_', ' ')}
+                      sx={{
+                        ...getStatusColor(selectedCampaign.status),
+                        fontSize: 13,
+                        textTransform: 'capitalize',
+                        fontWeight: 600
+                      }}
+                    />
+                  </Box>
+                </Stack>
+              )}
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button
+                onClick={() => setShowDetailModal(false)}
+                disabled={submitting}
+                sx={{ textTransform: 'none' }}
+              >
+                Tutup
+              </Button>
+              {selectedCampaign?.status?.toLowerCase() === 'admin_review' && (
+                <>
+                  <Button
+                    onClick={() => {
+                      setShowDetailModal(false);
+                      setShowRejectDialog(true);
+                    }}
+                    disabled={submitting}
+                    startIcon={<RejectIcon />}
+                    sx={{
+                      textTransform: 'none',
+                      color: '#ef4444',
+                      bgcolor: '#fff5f5',
+                      fontWeight: 600,
+                      '&:hover': { bgcolor: '#fee2e2' }
+                    }}
+                  >
+                    Tolak Campaign
+                  </Button>
+                  <Button
+                    onClick={() => handleUpdateStatus(selectedCampaign.campaign_id, 'pending_payment')}
+                    disabled={submitting}
+                    variant="contained"
+                    startIcon={<ApproveIcon />}
+                    sx={{
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      textTransform: 'none',
+                      fontWeight: 600
+                    }}
+                  >
+                    {submitting ? <CircularProgress size={20} /> : 'Approve'}
+                  </Button>
+                </>
+              )}
+            </DialogActions>
+          </Dialog>
+
+          {/* Edit Campaign Dialog */}
+          <Dialog
+            open={showEditModal}
+            onClose={() => !submitting && setShowEditModal(false)}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle sx={{ fontWeight: 700, fontSize: 20 }}>
+              Edit Campaign
+            </DialogTitle>
+            <DialogContent dividers>
+              <Stack spacing={3} sx={{ pt: 1 }}>
+                <TextField
+                  label="Campaign Title"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                  fullWidth
+                  required
+                />
+                <Select
+                  value={editFormData.campaign_category}
+                  onChange={(e) => setEditFormData({ ...editFormData, campaign_category: e.target.value })}
+                  fullWidth
+                  displayEmpty
+                >
+                  <MenuItem value="">Select Category</MenuItem>
+                  <MenuItem value="Entertainment">Entertainment</MenuItem>
+                  <MenuItem value="Fashion">Fashion</MenuItem>
+                  <MenuItem value="Beauty">Beauty</MenuItem>
+                  <MenuItem value="Food & Beverage">Food & Beverage</MenuItem>
+                  <MenuItem value="Health & Sport">Health & Sport</MenuItem>
+                  <MenuItem value="Technology">Technology</MenuItem>
+                  <MenuItem value="Travel">Travel</MenuItem>
+                  <MenuItem value="Lifestyle">Lifestyle</MenuItem>
+                </Select>
+                
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Price Per Post (Rp)"
+                      type="number"
+                      value={editFormData.price_per_post}
+                      onChange={(e) => setEditFormData({ ...editFormData, price_per_post: e.target.value })}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Influencer Count"
+                      type="number"
+                      value={editFormData.influencer_count}
+                      onChange={(e) => setEditFormData({ ...editFormData, influencer_count: e.target.value })}
+                      fullWidth
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={4}>
+                    <TextField
+                      label="Start Date"
+                      type="date"
+                      value={editFormData.startDate}
+                      onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <TextField
+                      label="End Date"
+                      type="date"
+                      value={editFormData.endDate}
+                      onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <TextField
+                      label="Submission Deadline"
+                      type="date"
+                      value={editFormData.submission_deadline}
+                      onChange={(e) => setEditFormData({ ...editFormData, submission_deadline: e.target.value })}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={4}>
+                    <TextField
+                      label="Min Followers"
+                      type="number"
+                      value={editFormData.min_followers}
+                      onChange={(e) => setEditFormData({ ...editFormData, min_followers: e.target.value })}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Select
+                      value={editFormData.selected_gender}
+                      onChange={(e) => setEditFormData({ ...editFormData, selected_gender: e.target.value })}
+                      fullWidth
+                      displayEmpty
+                    >
+                      <MenuItem value="">Gender</MenuItem>
+                      <MenuItem value="male">Male</MenuItem>
+                      <MenuItem value="female">Female</MenuItem>
+                      <MenuItem value="all">All</MenuItem>
+                    </Select>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Select
+                      value={editFormData.selected_age}
+                      onChange={(e) => setEditFormData({ ...editFormData, selected_age: e.target.value })}
+                      fullWidth
+                      displayEmpty
+                    >
+                      <MenuItem value="">Age Range</MenuItem>
+                      <MenuItem value="13-17 tahun">13-17 years</MenuItem>
+                      <MenuItem value="18-24 tahun">18-24 years</MenuItem>
+                      <MenuItem value="25-34 tahun">25-34 years</MenuItem>
+                      <MenuItem value="35+ tahun">35+ years</MenuItem>
+                    </Select>
+                  </Grid>
+                </Grid>
+
+                <Divider />
+                
+                <Box>
+                  <Typography sx={{ fontWeight: 600, mb: 1 }}>Product Information (Optional)</Typography>
+                  <Stack spacing={2}>
+                    <TextField
+                      label="Product Name"
+                      value={editFormData.product_name}
+                      onChange={(e) => setEditFormData({ ...editFormData, product_name: e.target.value })}
+                      fullWidth
+                    />
+                    <TextField
+                      label="Product Value (Rp)"
+                      type="number"
+                      value={editFormData.product_value}
+                      onChange={(e) => setEditFormData({ ...editFormData, product_value: e.target.value })}
+                      fullWidth
+                    />
+                    <TextField
+                      label="Product Description"
+                      value={editFormData.product_desc}
+                      onChange={(e) => setEditFormData({ ...editFormData, product_desc: e.target.value })}
+                      fullWidth
+                      multiline
+                      rows={2}
+                    />
+                  </Stack>
+                </Box>
+
+                <TextField
+                  label="Content Guidelines"
+                  value={editFormData.content_guidelines}
+                  onChange={(e) => setEditFormData({ ...editFormData, content_guidelines: e.target.value })}
+                  fullWidth
+                  multiline
+                  rows={3}
+                />
+                <TextField
+                  label="Caption Guidelines"
+                  value={editFormData.caption_guidelines}
+                  onChange={(e) => setEditFormData({ ...editFormData, caption_guidelines: e.target.value })}
+                  fullWidth
+                  multiline
+                  rows={2}
+                />
+                <TextField
+                  label="Criteria Description"
+                  value={editFormData.criteria_desc}
+                  onChange={(e) => setEditFormData({ ...editFormData, criteria_desc: e.target.value })}
+                  fullWidth
+                  multiline
+                  rows={3}
+                />
+                
+                <Select
+                  value={editFormData.status}
+                  onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                  fullWidth
+                >
+                  <MenuItem value="draft">Draft</MenuItem>
+                  <MenuItem value="admin_review">Admin Review</MenuItem>
+                  <MenuItem value="pending_payment">Pending Payment</MenuItem>
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="completed">Completed</MenuItem>
+                  <MenuItem value="cancelled">Cancelled</MenuItem>
+                </Select>
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button
+                onClick={() => setShowEditModal(false)}
+                disabled={submitting}
+                sx={{ textTransform: 'none' }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveEdit}
+                variant="contained"
+                disabled={submitting}
+                sx={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  textTransform: 'none',
+                  fontWeight: 600
+                }}
+              >
+                {submitting ? <CircularProgress size={24} /> : 'Save Changes'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Transactions Modal */}
+          <Dialog
+            open={showTransactionsModal}
+            onClose={() => setShowTransactionsModal(false)}
+            maxWidth="lg"
+            fullWidth
+          >
+            <DialogTitle sx={{ fontWeight: 700, fontSize: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              All Transactions
+              <IconButton onClick={() => setShowTransactionsModal(false)}>
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+              {transactions.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <ReceiptIcon sx={{ fontSize: 64, color: '#cbd5e0', mb: 2 }} />
+                  <Typography sx={{ fontSize: 18, color: '#6c757d' }}>No transactions found</Typography>
+                </Box>
+              ) : (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#f7fafc' }}>
+                        <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>User</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Amount</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {transactions.map((tx) => (
+                        <TableRow key={tx._id} sx={{ '&:hover': { bgcolor: '#f7fafc' } }}>
+                          <TableCell>
+                            <Typography sx={{ fontSize: 14 }}>
+                              {new Date(tx.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
+                              {tx.userId?.name || 'Unknown'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={tx.type || 'N/A'}
+                              size="small"
+                              sx={{
+                                bgcolor: tx.type === 'credit' ? '#d1fae5' : '#fee2e2',
+                                color: tx.type === 'credit' ? '#065f46' : '#991b1b',
+                                textTransform: 'capitalize'
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
+                              Rp {(tx.amount || 0).toLocaleString('id-ID')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={tx.status || 'completed'}
+                              size="small"
+                              sx={{
+                                textTransform: 'capitalize',
+                                ...getStatusColor(tx.status)
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography sx={{ fontSize: 14, color: '#6c757d' }}>
+                              {tx.description || tx.category || 'N/A'}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button onClick={() => setShowTransactionsModal(false)} sx={{ textTransform: 'none' }}>
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Reject Campaign Dialog */}
+          <Dialog
+            open={showRejectDialog}
+            onClose={() => !submitting && setShowRejectDialog(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <WarningIcon sx={{ color: '#ef4444' }} />
+              <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Tolak Campaign</Typography>
+            </DialogTitle>
+            <DialogContent dividers>
+              <Typography sx={{ color: '#6c757d', fontSize: 15, mb: 3 }}>
+                Pilih alasan pembatalan campaign <strong>{selectedCampaign?.title}</strong>:
+              </Typography>
+              
+              <Stack spacing={2}>
+                <Box 
+                  onClick={() => setCancellationReason('Konten campaign tidak sesuai dengan panduan komunitas')}
+                  sx={{
+                    p: 2,
+                    border: cancellationReason === 'Konten campaign tidak sesuai dengan panduan komunitas' ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    borderRadius: 2,
                     cursor: 'pointer',
-                    fontSize: '1.25rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                    bgcolor: cancellationReason === 'Konten campaign tidak sesuai dengan panduan komunitas' ? '#fff5f5' : '#fff',
+                    '&:hover': { bgcolor: '#f7fafc' }
                   }}
                 >
-                  ✕
-                </button>
-              </div>
-            </div>
+                  <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Konten tidak sesuai panduan</Typography>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>Campaign melanggar panduan komunitas</Typography>
+                </Box>
 
-            {/* Modal Body */}
-            <div style={{ padding: '32px' }}>
-              <div style={{ marginBottom: '24px' }}>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: 700,
-                  color: '#1a1f36',
-                  marginBottom: '12px',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  Campaign Description
-                </h3>
-                <p style={{
-                  fontSize: '0.95rem',
-                  color: '#6c757d',
-                  lineHeight: '1.6',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {selectedCampaign.description || 'No description provided.'}
-                </p>
-              </div>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '20px',
-                marginBottom: '24px'
-              }}>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Budget</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1f36' }}>
-                    Rp {(selectedCampaign.total_budget || 0).toLocaleString('id-ID')}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Price Per Post</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1f36' }}>
-                    Rp {(selectedCampaign.price_per_post || 0).toLocaleString('id-ID')}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Influencers Needed</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1f36' }}>
-                    {selectedCampaign.influencer_count || 0}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>Status</div>
-                  <div>
-                    <span style={{
-                      padding: '8px 16px',
-                      borderRadius: '10px',
-                      fontSize: '0.9rem',
-                      fontWeight: 700,
-                      background: getStatusColor(selectedCampaign.status).bg,
-                      color: getStatusColor(selectedCampaign.status).color,
-                      display: 'inline-block'
-                    }}>
-                      {selectedCampaign.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-                {selectedCampaign.status === 'Draft' && (
-                  <>
-                    <button
-                      onClick={handleApproveCampaign}
-                      style={{
-                        flex: 1,
-                        padding: '14px',
-                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                        border: 'none',
-                        borderRadius: '12px',
-                        color: '#fff',
-                        fontSize: '0.95rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontFamily: "'Inter', sans-serif"
-                      }}
-                    >
-                      ✅ Approve Campaign
-                    </button>
-                    <button
-                      onClick={handleRejectCampaign}
-                      style={{
-                        flex: 1,
-                        padding: '14px',
-                        background: '#ef4444',
-                        border: 'none',
-                        borderRadius: '12px',
-                        color: '#fff',
-                        fontSize: '0.95rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontFamily: "'Inter', sans-serif"
-                      }}
-                    >
-                      ❌ Reject Campaign
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  style={{
-                    flex: selectedCampaign.status === 'Draft' ? 0 : 1,
-                    padding: '14px',
-                    background: '#e2e8f0',
-                    border: 'none',
-                    borderRadius: '12px',
-                    color: '#2d3748',
-                    fontSize: '0.95rem',
-                    fontWeight: 600,
+                <Box 
+                  onClick={() => setCancellationReason('Informasi campaign tidak lengkap atau tidak jelas')}
+                  sx={{
+                    p: 2,
+                    border: cancellationReason === 'Informasi campaign tidak lengkap atau tidak jelas' ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    borderRadius: 2,
                     cursor: 'pointer',
-                    fontFamily: "'Inter', sans-serif",
-                    minWidth: selectedCampaign.status === 'Draft' ? 'auto' : '100%'
+                    bgcolor: cancellationReason === 'Informasi campaign tidak lengkap atau tidak jelas' ? '#fff5f5' : '#fff',
+                    '&:hover': { bgcolor: '#f7fafc' }
                   }}
                 >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+                  <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Informasi tidak lengkap</Typography>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>Detail campaign kurang jelas atau tidak memadai</Typography>
+                </Box>
+
+                <Box 
+                  onClick={() => setCancellationReason('Budget atau kompensasi tidak sesuai standar')}
+                  sx={{
+                    p: 2,
+                    border: cancellationReason === 'Budget atau kompensasi tidak sesuai standar' ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    bgcolor: cancellationReason === 'Budget atau kompensasi tidak sesuai standar' ? '#fff5f5' : '#fff',
+                    '&:hover': { bgcolor: '#f7fafc' }
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Budget tidak sesuai</Typography>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>Kompensasi tidak memenuhi standar minimum</Typography>
+                </Box>
+
+                <Box 
+                  onClick={() => setCancellationReason('Produk atau layanan melanggar ketentuan')}
+                  sx={{
+                    p: 2,
+                    border: cancellationReason === 'Produk atau layanan melanggar ketentuan' ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    bgcolor: cancellationReason === 'Produk atau layanan melanggar ketentuan' ? '#fff5f5' : '#fff',
+                    '&:hover': { bgcolor: '#f7fafc' }
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Produk melanggar ketentuan</Typography>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>Produk/layanan yang dipromosikan tidak diizinkan</Typography>
+                </Box>
+
+                <Box 
+                  onClick={() => setCancellationReason('other')}
+                  sx={{
+                    p: 2,
+                    border: cancellationReason === 'other' ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    bgcolor: cancellationReason === 'other' ? '#fff5f5' : '#fff',
+                    '&:hover': { bgcolor: '#f7fafc' }
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Alasan lainnya</Typography>
+                  <Typography sx={{ fontSize: 13, color: '#6c757d' }}>Tulis alasan pembatalan sendiri</Typography>
+                </Box>
+
+                {cancellationReason === 'other' && (
+                  <TextField
+                    label="Alasan Pembatalan"
+                    multiline
+                    rows={4}
+                    fullWidth
+                    value={customReason}
+                    onChange={(e) => setCustomReason(e.target.value)}
+                    placeholder="Tulis alasan pembatalan campaign..."
+                    sx={{ mt: 2 }}
+                  />
+                )}
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button
+                onClick={() => {
+                  setShowRejectDialog(false);
+                  setCancellationReason('');
+                  setCustomReason('');
+                }}
+                disabled={submitting}
+                sx={{ textTransform: 'none' }}
+              >
+                Batal
+              </Button>
+              <Button
+                onClick={handleRejectCampaign}
+                variant="contained"
+                disabled={submitting || !cancellationReason || (cancellationReason === 'other' && !customReason)}
+                sx={{
+                  bgcolor: '#ef4444',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '&:hover': { bgcolor: '#dc2626' }
+                }}
+              >
+                {submitting ? <CircularProgress size={24} /> : 'Batalkan Campaign'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog
+            open={showDeleteDialog}
+            onClose={() => !submitting && setShowDeleteDialog(false)}
+            maxWidth="xs"
+            fullWidth
+          >
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <WarningIcon sx={{ color: '#ef4444' }} />
+              <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Confirm Delete</Typography>
+            </DialogTitle>
+            <DialogContent>
+              <Typography sx={{ color: '#6c757d', fontSize: 15 }}>
+                Are you sure you want to delete campaign <strong>{campaignToDelete?.title || campaignToDelete?.campaign_title}</strong>? 
+                This action cannot be undone.
+              </Typography>
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button
+                onClick={() => setShowDeleteDialog(false)}
+                disabled={submitting}
+                sx={{ textTransform: 'none' }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmDelete}
+                variant="contained"
+                disabled={submitting}
+                sx={{
+                  bgcolor: '#ef4444',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '&:hover': { bgcolor: '#dc2626' }
+                }}
+              >
+                {submitting ? <CircularProgress size={24} /> : 'Delete'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

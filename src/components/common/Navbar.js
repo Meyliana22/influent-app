@@ -1,19 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../constants/colors';
-import logo from '../../assets/logo.svg'; // Tambahkan baris ini
-import chatIcon from '../../assets/chat.svg';
-import notifIcon from '../../assets/notification.svg';
-import profileIcon from '../../assets/user.svg';
-
+import logo from '../../assets/logo.svg';
+import ChatIcon from '@mui/icons-material/Chat';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import PersonIcon from '@mui/icons-material/Person';
+import {
+  Badge,
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
 
 /**
  * Reusable Navbar Component
  * @param {string} userType - Type of user: 'umkm' or 'student'
  * @param {boolean} showAuth - If true, show login/register buttons
  */
-const Navbar = ({ userType = 'umkm', showAuth = false }) => {
+const Navbar = ({ userType = 'umkm', showAuth = false, unreadCount = 0 }) => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    // Get user from localStorage to determine role
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserRole(user.role);
+      } catch (err) {
+        console.error('Error parsing user from localStorage:', err);
+      }
+    }
+  }, []);
+
+  // All roles use single notifications route
+  const getNotificationsPath = () => {
+    return '/notifications'; // Single route for all roles (admin, company, influencer)
+  };
 
   const navItems = userType === 'umkm' 
     ? [
@@ -26,101 +54,149 @@ const Navbar = ({ userType = 'umkm', showAuth = false }) => {
       ];
 
   return (
-    <div style={{
-      background: COLORS.white,
-      borderBottom: `1px solid ${COLORS.border}`,
-      padding: '16px 32px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      boxShadow: `0 2px 8px ${COLORS.shadow}`,
-    }}>
+    <Box
+      sx={{
+        bgcolor: COLORS.white,
+        borderBottom: `1px solid ${COLORS.border}`,
+        px: 4,
+        py: 2,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        boxShadow: `0 2px 8px ${COLORS.shadow}`,
+      }}
+    >
       {/* Logo and Navigation */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-        <img src={logo} alt='Logo' style={{ height: '26px', cursor: 'pointer' }} onClick={() => navigate('/')}>
-        </img>
-        <div style={{ display: 'flex', gap: '24px' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <Box 
+          component="img" 
+          src={logo} 
+          alt='Logo' 
+          sx={{ height: 26, cursor: 'pointer' }} 
+          onClick={() => navigate('/')} 
+        />
+        
+        <Stack direction="row" spacing={3}>
           {navItems.map((item) => (
-            <button
+            <Button
               key={item.path}
-              style={{
+              onClick={() => navigate(item.path)}
+              sx={{
                 background: 'transparent',
                 border: 'none',
                 color: COLORS.textSecondary,
                 fontWeight: 500,
                 fontSize: '1rem',
-                cursor: 'pointer',
-                transition: 'color 0.2s',
+                minWidth: 'auto',
+                p: 0,
+                textTransform: 'none',
+                '&:hover': {
+                  background: 'transparent',
+                  color: COLORS.primary
+                }
               }}
-              onClick={() => navigate(item.path)}
-              onMouseEnter={(e) => e.target.style.color = COLORS.primary}
-              onMouseLeave={(e) => e.target.style.color = COLORS.textSecondary}
+              disableRipple
             >
               {item.label}
-            </button>
+            </Button>
           ))}
-        </div>
-      </div>
+        </Stack>
+      </Box>
 
       {/* Right Side Icons/Buttons */}
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
         {showAuth ? (
           <>
-            <button
-              onClick={() => navigate('/login-umkm')}
-              style={{
-                padding: '10px 20px',
-                background: 'transparent',
-                border: `2px solid ${COLORS.primary}`,
-                borderRadius: '8px',
+            <Button
+              onClick={() => navigate('/login')}
+              variant="outlined"
+              sx={{
+                px: 2.5,
+                py: 1,
+                borderColor: COLORS.primary,
                 color: COLORS.primary,
                 fontWeight: 600,
-                cursor: 'pointer',
+                borderRadius: 2,
+                textTransform: 'none',
                 fontSize: '0.95rem',
+                '&:hover': {
+                  borderColor: COLORS.primary,
+                  bgcolor: 'rgba(102, 126, 234, 0.05)'
+                }
               }}
             >
               Masuk
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => navigate('/register-umkm')}
-              style={{
-                padding: '10px 20px',
+              variant="contained"
+              sx={{
+                px: 2.5,
+                py: 1,
                 background: COLORS.gradientPrimary,
-                border: 'none',
-                borderRadius: '8px',
                 color: COLORS.white,
                 fontWeight: 600,
-                cursor: 'pointer',
+                borderRadius: 2,
+                textTransform: 'none',
                 fontSize: '0.95rem',
+                boxShadow: 'none',
+                '&:hover': {
+                  background: COLORS.gradientPrimary,
+                  opacity: 0.9
+                }
               }}
             >
               Daftar
-            </button>
+            </Button>
           </>
         ) : (
           <>
-            <img
-              src={chatIcon}
-              alt="Chat"
-              style={{ width: '22px', height: '22px', cursor: 'pointer' }}
-              onClick={() => navigate('/chat')}
-            />
-            <img
-              src={notifIcon}
-              alt="Notifications"
-              style={{ width: '26px', height: '26px', cursor: 'pointer' }}
-              onClick={() => navigate('/notifications')}
-            />
-            <img
-              src={profileIcon}
-              alt="Profile"
-              style={{ width: '28px', height: '28px', cursor: 'pointer' }}
-              onClick={() => navigate('/user')}
-            />
+            <IconButton onClick={() => navigate('/chat')}>
+              <ChatIcon
+                sx={{ 
+                  fontSize: 26, 
+                  color: COLORS.textSecondary, 
+                  '&:hover': { color: COLORS.primary }
+                }}
+              />
+            </IconButton>
+            
+            <IconButton onClick={() => navigate(getNotificationsPath())}>
+              <Badge 
+                badgeContent={unreadCount} 
+                color="error"
+                sx={{
+                  '& .MuiBadge-badge': {
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    minWidth: '18px',
+                    height: '18px'
+                  }
+                }}
+              >
+                <NotificationsIcon
+                  sx={{ 
+                    fontSize: 28, 
+                    color: COLORS.textSecondary, 
+                    '&:hover': { color: COLORS.primary }
+                  }}
+                />
+              </Badge>
+            </IconButton>
+            
+            <IconButton onClick={() => navigate('/user')}>
+              <PersonIcon
+                sx={{ 
+                  fontSize: 30, 
+                  color: COLORS.textSecondary, 
+                  '&:hover': { color: COLORS.primary }
+                }}
+              />
+            </IconButton>
           </>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

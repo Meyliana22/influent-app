@@ -1,31 +1,101 @@
 import React, { useState, useEffect } from 'react';
+import WavingHandIcon from '@mui/icons-material/WavingHand';
 import { useNavigate } from 'react-router-dom';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
+import { Sidebar, Topbar } from '../../components/common';
 import { COLORS } from '../../constants/colors.js';
-import ApplicantIcon from '../../assets/dashboard-umkm/Applicant.svg';
-import CampaignIcon from '../../assets/dashboard-umkm/Campaign.svg';
-import CompletedIcon from '../../assets/dashboard-umkm/Completed.svg';
-import OngoingIcon from '../../assets/dashboard-umkm/Ongoing.svg';
-import DollarIcon from '../../assets/dashboard-umkm/Dollar.svg';
-import CustomerIcon from '../../assets/dashboard-umkm/Customer.svg';  
-import listIcon from '../../assets/dashboard-umkm/List.svg';
-import CreateIcon from '../../assets/dashboard-umkm/Create.svg';
+import {
+  Box,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Paper,
+  Typography,
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Stack
+} from '@mui/material';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import OngoingIcon from '@mui/icons-material/HourglassEmpty';
+import CompletedIcon from '@mui/icons-material/CheckCircle';
+import PersonIcon from '@mui/icons-material/Person';
+import PaymentIcon from '@mui/icons-material/Payment';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import campaignService from '../../services/campaignService';
+import { BarChart3 } from 'lucide-react';
+
+// Get status badge style
+const getStatusStyle = (status) => {
+  const styles = {
+    'admin_review': {
+      background: '#fff3cd',
+      color: '#856404',
+      boxShadow: '0 2px 8px rgba(255, 193, 7, 0.3)'
+    },
+    'pending_payment': {
+      background: '#cfe2ff',
+      color: '#084298',
+      boxShadow: '0 2px 8px rgba(13, 110, 253, 0.3)'
+    },
+    'cancelled': {
+      background: '#ffe5e5',
+      color: '#c41e3a',
+      boxShadow: '0 2px 8px rgba(196, 30, 58, 0.3)'
+    },
+    'draft': {
+      background: '#e2e8f0',
+      color: '#6c757d',
+      boxShadow: '0 2px 8px rgba(143, 143, 143, 0.3)'
+    },
+    'active': { 
+      background: '#d1fae5', 
+      color: '#155724',
+      boxShadow: '0 2px 8px rgba(132, 250, 176, 0.3)'
+    },
+    'completed': {
+      background: '#e0d4ff',
+      color: '#5b21b6',
+      boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)'
+    }
+  };
+  return styles[status?.toLowerCase()] || styles['draft'];
+};
+
+// Get status display text (Bahasa Indonesia)
+const getStatusText = (status) => {
+  const statusTexts = {
+    'admin_review': 'Ditinjau Admin',
+    'pending_payment': 'Menunggu Pembayaran',
+    'cancelled': 'Dibatalkan',
+    'draft': 'Draft',
+    'active': 'Aktif',
+    'completed': 'Selesai'
+  };
+  return statusTexts[status?.toLowerCase()] || status || 'Tidak Diketahui';
+};
 
 function UMKMDashboard() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 992);
   const [stats, setStats] = useState({
-    totalCampaigns: 0,
     ongoingCampaigns: 0,
-    completedCampaigns: 0,
-    totalApplicants: 0
+    totalSpendThisMonth: 0,
+    influencersEngaged: 0,
+    completedCampaigns: 0
   });
   const [recentCampaigns, setRecentCampaigns] = useState([]);
 
+  // Get user name from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userName = user.name || 'User';
+
   useEffect(() => {
+    // Load dashboard data once on mount
     loadDashboardData();
     
     // Handle window resize for responsive layout
@@ -35,14 +105,28 @@ function UMKMDashboard() {
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps array - only run once on mount to avoid double API calls
 
   const loadDashboardData = async () => {
     try {
-      // Fetch campaigns from API
-      const response = await campaignService.getCampaigns();
-      console.log('📊 Dashboard API Response:', response);
+      // Fetch dashboard stats from API
+      // Best practice: Use dedicated dashboard endpoint that returns aggregated stats
+      const statsResponse = await campaignService.getDashboardStats();
       
+        if (statsResponse?.data) {
+          setStats({
+            ongoingCampaigns: statsResponse.data.ongoing_campaigns || 0,
+            totalSpendThisMonth: statsResponse.data.total_spend_this_month || 0,
+            influencersEngaged: statsResponse.data.influencers_engaged || 0,
+            completedCampaigns: statsResponse.data.completed_campaigns || 0
+          });
+        }      // Fetch campaigns from API for recent campaigns list - sorted by newest first
+      const response = await campaignService.getCampaigns({ 
+        limit: 3, 
+        sort: 'campaign_id',
+        order: 'DESC'
+      });
       // Handle different response structures
       let campaigns = [];
       if (Array.isArray(response)) {
@@ -53,56 +137,17 @@ function UMKMDashboard() {
         campaigns = response.data.data;
       }
       
-      console.log('📋 Campaigns array:', campaigns);
-      console.log('📈 Total campaigns found:', campaigns.length);
-      
-      const applicants = []; // TODO: Load from applicants API when available
+      setRecentCampaigns(campaigns.slice(0, 3));
 
-      // Calculate stats
-      const total = campaigns.length;
-      const activeCampaigns = campaigns.filter(c => c.status === 'active');
-      const completedCampaigns = campaigns.filter(c => c.status === 'completed');
-      const ongoing = activeCampaigns.length;
-      const completed = completedCampaigns.length;
-      const totalApplicants = applicants.length;
 
-      console.log('📊 Stats calculated:', {
-        total,
-        active: ongoing,
-        completed,
-        applicants: totalApplicants
-      });
-
-      setStats({
-        totalCampaigns: total,
-        ongoingCampaigns: ongoing,
-        completedCampaigns: completed,
-        totalApplicants
-      });
-
-      // Get recent 3 campaigns - sort by created_at descending
-      const sortedCampaigns = [...campaigns].sort((a, b) => {
-        const dateA = new Date(a.created_at || 0);
-        const dateB = new Date(b.created_at || 0);
-        return dateB - dateA; // Most recent first
-      });
-      
-      const recentThree = sortedCampaigns.slice(0, 3);
-      setRecentCampaigns(recentThree);
-      console.log('✅ Recent 3 campaigns set:', recentThree.map(c => ({
-        id: c.campaign_id,
-        title: c.title,
-        status: c.status,
-        created: c.created_at
-      })));
     } catch (error) {
       console.error('❌ Error loading dashboard data:', error);
       // Fallback to empty state
       setStats({
-        totalCampaigns: 0,
         ongoingCampaigns: 0,
-        completedCampaigns: 0,
-        totalApplicants: 0
+        totalSpendThisMonth: 0,
+        influencersEngaged: 0,
+        completedCampaigns: 0
       });
       setRecentCampaigns([]);
     }
@@ -110,60 +155,71 @@ function UMKMDashboard() {
 
   const statCards = [
     {
-      title: 'Total Campaigns',
-      value: stats.totalCampaigns,
-      icon: CampaignIcon,
-      bgColor: '#e0e7ff',
-      description: 'All time campaigns'
+      title: 'Total Pengeluaran',
+      value: `Rp ${stats.totalSpendThisMonth.toLocaleString('id-ID')}`,
+      IconComponent: PaymentIcon,
+      bgColor: '#d1fae5',
+      iconColor: '#059669',
+      description: 'Budget bulan ini',
+      filterPath: '/transactions',
+      filterType: 'expense'
     },
     {
-      title: 'Ongoing Campaigns',
+      title: 'Campaign Sedang Berjalan',
       value: stats.ongoingCampaigns,
-      icon: OngoingIcon,
+      IconComponent: OngoingIcon,
       bgColor: '#ffebebff',
-      description: 'Currently active'
+      iconColor: '#dc2626',
+      description: 'Sedang aktif',
+      filterPath: '/umkm/campaigns',
+      filterType: 'active'
     },
     {
-      title: 'Completed Campaigns',
-      value: stats.completedCampaigns,
-      icon: CompletedIcon,
-      color: '#fce1e1ff',
-      bgColor: '#fcffd1ff',
-      description: 'Successfully finished'
-    },
-    {
-      title: 'Total Applicants',
-      value: stats.totalApplicants,
-      icon: ApplicantIcon,
+      title: 'Influencer Terlibat',
+      value: stats.influencersEngaged,
+      IconComponent: PersonIcon,
       bgColor: '#f9e9ffff',
-      description: 'All time applicants'
+      iconColor: '#6f3ec5ff',
+      description: 'Kolaborasi aktif',
+      filterPath: '/umkm/campaigns',
+      filterType: 'active'
+    },
+    {
+      title: 'Campaign Selesai',
+      value: stats.completedCampaigns,
+      IconComponent: CompletedIcon,
+      bgColor: '#fcffd1ff',
+      iconColor: '#bdaa33ff',
+      description: 'Berhasil diselesaikan',
+      filterPath: '/umkm/campaigns',
+      filterType: 'completed'
     }
   ];
 
   const recentActivities = [
     {
-      icon: '✅',
+      IconComponent: CompletedIcon,
       title: 'Campaign Created',
       description: 'New campaign has been published',
       time: '2 hours ago',
       color: '#10b981'
     },
     {
-      icon: '👤',
+      IconComponent: PersonIcon,
       title: 'New Applicant',
       description: 'Influencer applied to your campaign',
       time: '5 hours ago',
       color: '#3b82f6'
     },
     {
-      icon: '💰',
+      IconComponent: AttachMoneyIcon,
       title: 'Payment Successful',
       description: 'Campaign payment processed',
       time: '1 day ago',
       color: '#f59e0b'
     },
     {
-      icon: '📊',
+      IconComponent: BarChartIcon,
       title: 'Campaign Approved',
       description: 'Your campaign has been verified',
       time: '2 days ago',
@@ -172,362 +228,274 @@ function UMKMDashboard() {
   ];
 
   return (
-    <div className="dashboard-container" style={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
-      <UMKMSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <Box sx={{ display: 'flex', background: '#f7fafc', minHeight: '100vh' }}>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="dashboard-content" style={{ 
+      <Box sx={{ 
         marginLeft: !isMobile ? '260px' : '0',
         width: !isMobile ? 'calc(100% - 260px)' : '100%',
         transition: 'all 0.3s ease'
       }}>
-        <UMKMTopbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-        <div style={{ marginTop: '72px', padding: '32px' }}>
+        <Container
+          maxWidth={false}
+          sx={{
+            marginTop: '72px',
+            padding: '32px',
+            maxWidth: '100%',
+            height: 'calc(100vh - 72px)',
+            overflow: 'auto',
+          }}
+        >
           {/* Page Header */}
-          <div style={{ marginBottom: '32px' }}>
-            <h1 style={{
+          <Box sx={{ marginBottom: '32px' }}>
+            <Typography variant="h4" sx={{
               fontSize: '2rem',
               fontWeight: 700,
               color: '#1a1f36',
               margin: '0px',
-              fontFamily: "'Inter', sans-serif"
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
             }}>
-              Dashboard Overview
-            </h1>
-            <p style={{
+              Selamat Datang, {userName}!
+            </Typography>
+            <Typography sx={{
               fontSize: '0.95rem',
-              color: '#6c757d',
-              fontFamily: "'Inter', sans-serif"
+              color: '#6c757d'
             }}>
-              Welcome back! Here's what's happening with your campaigns today.
-            </p>
-          </div>
+              Berikut aktivitas campaign Anda hari ini.
+            </Typography>
+          </Box>
 
           {/* Stats Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '20px',
-            marginBottom: '24px'
-          }}>
+          <Grid container spacing={2} sx={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between' }}>
             {statCards.map((card, index) => (
-              <div
-                key={index}
-                style={{
-                  background: '#fff',
-                  borderRadius: '16px',
-                  padding: '24px',
-                  border: '1px solid #e2e8f0',
-                  transition: 'all 0.3s',
-                  cursor: 'default'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '16px'
-                }}>
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: card.bgColor,
+              <Grid item xs={12} sm={6} lg={3} key={index} sx={{ display: 'flex' }}>
+                <Card
+                  sx={{
+                    bgcolor: 'background.paper',
+                    borderRadius: 5,
+                    p: 2,
+                    pr: 5,
+                    border: '1px solid',
+                    borderColor: 'divider',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <img 
-                      src={card.icon} 
-                      alt={card.title} 
-                      style={{ 
-                        width: '28px', 
-                        height: '28px',
-                        objectFit: 'contain'
-                      }} 
-                    />
-                  </div>
-                </div>
-                <div style={{
-                  fontSize: '0.85rem',
-                  color: '#6c757d',
-                  marginBottom: '8px',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {card.title}
-                </div>
-                <div style={{
-                  fontSize: '2rem',
-                  fontWeight: 700,
-                  color: '#1a1f36',
-                  marginBottom: '4px',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {card.value}
-                </div>
-                <div style={{
-                  fontSize: '0.8rem',
-                  color: '#6c757d',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {card.description}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Two Column Layout - Responsive */}
-          <div style={{
-            // display: 'grid',
-            // gridTemplateColumns: !isMobile ? '2fr 1fr' : '1fr',
-            gap: '24px'
-          }}>
-            {/* Recent Campaigns */}
-            <div style={{
-              background: '#fff',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #e2e8f0'
-            }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-                <h3 style={{
-                  fontSize: '1.25rem',
-                  fontWeight: 700,
-                  color: '#1a1f36',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  Recent Campaigns
-                </h3>
-                <button
-                  onClick={() => navigate('/campaigns')}
-                  style={{
-                    padding: '8px 16px',
-                    background: 'transparent',
-                    border: '2px solid #667eea',
-                    borderRadius: '10px',
-                    color: '#667eea',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontFamily: "'Inter', sans-serif"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#667eea';
-                    e.currentTarget.style.color = '#fff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = '#667eea';
+                    width: '100%'
                   }}
                 >
-                  View All
-                </button>
-              </div>
-
-              {recentCampaigns.length === 0 ? (
-                <div style={{
-                  padding: '40px',
-                  textAlign: 'center',
-                  color: '#6c757d'
-                }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📢</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '8px' }}>
-                    No campaigns yet
-                  </div>
-                  <div style={{ fontSize: '0.9rem', marginBottom: '20px' }}>
-                    Create your first campaign to get started
-                  </div>
-                  <button
-                    onClick={() => navigate('/campaign-create')}
-                    style={{
-                      padding: '12px 24px',
-                      background: COLORS.primary,
-                      border: 'none',
-                      borderRadius: '10px',
-                      color: '#fff',
-                      fontSize: '0.9rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      fontFamily: "'Inter', sans-serif"
+                  <CardContent
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      height: '100%',
+                      p: 0,
+                      '&:last-child': {
+                        p: 0
+                      }
                     }}
                   >
-                    Create Campaign
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {recentCampaigns.map((campaign, index) => (
-                    <div
-                      key={campaign.campaign_id || index}
-                      onClick={() => navigate(`/campaign/${campaign.campaign_id}/detail`)}
-                      style={{
-                        padding: '16px',
-                        borderRadius: '12px',
-                        border: '1px solid #e2e8f0',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#f7fafc';
-                        e.currentTarget.style.borderColor = '#667eea';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#fff';
-                        e.currentTarget.style.borderColor = '#e2e8f0';
-                      }}
-                    >
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'start',
-                        marginBottom: '8px'
-                      }}>
-                        <div style={{
-                          fontSize: '1rem',
-                          fontWeight: 600,
-                          color: '#1a1f36',
-                          fontFamily: "'Inter', sans-serif"
-                        }}>
-                          {campaign.title || 'Untitled Campaign'}
-                        </div>
-                        <span style={{
-                          padding: '4px 12px',
-                          borderRadius: '6px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          background: campaign.status === 'active' ? '#d1fae5' : campaign.status === 'inactive' ? '#e2e8f0' : '#fff',
-                          color: campaign.status === 'active' ? '#065f46' : campaign.status === 'inactive' ? '#6c757d' : '#000'
-                        }}>
-                          {campaign.status === 'active' ? 'Active' : campaign.status === 'inactive' ? 'Inactive' : campaign.status}
-                        </span>
-                      </div>
-                      <div style={{
-                        fontSize: '0.85rem',
-                        color: '#6c757d',
-                        marginBottom: '8px',
-                        fontFamily: "'Inter', sans-serif"
-                      }}>
-                        {campaign.product_desc?.substring(0, 80) || 'No description'}...
-                      </div>
-                      <div style={{
-                        display: 'flex',
-                        gap: '16px',
-                        fontSize: '0.8rem',
-                        color: '#6c757d',
-                        alignItems: 'center',
-                      }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <img src={DollarIcon} alt="Budget" style={{ width: '16px', height: '16px' }} /> 
-                          Rp {(campaign.price_per_post || 0).toLocaleString('id-ID')}
-                        </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <img src={ApplicantIcon} alt="Influencers" style={{ width: '16px', height: '16px' }} /> 
-                          {campaign.influencer_count || 0} influencers
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Recent Activities & Quick Actions */}
-            {/* <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div style={{
-                background: '#fff',
-                borderRadius: '16px',
-                padding: '24px',
-                border: '1px solid #e2e8f0'
-              }}>
-                <h3 style={{
-                  fontSize: '1.1rem',
-                  fontWeight: 700,
-                  color: '#1a1f36',
-                  marginBottom: '20px',
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  Recent Activities
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {recentActivities.map((activity, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        display: 'flex',
-                        gap: '12px',
-                        padding: '12px',
-                        borderRadius: '10px',
-                        transition: 'all 0.2s',
-                        cursor: 'pointer'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#f7fafc';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                      }}
-                    >
-                      <div style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '10px',
-                        background: `${activity.color}20`,
+                    <Box
+                      sx={{
+                        minWidth: 48,
+                        width: 48,
+                        height: 48,
+                        borderRadius: 1.5,
+                        bgcolor: card.bgColor,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '1.1rem',
                         flexShrink: 0
-                      }}>
-                        {activity.icon}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{
-                          fontSize: '0.9rem',
-                          fontWeight: 600,
-                          color: '#1a1f36',
-                          marginBottom: '4px',
-                          fontFamily: "'Inter', sans-serif"
-                        }}>
-                          {activity.title}
-                        </div>
-                        <div style={{
+                      }}
+                    >
+                      <card.IconComponent sx={{ fontSize: 24, color: card.iconColor }} />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, flex: 1, minWidth: 0 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
                           fontSize: '0.8rem',
                           color: '#6c757d',
-                          marginBottom: '4px',
-                          fontFamily: "'Inter', sans-serif"
-                        }}>
-                          {activity.description}
-                        </div>
-                        <div style={{
+                          fontWeight: 500,
+                          display: 'block'
+                        }}
+                      >
+                        {card.title}
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontSize: '1.5rem',
+                          fontWeight: 700,
+                          color: '#1a1f36',
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {card.value}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
                           fontSize: '0.75rem',
                           color: '#a0aec0',
-                          fontFamily: "'Inter', sans-serif"
-                        }}>
-                          {activity.time}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div> */}
-          </div>
-        </div>
-      </div>
-    </div>
+                          display: 'block'
+                        }}
+                      >
+                        {card.description}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* Recent Campaigns */}
+          <Paper sx={{
+            background: '#fff',
+            borderRadius: '1rem',
+            padding: '1.5rem',
+            border: '1px solid #e2e8f0'
+          }}>
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.25rem'
+            }}>
+              <Typography variant="h6" sx={{
+                fontSize: '1.25rem',
+                fontWeight: 700,
+                color: '#1a1f36'
+              }}>
+                Campaign Terbaru
+              </Typography>
+              <Button
+                onClick={() => navigate('/campaigns')}
+                variant="outlined"
+                sx={{
+                  padding: '0.5rem 1rem',
+                  borderColor: '#667eea',
+                  color: '#667eea',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  '&:hover': {
+                    background: '#667eea',
+                    color: '#fff'
+                  }
+                }}
+              >
+                Lihat Semua
+              </Button>
+            </Box>
+
+            {recentCampaigns.length === 0 ? (
+              <Box sx={{
+                padding: '2.5rem 1.25rem',
+                textAlign: 'center',
+                color: '#6c757d'
+              }}>
+                <CampaignIcon sx={{ fontSize: '4rem', color: '#9ca3af', mb: 1, display: 'block', mx: 'auto' }} />
+                <Typography sx={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+                  Belum ada campaign
+                </Typography>
+                <Typography sx={{ fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+                  Buat campaign pertama Anda untuk memulai
+                </Typography>
+                <Button
+                  onClick={() => navigate('/campaign-create')}
+                  variant="contained"
+                  sx={{
+                    background: COLORS.primary,
+                    color: '#fff',
+                    padding: '0.75rem 1.5rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 600
+                  }}
+                >
+                  Buat Campaign
+                </Button>
+              </Box>
+            ) : (
+              <Stack spacing={1}>
+                {recentCampaigns.map((campaign, index) => (
+                  <Paper
+                    key={campaign.campaign_id || index}
+                    onClick={() => navigate(`/campaign/${campaign.campaign_id}/detail`)}
+                    sx={{
+                      padding: '1rem',
+                      borderRadius: '0.75rem',
+                      border: '1px solid #e2e8f0',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        background: '#f7fafc',
+                        borderColor: '#667eea'
+                      },
+                      background: '#fff'
+                    }}
+                  >
+                    <Box sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'start',
+                      marginBottom: '0.5rem'
+                    }}>
+                      <Typography sx={{
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        color: '#1a1f36'
+                      }}>
+                        {campaign.title || 'Campaign Tanpa Judul'}
+                      </Typography>
+                      <Box sx={{
+                        ...getStatusStyle(campaign.status),
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 5,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        letterSpacing: '0.5px'
+                      }}>
+                        {getStatusText(campaign.status)}
+                      </Box>
+                    </Box>
+                    <Typography sx={{
+                      fontSize: '0.85rem',
+                      color: '#6c757d',
+                      marginBottom: '0.5rem'
+                    }}>
+                      {campaign.product_desc?.substring(0, 80) || 'Tidak ada deskripsi'}...
+                    </Typography>
+                    <Box sx={{
+                      display: 'flex',
+                      gap: '1rem',
+                      fontSize: '0.8rem',
+                      color: '#6c757d',
+                      alignItems: 'center'
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <PersonIcon sx={{ fontSize: '1rem' }} /> 
+                        {campaign.influencer_count || 0} influencer
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        Rp {(campaign.price_per_post || 0).toLocaleString('id-ID')}
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <BarChart3 size={13} color={COLORS.textSecondary} />
+                        {campaign.min_followers ? `${parseInt(campaign.min_followers).toLocaleString('id-ID')}+ followers` : 'No min'}
+                      </Box>
+                    </Box>
+                  </Paper>
+                ))}
+              </Stack>
+            )}
+          </Paper>
+        </Container>
+      </Box>
+    </Box>
   );
 }
 

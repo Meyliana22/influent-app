@@ -1,220 +1,159 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Box, 
+  IconButton, 
+  Avatar, 
+  Menu, 
+  MenuItem, 
+  Typography, 
+  Divider,
+  ListItemIcon,
+  ButtonBase
+} from '@mui/material';
 import { COLORS } from '../../constants/colors';
+import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
+import NotificationBell from '../common/NotificationBell';
 
 function AdminTopbar() {
   const navigate = useNavigate();
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
   const adminData = JSON.parse(localStorage.getItem('user') || '{}');
 
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleLogout = () => {
+    handleClose();
     localStorage.removeItem('user');
-    navigate('/login-umkm');
+    navigate('/login');
   };
 
   return (
-    <div style={{
-      height: '72px',
-      background: '#fff',
-      borderBottom: '1px solid #e2e8f0',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'flex-end',
-      padding: '0 32px',
-      position: 'fixed',
-      top: 0,
-      right: 0,
-      left: '260px',
-      zIndex: 100
-    }}>
-      {/* Right Section */}
-      <div style={{
+    <Box
+      sx={{
+        height: 72,
+        bgcolor: '#fff',
+        borderBottom: '1px solid #e2e8f0',
         display: 'flex',
         alignItems: 'center',
-        gap: '16px'
-      }}>
-        {/* Notifications */}
-        <button style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '10px',
-          border: 'none',
-          background: '#f7fafc',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1.25rem',
-          position: 'relative',
-          transition: 'all 0.2s'
-        }}
-        onMouseEnter={(e) => e.target.style.background = '#edf2f7'}
-        onMouseLeave={(e) => e.target.style.background = '#f7fafc'}
-        >
-          🔔
-          <span style={{
-            position: 'absolute',
-            top: '8px',
-            right: '8px',
-            width: '8px',
-            height: '8px',
-            background: '#ef4444',
-            borderRadius: '50%',
-            border: '2px solid #fff'
-          }}></span>
-        </button>
+        justifyContent: 'flex-end',
+        px: 4,
+        position: 'fixed',
+        top: 0,
+        right: 0,
+        left: 260,
+        zIndex: 100
+      }}
+    >
+      {/* Right Section */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        {/* Notification Bell */}
+        <NotificationBell />
 
         {/* Admin Profile */}
-        <div style={{ position: 'relative' }}>
-          <button
-            onClick={() => setShowDropdown(!showDropdown)}
-            style={{
+        <Box>
+          <ButtonBase
+            onClick={handleClick}
+            sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              padding: '8px 12px',
-              background: '#f7fafc',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
+              gap: 1.5,
+              p: 0.75,
+              pr: 1.5,
+              bgcolor: open ? '#edf2f7' : '#f7fafc',
+              borderRadius: 3,
+              transition: 'all 0.2s',
+              '&:hover': {
+                bgcolor: '#edf2f7'
+              }
             }}
-            onMouseEnter={(e) => e.target.style.background = '#edf2f7'}
-            onMouseLeave={(e) => e.target.style.background = '#f7fafc'}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: COLORS.gradient,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: '0.9rem'
-            }}>
-              {adminData.name ? adminData.name.charAt(0).toUpperCase() : 'A'}
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{
+            <Avatar
+              sx={{
+                width: 36,
+                height: 36,
+                background: COLORS.gradient,
                 fontSize: '0.9rem',
-                fontWeight: 600,
-                color: '#2d3748',
-                fontFamily: "'Inter', sans-serif"
-              }}>
-                {adminData.name || 'Admin'}
-              </div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#6c757d'
-              }}>
-                Administrator
-              </div>
-            </div>
-            <span style={{ fontSize: '0.8rem', color: '#6c757d' }}>▼</span>
-          </button>
-
-          {/* Dropdown */}
-          {showDropdown && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: '8px',
-              background: '#fff',
-              borderRadius: '12px',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-              border: '1px solid #e2e8f0',
-              minWidth: '200px',
-              overflow: 'hidden',
-              zIndex: 1000
-            }}>
-              {/* <button
-                onClick={() => {
-                  navigate('/admin/settings');
-                  setShowDropdown(false);
-                }}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  textAlign: 'left',
+                fontWeight: 700
+              }}
+            >
+              {adminData.name ? adminData.name.charAt(0).toUpperCase() : 'A'}
+            </Avatar>
+            <Box sx={{ textAlign: 'left' }}>
+              <Typography
+                sx={{
                   fontSize: '0.9rem',
-                  color: '#2d3748',
-                  fontFamily: "'Inter', sans-serif",
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}
-                onMouseEnter={(e) => e.target.style.background = '#f7fafc'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
-              >
-                <span>⚙️</span>
-                Settings
-              </button> */}
-              <button
-                onClick={() => {
-                  navigate('/admin/profile');
-                  setShowDropdown(false);
-                }}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontSize: '0.9rem',
-                  color: '#2d3748',
-                  fontFamily: "'Inter', sans-serif",
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}
-                onMouseEnter={(e) => e.target.style.background = '#f7fafc'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
-              >
-                <span>👤</span>
-                Profile
-              </button>
-              <div style={{
-                height: '1px',
-                background: '#e2e8f0',
-                margin: '4px 0'
-              }}></div>
-              <button
-                onClick={handleLogout}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontSize: '0.9rem',
-                  color: '#ef4444',
-                  fontFamily: "'Inter', sans-serif",
                   fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
+                  color: '#2d3748',
+                  fontFamily: "'Inter', sans-serif",
+                  lineHeight: 1.2
                 }}
-                onMouseEnter={(e) => e.target.style.background = '#fef2f2'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
               >
-                <span>🚪</span>
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+                {adminData.name || 'Admin Influent'}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: '0.75rem',
+                  color: '#6c757d',
+                  lineHeight: 1.2
+                }}
+              >
+                Administrator
+              </Typography>
+            </Box>
+          </ButtonBase>
+
+          {/* Dropdown Menu */}
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            PaperProps={{
+              elevation: 0,
+              sx: {
+                overflow: 'visible',
+                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.15))',
+                mt: 1.5,
+                minWidth: 200,
+                borderRadius: 3,
+                border: '1px solid #e2e8f0',
+                '& .MuiAvatar-root': {
+                  width: 32,
+                  height: 32,
+                  ml: -0.5,
+                  mr: 1,
+                },
+              },
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          >
+            <MenuItem onClick={() => { handleClose(); navigate('/admin/profile'); }}>
+              <ListItemIcon>
+                <PersonIcon fontSize="small" />
+              </ListItemIcon>
+              Profile
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleLogout} sx={{ color: '#ef4444' }}>
+              <ListItemIcon>
+                <LogoutIcon fontSize="small" sx={{ color: '#ef4444' }} />
+              </ListItemIcon>
+              Logout
+            </MenuItem>
+          </Menu>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

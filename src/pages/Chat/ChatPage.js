@@ -1,387 +1,604 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, Modal } from '../../components/common';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
-import { COLORS } from '../../constants/colors';
-import { useToast } from '../../hooks/useToast';
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  List,
+  ListItemButton,
+  ListItemAvatar,
+  ListItemText,
+  Avatar,
+  TextField,
+  IconButton,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  useTheme,
+  useMediaQuery,
+  InputAdornment,
+} from "@mui/material";
+import {
+  Send as SendIcon,
+  Search as SearchIcon,
+  Report as ReportIcon,
+  ArrowBack as ArrowBackIcon,
+  Warning as WarningIcon,
+} from "@mui/icons-material";
+
+import UMKMSidebar from "../../components/umkm/UMKMSidebar";
+import UMKMTopbar from "../../components/umkm/UMKMTopbar";
+import { useToast } from "../../hooks/useToast";
+import { io } from "socket.io-client";
+
+// Backend base url and socket URL
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const SOCKET_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+// Helper to decode JWT payload
+function parseJwt(token) {
+  try {
+    const [, payloadBase64] = token.split(".");
+    const payload = JSON.parse(
+      atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/"))
+    );
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
 
 function ChatPage() {
-  const navigate = useNavigate();
   const { showToast } = useToast();
-  const [selectedChat, setSelectedChat] = useState(null);
-  const [message, setMessage] = useState('');
-  const [showReportPopup, setShowReportPopup] = useState(false);
-  const [reportReason, setReportReason] = useState('');
+  const theme = useTheme();
+  // We'll treat < 1000px as "mobile" for the sidebar logic found in original code,
+  // but we can also use MUI breakpoints for internal layout.
+  const isMobileScreen = useMediaQuery(theme.breakpoints.down("md")); 
   
-  // Responsive state for sidebar
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1000);
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  // Existing sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Handle window resize for responsive design
-  React.useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1000);
-    };
+  // Chat Data State
+  const [chatList, setChatList] = useState([]);
+  const [chatListLoading, setChatListLoading] = useState(false);
+  const [selectedChat, setSelectedChat] = useState(null);
+  
+  // Message State
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  
+  // Operational State
+  const [showReportPopup, setShowReportPopup] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [typingUsers, setTypingUsers] = useState({});
+  
+  // Refs
+  const socketRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  // Auth State
+  const token = localStorage.getItem("token");
+  const [currentUserId, setCurrentUserId] = useState(null);
 
-  // Dummy chat list
-  const chatList = [
-    { id: 1, name: 'Nama User', lastMessage: 'Terima kasih atas kampanye nya!', time: '10:30', unread: 2 },
-    { id: 2, name: 'Nama User', lastMessage: 'Kapan deadline submit konten?', time: '09:15', unread: 0 },
-    { id: 3, name: 'Nama User', lastMessage: 'Baik, saya akan segera upload', time: 'Yesterday', unread: 0 }
-  ];
+  useEffect(() => {
+    if (token) {
+      const payload = parseJwt(token);
+      if (payload && payload.sub) setCurrentUserId(Number(payload.sub));
+    }
+  }, [token]);
 
-  // Dummy messages
-  const messages = [
-    { id: 1, sender: 'user', text: 'Halo! Saya tertarik dengan campaign ini', time: '10:25' },
-    { id: 2, sender: 'me', text: 'Halo! Terima kasih sudah apply ya', time: '10:27' },
-    { id: 3, sender: 'user', text: 'Untuk deadline konten kapan ya?', time: '10:28' },
-    { id: 4, sender: 'me', text: 'Deadline nya tanggal 15 bulan ini', time: '10:30' }
-  ];
+  // Scroll to bottom
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (message.trim()) {
-      // Logika kirim pesan
-      console.log('Send message:', message);
-      setMessage('');
+  // Load My Chats
+  const loadChatList = async () => {
+    setChatListLoading(true);
+    if (!token) {
+      console.warn("No token — not fetching chat list");
+      setChatList([]);
+      setChatListLoading(false);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/chat-rooms/mine`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        console.warn("Failed to fetch chat list", await res.text());
+        setChatList([]);
+        setChatListLoading(false);
+        return;
+      }
+      const data = await res.json();
+      const normalized = data.data.map((row) => ({
+        id: row.room.id ?? row.room.room_id ?? row.room.id,
+        name: row.room.name ?? `Chat ${row.room.id}`,
+        lastMessage: row.lastMessage
+          ? row.lastMessage.message || row.lastMessage.text
+          : "",
+        time: row.lastMessage
+          ? new Date(
+              row.lastMessage.timestamp || row.lastMessage.created_at
+            ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          : "",
+        unread: row.unreadCount || 0,
+        raw: row.room,
+      }));
+      setChatList(normalized);
+      setChatListLoading(false);
+    } catch (err) {
+      console.error("loadChatList error", err);
+      setChatList([]);
+      setChatListLoading(false);
     }
   };
 
-  const handleReport = () => {
-    setShowReportPopup(true);
+  // Socket Connection
+  useEffect(() => {
+    if (!token) return;
+
+    socketRef.current = io(SOCKET_URL, {
+      auth: { token },
+      transports: ["websocket", "polling"],
+      autoConnect: true,
+    });
+
+    const sock = socketRef.current;
+
+    sock.on("connect", () => {
+      console.log("Socket connected", sock.id);
+    });
+
+    sock.on("history", (msgs = []) => {
+      setMessages(
+        msgs.map((m) => ({
+          id: m.id,
+          userId: m.user_id,
+          roomId: m.chat_room_id,
+          text: m.message,
+          time: m.timestamp || m.created_at,
+        }))
+      );
+      setMessagesLoading(false);
+    });
+
+    sock.on("message", (m) => {
+      const normalized = {
+        id: m.id,
+        userId: m.user_id,
+        roomId: m.chat_room_id,
+        text: m.message,
+        time: m.timestamp || m.created_at,
+      };
+      setMessages((prev) => {
+        // Dedup logic vs optimistic
+        const tempIndex = prev.findIndex(
+          (pm) =>
+            String(pm.userId) === String(normalized.userId) &&
+            pm.id &&
+            String(pm.id).startsWith("temp-") &&
+            pm.text === normalized.text
+        );
+        if (tempIndex !== -1) {
+          const copy = [...prev];
+          copy[tempIndex] = normalized;
+          return copy;
+        }
+        return [...prev, normalized];
+      });
+
+      // Update chat list snippet
+      setChatList((prevList) =>
+        prevList.map((c) =>
+          c.id === normalized.roomId
+            ? {
+                ...c,
+                lastMessage: normalized.text,
+                time: new Date(normalized.time).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              }
+            : c
+        )
+      );
+    });
+
+    sock.on("typing", ({ userId, typing }) => {
+      setTypingUsers((prev) => {
+        const next = { ...prev };
+        if (typing) next[userId] = true;
+        else delete next[userId];
+        return next;
+      });
+    });
+
+    return () => {
+      sock.disconnect();
+    };
+  }, [token]);
+
+  // Initial Load
+  useEffect(() => {
+    loadChatList();
+  }, [token]);
+
+  // Join Room
+  useEffect(() => {
+    const sock = socketRef.current;
+    if (!sock) return;
+
+    if (selectedChat) {
+      setMessages([]);
+      setMessagesLoading(true);
+      sock.emit("joinRoom", { roomId: selectedChat.id });
+      setTimeout(() => loadChatList(), 300);
+    }
+  }, [selectedChat]);
+
+  // Handle Typing
+  const sendTyping = useCallback((roomId) => {
+    const sock = socketRef.current;
+    if (!sock || !roomId) return;
+    sock.emit("typing", { roomId, typing: true });
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      socketRef.current?.emit("typing", { roomId, typing: false });
+    }, 900);
+  }, []);
+
+  const handleInputChange = (e) => {
+    setMessage(e.target.value);
+    if (selectedChat) sendTyping(selectedChat.id);
   };
 
-  const confirmReport = () => {
-    showToast(`User telah dilaporkan dengan alasan: ${reportReason}`, 'success');
-    setShowReportPopup(false);
-    setReportReason('');
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!selectedChat) return showToast("Pilih chat terlebih dahulu", "warning");
+    if (!message.trim()) return;
+
+    const sock = socketRef.current;
+    const payload = { roomId: selectedChat.id, message: message.trim() };
+
+    // Optimistic update
+    const optimistic = {
+      id: `temp-${Date.now()}`,
+      userId: currentUserId,
+      roomId: selectedChat.id,
+      text: message.trim(),
+      time: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    
+    try {
+      sock.emit("message", payload);
+      setMessage("");
+      setTimeout(() => loadChatList(), 300);
+    } catch (err) {
+      console.error("Send error", err);
+      showToast("Gagal mengirim pesan", "error");
+    }
   };
+
+  const typingIndicatorText = () => {
+    const keys = Object.keys(typingUsers).filter(
+      (k) => Number(k) !== Number(currentUserId)
+    );
+    if (keys.length === 0) return null;
+    if (keys.length === 1) return "Sedang mengetik...";
+    return "Beberapa orang sedang mengetik...";
+  };
+
+  // --- UI Components ---
+  
+  // Sidebar List
+  const ChatListComponent = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
+      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Typography variant="h6" fontWeight="bold">Chats</Typography>
+        {/* Optional Search Bar */}
+        <TextField
+          variant="outlined"
+          size="small"
+          placeholder="Cari..."
+          fullWidth
+          sx={{ mt: 1, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
+          }}
+        />
+      </Box>
+      <List sx={{ flex: 1, overflowY: 'auto', p: 0 }}>
+        {chatList.length === 0 && !chatListLoading && (
+           <Box p={3} textAlign="center">
+             <Typography variant="body2" color="text.secondary">Tidak ada chat</Typography>
+           </Box>
+        )}
+        {chatList.map((chat) => (
+          <ListItemButton
+            key={chat.id}
+            selected={selectedChat?.id === chat.id}
+            onClick={() => {
+              setSelectedChat(chat);
+            }}
+            sx={{
+              borderLeft: selectedChat?.id === chat.id ? `4px solid ${theme.palette.primary.main}` : '4px solid transparent',
+              '&.Mui-selected': { bgcolor: 'primary.50' }
+            }}
+          >
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: theme.palette.primary.main }}>{chat.name.charAt(0)}</Avatar>
+            </ListItemAvatar>
+            <ListItemText
+              primary={
+                <Box display="flex" justifyContent="space-between">
+                   <Typography variant="subtitle2" fontWeight="bold" noWrap>{chat.name}</Typography>
+                   <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>{chat.time}</Typography>
+                </Box>
+              }
+              secondary={
+                <Typography variant="body2" color="text.secondary" noWrap>
+                  {chat.lastMessage}
+                </Typography>
+              }
+            />
+          </ListItemButton>
+        ))}
+      </List>
+    </Box>
+  );
 
   return (
-    <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      <div style={{ marginLeft: !isMobile ? '260px' : '0', flex: 1 }}>
+    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f4f6f8' }}>
+      {/* App Shell Sidebar  */}
+      <UMKMSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
+
+      <Box sx={{ 
+        flex: 1, 
+        display: 'flex', 
+        flexDirection: 'column',
+        transition: 'margin 0.2s',
+        height: '100vh',
+        overflow: 'hidden'
+      }}>
+        {/* Topbar */}
         <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        
-        <div style={{ marginTop: '72px', display: 'flex', height: 'calc(100vh - 72px)' }}>
-          {/* Chat Sidebar */}
-          <div style={{
-            width: '320px',
-            borderRight: '1px solid #e2e8f0',
-            overflowY: 'auto',
-            background: 'white'
-          }}>
-            <div style={{ padding: '24px 20px' }}>
-              <h2 style={{ 
-                margin: '0 0 20px 0', 
-                fontSize: '1.5rem', 
-                fontWeight: 700,
-                color: '#1a1f36'
-              }}>
-                Chats
-              </h2>
 
-              {/* Chat List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {chatList.map(chat => (
-                  <div
-                    key={chat.id}
-                    onClick={() => setSelectedChat(chat)}
-                    style={{
-                      padding: '16px',
-                      borderRadius: '12px',
-                      background: selectedChat?.id === chat.id ? '#f7fafc' : 'transparent',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      border: selectedChat?.id === chat.id ? '2px solid #667eea' : '2px solid transparent'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (selectedChat?.id !== chat.id) {
-                        e.currentTarget.style.background = '#f7fafc';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (selectedChat?.id !== chat.id) {
-                        e.currentTarget.style.background = 'transparent';
-                      }
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 600, color: '#1a1f36' }}>{chat.name}</span>
-                      {chat.unread > 0 && (
-                        <span style={{
-                          background: '#667eea',
-                          color: 'white',
-                          borderRadius: '12px',
-                          padding: '2px 8px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600
-                        }}>
-                          {chat.unread}
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ 
-                      fontSize: '0.85rem', 
-                      color: '#6c757d',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {chat.lastMessage}
-                    </div>
-                    <div style={{ 
-                      fontSize: '0.75rem', 
-                      color: '#a0aec0',
-                      marginTop: '4px'
-                    }}>
-                      {chat.time}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Chat Content */}
-          <div style={{ 
-            flex: 1, 
-            display: 'flex', 
-            flexDirection: 'column',
-            background: '#f7fafc'
-          }}>
-            {selectedChat ? (
-              <>
-                {/* Chat Header */}
-                <div style={{
-                  padding: '20px 32px',
-                  background: 'white',
-                  borderBottom: '1px solid #e2e8f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.2rem',
-                      color: 'white'
-                    }}>
-                      {selectedChat.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1a1f36' }}>
-                        {selectedChat.name}
-                      </div>
-                      <div style={{ fontSize: '0.875rem', color: '#6c757d' }}>
-                        Online
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleReport}
-                    style={{
-                      padding: '8px 16px',
-                      background: '#fff5f5',
-                      border: '2px solid #fc8181',
-                      borderRadius: '8px',
-                      color: '#c53030',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '0.875rem',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#fc8181';
-                      e.currentTarget.style.color = 'white';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#fff5f5';
-                      e.currentTarget.style.color = '#c53030';
-                    }}
-                  >
-                    ⚠️ Report
-                  </button>
-                </div>
-
-                {/* Messages Area */}
-                <div style={{
-                  flex: 1,
-                  overflowY: 'auto',
-                  padding: '32px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px'
-                }}>
-                  {messages.map(msg => (
-                    <div
-                      key={msg.id}
-                      style={{
-                        display: 'flex',
-                        justifyContent: msg.sender === 'me' ? 'flex-end' : 'flex-start'
-                      }}
-                    >
-                      <div style={{
-                        maxWidth: '60%',
-                        padding: '12px 16px',
-                        borderRadius: '16px',
-                        background: msg.sender === 'me' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
-                        color: msg.sender === 'me' ? 'white' : '#1a1f36',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-                      }}>
-                        <div style={{ marginBottom: '4px' }}>{msg.text}</div>
-                        <div style={{ 
-                          fontSize: '0.75rem', 
-                          opacity: 0.7,
-                          textAlign: 'right'
-                        }}>
-                          {msg.time}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Message Input */}
-                <div style={{
-                  padding: '20px 32px',
-                  background: 'white',
-                  borderTop: '1px solid #e2e8f0'
-                }}>
-                  <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <input
-                      type="text"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Ketik pesan..."
-                      style={{
-                        flex: 1,
-                        padding: '14px 20px',
-                        border: '2px solid #e2e8f0',
-                        borderRadius: '24px',
-                        fontSize: '1rem',
-                        outline: 'none',
-                        transition: 'all 0.2s'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                      onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                    />
-                    <button
-                      type="submit"
-                      style={{
-                        padding: '14px 24px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        border: 'none',
-                        borderRadius: '24px',
-                        color: 'white',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        fontSize: '0.95rem',
-                        transition: 'all 0.2s',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.5)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
-                      }}
-                    >
-                      ➤ Kirim
-                    </button>
-                  </form>
-                </div>
-              </>
-            ) : (
-              <div style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'column',
-                color: '#6c757d'
-              }}>
-                <div style={{ fontSize: '5rem', marginBottom: '16px', opacity: 0.3 }}>💬</div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 600, marginBottom: '8px', color: '#1a1f36' }}>
-                  Pilih Chat
-                </h3>
-                <p style={{ fontSize: '1rem' }}>
-                  Pilih chat dari sidebar untuk memulai percakapan
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Report Popup */}
-      <Modal
-        isOpen={showReportPopup}
-        onClose={() => setShowReportPopup(false)}
-        title="Report User"
-        variant="danger"
-      >
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '16px' }}>⚠️</div>
-          <p style={{ margin: 0, color: '#6c757d', fontSize: '0.95rem', lineHeight: '1.5' }}>
-            Mengapa Anda ingin melaporkan user ini?
-          </p>
-        </div>
-        <textarea
-          value={reportReason}
-          onChange={(e) => setReportReason(e.target.value)}
-          placeholder="Jelaskan alasan pelaporan..."
-          rows="4"
-          style={{
-            width: '100%',
-            padding: '12px',
-            border: '2px solid #e2e8f0',
-            borderRadius: '8px',
-            fontSize: '0.95rem',
-            marginBottom: '20px',
-            resize: 'vertical',
-            boxSizing: 'border-box',
-            fontFamily: "'Inter', sans-serif",
-            outline: 'none'
-          }}
-          onFocus={(e) => e.target.style.borderColor = '#667eea'}
-          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-        />
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          <Button
-            variant="outline"
-            onClick={() => setShowReportPopup(false)}
-            fullWidth
+        {/* content Area (below topbar) */}
+        <Box sx={{ flex: 1, display: 'flex', mt: '72px', overflow: 'hidden' }}>
+          
+          {/* Chat List Sidebar (Panel) */}
+          <Paper
+            elevation={selectedChat && isMobileScreen ? 0 : 2}
+            sx={{
+              width: { xs: '100%', md: 350 },
+              borderRadius: 0,
+              display: (selectedChat && isMobileScreen) ? 'none' : 'flex',
+              flexDirection: 'column',
+              zIndex: 1,
+              borderRight: 1,
+              borderColor: 'divider'
+            }}
           >
-            Batal
-          </Button>
-          <Button
-            variant="danger"
-            onClick={confirmReport}
+            {ChatListComponent}
+          </Paper>
+
+          {/* Chat Window */}
+          {selectedChat ? (
+             <Box sx={{ 
+               flex: 1, 
+               display: 'flex', 
+               flexDirection: 'column', 
+               position: 'relative',
+               bgcolor: '#fff',
+             }}>
+               {/* Chat Header */}
+               <Paper 
+                 elevation={1} 
+                 sx={{ 
+                   p: 2, 
+                   display: 'flex', 
+                   alignItems: 'center', 
+                   borderRadius: 0, 
+                   zIndex: 2,
+                   borderBottom: 1,
+                   borderColor: 'divider'
+                 }}
+               >
+                  {isMobileScreen && (
+                    <IconButton edge="start" onClick={() => setSelectedChat(null)} sx={{ mr: 1 }}>
+                      <ArrowBackIcon />
+                    </IconButton>
+                  )}
+                  <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>{selectedChat.name.charAt(0)}</Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" fontWeight="bold">{selectedChat.name}</Typography>
+                    <Typography variant="caption" color="text.secondary">Online</Typography>
+                  </Box>
+                  <Button 
+                    variant="outlined" 
+                    color="error" 
+                    size="small" 
+                    startIcon={<ReportIcon />}
+                    onClick={() => setShowReportPopup(true)}
+                  >
+                    Report
+                  </Button>
+               </Paper>
+
+               {/* Messages */}
+               <Box 
+                 sx={{ 
+                   flex: 1, 
+                   overflowY: 'auto', 
+                   p: 3, 
+                   display: 'flex', 
+                   flexDirection: 'column',
+                   bgcolor: '#f9f9f9'
+                 }}
+               >
+                 {messages.length === 0 && !messagesLoading && (
+                   <Box sx={{ textAlign: 'center', mt: 4, opacity: 0.6 }}>
+                     <Typography>Belum ada pesan</Typography>
+                   </Box>
+                 )}
+                 {messages.map((msg) => {
+                    const isOwn = msg.userId === currentUserId;
+                    return (
+                      <Box 
+                        key={msg.id} 
+                        sx={{ 
+                          alignSelf: isOwn ? 'flex-end' : 'flex-start',
+                          maxWidth: '70%',
+                          mb: 2,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: isOwn ? 'flex-end' : 'flex-start'
+                        }}
+                      >
+                         <Paper 
+                           elevation={1}
+                           sx={{
+                             p: 2,
+                             borderRadius: 2,
+                             bgcolor: isOwn ? 'primary.main' : 'common.white',
+                             color: isOwn ? 'primary.contrastText' : 'text.primary',
+                             borderBottomRightRadius: isOwn ? 0 : 2,
+                             borderBottomLeftRadius: isOwn ? 2 : 0
+                           }}
+                         >
+                            <Typography variant="body1">{msg.text}</Typography>
+                         </Paper>
+                         <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary', fontSize: '0.7rem' }}>
+                            {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                         </Typography>
+                      </Box>
+                    );
+                 })}
+                 <div ref={messagesEndRef} />
+                 {typingIndicatorText() && (
+                   <Typography variant="caption" sx={{ ml: 2, color: 'text.secondary', fontStyle: 'italic' }}>
+                     {typingIndicatorText()}
+                   </Typography>
+                 )}
+               </Box>
+
+               {/* Input Area */}
+               <Paper 
+                 component="form" 
+                 onSubmit={handleSendMessage}
+                 elevation={3}
+                 sx={{ 
+                   p: 2, 
+                   borderTop: 1, 
+                   borderColor: 'divider', 
+                   display: 'flex', 
+                   alignItems: 'center', 
+                   gap: 2 
+                 }}
+               >
+                 <TextField
+                   fullWidth
+                   placeholder="Ketik pesan..."
+                   value={message}
+                   onChange={handleInputChange}
+                   variant="outlined"
+                   size="small"
+                   sx={{ 
+                      '& .MuiOutlinedInput-root': { borderRadius: 4 }
+                   }}
+                 />
+                 <IconButton 
+                   color="primary" 
+                   type="submit" 
+                   sx={{ 
+                     bgcolor: 'primary.main', 
+                     color: 'white', 
+                     '&:hover': { bgcolor: 'primary.dark' },
+                     width: 45,
+                     height: 45
+                   }}
+                   disabled={!message.trim()}
+                 >
+                   <SendIcon fontSize="small" />
+                 </IconButton>
+               </Paper>
+             </Box>
+          ) : (
+            // No Chat Selected Placeholder
+            <Box sx={{ 
+              flex: 1, 
+              display: { xs: 'none', md: 'flex' }, 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              bgcolor: '#fafafa',
+              color: 'text.secondary'
+            }}>
+               <Typography variant="h1" sx={{ opacity: 0.2 }}>💬</Typography>
+               <Typography variant="h5" sx={{ mt: 2 }}>Pilih Chat</Typography>
+               <Typography variant="body1">Pilih teman chat di sebelah kiri untuk memulai.</Typography>
+            </Box>
+          )}
+
+        </Box>
+      </Box>
+      
+      {/* Report Dialog */}
+      <Dialog 
+        open={showReportPopup} 
+        onClose={() => setShowReportPopup(false)}
+        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+      >
+        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>
+           <WarningIcon color="error" sx={{ fontSize: 40, mb: 1, display: 'block', mx: 'auto' }} />
+           Report User
+        </DialogTitle>
+        <DialogContent>
+           <DialogContentText textAlign="center" sx={{ mb: 2 }}>
+             Apa alasan Anda melaporkan pengguna ini? Laporan akan ditinjau oleh tim kami.
+           </DialogContentText>
+           <TextField
+             autoFocus
+             margin="dense"
+             label="Alasan Pelaporan"
+             fullWidth
+             multiline
+             rows={4}
+             variant="outlined"
+             value={reportReason}
+             onChange={(e) => setReportReason(e.target.value)}
+           />
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          <Button onClick={() => setShowReportPopup(false)} variant="outlined">Batal</Button>
+          <Button 
+            onClick={() => {
+               showToast(`User telah dilaporkan: ${reportReason}`, "success");
+               setShowReportPopup(false);
+               setReportReason("");
+            }} 
+            variant="contained" 
+            color="error"
             disabled={!reportReason.trim()}
-            fullWidth
           >
             Laporkan
           </Button>
-        </div>
-      </Modal>
-    </div>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }
 

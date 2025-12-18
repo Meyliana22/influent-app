@@ -1,450 +1,347 @@
 import React from 'react';
 import { COLORS } from '../../constants/colors';
-import Button from './Button';
+import { 
+  Card, 
+  CardContent, 
+  Box, 
+  Typography, 
+  Avatar, 
+  Chip, 
+  IconButton, 
+  Stack,
+  Divider,
+  Button as MuiButton
+} from '@mui/material';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PeopleIcon from '@mui/icons-material/People';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import EmailIcon from '@mui/icons-material/Email';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import ChatIcon from '@mui/icons-material/Chat';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import BusinessIcon from '@mui/icons-material/Business';
 
 /**
- * ApplicantCard Component - untuk menampilkan detail applicant
+ * ApplicantCard Component - Simplified with Material UI and Star Favorite
  */
 const ApplicantCard = ({ 
   applicant, 
   onAccept, 
   onReject,
   onCancel,
-  onToggleSelection,
+  onToggleFavorite,
   onChat,
   onShowDetail,
   showActions = true,
-  showSelection = false 
+  canSelectApplicants = false
 }) => {
-  // Get status badge style
-  const getStatusStyle = (status) => {
-    const styles = {
-      'Pending': { 
-        background: 'linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)', 
-        color: '#856404',
-        icon: '⏳'
-      },
-      'Accepted': { 
-        background: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)', 
-        color: '#155724',
-        icon: '✅'
-      },
-      'Rejected': { 
-        background: 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)', 
-        color: '#721c24',
-        icon: '❌'
-      }
+  // Status configuration for Material UI
+  const getStatusConfig = (status) => {
+    const configs = {
+      'Pending': { color: 'warning', icon: <HourglassEmptyIcon />, label: 'Menunggu Review' },
+      'Selected': { color: 'info', icon: <CheckCircleIcon />, label: 'Dipilih' },
+      'Accepted': { color: 'success', icon: <CheckCircleIcon />, label: 'Diterima' },
+      'Rejected': { color: 'error', icon: <CancelIcon />, label: 'Ditolak' }
     };
-    return styles[status] || styles['Pending'];
+    return configs[status] || configs['Pending'];
   };
 
-  const statusStyle = getStatusStyle(applicant.status);
-  
-  // Format date
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', { 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric' 
-    });
-  };
+  const statusConfig = getStatusConfig(applicant.status);
+  const isFavorite = applicant.isSelected || false;
 
   return (
-    <div style={{
-      background: COLORS.white,
-      borderRadius: '16px',
-      padding: '24px',
-      boxShadow: applicant.isSelected 
-        ? '0 6px 28px rgba(102, 126, 234, 0.4)' 
-        : `0 4px 20px ${COLORS.shadowMedium}`,
-      border: applicant.isSelected 
-        ? '2px solid #667eea' 
-        : `1px solid ${COLORS.border}`,
-      marginBottom: '20px',
-      position: 'relative',
-      overflow: 'hidden',
-      transition: 'all 0.3s ease'
-    }}>
-      {/* Decorative line based on status */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '4px',
-        background: applicant.isSelected 
-          ? 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)'
-          : statusStyle.background
-      }}></div>
-
-      {/* Selection Checkbox - Top Right */}
-      {showSelection && applicant.status !== 'Rejected' && (
-        <div style={{
-          position: 'absolute',
-          top: '16px',
-          right: '16px',
-          zIndex: 10
-        }}>
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            background: applicant.isSelected ? '#667eea' : COLORS.white,
-            padding: '8px 16px',
-            borderRadius: '24px',
-            border: applicant.isSelected ? '2px solid #667eea' : '2px solid #e0e0e0',
-            fontSize: '0.85rem',
-            fontWeight: '600',
-            color: applicant.isSelected ? COLORS.white : COLORS.textPrimary,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            transition: 'all 0.2s ease'
-          }}>
-            <input
-              type="checkbox"
-              checked={applicant.isSelected || false}
-              onChange={() => onToggleSelection && onToggleSelection(applicant)}
-              style={{
-                width: '18px',
-                height: '18px',
-                cursor: 'pointer',
-                accentColor: '#667eea'
-              }}
-            />
-            <span>{applicant.isSelected ? '✓ Dipilih' : 'Pilih'}</span>
-          </label>
-        </div>
-      )}
-
-      <div style={{ display: 'flex', gap: '24px' }}>
-        {/* Left section - Profile */}
-        <div style={{ flex: '0 0 200px' }}>
-          {/* Avatar placeholder */}
-          <div style={{
-            width: '120px',
-            height: '120px',
-            borderRadius: '50%',
-            background: COLORS.gradient,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '3rem',
-            color: COLORS.white,
-            fontWeight: 'bold',
-            margin: '0 auto 16px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
-          }}>
-            {applicant.fullName.charAt(0).toUpperCase()}
-          </div>
-
-          {/* Status Badge */}
-          <div style={{
-            ...statusStyle,
-            padding: '8px 16px',
-            borderRadius: '24px',
-            fontSize: '0.85rem',
-            fontWeight: '600',
-            textAlign: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            marginBottom: '12px'
-          }}>
-            {statusStyle.icon} {applicant.status}
-          </div>
-
-          {/* Applied Date */}
-          <div style={{
-            textAlign: 'center',
-            fontSize: '0.75rem',
-            color: COLORS.textSecondary,
-            fontWeight: '500'
-          }}>
-            Applied: {formatDate(applicant.appliedDate)}
-          </div>
-        </div>
-
-        {/* Right section - Details */}
-        <div style={{ flex: 1 }}>
-          {/* Header - Name & Username */}
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{
-              margin: '0 0 6px 0',
-              fontSize: '1.4rem',
-              fontWeight: '700',
-              color: COLORS.textPrimary
-            }}>
-              {applicant.fullName}
-            </h3>
-            <div style={{
-              fontSize: '1rem',
-              color: COLORS.primary,
-              fontWeight: '600'
-            }}>
-              {applicant.influencerName}
-            </div>
-          </div>
-
-          {/* Bio */}
-          <p style={{
-            margin: '0 0 20px 0',
-            color: COLORS.textSecondary,
-            fontSize: '0.95rem',
-            lineHeight: '1.6',
-            fontStyle: 'italic'
-          }}>
-            "{applicant.bio}"
-          </p>
-
-          {/* Stats Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: '16px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              color: COLORS.white
-            }}>
-              <div style={{ fontSize: '0.75rem', opacity: 0.9, marginBottom: '4px' }}>
-                📍 Location
-              </div>
-              <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>
-                {applicant.location}
-              </div>
-            </div>
-
-            <div style={{
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              color: COLORS.white
-            }}>
-              <div style={{ fontSize: '0.75rem', opacity: 0.9, marginBottom: '4px' }}>
-                🎂 Age
-              </div>
-              <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>
-                {applicant.age} years
-              </div>
-            </div>
-
-            <div style={{
-              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              color: COLORS.white
-            }}>
-              <div style={{ fontSize: '0.75rem', opacity: 0.9, marginBottom: '4px' }}>
-                👥 Followers
-              </div>
-              <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>
-                {applicant.followers.toLocaleString('id-ID')}
-              </div>
-            </div>
-
-            <div style={{
-              background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              color: COLORS.white
-            }}>
-              <div style={{ fontSize: '0.75rem', opacity: 0.9, marginBottom: '4px' }}>
-                📊 Engagement
-              </div>
-              <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>
-                {applicant.engagementRate}%
-              </div>
-            </div>
-          </div>
-
-          {/* Contact & Additional Info */}
-          <div style={{
-            background: '#f8f9fa',
-            padding: '16px',
-            borderRadius: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: '1fr 1fr',
-              gap: '12px',
-              fontSize: '0.85rem'
-            }}>
-              <div>
-                <span style={{ fontWeight: '600', color: COLORS.textPrimary }}>
-                  📧 Email:
-                </span>
-                <span style={{ marginLeft: '8px', color: COLORS.textSecondary }}>
-                  {applicant.email}
-                </span>
-              </div>
-              <div>
-                <span style={{ fontWeight: '600', color: COLORS.textPrimary }}>
-                  📱 Phone:
-                </span>
-                <span style={{ marginLeft: '8px', color: COLORS.textSecondary }}>
-                  {applicant.phone}
-                </span>
-              </div>
-              <div>
-                <span style={{ fontWeight: '600', color: COLORS.textPrimary }}>
-                  👤 Gender:
-                </span>
-                <span style={{ marginLeft: '8px', color: COLORS.textSecondary }}>
-                  {applicant.gender}
-                </span>
-              </div>
-              <div>
-                <span style={{ fontWeight: '600', color: COLORS.textPrimary }}>
-                  📸 Instagram:
-                </span>
-                <span style={{ marginLeft: '8px', color: COLORS.textSecondary }}>
-                  {applicant.instagram}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Niche Tags */}
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ 
-              fontSize: '0.85rem', 
-              fontWeight: '600', 
-              color: COLORS.textPrimary,
-              marginBottom: '8px'
-            }}>
-              🎯 Niche:
-            </div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {applicant.niche.map((tag, index) => (
-                <span key={index} style={{
-                  padding: '6px 14px',
-                  background: COLORS.gradient,
-                  color: COLORS.white,
-                  borderRadius: '20px',
-                  fontSize: '0.8rem',
-                  fontWeight: '600',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                }}>
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Previous Brands */}
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ 
-              fontSize: '0.85rem', 
-              fontWeight: '600', 
-              color: COLORS.textPrimary,
-              marginBottom: '8px'
-            }}>
-              🏢 Previous Collaborations:
-            </div>
-            <div style={{ 
-              color: COLORS.textSecondary,
-              fontSize: '0.85rem',
-              lineHeight: '1.6'
-            }}>
-              {applicant.previousBrands.join(', ')}
-            </div>
-          </div>
-
-          {/* Quick Action Buttons - Chat & Detail */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '12px', 
-            marginBottom: '20px'
-          }}>
-            <Button
-              variant="outline"
-              onClick={() => onChat && onChat(applicant)}
-              style={{
-                flex: 1,
-                background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
-                color: COLORS.white,
-                border: 'none',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
+    <Card 
+      elevation={0}
+      sx={{ 
+        mb: 2,
+        border: isFavorite ? '2px solid #ffa726' : '1px solid #e0e0e0',
+        borderRadius: 2,
+        transition: 'all 0.2s',
+        '&:hover': {
+          boxShadow: 3,
+          borderColor: isFavorite ? '#ff9800' : '#bdbdbd'
+        }
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
+        <Stack direction="row" spacing={3}>
+          {/* Avatar & Star Favorite */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 120 }}>
+            <Avatar 
+              sx={{ 
+                width: 100, 
+                height: 100, 
+                bgcolor: '#667eea',
+                fontSize: 40,
+                fontWeight: 700,
+                mb: 1.5
               }}
             >
-              💬 Chat
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => onShowDetail && onShowDetail(applicant)}
-              style={{
-                flex: 1,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: COLORS.white,
-                border: 'none',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              👤 Detail
-            </Button>
-          </div>
+              {applicant.fullName.charAt(0).toUpperCase()}
+            </Avatar>
+            
+            {/* Star Favorite Button */}
+            {applicant.status !== 'Rejected' && (
+              <IconButton
+                onClick={() => onToggleFavorite && onToggleFavorite(applicant)}
+                sx={{ 
+                  bgcolor: isFavorite ? '#fff3e0' : 'transparent',
+                  '&:hover': { bgcolor: isFavorite ? '#ffe0b2' : '#f5f5f5' }
+                }}
+              >
+                {isFavorite ? (
+                  <StarIcon sx={{ fontSize: 32, color: '#ffa726' }} />
+                ) : (
+                  <StarBorderIcon sx={{ fontSize: 32, color: '#bdbdbd' }} />
+                )}
+              </IconButton>
+            )}
+            {isFavorite && (
+              <Typography variant="caption" sx={{ color: '#ffa726', fontWeight: 600, mt: 0.5 }}>
+                Favorit
+              </Typography>
+            )}
+          </Box>
 
-          {/* Action Buttons */}
-          {showActions && (
-            <div style={{ 
-              display: 'flex', 
-              gap: '12px', 
-              marginTop: '24px',
-              paddingTop: '20px',
-              borderTop: `2px solid ${COLORS.border}`
-            }}>
-              {applicant.status === 'Pending' && (
-                <>
-                  <Button 
-                    variant="success" 
-                    onClick={() => onAccept(applicant.id)}
-                    style={{ flex: 1 }}
+          {/* Main Content */}
+          <Box sx={{ flex: 1 }}>
+            {/* Header */}
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.textPrimary, mb: 0.5 }}>
+                  {applicant.fullName}
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#667eea', fontWeight: 600 }}>
+                  @{applicant.instagram || applicant.influencerName}
+                </Typography>
+              </Box>
+              <Chip 
+                icon={statusConfig.icon}
+                label={statusConfig.label}
+                color={statusConfig.color}
+                size="small"
+                sx={{ fontWeight: 600 }}
+              />
+            </Stack>
+
+            {/* Bio */}
+            {applicant.bio && (
+              <Typography variant="body2" sx={{ color: COLORS.textSecondary, mb: 2, fontStyle: 'italic' }}>
+                "{applicant.bio}"
+              </Typography>
+            )}
+
+            {/* Stats */}
+            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <LocationOnIcon sx={{ fontSize: 18, color: '#78909c' }} />
+                <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
+                  {applicant.location}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <PeopleIcon sx={{ fontSize: 18, color: '#667eea' }} />
+                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.textPrimary }}>
+                  {applicant.followers?.toLocaleString('id-ID') || 0}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <TrendingUpIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
+                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.textPrimary }}>
+                  {applicant.engagementRate}%
+                </Typography>
+              </Box>
+            </Stack>
+
+            {/* Contact Info */}
+            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+              {applicant.email && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <EmailIcon sx={{ fontSize: 16, color: '#78909c' }} />
+                  <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
+                    {applicant.email}
+                  </Typography>
+                </Box>
+              )}
+              {applicant.instagram && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <InstagramIcon sx={{ fontSize: 16, color: '#E1306C' }} />
+                  <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
+                    {applicant.instagram}
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
+
+            {/* Niche Tags */}
+            {applicant.niche && Array.isArray(applicant.niche) && applicant.niche.length > 0 && (
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                  <LocalOfferIcon sx={{ fontSize: 16, color: '#78909c' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
+                    Niche
+                  </Typography>
+                </Box>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {applicant.niche.map((tag, index) => (
+                    <Chip 
+                      key={index}
+                      label={tag}
+                      size="small"
+                      sx={{ bgcolor: '#ede7f6', color: '#673ab7', fontWeight: 600 }}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+            )}
+
+            {/* Previous Brands */}
+            {applicant.previousBrands && applicant.previousBrands.length > 0 && (
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                  <BusinessIcon sx={{ fontSize: 16, color: '#78909c' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
+                    Previous Collaborations
+                  </Typography>
+                </Box>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {applicant.previousBrands.map((brand, index) => (
+                    <Chip 
+                      key={index}
+                      label={brand}
+                      size="small"
+                      variant="outlined"
+                      sx={{ borderColor: '#e0e0e0' }}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+            )}
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* Quick Actions */}
+            <Stack direction="row" spacing={1.5} sx={{ mb: showActions ? 2 : 0 }}>
+              <MuiButton
+                variant="outlined"
+                startIcon={<VisibilityIcon />}
+                onClick={() => onShowDetail && onShowDetail(applicant)}
+                sx={{ 
+                  flex: 1,
+                  borderColor: '#667eea',
+                  color: '#667eea',
+                  fontWeight: 600,
+                  '&:hover': { borderColor: '#5568d3', bgcolor: '#f5f7ff' }
+                }}
+              >
+                Detail
+              </MuiButton>
+              <MuiButton
+                variant="contained"
+                startIcon={<ChatIcon />}
+                onClick={() => onChat && onChat(applicant)}
+                sx={{ 
+                  flex: 1,
+                  bgcolor: '#667eea',
+                  fontWeight: 600,
+                  '&:hover': { bgcolor: '#5568d3' }
+                }}
+              >
+                Chat
+              </MuiButton>
+            </Stack>
+
+            {/* Action Buttons - Conditional */}
+            {showActions && (
+              <Box sx={{ borderTop: '1px solid #e0e0e0', pt: 2 }}>
+                {applicant.status === 'Pending' && (
+                  <Stack direction="row" spacing={1.5}>
+                    <MuiButton
+                      variant="contained"
+                      onClick={() => onAccept(applicant.id)}
+                      sx={{ 
+                        flex: 1,
+                        bgcolor: '#66bb6a',
+                        fontWeight: 600,
+                        '&:hover': { bgcolor: '#57a95b' }
+                      }}
+                    >
+                      ✓ Accept
+                    </MuiButton>
+                    <MuiButton
+                      variant="contained"
+                      onClick={() => onReject(applicant.id)}
+                      sx={{ 
+                        flex: 1,
+                        bgcolor: '#ef5350',
+                        fontWeight: 600,
+                        '&:hover': { bgcolor: '#e53935' }
+                      }}
+                    >
+                      ✕ Reject
+                    </MuiButton>
+                  </Stack>
+                )}
+
+                {applicant.status === 'Selected' && (
+                  <MuiButton
+                    variant="outlined"
+                    onClick={() => onCancel(applicant.id)}
+                    sx={{ 
+                      width: '100%',
+                      borderColor: '#ef5350',
+                      color: '#ef5350',
+                      fontWeight: 600,
+                      '&:hover': { borderColor: '#e53935', bgcolor: '#ffebee' }
+                    }}
                   >
-                    ✅ Accept
-                  </Button>
-                  <Button 
-                    variant="danger" 
-                    onClick={() => onReject(applicant.id)}
-                    style={{ flex: 1 }}
+                    Cancel Selection
+                  </MuiButton>
+                )}
+
+                {applicant.status === 'Accepted' && (
+                  <Box 
+                    sx={{ 
+                      bgcolor: '#e8f5e9',
+                      color: '#2e7d32',
+                      py: 1.5,
+                      px: 2,
+                      borderRadius: 1,
+                      textAlign: 'center',
+                      fontWeight: 700
+                    }}
                   >
-                    ❌ Reject
-                  </Button>
-                </>
-              )}
-              {applicant.status === 'Accepted' && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => onCancel(applicant.id)}
-                  style={{ flex: 1 }}
-                >
-                  ↩️ Cancel Acceptance
-                </Button>
-              )}
-              {applicant.status === 'Rejected' && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => onCancel(applicant.id)}
-                  style={{ flex: 1 }}
-                >
-                  ↩️ Reconsider
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+                    ✓ Accepted
+                  </Box>
+                )}
+
+                {applicant.status === 'Rejected' && (
+                  <Box 
+                    sx={{ 
+                      bgcolor: '#ffebee',
+                      color: '#c62828',
+                      py: 1.5,
+                      px: 2,
+                      borderRadius: 1,
+                      textAlign: 'center',
+                      fontWeight: 700
+                    }}
+                  >
+                    ✕ Rejected
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Box>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 };
 

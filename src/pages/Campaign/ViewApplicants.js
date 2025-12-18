@@ -1,26 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Modal, StatCard, Button, SelectionConfirmModal, ApplicantDetailModal } from '../../components/common';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Box, Container, Stack, Grid, Typography, Button, TextField, Select, MenuItem, InputAdornment, Paper } from '@mui/material';
 import ApplicantCard from '../../components/common/ApplicantCard';
-import UMKMSidebar from '../../components/umkm/UMKMSidebar';
-import UMKMTopbar from '../../components/umkm/UMKMTopbar';
+import Modal from '../../components/common/Modal';
+import ApplicantDetailModal from '../../components/common/ApplicantDetailModal';
+import Sidebar from '../../components/common/Sidebar';
+import Topbar from '../../components/common/Topbar';
 import { COLORS } from '../../constants/colors';
-import SearchIcon from '../../assets/search.svg';
-import BackIcon from '../../assets/back.svg';
+import SearchIcon from '@mui/icons-material/Search';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PeopleIcon from '@mui/icons-material/People';
+import StarIcon from '@mui/icons-material/Star';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 import applicantStorageHelper from '../../utils/applicantStorageHelper';
 import campaignService from '../../services/campaignService';
+import applicantService from '../../services/applicantService';
+import chatService from '../../services/chatService';
+import { toast } from 'react-toastify';
 
 function ViewApplicants() {
   const { campaignId } = useParams();
   const navigate = useNavigate();
-  
-  console.log('🎯 ViewApplicants - Received campaignId:', campaignId, 'Type:', typeof campaignId);
-  
   const [campaign, setCampaign] = useState(null);
   const [applicants, setApplicants] = useState([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [stats, setStats] = useState({ total: 0, pending: 0, accepted: 0, rejected: 0, selected: 0 });
+  const [isLoading, setIsLoading] = useState(false);
   
   // Responsive state for sidebar
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1000);
@@ -47,8 +57,7 @@ function ViewApplicants() {
     variant: 'default'
   });
 
-  // New modal states for selection and detail
-  const [showSelectionModal, setShowSelectionModal] = useState(false);
+  // Modal states for detail
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
 
@@ -57,62 +66,114 @@ function ViewApplicants() {
   }, [campaignId]);
 
   const loadData = async () => {
-    // Load campaign details from API
+    setIsLoading(true);
     try {
-      console.log('🔍 Loading data for campaign:', campaignId);
-      
       if (!campaignId) {
         console.error('❌ No campaignId provided!');
+        toast.error('Campaign ID tidak valid');
         setTimeout(() => navigate('/campaigns'), 100);
         return;
       }
       
       // Fetch campaign from API
       const response = await campaignService.getCampaignById(campaignId);
-      console.log('📦 API Response:', response);
-      
-      // Handle different response structures
+      // Handle the nested data structure { success: true, data: { ... } }
       let campaignData = response?.data?.data || response?.data || response;
-      console.log('📋 Campaign data extracted:', campaignData);
       
+      // Additional check if the object is directly the campaign or wrapped
       if (campaignData && campaignData.campaign_id) {
-        console.log('✅ Campaign found:', campaignData.title);
+        // Parse JSON strings if necessary
+        try {
+           if (typeof campaignData.influencer_category === 'string' && campaignData.influencer_category.startsWith('[')) {
+             campaignData.influencer_category = JSON.parse(campaignData.influencer_category);
+           }
+           if (typeof campaignData.selected_age === 'string' && campaignData.selected_age.startsWith('[')) {
+             campaignData.selected_age = JSON.parse(campaignData.selected_age);
+           }
+           if (typeof campaignData.reference_images === 'string' && campaignData.reference_images.startsWith('"')) {
+              // Handle double encoded JSON string from the example
+              campaignData.reference_images = JSON.parse(JSON.parse(campaignData.reference_images));
+           } else if (typeof campaignData.reference_images === 'string' && campaignData.reference_images.startsWith('[')) {
+              campaignData.reference_images = JSON.parse(campaignData.reference_images);
+           }
+        } catch (e) {
+          console.warn('Error evaluating JSON fields:', e);
+        }
         setCampaign(campaignData);
       } else {
         console.error('❌ Campaign not found with ID:', campaignId);
-        alert('Campaign tidak ditemukan');
+        toast.error('Campaign tidak ditemukan');
         setTimeout(() => navigate('/campaigns'), 100);
         return;
       }
 
-      // Load applicants for this campaign from localStorage
-      const allApplicants = JSON.parse(localStorage.getItem('applicants') || '[]');
-      console.log('👥 Total applicants:', allApplicants.length);
+      // Load applicants from API
+      let applicantsResponse = await applicantService.getCampaignApplicants(campaignId);
+      // Handle response structure { success: true, data: [...] }
+      let applicantsData = Array.isArray(applicantsResponse) ? applicantsResponse : 
+                           (applicantsResponse?.data && Array.isArray(applicantsResponse.data) ? applicantsResponse.data : []);
       
-      // Use the found campaign's ID for filtering
-      const actualCampaignId = campaignData.campaign_id;
-      const applicantsData = allApplicants.filter(a => 
-        a.campaignId === actualCampaignId || 
-        String(a.campaignId) === String(actualCampaignId) ||
-        parseInt(a.campaignId) === parseInt(actualCampaignId)
-      );
-      console.log('👥 Applicants for campaign', actualCampaignId, ':', applicantsData.length);
+      // Transform API data to match frontend format
+      const transformedApplicants = applicantsData.map(app => {
+        // Extract user data from the 'user' field in the response
+        const userData = app.user || {};
+        
+        // Note: The provided API response doesn't seem to have nested 'student' details 
+        // (like followers, engagement, niche). We'll try to use what's available or default.
+        const studentData = app.student || userData.student || {}; 
+        
+        return {
+          id: app.id,
+          userId: userData.user_id || app.student_id,
+          campaignId: app.campaign_id,
+          influencerName: userData.name || 'Unknown',
+          fullName: userData.name || 'Unknown',
+          // Defaulting missing fields that aren't in the basic user object
+          location: studentData.location || userData.location || '-',
+          age: studentData.age || userData.age || 0,
+          gender: studentData.gender || userData.gender || '-',
+          followers: studentData.follower_count || userData.follower_count || 0,
+          engagementRate: studentData.engagement_rate || userData.engagement_rate || 0,
+          status: app.application_status ? 
+                  (app.application_status.toLowerCase() === 'pending' ? 'Pending' : 
+                   (app.application_status.toLowerCase() === 'accepted' || app.application_status.toLowerCase() === 'approved') ? 'Accepted' : 
+                   (app.application_status.toLowerCase() === 'rejected') ? 'Rejected' : 
+                   app.application_status) : 'Pending',
+          appliedDate: app.applied_at || app.created_at || new Date().toISOString(),
+          bio: studentData.bio || userData.bio || '',
+          instagram: studentData.instagram_username || userData.instagram_username || '',
+          email: userData.email || '',
+          phone: studentData.phone || userData.phone || '',
+          niche: [], // Niche category not present in basic user object
+          notes: app.application_notes || '',
+          profileImage: userData.profile_image || 'https://i.pravatar.cc/150',
+          previousBrands: [],
+          isSelected: applicantStorageHelper.isSelected(app.id)
+        };
+      });
+
+      // Sync with localStorage selection state
+      transformedApplicants.forEach(app => {
+        const stored = applicantStorageHelper.getApplicantById(app.id);
+        if (!stored) {
+          applicantStorageHelper.addApplicant(app);
+        }
+      });
       
-      setApplicants(applicantsData);
+      setApplicants(transformedApplicants);
 
       // Calculate statistics
-      const total = applicantsData.length;
-      const pending = applicantsData.filter(a => a.status === 'Pending').length;
-      const accepted = applicantsData.filter(a => a.status === 'Accepted').length;
-      const rejected = applicantsData.filter(a => a.status === 'Rejected').length;
-      const selected = applicantsData.filter(a => a.isSelected === true).length;
-      
-      console.log('📊 Stats:', { total, pending, accepted, rejected, selected });
-      
+      const total = transformedApplicants.length;
+      const pending = transformedApplicants.filter(a => a.status === 'Pending').length;
+      const accepted = transformedApplicants.filter(a => a.status === 'Accepted').length;
+      const rejected = transformedApplicants.filter(a => a.status === 'Rejected').length;
+      const selected = transformedApplicants.filter(a => a.isSelected === true).length;
       setStats({ total, pending, accepted, rejected, selected });
     } catch (error) {
-      console.error('Failed to load data from localStorage:', error);
-      setTimeout(() => navigate('/campaigns'), 100);
+      console.error('Failed to load data:', error);
+      toast.error('Gagal memuat data applicants');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -128,18 +189,18 @@ function ViewApplicants() {
     setShowModal(true);
   };
 
-  const confirmAccept = (applicantId) => {
+  const confirmAccept = async (applicantId) => {
     try {
-      // Update applicant status in localStorage
-      const allApplicants = JSON.parse(localStorage.getItem('applicants') || '[]');
-      const updatedApplicants = allApplicants.map(a => 
-        a.id === applicantId ? { ...a, status: 'Accepted' } : a
-      );
-      localStorage.setItem('applicants', JSON.stringify(updatedApplicants));
-      loadData();
+      setIsLoading(true);
+      await applicantService.acceptApplicant(applicantId, 'Applicant has been accepted');
+      toast.success('Applicant berhasil diterima!');
+      await loadData();
       setShowModal(false);
     } catch (error) {
       console.error('Failed to accept applicant:', error);
+      toast.error('Gagal menerima applicant');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -155,18 +216,18 @@ function ViewApplicants() {
     setShowModal(true);
   };
 
-  const confirmReject = (applicantId) => {
+  const confirmReject = async (applicantId) => {
     try {
-      // Update applicant status in localStorage
-      const allApplicants = JSON.parse(localStorage.getItem('applicants') || '[]');
-      const updatedApplicants = allApplicants.map(a => 
-        a.id === applicantId ? { ...a, status: 'Rejected' } : a
-      );
-      localStorage.setItem('applicants', JSON.stringify(updatedApplicants));
-      loadData();
+      setIsLoading(true);
+      await applicantService.rejectApplicant(applicantId, 'Thank you for your interest');
+      toast.success('Applicant berhasil ditolak');
+      await loadData();
       setShowModal(false);
     } catch (error) {
       console.error('Failed to reject applicant:', error);
+      toast.error('Gagal menolak applicant');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -182,35 +243,27 @@ function ViewApplicants() {
     setShowModal(true);
   };
 
-  const confirmCancel = (applicantId) => {
+  const confirmCancel = async (applicantId) => {
     try {
-      // Update applicant status in localStorage
-      const allApplicants = JSON.parse(localStorage.getItem('applicants') || '[]');
-      const updatedApplicants = allApplicants.map(a => 
-        a.id === applicantId ? { ...a, status: 'Pending' } : a
-      );
-      localStorage.setItem('applicants', JSON.stringify(updatedApplicants));
-      loadData();
+      setIsLoading(true);
+      await applicantService.reconsiderApplicant(applicantId);
+      toast.success('Applicant berhasil dikembalikan ke status pending');
+      await loadData();
       setShowModal(false);
     } catch (error) {
-      console.error('Failed to revert applicant status:', error);
+      console.error('Failed to reconsider applicant:', error);
+      toast.error('Gagal mengubah status applicant');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Handle Toggle Selection
+  // Handle Toggle Selection - Direct toggle without popup
   const handleToggleSelection = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowSelectionModal(true);
-  };
-
-  const confirmToggleSelection = () => {
-    if (selectedApplicant) {
-      const newSelectionState = !selectedApplicant.isSelected;
-      applicantStorageHelper.toggleSelection(selectedApplicant.id, newSelectionState);
-      loadData();
-      setShowSelectionModal(false);
-      setSelectedApplicant(null);
-    }
+    const newSelectionState = !applicant.isSelected;
+    applicantStorageHelper.toggleSelection(applicant.id, newSelectionState);
+    loadData();
+    toast.success(newSelectionState ? `${applicant.fullName} ditandai sebagai favorit` : `${applicant.fullName} dihapus dari favorit`);
   };
 
   // Handle Show Detail
@@ -219,14 +272,58 @@ function ViewApplicants() {
     setShowDetailModal(true);
   };
 
-  // Handle Chat - Open WhatsApp
-  const handleChat = (applicant) => {
-    const phone = applicant.phone.replace(/[^0-9]/g, ''); // Remove non-numeric characters
-    const message = encodeURIComponent(
-      `Halo ${applicant.fullName}, saya tertarik untuk berkolaborasi dengan Anda untuk campaign "${campaign.title}". Apakah Anda tersedia untuk diskusi lebih lanjut?`
-    );
-    const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
+  // Get current user ID from token
+  const [currentUserId, setCurrentUserId] = useState(null);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const [, payloadBase64] = token.split(".");
+        const payload = JSON.parse(atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/")));
+        if (payload?.sub) setCurrentUserId(Number(payload.sub));
+      } catch (e) {
+        console.error("Invalid token:", e);
+      }
+    }
+  }, []);
+
+  // Handle Chat - Create Chat Room
+  const handleChat = async (applicant) => {
+    try {
+      if (!applicant.userId) {
+        toast.error('User ID tidak ditemukan pada applicant ini');
+        return;
+      }
+      if (!currentUserId) {
+        toast.error('Sesi anda tidak valid, silakan login ulang');
+        return;
+      }
+      
+      setIsLoading(true);
+      
+      // 1. Create Private Chat Room with participants
+      // name is optional for private chats usually, but we can set one for clarity
+      const roomName = `${campaign.title} - ${applicant.fullName}`.substring(0, 50);
+      
+      const payload = {
+        name: roomName,
+        type: "private",
+        participants: [applicant.userId, currentUserId]
+      };
+
+      await chatService.createChatRoom(payload);
+
+      toast.success('Chat started! Redirecting...');
+      
+      // 2. Navigate to Chat Page
+      navigate('/chat');
+      
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      toast.error('Gagal memulai chat');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Filter applicants
@@ -237,12 +334,15 @@ function ViewApplicants() {
         a.fullName.toLowerCase().includes(search.toLowerCase()) ||
         a.location.toLowerCase().includes(search.toLowerCase());
       
-      const matchesFilter = filter ? a.status === filter : true;
+      // Handle "Selected" filter separately (based on isSelected flag)
+      const matchesFilter = filter 
+        ? (filter === 'Selected' ? a.isSelected === true : a.status === filter)
+        : true;
       
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
-      // Sort priority: Pending > Accepted > Rejected
+      // Sort priority: Selected > Pending > Accepted > Rejected
       const statusPriority = { 'Pending': 1, 'Accepted': 2, 'Rejected': 3 };
       if (statusPriority[a.status] !== statusPriority[b.status]) {
         return statusPriority[a.status] - statusPriority[b.status];
@@ -253,322 +353,326 @@ function ViewApplicants() {
 
   if (!campaign) {
     return (
-      <div style={{ background: COLORS.background, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2>Loading...</h2>
-        </div>
-      </div>
+      <Box sx={{ bgcolor: COLORS.background, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h6">Loading...</Typography>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <UMKMSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      <div style={{ marginLeft: !isMobile ? '260px' : '0', flex: 1 }}>
-        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        
-        <div style={{ marginTop: '72px', background: '#f7fafc', minHeight: 'calc(100vh - 72px)', padding: '32px' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Back Button */}
-        <Button
-          variant="outline"
-          onClick={() => navigate('/campaigns')}
-          style={{ 
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <img src={BackIcon} alt="Back" style={{ width: '16px', height: '16px' }} />
-          Back to Campaigns
-        </Button>
-
-        {/* Campaign Header */}
-        <div style={{
-          background: COLORS.white,
-          borderRadius: '20px',
-          padding: '32px',
-          marginBottom: '32px',
-          boxShadow: `0 8px 32px ${COLORS.shadowLarge}`,
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          {/* Decorative gradient line */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '6px',
-            background: COLORS.gradient
-          }}></div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <div style={{
-              width: '100px',
-              height: '100px',
-              borderRadius: '16px',
-              background: COLORS.gradient,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '3rem',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
-            }}>
-              📋
-            </div>
-            <div style={{ flex: 1 }}>
-              <h1 style={{
-                margin: '0 0 8px 0',
-                fontSize: '2rem',
-                fontWeight: '700',
-                color: COLORS.textPrimary
-              }}>
-                View Applicants
-              </h1>
-              <h2 style={{
-                margin: '0 0 8px 0',
-                fontSize: '1.3rem',
-                fontWeight: '600',
-                color: COLORS.primary
-              }}>
-                {campaign.title}
-              </h2>
-              <div style={{
-                fontSize: '0.9rem',
-                color: COLORS.textSecondary
-              }}>
-                Campaign Status: <span style={{ 
-                  fontWeight: '600', 
-                  color: campaign.status === 'Active' ? '#28a745' : '#6c757d' 
+    <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Box sx={{ ml: isMobile ? 0 : 32.5, flex: 1 }}>
+        <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Box sx={{ mt: 9, bgcolor: '#f7fafc', minHeight: 'calc(100vh - 72px)', py: { xs: 2, md: 4 } }}>
+          <Container maxWidth="lg">
+            {/* Back Button */}
+            <Button
+              onClick={() => navigate('/campaigns')}
+              startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
+              sx={{ mb: 3, fontWeight: 600, textTransform: 'none' }}
+            >
+              Back to Campaigns
+            </Button>
+            {/* Campaign Header */}
+            <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 2, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden', boxShadow: 6 }}>
+              {/* Decorative gradient line */}
+              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: COLORS.gradient }} />
+              <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" spacing={3}>
+                <Box sx={{ 
+                  width: { xs: '100%', md: 120 }, 
+                  height: { xs: 200, md: 120 }, 
+                  borderRadius: 2, 
+                  overflow: 'hidden',
+                  boxShadow: 3,
+                  position: 'relative'
                 }}>
-                  {campaign.status}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+                  {campaign.banner_image ? (
+                    <Box 
+                      component="img" 
+                      src={campaign.banner_image} 
+                      alt={campaign.title}
+                      sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <Box sx={{ width: '100%', height: '100%', background: COLORS.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <AssignmentIcon sx={{ fontSize: 56, color: '#000' }} />
+                    </Box>
+                  )}
+                </Box>
+                
+                <Box sx={{ flex: 1 }}>
+                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
+                      {campaign.title}
+                    </Typography>
+                    <Paper 
+                      sx={{ 
+                        px: 1.5, py: 0.5, 
+                        bgcolor: campaign.status?.toLowerCase() === 'active' ? '#e6fffa' : '#f0f0f0',
+                        color: campaign.status?.toLowerCase() === 'active' ? '#047857' : '#64748b',
+                        borderRadius: 1,
+                        fontSize: '0.75rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      {campaign.status}
+                    </Paper>
+                  </Stack>
+                  
+                  {campaign.user && (
+                     <Typography sx={{ fontSize: 14, color: COLORS.textSecondary, mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                       By <Box component="span" sx={{ fontWeight: 600, color: COLORS.primary }}>{campaign.user.name}</Box>
+                     </Typography>
+                  )}
 
-        {/* Statistics Cards */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '20px',
-          marginBottom: '32px'
-        }}>
-          <StatCard
-            title="Total Applicants"
-            value={stats.total}
-            icon="👥"
-            gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-          />
-          <StatCard
-            title="Selected"
-            value={stats.selected}
-            icon="⭐"
-            gradient="linear-gradient(135deg, #f6d365 0%, #fda085 100%)"
-          />
-          <StatCard
-            title="Pending Review"
-            value={stats.pending}
-            icon="⏳"
-            gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
-          />
-          <StatCard
-            title="Accepted"
-            value={stats.accepted}
-            icon="✅"
-            gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-          />
-          <StatCard
-            title="Rejected"
-            value={stats.rejected}
-            icon="❌"
-            gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
-          />
-        </div>
+                  <Stack direction="row" flexWrap="wrap" gap={2} sx={{ mb: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 14, color: COLORS.textSecondary }}>
+                       <strong>Price:</strong> {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(campaign.price_per_post || 0)} / post
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 14, color: COLORS.textSecondary }}>
+                       <strong>Deadline:</strong> {campaign.submission_deadline ? new Date(campaign.submission_deadline).toLocaleDateString() : '-'}
+                    </Box>
+                  </Stack>
 
-        {/* Search & Filter */}
-        <div style={{
-          display: 'flex',
-          gap: '18px',
-          marginBottom: '32px',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ flex: '1 1 400px', position: 'relative' }}>
-            <input
-              type="text"
-              placeholder="Search by name, username, or location..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '14px 44px 14px 44px',
-                borderRadius: '12px',
-                border: `1px solid ${COLORS.border}`,
-                fontSize: '1rem',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                boxSizing: 'border-box'
+                  <Stack direction="row" spacing={1}>
+                    {Array.isArray(campaign.influencer_category) && campaign.influencer_category.map((cat, idx) => (
+                      <Paper key={idx} sx={{ px: 1.5, py: 0.5, bgcolor: '#f3f4f6', fontSize: 12, borderRadius: 4 }}>
+                        {cat}
+                      </Paper>
+                    ))}
+                  </Stack>
+                </Box>
+              </Stack>
+            </Paper>
+            {/* Statistics Cards */}
+            <Paper elevation={0} sx={{ p: 3, bgcolor: '#fff', border: '1px solid #e0e0e0', borderRadius: 2, mb: 4 }}>
+              <Grid container spacing={3}>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '12px', 
+                      bgcolor: '#f5f7ff', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <PeopleIcon sx={{ fontSize: 24, color: '#667eea' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                        {stats.total}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                        Total
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '12px', 
+                      bgcolor: '#fff8f0', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <StarIcon sx={{ fontSize: 24, color: '#ffa726' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                        {stats.selected}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                        Selected
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '12px', 
+                      bgcolor: '#f5f7f9', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <HourglassEmptyIcon sx={{ fontSize: 24, color: '#78909c' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                        {stats.pending}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                        Pending
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '12px', 
+                      bgcolor: '#f1f8f4', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <CheckCircleIcon sx={{ fontSize: 24, color: '#66bb6a' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                        {stats.accepted}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                        Accepted
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: '12px', 
+                      bgcolor: '#fef5f5', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <CancelIcon sx={{ fontSize: 24, color: '#ef5350' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                        {stats.rejected}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                        Rejected
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+              </Grid>
+            </Paper>
+            {/* Search & Filter */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={4} flexWrap="wrap">
+              <Box sx={{ flex: '1 1 400px', position: 'relative' }}>
+                <TextField
+                  fullWidth
+                  placeholder="Search by name, username, or location..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: COLORS.textSecondary, opacity: 0.6 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ borderRadius: 2, bgcolor: '#fff', fontSize: 16, boxShadow: 1 }}
+                />
+              </Box>
+              <Box sx={{ minWidth: 200 }}>
+                <Select
+                  value={filter}
+                  onChange={e => setFilter(e.target.value)}
+                  fullWidth
+                  displayEmpty
+                  sx={{ borderRadius: 2, bgcolor: '#fff', fontSize: 16, boxShadow: 1 }}
+                >
+                  <MenuItem value="">All Status</MenuItem>
+                  <MenuItem value="Pending">
+                    <HourglassEmptyIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: COLORS.textSecondary }} />
+                    Pending
+                  </MenuItem>
+                  <MenuItem value="Selected">
+                    <StarIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#ffa726' }} />
+                    Selected
+                  </MenuItem>
+                  <MenuItem value="Accepted">
+                    <CheckCircleIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#66bb6a' }} />
+                    Accepted
+                  </MenuItem>
+                  <MenuItem value="Rejected">
+                    <CancelIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: COLORS.textSecondary }} />
+                    Rejected
+                  </MenuItem>
+                </Select>
+              </Box>
+            </Stack>
+            {/* Results Count */}
+            <Typography sx={{ mb: 2, fontSize: 15, color: COLORS.textSecondary, fontWeight: 600 }}>
+              Showing {filteredApplicants.length} of {applicants.length} applicants
+            </Typography>
+            {/* Applicants List */}
+            {filteredApplicants.length === 0 ? (
+              <Paper elevation={2} sx={{ bgcolor: COLORS.white, borderRadius: 2, py: 8, px: 4, textAlign: 'center', boxShadow: 4 }}>
+                <SentimentDissatisfiedIcon sx={{ fontSize: 56, mb: 2, color: COLORS.textSecondary }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, color: COLORS.textPrimary, mb: 1 }}>
+                  No Applicants Found
+                </Typography>
+                <Typography sx={{ color: COLORS.textSecondary, fontSize: 15 }}>
+                  {search || filter ? 'Try adjusting your search or filter criteria' : 'No one has applied to this campaign yet'}
+                </Typography>
+              </Paper>
+            ) : (
+              <Box>
+                {filteredApplicants.map(applicant => (
+                  <ApplicantCard
+                    key={applicant.id}
+                    applicant={applicant}
+                    onAccept={handleAccept}
+                    onReject={handleReject}
+                    onCancel={handleCancel}
+                    onToggleFavorite={handleToggleSelection}
+                    onChat={handleChat}
+                    onShowDetail={handleShowDetail}
+                    showActions={true}
+                    canSelectApplicants={true}
+                  />
+                ))}
+              </Box>
+            )}
+            {/* Confirmation Modal */}
+            <Modal
+              isOpen={showModal}
+              onClose={() => setShowModal(false)}
+              title={modalConfig.title}
+              onConfirm={modalConfig.action}
+              confirmText="Confirm"
+              cancelText="Cancel"
+              variant={modalConfig.variant}
+            >
+              <Typography sx={{ fontSize: 16, lineHeight: 1.6, color: COLORS.textSecondary }}>
+                {modalConfig.message}
+              </Typography>
+            </Modal>
+            {/* Applicant Detail Modal */}
+            <ApplicantDetailModal
+              isOpen={showDetailModal}
+              onClose={() => {
+                setShowDetailModal(false);
+                setSelectedApplicant(null);
               }}
+              applicant={selectedApplicant}
             />
-            <img
-              src={SearchIcon}
-              alt="Search"
-              style={{
-                position: 'absolute',
-                left: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '20px',
-                height: '20px',
-                opacity: 0.6,
-                pointerEvents: 'none'
-              }}
-            />
-          </div>
-
-          <select
-            value={filter}
-            onChange={e => setFilter(e.target.value)}
-            style={{
-              padding: '14px 24px',
-              borderRadius: '12px',
-              border: `1px solid ${COLORS.border}`,
-              fontSize: '1rem',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-              background: COLORS.white,
-              cursor: 'pointer',
-              color: COLORS.textPrimary,
-              minWidth: '200px'
-            }}
-          >
-            <option value="">All Status</option>
-            <option value="Pending">⏳ Pending</option>
-            <option value="Accepted">✅ Selected</option>
-            <option value="Rejected">❌ Rejected</option>
-          </select>
-
-          {/* Select All Button - Only show for campaign owner */}
-          <Button
-            variant="primary"
-            onClick={() => navigate(`/campaign/${campaignId}/select-applicants`)}
-            style={{
-              padding: '14px 24px',
-              borderRadius: '12px',
-              fontSize: '1rem',
-              fontWeight: 600,
-              minWidth: '200px'
-            }}
-          >
-            ✓ Select Applicants
-          </Button>
-        </div>
-
-        {/* Results Count */}
-        <div style={{
-          marginBottom: '20px',
-          fontSize: '0.95rem',
-          color: COLORS.textSecondary,
-          fontWeight: '600'
-        }}>
-          Showing {filteredApplicants.length} of {applicants.length} applicants
-        </div>
-
-        {/* Applicants List */}
-        {filteredApplicants.length === 0 ? (
-          <div style={{
-            background: COLORS.white,
-            borderRadius: '16px',
-            padding: '64px 32px',
-            textAlign: 'center',
-            boxShadow: `0 4px 20px ${COLORS.shadowMedium}`
-          }}>
-            <div style={{ fontSize: '4rem', marginBottom: '16px' }}>😔</div>
-            <h3 style={{ 
-              margin: '0 0 8px 0', 
-              fontSize: '1.3rem', 
-              fontWeight: '600',
-              color: COLORS.textPrimary 
-            }}>
-              No Applicants Found
-            </h3>
-            <p style={{ 
-              margin: 0, 
-              color: COLORS.textSecondary,
-              fontSize: '0.95rem'
-            }}>
-              {search || filter 
-                ? 'Try adjusting your search or filter criteria' 
-                : 'No one has applied to this campaign yet'}
-            </p>
-          </div>
-        ) : (
-          <div>
-            {filteredApplicants.map(applicant => (
-              <ApplicantCard
-                key={applicant.id}
-                applicant={applicant}
-                onAccept={handleAccept}
-                onReject={handleReject}
-                onCancel={handleCancel}
-                onToggleSelection={handleToggleSelection}
-                onChat={handleChat}
-                onShowDetail={handleShowDetail}
-                showActions={true}
-                showSelection={true}
-              />
-            ))}
-          </div>
-        )}
-
-      {/* Confirmation Modal */}
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title={modalConfig.title}
-        onConfirm={modalConfig.action}
-        confirmText="Confirm"
-        cancelText="Cancel"
-        variant={modalConfig.variant}
-      >
-        <p style={{ 
-          margin: 0, 
-          fontSize: '1rem', 
-          lineHeight: '1.6',
-          color: COLORS.textSecondary 
-        }}>
-          {modalConfig.message}
-        </p>
-      </Modal>
-
-      {/* Selection Confirmation Modal */}
-      <SelectionConfirmModal
-        isOpen={showSelectionModal}
-        onClose={() => {
-          setShowSelectionModal(false);
-          setSelectedApplicant(null);
-        }}
-        applicantName={selectedApplicant?.fullName}
-        influencerName={selectedApplicant?.influencerName}
-        currentSelection={selectedApplicant?.isSelected || false}
-        onConfirm={confirmToggleSelection}
-      />
-
-      {/* Applicant Detail Modal */}
-      <ApplicantDetailModal
-        isOpen={showDetailModal}
-        onClose={() => {
-          setShowDetailModal(false);
-          setSelectedApplicant(null);
-        }}
-        applicant={selectedApplicant}
-      />
-          </div>
-        </div>
-      </div>
-    </div>
+          </Container>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

@@ -19,14 +19,12 @@ export const localStorageHelper = {
       
       // If we have old format, migrate and clean up
       if (oldCampaigns && !campaigns) {
-        console.log('🔄 Migrating campaignDatabase → campaigns');
         localStorage.setItem('campaigns', oldCampaigns);
         // Remove old key to prevent duplicates
         localStorage.removeItem('campaignDatabase');
       }
       
       if (oldApplicants && !applicants) {
-        console.log('🔄 Migrating applicantDatabase → applicants');
         localStorage.setItem('applicants', oldApplicants);
         // Remove old key to prevent duplicates
         localStorage.removeItem('applicantDatabase');
@@ -34,21 +32,17 @@ export const localStorageHelper = {
       
       // If new format exists, remove old keys if they still exist
       if (campaigns && oldCampaigns) {
-        console.log('🧹 Cleaning up old campaignDatabase key');
         localStorage.removeItem('campaignDatabase');
       }
       
       if (applicants && oldApplicants) {
-        console.log('🧹 Cleaning up old applicantDatabase key');
         localStorage.removeItem('applicantDatabase');
       }
       
       // If no data at all, seed dummy data
       if (!localStorage.getItem('campaigns')) {
-        console.log('📦 Seeding dummy data...');
         localStorageHelper.seedDummyData();
       } else {
-        console.log('✅ Data loaded successfully');
       }
     } catch (error) {
       console.error('Error initializing data:', error);
@@ -681,7 +675,6 @@ export const localStorageHelper = {
 // Console helper for debugging
 if (typeof window !== 'undefined') {
   window.campaignStorage = localStorageHelper;
-  console.log('💾 Campaign Storage Helper loaded! Use window.campaignStorage in console');
   console.log('Available methods:', Object.keys(localStorageHelper));
 }
 
