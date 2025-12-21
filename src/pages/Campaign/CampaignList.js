@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Container, Stack, Card, Typography, Button, TextField, Select, MenuItem, InputAdornment, IconButton, Menu, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Container, Stack, Card, Typography, Button, TextField, Select, MenuItem, InputAdornment, IconButton, Menu, Dialog, DialogTitle, DialogContent, DialogActions, Chip, Paper } from '@mui/material';
 import Sidebar from '../../components/common/Sidebar';
 import Topbar from '../../components/common/Topbar';
-import { COLORS } from '../../constants/colors';
 import SearchIcon from '@mui/icons-material/Search';
 import PeopleIcon from '@mui/icons-material/People';
 import { BarChart3 } from 'lucide-react';
@@ -27,7 +26,6 @@ import GroupIcon from '@mui/icons-material/Group';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import { toast } from 'react-toastify';
-
 
 function CampaignList() {
   const navigate = useNavigate();
@@ -91,10 +89,10 @@ function CampaignList() {
 
   const handleDistributePayment = async (campaignId) => {
     try {
-      if (!window.confirm("Are you sure you want to distribute payments to all eligible influencers for this campaign?")) return;
+      if (!window.confirm("Apakah Anda yakin ingin mendistribusikan pembayaran kepada semua influencer yang memenuhi syarat untuk campaign ini?")) return;
       
       await campaignService.distributePayment(campaignId);
-      toast.success("Payments distributed successfully!");
+      toast.success("Pembayaran berhasil didistribusikan!");
       
       // Refresh list
       const params = { page: currentPage, limit: 10 };   
@@ -106,7 +104,7 @@ function CampaignList() {
       setCampaigns(response.data || []);
     } catch (error) {
       console.error("Payment distribution failed:", error);
-      toast.error("Failed to distribute payments");
+      toast.error("Gagal mendistribusikan pembayaran");
     }
   };
 
@@ -147,33 +145,33 @@ function CampaignList() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [currentPage, filter, search]);
 
-  // Consolidated status configuration
+  // Consolidated status configuration - FLAT DESIGN
   const STATUS_CONFIG = {
     admin_review: {
-      badge: { bg: '#fff3cd', color: '#856404', shadow: '0 2px 8px rgba(255, 193, 7, 0.3)' },
+      badge: { bg: '#fff7ed', color: '#c2410c' }, // Orange
       text: 'Ditinjau Admin',
-      alert: { bg: '#fff3cd', border: '#ffc107', color: '#856404', icon: HourglassEmptyIcon,
+      alert: { bg: '#fff7ed', border: '#fdba74', color: '#c2410c', icon: HourglassEmptyIcon,
         title: 'Menunggu Review Admin', 
         message: 'Campaign Anda sedang direview oleh tim admin. Anda akan dinotifikasi setelah disetujui.' }
     },
     pending_payment: {
-      badge: { bg: '#cfe2ff', color: '#084298', shadow: '0 2px 8px rgba(13, 110, 253, 0.3)' },
+      badge: { bg: '#eff6ff', color: '#1d4ed8' }, // Blue
       text: 'Menunggu Pembayaran',
-      alert: { bg: '#cfe2ff', border: '#84c1ff', color: '#084298', icon: CreditCardIcon,
+      alert: { bg: '#eff6ff', border: '#93c5fd', color: '#1d4ed8', icon: CreditCardIcon,
         title: 'Campaign Disetujui! Selesaikan Pembayaran', 
         message: 'Campaign Anda telah disetujui admin. Klik "Bayar Sekarang" untuk mengaktifkan campaign.' }
     },
     cancelled: {
-      badge: { bg: '#ffe5e5', color: '#c41e3a', shadow: '0 2px 8px rgba(196, 30, 58, 0.3)' },
+      badge: { bg: '#fef2f2', color: '#b91c1c' }, // Red
       text: 'Dibatalkan',
-      alert: { bg: '#ffe5e5', border: '#ff9999', color: '#c41e3a', icon: CancelIcon,
+      alert: { bg: '#fef2f2', border: '#fca5a5', color: '#b91c1c', icon: CancelIcon,
         title: 'Campaign Dibatalkan', 
         message: 'Campaign dibatalkan.' }
     },
     active: {
-      badge: { bg: '#d1fae5', color: '#155724', shadow: '0 2px 8px rgba(132, 250, 176, 0.3)' },
+      badge: { bg: '#f0fdf4', color: '#15803d' }, // Green
       text: 'Aktif',
-      alert: { bg: '#d1fae5', border: '#6ee7b7', color: '#065f46', icon: RocketLaunchIcon,
+      alert: { bg: '#f0fdf4', border: '#86efac', color: '#15803d', icon: RocketLaunchIcon,
         title: 'Campaign Sedang Berjalan', 
         message: 'Campaign aktif dan dapat diapply oleh mahasiswa. Monitor aplikasi dan review hasil kerja.' },
       subStatus: {
@@ -185,9 +183,9 @@ function CampaignList() {
       },
       subStatusAlert: {
         payout_success: {
-          bg: '#e0d4ff',
-          border: '#c4b5fd',
-          color: '#5b21b6',
+          bg: '#faf5ff', // Purple
+          border: '#d8b4fe',
+          color: '#7e22ce',
           icon: CheckCircleIcon,
           title: 'Berhasil Terbayar',
           message: (campaign) => {
@@ -201,20 +199,20 @@ function CampaignList() {
       }
     },
     completed: {
-      badge: { bg: '#e0d4ff', color: '#5b21b6', shadow: '0 2px 8px rgba(139, 92, 246, 0.3)' },
+      badge: { bg: '#faf5ff', color: '#7e22ce' }, // Purple
       text: 'Selesai',
-      alert: { bg: '#e0d4ff', border: '#c4b5fd', color: '#5b21b6', icon: CheckCircleIcon,
+      alert: { bg: '#faf5ff', border: '#d8b4fe', color: '#7e22ce', icon: CheckCircleIcon,
         title: 'Campaign Selesai', 
         message: (campaign) => `Campaign ${campaign.title} telah resmi selesai. Terima kasih telah mempercayakan kolaborasi Anda kepada InfluEnt.` }
     },
     draft: {
-      badge: { bg: '#e2e8f0', color: '#6c757d', shadow: '0 2px 8px rgba(143, 143, 143, 0.3)' },
+      badge: { bg: '#f1f5f9', color: '#475569' }, // Slate
       text: 'Draft'
     },
     archived: {
-      badge: { bg: '#f5f5f5', color: '#616161', shadow: '0 2px 8px rgba(97, 97, 97, 0.2)' },
+      badge: { bg: '#f8fafc', color: '#64748b' }, // Gray
       text: '🗂️ Diarsipkan',
-      alert: { bg: '#f5f5f5', border: '#e0e0e0', color: '#616161', icon: ArchiveIcon,
+      alert: { bg: '#f8fafc', border: '#e2e8f0', color: '#64748b', icon: ArchiveIcon,
         title: 'Campaign Diarsipkan', 
         message: 'Campaign ini telah diarsipkan dan tidak akan muncul di daftar utama.' }
     }
@@ -245,21 +243,21 @@ function CampaignList() {
     
     return (
       <Box sx={{ 
-        mt: 1, p: 2, bgcolor: alert.bg, borderRadius: 2, 
+        mt: 2, p: 2, bgcolor: alert.bg, borderRadius: 2, 
         border: `1px solid ${alert.border}`, display: 'flex', 
         gap: 1.5, alignItems: 'flex-start' 
       }}>
-        <Icon sx={{ fontSize: 24, color: alert.color }} />
+        <Icon sx={{ fontSize: 20, color: alert.color, mt: 0.3 }} />
         <Box sx={{ flex: 1 }}>
           <Typography sx={{ 
-            fontSize: 13, color: alert.color, fontWeight: 700, 
-            mb: 0.5, letterSpacing: '0.3px' 
+            fontSize: 14, color: alert.color, fontWeight: 700, 
+            mb: 0.5
           }}>
             {alert.title}
           </Typography>
           <Typography sx={{ 
-            fontSize: 12.5, color: alert.color, 
-            lineHeight: 1.5, fontWeight: 500 
+            fontSize: 13, color: alert.color, 
+            lineHeight: 1.5, opacity: 0.9
           }}>
             {status?.toLowerCase() === 'cancelled' && cancellationReason ? cancellationReason : message}
           </Typography>
@@ -282,535 +280,338 @@ function CampaignList() {
     return icons[category] || CampaignIcon;
   };
 
+  // Helper to format banner URL
+  const getBannerUrl = (image) => {
+     if (!image) return null;
+     if (image.startsWith('http') || image.startsWith('data:')) return image;
+     return `http://localhost:8000/api/uploads/${image}`;
+  };
+
   return (
-    <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
+    <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif', bgcolor: '#f8fafc', minHeight: '100vh' }}>
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <Box sx={{ flex: 1, ml: isMobile ? 0 : 32.5, overflow: 'hidden' }}>
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <Box sx={{ mt: 9, bgcolor: '#f7fafc', minHeight: 'calc(100vh - 72px)', overflow: 'hidden' }}>
+        <Box sx={{ mt: 9, minHeight: 'calc(100vh - 72px)', overflow: 'hidden' }}>
             <Container
-              maxWidth={false}
+              maxWidth="lg"
               sx={{
                 py: { xs: 2, md: 4 },
-                maxWidth: 1,
                 height: 'calc(100vh - 72px)',
                 overflow: 'auto',
               }}
             >
             {/* Header */}
-            <Stack direction="row" alignItems="center" spacing={2} mb={4}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={4}>
+               <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e293b', letterSpacing: '-0.5px' }}>
+                     Daftar Campaign
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5 }}>
+                     Kelola semua campaign aktif dan draft anda disini
+                  </Typography>
+               </Box>
+               
               <Button
                 variant="contained"
                 onClick={() => navigate('/campaign-create')}
                 sx={{
-                  bgcolor: '#667eea',
+                  bgcolor: '#6E00BE',
                   color: '#fff',
                   fontWeight: 600,
                   borderRadius: 2,
                   textTransform: 'none',
-                  fontSize: 16,
+                  fontSize: 15,
+                  px: 3,
+                  py: 1,
                   boxShadow: 'none',
-                  '&:hover': { bgcolor: '#5568d3' }
+                  '&:hover': { bgcolor: '#5a009e', boxShadow: 'none' }
                 }}
               >
-                Buat Baru
+                + Buat Campaign
               </Button>
-              <Typography variant="h5" sx={{ fontWeight: 600, color: COLORS.textPrimary }}>
-                Daftar Campaign
-              </Typography>
             </Stack>
+
             {/* Search & Filter */}
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={4} flexWrap="wrap">
-              <Box sx={{ flex: '1 1 auto', minWidth: 250 }}>
-                <TextField
-                  fullWidth
-                  placeholder="Cari campaign..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: COLORS.textSecondary, opacity: 0.6 }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    borderRadius: 2,
-                    bgcolor: '#fff',
-                    boxShadow: 1,
-                    fontSize: 15,
-                  }}
-                />
-              </Box>
-              <Box sx={{ flex: '0 0 auto', minWidth: 150 }}>
-                <Select
-                  value={filter}
-                  onChange={e => setFilter(e.target.value)}
-                  fullWidth
-                  displayEmpty
-                  sx={{
-                    borderRadius: 2,
-                    bgcolor: '#fff',
-                    fontSize: 16,
-                    boxShadow: 1,
-                  }}
-                >
-                  <MenuItem value="">Semua</MenuItem>
-                  <MenuItem value="active">Aktif</MenuItem>
-                  <MenuItem value="admin_review">Ditinjau Admin</MenuItem>
-                  <MenuItem value="pending_payment">Menunggu Pembayaran</MenuItem>
-                  <MenuItem value="draft">Draft</MenuItem>
-                  <MenuItem value="completed">Selesai</MenuItem>
-                  <MenuItem value="cancelled">Dibatalkan</MenuItem>
-                  <MenuItem value="archived">Diarsipkan</MenuItem>
-                </Select>
-              </Box>
-            </Stack>
+            <Paper elevation={0} sx={{ p: 2, mb: 4, border: '1px solid #e2e8f0', borderRadius: 3 }}>
+               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <TextField
+                     fullWidth
+                     placeholder="Cari berdasarkan judul campaign..."
+                     value={search}
+                     onChange={e => setSearch(e.target.value)}
+                     size="small"
+                     InputProps={{
+                        startAdornment: (
+                           <InputAdornment position="start">
+                              <SearchIcon sx={{ color: '#94a3b8' }} />
+                           </InputAdornment>
+                        ),
+                     }}
+                     sx={{
+                        '& .MuiOutlinedInput-root': {
+                           bgcolor: '#fff',
+                           '& fieldset': { borderColor: '#e2e8f0' },
+                           '&:hover fieldset': { borderColor: '#cbd5e1' },
+                           '&.Mui-focused fieldset': { borderColor: '#6E00BE' },
+                        }
+                     }}
+                  />
+                  <Select
+                     value={filter}
+                     onChange={e => setFilter(e.target.value)}
+                     displayEmpty
+                     size="small"
+                     sx={{
+                        minWidth: 200,
+                        bgcolor: '#fff',
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' },
+                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#cbd5e1' },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6E00BE' },
+                     }}
+                  >
+                     <MenuItem value="">Semua Status</MenuItem>
+                     <MenuItem value="active">Aktif</MenuItem>
+                     <MenuItem value="admin_review">Ditinjau Admin</MenuItem>
+                     <MenuItem value="pending_payment">Menunggu Pembayaran</MenuItem>
+                     <MenuItem value="draft">Draft</MenuItem>
+                     <MenuItem value="completed">Selesai</MenuItem>
+                     <MenuItem value="cancelled">Dibatalkan</MenuItem>
+                     <MenuItem value="archived">Diarsipkan</MenuItem>
+                  </Select>
+               </Stack>
+            </Paper>
+
             {/* Campaign Cards */}
             {isLoading ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography sx={{ color: COLORS.textSecondary, fontSize: 16 }}>
-                  Memuat campaign...
-                </Typography>
+                <Typography sx={{ color: '#94a3b8' }}>Memuat campaign...</Typography>
               </Box>
             ) : campaigns.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography sx={{ color: COLORS.textSecondary, fontSize: 16 }}>
-                  Tidak ada campaign ditemukan
-                </Typography>
+              <Box sx={{ textAlign: 'center', py: 12, bgcolor: '#fff', borderRadius: 4, border: '1px solid #e2e8f0' }}>
+                 <Box sx={{ mb: 2, display: 'inline-flex', p: 2, bgcolor: '#f1f5f9', borderRadius: '50%' }}>
+                     <CampaignIcon sx={{ fontSize: 40, color: '#94a3b8' }} />
+                 </Box>
+                <Typography sx={{ color: '#1e293b', fontWeight: 600, fontSize: 16 }}>Belum ada campaign</Typography>
+                <Typography sx={{ color: '#64748b', fontSize: 14 }}>Buat campaign pertama anda sekarang</Typography>
               </Box>
             ) : campaigns.map(campaign => (
               <Card
                 key={campaign.campaign_id}
+                elevation={0}
                 sx={{
                   p: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  mb: 3,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  width: 1,
-                  boxSizing: 'border-box',
+                  mb: 2,
                   borderRadius: 3,
-                  boxShadow: 1
+                  border: '1px solid #e2e8f0',
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                     borderColor: '#cbd5e1',
+                     transform: 'translateY(-2px)'
+                  }
                 }}
               >
-                {/* Image/Icon */}
-                <Box
-                  onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
-                  sx={{
-                    width: { xs: 20, sm: 30 }, height: { xs: 20, sm: 30 },
-                    background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                    borderRadius: 3, mr: 3, display: 'flex',
-                    alignItems: 'center', justifyContent: 'center',
-                    overflow: 'hidden', boxShadow: 2, cursor: 'pointer', flexShrink: 0
-                  }}
-                >
-                  {campaign.banner_image ? (
-                    <Box component="img" src={campaign.banner_image} alt={campaign.title} sx={{ width: 1, height: 1, objectFit: 'cover', borderRadius: 2.5 }} />
-                  ) : (
-                    <Box sx={{ textAlign: 'center', color: '#fff' }}>
-                      <Box sx={{ mb: 0.5, opacity: 0.9 }}>
-                        {React.createElement(getCategoryIcon(campaign.campaign_category), {
-                          sx: { fontSize: 20, color: '#fff' }
-                        })}
-                      </Box>
-                      <Typography sx={{ fontSize: 10, opacity: 0.8, fontWeight: 500 }}>
-                        {(campaign.campaign_category || '').split(' ')[0]}
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
-                {/* Card Content */}
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  <Box
-                    onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Box>
-                      <Typography sx={{ fontWeight: 700, fontSize: 17, mb: 0.5, color: COLORS.textPrimary, lineHeight: 1.3 }}>
-                        {campaign.title}
-                      </Typography>
-                      <Typography sx={{ color: COLORS.textSecondary, fontSize: 13, fontWeight: 500 }}>
-                        {campaign.campaign_category || 'Tanpa Kategori'}
-                      </Typography>
-                    </Box>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Box sx={{
-                        background: getStatusConfig(campaign.status, campaign.sub_status).badge.bg,
-                        color: getStatusConfig(campaign.status, campaign.sub_status).badge.color,
-                        boxShadow: getStatusConfig(campaign.status, campaign.sub_status).badge.shadow,
-                        px: 2, py: 0.5, borderRadius: 5, fontSize: 12,
-                        fontWeight: 600, letterSpacing: '0.5px', alignSelf: 'flex-start'
-                      }}>
-                        {getStatusConfig(campaign.status, campaign.sub_status).text}
-                      </Box>
-                      {(campaign.sub_status === 'payout_success' || campaign.status?.toLowerCase() === 'completed') && (
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMenuOpen(e, campaign.campaign_id);
-                          }}
-                          sx={{ color: COLORS.textSecondary }}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                      )}
-                    </Stack>
-                  </Box>
-                  <Box
-                    onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
-                    sx={{
-                      display: 'flex',
-                      gap: 2,
-                      alignItems: 'center',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <PeopleIcon sx={{ fontSize: 13, color: COLORS.textSecondary }} />
-                      <Typography sx={{ fontSize: 12, color: COLORS.textSecondary, fontWeight: 500 }}>
-                        {campaign.influencer_count || 0} influencers
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Typography sx={{ fontSize: 12, color: COLORS.textSecondary, fontWeight: 500 }}>
-                        Rp {parseInt(campaign.price_per_post || 0).toLocaleString('id-ID')}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <BarChart3 size={13} color={COLORS.textSecondary} />
-                      <Typography sx={{ fontSize: 12, color: COLORS.textSecondary, fontWeight: 500 }}>
-                        {campaign.min_followers ? `${parseInt(campaign.min_followers).toLocaleString('id-ID')}+ followers` : 'Tanpa min followers'}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  
-                  {/* Status Alert - Reusable component */}
-                  <StatusAlert 
-                    status={campaign.status} 
-                    subStatus={campaign.sub_status}
-                    cancellationReason={campaign.cancellation_reason} 
-                    campaign={campaign}
-                  />
-                  
-                  {/* Action Buttons */}
-                  <Stack direction="row" spacing={1.5} mt={1} pt={1.5} sx={{ borderTop: 1, borderColor: COLORS.border }}> 
-                    <Button
-                      variant="outlined"
-                      onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
-                      sx={{
-                        borderColor: COLORS.primary,
-                        color: COLORS.primary,
-                        fontWeight: 600,
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        fontSize: 14,
-                        flex: 1,
-                        '&:hover': { bgcolor: COLORS.primaryLight, borderColor: COLORS.primary }
-                      }}
-                    >
-                      {campaign.status?.toLowerCase() === 'draft' ? 'Edit Campaign' : 'Lihat Detail'}
-                    </Button>
-                    {campaign.status && campaign.status.toLowerCase() === 'pending_payment' && (
-                      <Button
-                        variant="contained"
-                        startIcon={<CreditCardIcon />}
-                        onClick={e => {
-                          e.stopPropagation();
-                          navigate(`/campaign/${campaign.campaign_id}/payment`);
-                        }}
-                        sx={{
-                          bgcolor: '#10b981',
-                          color: '#fff',
-                          fontWeight: 600,
-                          borderRadius: 2,
-                          textTransform: 'none',
-                          fontSize: 16,
-                          boxShadow: 'none',
-                          flex: 1,
-                          '&:hover': { bgcolor: '#059669' }
-                        }}
-                      >
-                        Bayar Sekarang
-                      </Button>
-                    )}
-                    {campaign.status && campaign.status.toLowerCase() === 'active' && (
-                      <>
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="flex-start">
+                   {/* Image Box - FLAT DESIGN */}
+                   <Box
+                     onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
+                     sx={{
+                       width: { xs: '100%', md: 100 }, 
+                       height: 100,
+                       bgcolor: '#f1f5f9', // Solid gray
+                       borderRadius: 2,
+                       display: 'flex',
+                       alignItems: 'center', 
+                       justifyContent: 'center',
+                       overflow: 'hidden',
+                       cursor: 'pointer', 
+                       flexShrink: 0,
+                       border: '1px solid #e2e8f0'
+                     }}
+                   >
+                     {campaign.banner_image ? (
+                       <Box component="img" src={getBannerUrl(campaign.banner_image)} alt={campaign.title} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                     ) : (
+                        <Stack alignItems="center">
+                           {React.createElement(getCategoryIcon(campaign.campaign_category), {
+                              sx: { fontSize: 28, color: '#94a3b8', mb: 0.5 }
+                           })}
+                           <Typography sx={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>
+                              {(campaign.campaign_category || '').split(' ')[0]}
+                           </Typography>
+                        </Stack>
+                     )}
+                   </Box>
+
+                   {/* Content */}
+                   <Box sx={{ flex: 1, width: '100%' }}>
+                     <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                        <Box onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)} sx={{ cursor: 'pointer' }}>
+                           <Typography sx={{ fontWeight: 700, fontSize: 18, color: '#1e293b', mb: 0.5 }}>
+                              {campaign.title}
+                           </Typography>
+                           <Typography sx={{ color: '#64748b', fontSize: 14 }}>
+                              {campaign.campaign_category || 'Tanpa Kategori'}
+                           </Typography>
+                        </Box>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                           <Chip 
+                              label={getStatusConfig(campaign.status, campaign.sub_status).text}
+                              size="small"
+                              sx={{ 
+                                 bgcolor: getStatusConfig(campaign.status, campaign.sub_status).badge.bg,
+                                 color: getStatusConfig(campaign.status, campaign.sub_status).badge.color,
+                                 fontWeight: 600,
+                                 borderRadius: 2,
+                                 height: 28
+                              }}
+                           />
+                           {(campaign.sub_status === 'payout_success' || campaign.status?.toLowerCase() === 'completed') && (
+                              <IconButton
+                                 size="small"
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   handleMenuOpen(e, campaign.campaign_id);
+                                 }}
+                              >
+                                 <MoreVertIcon fontSize="small" />
+                              </IconButton>
+                           )}
+                        </Stack>
+                     </Stack>
+
+                     {/* Stats - Flat Text Only */}
+                     <Stack direction="row" spacing={3} sx={{ mb: 2 }}>
+                        <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
+                           {campaign.influencer_count || 0} Influencer
+                        </Typography>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
+                              •
+                           </Typography>
+                           <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
+                              Rp {parseInt(campaign.price_per_post || 0).toLocaleString('id-ID')}
+                           </Typography>
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                           <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
+                              •
+                           </Typography>
+                           <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
+                              {campaign.min_followers ? `${parseInt(campaign.min_followers).toLocaleString('id-ID')}+` : '0'} Followers
+                           </Typography>
+                        </Stack>
+                     </Stack>
+
+                     {/* Status Alert */}
+                     <StatusAlert 
+                        status={campaign.status} 
+                        subStatus={campaign.sub_status}
+                        cancellationReason={campaign.cancellation_reason} 
+                        campaign={campaign}
+                     />
+
+                     {/* Actions - Flat/Outlined Buttons */}
+                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>
                         <Button
-                          variant="contained"
-                          startIcon={<GroupIcon />}
-                          onClick={e => {
-                            e.stopPropagation();
-                            navigate(`/campaign/${campaign.campaign_id}/applicants`);
-                          }}
-                          sx={{
-                            bgcolor: '#667eea',
-                            color: '#fff',
-                            fontWeight: 600,
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontSize: 14,
-                            boxShadow: 'none',
-                            flex: 1,
-                            '&:hover': { bgcolor: '#5568d3' }
-                          }}
+                           variant="outlined"
+                           onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
+                           sx={{
+                              flex: 1,
+                              borderColor: '#e2e8f0',
+                              color: '#475569',
+                              textTransform: 'none',
+                              fontWeight: 600,
+                              borderRadius: 2,
+                              '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
+                           }}
                         >
-                          Pelamar
+                           {campaign.status?.toLowerCase() === 'draft' ? 'Edit Campaign' : 'Lihat Detail'}
                         </Button>
-                        <Button
-                          variant="contained"
-                          startIcon={<RateReviewIcon />}
-                          onClick={e => {
-                            e.stopPropagation();
-                            navigate(`/campaign/${campaign.campaign_id}/review-submissions`);
-                          }}
-                          sx={{
-                            bgcolor: '#10b981',
-                            color: '#fff',
-                            fontWeight: 600,
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontSize: 14,
-                            boxShadow: 'none',
-                            flex: 1,
-                            '&:hover': { bgcolor: '#059669' }
-                          }}
-                        >
-                          Review Hasil Kerja
-                        </Button>
-                      </>
-                    )}
-                    {campaign.status && campaign.status.toLowerCase() === 'completed' && (
-                      <>
-                        <Button
-                          variant="contained"
-                          startIcon={<CreditCardIcon />}
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleDistributePayment(campaign.campaign_id);
-                          }}
-                          sx={{
-                            bgcolor: '#059669',
-                            color: '#fff',
-                            fontWeight: 600,
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontSize: 14,
-                            boxShadow: 'none',
-                            flex: 1,
-                            '&:hover': { bgcolor: '#047857' }
-                          }}
-                        >
-                          Distribute Payment
-                        </Button>
-                        <Button
-                          variant="contained"
-                          startIcon={<AssessmentIcon />}
-                          onClick={e => {
-                            e.stopPropagation();
-                            navigate(`/campaign/${campaign.campaign_id}/report`);
-                          }}
-                          sx={{
-                            bgcolor: '#8b5cf6',
-                            color: '#fff',
-                            fontWeight: 600,
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontSize: 14,
-                            boxShadow: 'none',
-                            flex: 1,
-                            '&:hover': { bgcolor: '#7c3aed' }
-                          }}
-                        >
-                          Lihat Laporan
-                        </Button>
-                      </>
-                    )}
-                  </Stack>
-                </Box>
+
+                        {/* Specific Action Buttons based on status */}
+                        {campaign.status && campaign.status.toLowerCase() === 'pending_payment' && (
+                           <Button
+                              variant="contained"
+                              disableElevation
+                              startIcon={<CreditCardIcon />}
+                              onClick={e => { e.stopPropagation(); navigate(`/campaigns/list${campaign.campaign_id}/payment`); }}
+                              sx={{ flex: 1, bgcolor: '#6E00BE', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#5a009e' } }}
+                           >
+                              Bayar Sekarang
+                           </Button>
+                        )}
+                        {campaign.status && campaign.status.toLowerCase() === 'active' && (
+                           <>
+                              <Button
+                                 variant="outlined"
+                                 startIcon={<GroupIcon />}
+                                 onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/applicants`); }}
+                                 sx={{ flex: 1, borderColor: '#6E00BE', color: '#6E00BE', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#F3E5F5' } }}
+                              >
+                                 Pelamar
+                              </Button>
+                              <Button
+                                 variant="contained"
+                                 disableElevation
+                                 startIcon={<RateReviewIcon />}
+                                 onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/review-submissions`); }}
+                                 sx={{ flex: 1, bgcolor: '#6E00BE', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#5a009e' } }}
+                              >
+                                 Review
+                              </Button>
+                           </>
+                        )}
+                        {campaign.status && campaign.status.toLowerCase() === 'completed' && (
+                           <Button
+                              variant="contained"
+                              disableElevation
+                              startIcon={<CreditCardIcon />}
+                              onClick={e => { e.stopPropagation(); handleDistributePayment(campaign.campaign_id); }}
+                              sx={{ flex: 1, bgcolor: '#10b981', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#059669' } }}
+                           >
+                              Distribusi Pembayaran
+                           </Button>
+                        )}
+                     </Stack>
+                   </Box>
+                </Stack>
               </Card>
             ))}
             
-            {/* Pagination Controls */}
+            {/* Pagination controls - reused previous logic but styled flat */}
             {!isLoading && pagination.total > 0 && (
-              <Box sx={{ mt: 4 }}>
-                {/* Page Numbers */}
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1, mb: 2 }}>
-                  {/* Previous Button */}
-                  <Button
-                    variant="outlined"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(prev => prev - 1)}
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      borderRadius: 2,
-                      minWidth: 90,
-                      borderColor: '#667eea',
-                      color: '#667eea',
-                      '&:hover': { borderColor: '#5568d3', bgcolor: 'rgba(102, 126, 234, 0.05)' },
-                      '&:disabled': { opacity: 0.3, borderColor: '#ccc', color: '#999' }
-                    }}
-                  >
-                    Sebelumnya
-                  </Button>
-                  
-                  {/* Page Number Buttons */}
-                  <Stack direction="row" spacing={0.5} alignItems="center">
-                    {(() => {
-                      const totalPages = pagination.totalPages;
-                      const current = currentPage;
-                      const pages = [];
-                      
-                      // Always show first page
-                      pages.push(1);
-                      
-                      // Show ellipsis if needed
-                      if (current > 3) {
-                        pages.push('...');
-                      }
-                      
-                      // Show pages around current page
-                      for (let i = Math.max(2, current - 1); i <= Math.min(totalPages - 1, current + 1); i++) {
-                        if (!pages.includes(i)) {
-                          pages.push(i);
-                        }
-                      }
-                      
-                      // Show ellipsis if needed
-                      if (current < totalPages - 2) {
-                        pages.push('...');
-                      }
-                      
-                      // Always show last page if more than 1 page
-                      if (totalPages > 1 && !pages.includes(totalPages)) {
-                        pages.push(totalPages);
-                      }
-                      
-                      return pages.map((page, index) => {
-                        if (page === '...') {
-                          return (
-                            <Typography key={`ellipsis-${index}`} sx={{ px: 1, color: COLORS.textSecondary, fontSize: 16 }}>
-                              ...
-                            </Typography>
-                          );
-                        }
-                        
-                        return (
-                          <Button
-                            key={page}
-                            variant={current === page ? 'contained' : 'outlined'}
-                            onClick={() => setCurrentPage(page)}
-                            sx={{
-                              minWidth: 40,
-                              height: 40,
-                              borderRadius: 2,
-                              fontWeight: 600,
-                              fontSize: 14,
-                              bgcolor: current === page ? '#667eea' : 'transparent',
-                              color: current === page ? '#fff' : '#667eea',
-                              borderColor: current === page ? '#667eea' : '#e0e0e0',
-                              '&:hover': {
-                                bgcolor: current === page ? '#5568d3' : 'rgba(102, 126, 234, 0.1)',
-                                borderColor: '#667eea'
-                              }
-                            }}
-                          >
-                            {page}
-                          </Button>
-                        );
-                      });
-                    })()}
-                  </Stack>
-                  
-                  {/* Next Button */}
-                  <Button
-                    variant="outlined"
-                    disabled={currentPage === pagination.totalPages}
-                    onClick={() => setCurrentPage(prev => prev + 1)}
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      borderRadius: 2,
-                      minWidth: 90,
-                      borderColor: '#667eea',
-                      color: '#667eea',
-                      '&:hover': { borderColor: '#5568d3', bgcolor: 'rgba(102, 126, 234, 0.05)' },
-                      '&:disabled': { opacity: 0.3, borderColor: '#ccc', color: '#999' }
-                    }}
-                  >
-                    Berikutnya
-                  </Button>
-                </Box>
-                
-                {/* Pagination Info */}
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography sx={{ color: COLORS.textSecondary, fontSize: 13 }}>
-                    Menampilkan halaman {currentPage} dari {pagination.totalPages} ({pagination.total} total campaign)
-                  </Typography>
-                </Box>
+              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 1 }}>
+                 <Button variant="outlined" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} sx={{ borderColor: '#e2e8f0', color: '#475569', borderRadius: 2, textTransform: 'none' }}>Sebelumnya</Button>
+                 <Button variant="outlined" disabled={currentPage === pagination.totalPages} onClick={() => setCurrentPage(prev => prev + 1)} sx={{ borderColor: '#e2e8f0', color: '#475569', borderRadius: 2, textTransform: 'none' }}>Berikutnya</Button>
               </Box>
             )}
-          </Container>
+           </Container>
         </Box>
       </Box>
 
-      {/* More Menu */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        PaperProps={{ elevation: 2, sx: { borderRadius: 2, border: '1px solid #e2e8f0' } }}
       >
-        <MenuItem onClick={() => handleArchiveClick(campaigns.find(c => c.campaign_id === menuCampaignId))}>
-          <ArchiveIcon sx={{ fontSize: 20, mr: 1.5, color: '#616161' }} />
+        <MenuItem onClick={() => handleArchiveClick(campaigns.find(c => c.campaign_id === menuCampaignId))} sx={{ fontSize: 14 }}>
+          <ArchiveIcon sx={{ fontSize: 18, mr: 1.5, color: '#64748b' }} />
           Arsipkan Campaign
         </MenuItem>
       </Menu>
 
-      {/* Archive Confirmation Modal */}
-      <Dialog 
-        open={showArchiveModal} 
-        onClose={() => setShowArchiveModal(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
-          Arsipkan Campaign?
-        </DialogTitle>
+      <Dialog open={showArchiveModal} onClose={() => setShowArchiveModal(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ fontWeight: 700, color: '#1e293b' }}>Arsipkan Campaign?</DialogTitle>
         <DialogContent>
-          <Typography sx={{ color: COLORS.textSecondary, lineHeight: 1.6 }}>
-            Campaign "{selectedCampaign?.title}" akan dipindahkan ke arsip. Campaign yang diarsipkan tidak akan muncul di daftar utama.
+          <Typography sx={{ color: '#64748b' }}>
+            Campaign "{selectedCampaign?.title}" akan dipindahkan ke arsip.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
-            onClick={() => setShowArchiveModal(false)}
-            sx={{ textTransform: 'none', fontWeight: 600 }}
-          >
-            Batal
-          </Button>
-          <Button 
-            onClick={handleArchiveConfirm}
-            variant="contained"
-            startIcon={<ArchiveIcon />}
-            sx={{ 
-              textTransform: 'none', 
-              fontWeight: 600,
-              bgcolor: '#616161',
-              '&:hover': { bgcolor: '#424242' }
-            }}
-          >
-            Arsipkan
-          </Button>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => setShowArchiveModal(false)} sx={{ color: '#64748b', fontWeight: 600 }}>Batal</Button>
+          <Button onClick={handleArchiveConfirm} variant="contained" disableElevation sx={{ bgcolor: '#d32f2f', fontWeight: 600, color: '#fff', '&:hover': { bgcolor: '#b71c1c' } }}>Arsipkan</Button>
         </DialogActions>
       </Dialog>
     </Box>

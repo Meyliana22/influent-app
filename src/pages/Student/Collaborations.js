@@ -141,9 +141,9 @@ function TabPanel(props) {
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#667eea',
-      dark: '#764ba2',
-      light: '#f0f4ff',
+      main: '#6E00BE',
+      dark: '#5a009e',
+      light: '#f3e5f5',
     },
     secondary: {
       main: '#2d8659',
@@ -229,7 +229,7 @@ function Collaborations() {
                 left: 0,
                 right: 0,
                 height: '4px',
-                background: 'linear-gradient(90deg, #6E00BE 0%, #764ba2 100%)',
+                background: 'linear-gradient(90deg, #6E00BE 0%, #5a009e 100%)',
               },
               '&:hover': {
                 transform: 'translateY(-6px)',
@@ -248,8 +248,8 @@ function Collaborations() {
                         sx={{
                           width: 56,
                           height: 56,
-                          borderBottom: '3px solid #667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.1)',
+                          borderBottom: '3px solid #6E00BE',
+                          boxShadow: '0 4px 12px rgba(110, 0, 190, 0.1)',
                         }}
                       />
                       {(collab.status === 'ongoing' || collab.status === 'upcoming') && (
@@ -311,7 +311,7 @@ function Collaborations() {
                             borderRadius: '3px',
                             backgroundColor: '#e0e0e0',
                             '& .MuiLinearProgress-bar': {
-                              background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                              background: '#6E00BE',
                             },
                           }}
                         />
@@ -362,14 +362,14 @@ function Collaborations() {
                           },
                         }}
                       >
-                        <ChatBubble sx={{ fontSize: '1.4rem', color: '#667eea' }} />
+                        <ChatBubble sx={{ fontSize: '1.4rem', color: '#6E00BE' }} />
                       </Badge>
                     )}
 
                     <ArrowForwardIos
                       sx={{
                         fontSize: '1rem',
-                        color: '#667eea',
+                        color: '#6E00BE',
                         opacity: 0.5,
                       }}
                     />
@@ -418,8 +418,8 @@ function Collaborations() {
               sx={{
                 width: 72,
                 height: 72,
-                borderBottom: '3px solid #667eea',
-                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.1)',
+                borderBottom: '3px solid #6E00BE',
+                boxShadow: '0 4px 12px rgba(110, 0, 190, 0.1)',
                 flexShrink: 0,
               }}
             />
@@ -443,7 +443,7 @@ function Collaborations() {
                   sx={{
                     background: 
                       collab.status === 'upcoming' ? '#ff9800' :
-                      collab.status === 'ongoing' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 
+                      collab.status === 'ongoing' ? '#6E00BE' : 
                       '#2d8659',
                     color: '#fff',
                     fontWeight: 600,
@@ -555,14 +555,14 @@ function Collaborations() {
                 variant="contained"
                 onClick={handleSubmitWorkClick}
                 sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: '#6E00BE',
                   color: '#fff',
                   fontWeight: 700,
                   flex: 1,
                   py: 1.5,
                   borderRadius: '12px',
                   '&:hover': {
-                    backgroundColor: 'rgba(102, 126, 234, 0.05)',
+                    backgroundColor: 'rgba(110, 0, 190, 0.05)',
                   },
                 }}
               >
@@ -571,7 +571,7 @@ function Collaborations() {
               <Button
                 variant="outlined"
                 sx={{
-                  borderColor: '#667eea',
+                  borderColor: '#6E00BE',
                   color: '#6E00BE',
                   fontWeight: 700,
                   flex: 1,
@@ -579,7 +579,7 @@ function Collaborations() {
                   borderRadius: '12px',
                   '&:hover': {
                     backgroundColor: 'rgba(110, 0, 190, 0.05)',
-                    borderColor: '#667eea',
+                    borderColor: '#6E00BE',
                   },
                 }}
               >
@@ -733,11 +733,11 @@ function Collaborations() {
                 sx={{
                   mt: 3,
                   mb: 4,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: '#6E00BE',
                   color: 'white',
                   borderRadius: '12px',
                   p: 3,
-                  boxShadow: '0 4px 20px rgba(102, 126, 234, 0.2)'
+                  boxShadow: '0 4px 20px rgba(110, 0, 190, 0.2)'
                 }}
               >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -802,12 +802,12 @@ function Collaborations() {
                       fontSize: '0.9rem',
                       color: '#6c757d',
                       '&.Mui-selected': {
-                        color: '#667eea',
+                        color: '#6E00BE',
                       },
                     },
                     '& .MuiTabs-indicator': {
                       height: '3px',
-                      background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                      background: '#6E00BE',
                     },
                   }}
                 >

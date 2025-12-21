@@ -91,13 +91,13 @@ function VerifyEmailPage() {
             textAlign: 'center',
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(102, 126, 234, 0.15)',
-            boxShadow: '0 20px 60px rgba(102, 126, 234, 0.15)'
+            border: '1px solid rgba(110, 0, 190, 0.15)',
+            boxShadow: '0 20px 60px rgba(110, 0, 190, 0.15)'
           }}
         >
           {loading ? (
             <Stack spacing={3} alignItems="center">
-              <CircularProgress size={60} sx={{ color: COLORS.primary }} />
+              <CircularProgress size={60} sx={{ color: '#6E00BE' }} />
               <Typography variant="h5" sx={{ fontWeight: 600, color: '#1a1f36' }}>
                 Memverifikasi Email...
               </Typography>
@@ -137,14 +137,15 @@ function VerifyEmailPage() {
                   mt: 2,
                   py: 1.5,
                   px: 4,
-                  background: COLORS.gradient,
+                  background: '#6E00BE',
                   borderRadius: '12px',
                   textTransform: 'none',
                   fontSize: '1rem',
                   fontWeight: 600,
-                  boxShadow: '0 4px 14px rgba(102, 126, 234, 0.4)',
+                  boxShadow: '0 4px 14px rgba(110, 0, 190, 0.4)',
                   '&:hover': {
-                    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.5)',
+                    background: '#5a009e',
+                    boxShadow: '0 6px 20px rgba(110, 0, 190, 0.5)',
                   }
                 }}
               >
@@ -186,11 +187,11 @@ function VerifyEmailPage() {
                     textTransform: 'none',
                     fontSize: '1rem',
                     fontWeight: 600,
-                    borderColor: COLORS.primary,
-                    color: COLORS.primary,
+                    borderColor: '#6E00BE',
+                    color: '#6E00BE',
                     '&:hover': {
-                      borderColor: COLORS.primary,
-                      background: 'rgba(102, 126, 234, 0.04)',
+                      borderColor: '#5a009e',
+                      background: 'rgba(110, 0, 190, 0.04)',
                     }
                   }}
                 >
@@ -203,14 +204,15 @@ function VerifyEmailPage() {
                   sx={{
                     py: 1.5,
                     px: 4,
-                    background: COLORS.gradient,
+                    background: '#6E00BE',
                     borderRadius: '12px',
                     textTransform: 'none',
                     fontSize: '1rem',
                     fontWeight: 600,
-                    boxShadow: '0 4px 14px rgba(102, 126, 234, 0.4)',
+                    boxShadow: '0 4px 14px rgba(110, 0, 190, 0.4)',
                     '&:hover': {
-                      boxShadow: '0 6px 20px rgba(102, 126, 234, 0.5)',
+                      background: '#5a009e',
+                      boxShadow: '0 6px 20px rgba(110, 0, 190, 0.5)',
                     }
                   }}
                 >
@@ -230,7 +232,7 @@ function VerifyEmailPage() {
               transform: 'rotate(-15deg)'
             }}
           >
-            <EmailIcon sx={{ fontSize: 120, color: COLORS.primary }} />
+            <EmailIcon sx={{ fontSize: 120, color: '#6E00BE' }} />
           </Box>
         </Paper>
       </Container>

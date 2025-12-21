@@ -13,20 +13,19 @@ import {
   useMediaQuery
 } from '@mui/material';
 import {
-  People as PeopleIcon,
-  Campaign as CampaignIcon,
-  AccountBalance as AccountBalanceIcon,
-  AttachMoney as AttachMoneyIcon,
-  TrendingUp as TrendingUpIcon,
+  PeopleAltOutlined as PeopleIcon,
+  CampaignOutlined as CampaignIcon,
+  AccountBalanceWalletOutlined as AccountBalanceIcon,
+  PaidOutlined as AttachMoneyIcon,
+  TrendingUpOutlined as TrendingUpIcon,
   ArrowForward as ArrowForwardIcon,
   Refresh as RefreshIcon,
-  School as StudentIcon,
-  Business as CompanyIcon,
-  WavingHand as WavingHandIcon,
-  Person as PersonIcon,
-  CheckCircle as CheckCircleIcon,
-  Warning as WarningIcon,
-  Payment as PaymentIcon
+  SchoolOutlined as StudentIcon,
+  BusinessOutlined as CompanyIcon,
+  PersonOutline as PersonIcon,
+  CheckCircleOutline as CheckCircleIcon,
+  ReportProblemOutlined as WarningIcon,
+  CreditCardOutlined as PaymentIcon
 } from '@mui/icons-material';
 import { Sidebar, Topbar } from '../../components/common';
 import adminService from '../../services/adminService';
@@ -133,8 +132,8 @@ function AdminDashboard() {
       value: stats.totalUsers,
       subtitle: `${stats.totalStudents} Students, ${stats.totalCompanies} Companies`,
       IconComponent: PeopleIcon,
-      color: '#667eea',
-      bgColor: 'rgba(102, 126, 234, 0.1)',
+      color: '#6E00BE',
+      bgColor: '#F3E5F5',
       path: '/admin/users'
     },
     {
@@ -153,7 +152,7 @@ function AdminDashboard() {
       IconComponent: AccountBalanceIcon,
       color: '#f59e0b',
       bgColor: 'rgba(245, 158, 11, 0.1)',
-      path: '/admin/reports'
+      path: '/admin/manage-withdrawals'
     },
     {
       title: 'Total Revenue',
@@ -216,7 +215,6 @@ function AdminDashboard() {
                 mb: 1
               }}>
                 Welcome, {userName}!
-                <WavingHandIcon sx={{ fontSize: 32, transform: 'scaleX(-1)', color: '#fbbf24', ml: 1 }} />
               </Typography>
               <Typography sx={{
                 fontSize: 16,
@@ -234,11 +232,11 @@ function AdminDashboard() {
                 borderRadius: 2,
                 textTransform: 'none',
                 fontWeight: 600,
-                borderColor: '#667eea',
-                color: '#667eea',
+                borderColor: '#6E00BE',
+                color: '#6E00BE',
                 '&:hover': {
-                  borderColor: '#5568d3',
-                  backgroundColor: 'rgba(102, 126, 234, 0.04)'
+                  borderColor: '#5a009e',
+                  backgroundColor: 'rgba(110, 0, 190, 0.04)'
                 }
               }}
             >
@@ -393,7 +391,7 @@ function AdminDashboard() {
                       size="small"
                       endIcon={<ArrowForwardIcon />}
                       onClick={() => navigate('/admin/campaigns')}
-                      sx={{ textTransform: 'none', color: '#667eea' }}
+                      sx={{ textTransform: 'none', color: '#6E00BE' }}
                     >
                       View All
                     </Button>
@@ -461,7 +459,7 @@ function AdminDashboard() {
                       size="small"
                       endIcon={<ArrowForwardIcon />}
                       onClick={() => navigate('/admin/users')}
-                      sx={{ textTransform: 'none', color: '#667eea' }}
+                      sx={{ textTransform: 'none', color: '#6E00BE' }}
                     >
                       View All
                     </Button>

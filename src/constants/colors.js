@@ -1,52 +1,52 @@
 // Color palette for the application
 export const COLORS = {
   // Primary colors
-  primary: '#667eea',
-  primaryDark: '#764ba2',
-  primaryLight: '#f0f4ff',
+  primary: '#6E00BE',
+  primaryDark: '#5a009e',
+  primaryLight: '#F3E5F5', // Very light purple for backgrounds
   
-  // Gradient
-  gradientPrimary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  gradientSecondary: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-  gradientSuccess: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+  // Gradient - Remapped to solid for compatibility or removed
+  gradientPrimary: '#6E00BE', // Flat primary
+  gradientSecondary: '#6E00BE', // Flat primary
+  gradientSuccess: '#28a745', // Flat success
   
   // Text colors
-  textPrimary: '#2d3748',
-  textSecondary: '#6c757d',
-  textLight: '#999',
-  textWhite: '#fff',
+  textPrimary: '#1a1a1a', // Darker for better contrast
+  textSecondary: '#666666',
+  textLight: '#999999',
+  textWhite: '#ffffff',
   
   // Background colors
   white: '#ffffff',
-  background: '#fafafa',
-  backgroundLight: '#f8f9fa',
-  backgroundCard: 'linear-gradient(to bottom, #ffffff, #f8f9fa)',
+  background: '#ffffff', // Clean white background
+  backgroundLight: '#F8F9FA', // Light grey for sections
+  backgroundCard: '#ffffff', // White cards
   
-  // Status colors
-  success: '#28a745',
-  successLight: '#d4edda',
-  successDark: '#155724',
+  // Status colors - Flat
+  success: '#10b981', // Emerald green
+  successLight: '#d1fae5',
+  successDark: '#047857',
   
-  warning: '#ffc107',
-  warningLight: '#fff3cd',
-  warningDark: '#856404',
+  warning: '#f59e0b', // Amber
+  warningLight: '#fef3c7',
+  warningDark: '#b45309',
   
-  danger: '#dc3545',
-  dangerLight: '#f8d7da',
-  dangerDark: '#721c24',
+  danger: '#ef4444', // Red
+  dangerLight: '#fee2e2',
+  dangerDark: '#b91c1c',
   
-  info: '#007bff',
-  infoLight: '#d1ecf1',
-  infoDark: '#0c5460',
+  info: '#3b82f6', // Blue
+  infoLight: '#dbeafe',
+  infoDark: '#1d4ed8',
   
   // Border colors
-  border: '#e3e3e3',
-  borderLight: '#f0f0f0',
+  border: '#e5e7eb',
+  borderLight: '#f3f4f6',
   
   // Shadow
-  shadow: 'rgba(0, 0, 0, 0.05)',
-  shadowMedium: 'rgba(0, 0, 0, 0.08)',
-  shadowLarge: 'rgba(0, 0, 0, 0.15)',
+  shadow: 'none', // Flat design preference
+  shadowMedium: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', // Minimal shadow if needed
+  shadowLarge: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
 };
 
 export default COLORS;

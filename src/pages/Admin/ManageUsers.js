@@ -265,11 +265,11 @@ function ManageUsers() {
                 borderRadius: 2,
                 textTransform: 'none',
                 fontWeight: 600,
-                borderColor: '#667eea',
-                color: '#667eea',
+                borderColor: '#6E00BE',
+                color: '#6E00BE',
                 '&:hover': {
-                  borderColor: '#5568d3',
-                  backgroundColor: 'rgba(102, 126, 234, 0.04)'
+                  borderColor: '#5a009e',
+                  backgroundColor: 'rgba(110, 0, 190, 0.04)'
                 }
               }}
             >
@@ -311,10 +311,12 @@ function ManageUsers() {
                 variant="contained"
                 onClick={handleSearch}
                 sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  bgcolor: '#6E00BE',
                   textTransform: 'none',
                   fontWeight: 600,
-                  minWidth: 100
+                  minWidth: 100,
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#5a009e', boxShadow: 'none' }
                 }}
               >
                 Search
@@ -454,13 +456,13 @@ function ManageUsers() {
                             <TableCell>
                               <Stack direction="row" spacing={1} justifyContent="center">
                                 <IconButton
-                                  size="small"
-                                  onClick={() => handleEditUser(user)}
-                                  sx={{
-                                    color: '#667eea',
-                                    '&:hover': { bgcolor: 'rgba(102, 126, 234, 0.1)' }
-                                  }}
-                                >
+                                    size="small"
+                                    onClick={() => handleEditUser(user)}
+                                    sx={{
+                                      color: '#6E00BE',
+                                      '&:hover': { bgcolor: 'rgba(110, 0, 190, 0.1)' }
+                                    }}
+                                  >
                                   <EditIcon fontSize="small" />
                                 </IconButton>
                                 <IconButton
@@ -570,9 +572,10 @@ function ManageUsers() {
                 variant="contained"
                 disabled={submitting}
                 sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  bgcolor: '#6E00BE',
                   textTransform: 'none',
-                  fontWeight: 600
+                  fontWeight: 600,
+                  '&:hover': { bgcolor: '#5a009e' }
                 }}
               >
                 {submitting ? <CircularProgress size={24} /> : 'Save Changes'}

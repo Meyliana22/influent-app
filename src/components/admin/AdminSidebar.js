@@ -40,7 +40,7 @@ function AdminSidebar() {
       sx={{
         width: 260,
         height: '100vh',
-        bgcolor: '#1a1f36',
+        bgcolor: '#6E00BE', // Primary
         position: 'fixed',
         left: 0,
         top: 0,
@@ -64,7 +64,7 @@ function AdminSidebar() {
           sx={{
             width: 40,
             height: 40,
-            background: COLORS.gradient,
+            background: '#fff',
             borderRadius: 3,
             display: 'flex',
             alignItems: 'center',
@@ -97,7 +97,7 @@ function AdminSidebar() {
           <Typography
             sx={{
               fontSize: '0.75rem',
-              color: 'rgba(255,255,255,0.6)',
+              color: 'rgba(255,255,255,0.8)',
               fontWeight: 500
             }}
           >
@@ -116,24 +116,24 @@ function AdminSidebar() {
                 px: 3,
                 py: 1.5,
                 background: isActive(item.path) 
-                  ? 'rgba(102, 126, 234, 0.15)' 
+                  ? 'rgba(255, 255, 255, 0.2)' 
                   : 'transparent',
                 borderLeft: '3px solid',
                 borderColor: isActive(item.path) 
-                  ? '#667eea' 
+                  ? '#fff' 
                   : 'transparent',
                 transition: 'all 0.2s',
                 '&:hover': {
                   background: isActive(item.path) 
-                    ? 'rgba(102, 126, 234, 0.25)' 
-                    : 'rgba(255,255,255,0.05)',
+                    ? 'rgba(255, 255, 255, 0.25)' 
+                    : 'rgba(255,255,255,0.1)',
                 }
               }}
             >
               <ListItemIcon 
                 sx={{ 
                   minWidth: 40,
-                  color: isActive(item.path) ? '#fff' : 'rgba(255,255,255,0.7)'
+                  color: '#fff'
                 }}
               >
                 <item.icon sx={{ fontSize: 22 }} />
@@ -143,7 +143,7 @@ function AdminSidebar() {
                 primaryTypographyProps={{
                   fontSize: '0.95rem',
                   fontWeight: isActive(item.path) ? 600 : 500,
-                  color: isActive(item.path) ? '#fff' : 'rgba(255,255,255,0.7)',
+                  color: '#fff',
                   fontFamily: "'Inter', sans-serif"
                 }}
               />

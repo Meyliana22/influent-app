@@ -240,7 +240,7 @@ function AdminTransactions() {
           {/* Statistics Cards */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, background: COLORS.gradient, color: 'white' }}>
+              <Paper sx={{ p: 3, bgcolor: '#6E00BE', color: 'white' }}>
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
@@ -382,7 +382,7 @@ function AdminTransactions() {
                     variant="contained"
                     startIcon={<FileDownloadIcon />}
                     onClick={handleExport}
-                    sx={{ background: COLORS.gradient }}
+                    sx={{ bgcolor: '#6E00BE', '&:hover': { bgcolor: '#5a009e' } }}
                   >
                     Export
                   </Button>

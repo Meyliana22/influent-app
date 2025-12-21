@@ -30,13 +30,13 @@ import {
   Tab,
 } from '@mui/material';
 import {
-  CheckCircle as ApproveIcon,
-  Cancel as RejectIcon,
-  Visibility as ViewIcon,
-  Assignment as AssignmentIcon,
-  Schedule as ScheduleIcon,
-  Business as BusinessIcon,
-  Person as PersonIcon,
+  CheckCircleOutline as ApproveIcon,
+  CancelOutlined as RejectIcon,
+  VisibilityOutlined as ViewIcon,
+  AssignmentOutlined as AssignmentIcon,
+  ScheduleOutlined as ScheduleIcon,
+  BusinessOutlined as BusinessIcon,
+  PersonOutline as PersonIcon,
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { COLORS } from '../../constants/colors';
@@ -77,7 +77,9 @@ const AdminReviewSubmissions = () => {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const data = await workSubmissionService.getRejectedSubmissions();
+      const response = await workSubmissionService.getRejectedSubmissions();
+      // Handle response with data property or direct array
+      const data = response?.data || response;
       setSubmissions(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading submissions:', error);
@@ -128,6 +130,7 @@ const AdminReviewSubmissions = () => {
   };
 
   const getTimeSinceRejection = (rejectedAt) => {
+    if (!rejectedAt) return { text: 'N/A', isUrgent: false };
     const now = new Date();
     const rejected = new Date(rejectedAt);
     const diffHours = Math.floor((now - rejected) / (1000 * 60 * 60));
@@ -140,15 +143,27 @@ const AdminReviewSubmissions = () => {
     return { text: `${diffDays} hari yang lalu`, isUrgent: diffDays >= 1 };
   };
 
-  const pendingSubmissions = submissions.filter(s => s.submission_status === 'rejected_by_umkm');
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Filter submissions based on status from API
+  const pendingSubmissions = submissions.filter(s => s.status === 'rejected');
   const reviewedSubmissions = submissions.filter(s => 
-    s.submission_status === 'admin_approved_rejection' || 
-    s.submission_status === 'admin_rejected_rejection'
+    s.status === 'admin_approved' || 
+    s.status === 'admin_rejected'
   );
 
-  if (isLoading && submissions.length === 0) {
-    return <Loading />;
-  }
+  // if (isLoading && submissions.length === 0) {
+  //   return <Loading />;
+  // }
 
   return (
     <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
@@ -160,7 +175,7 @@ const AdminReviewSubmissions = () => {
           transition: 'margin-left 0.3s ease-in-out, width 0.3s ease-in-out'
       }}>
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <Box sx={{ mt: 9, bgcolor: '#f5f5f5', minHeight: 'calc(100vh - 72px)' }}>
+        <Box sx={{ mt: 9, bgcolor: '#f8f9fa', minHeight: 'calc(100vh - 72px)' }}>
           <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, flexGrow: 1 }}>
           {/* Header */}
           <Box sx={{ mb: 4 }}>
@@ -173,35 +188,74 @@ const AdminReviewSubmissions = () => {
           </Box>
 
           {/* Stats */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={6} md={4}>
-              <Paper sx={{ p: 3, textAlign: 'center', bgcolor: '#fff3e0' }}>
-                <Typography variant="h3" sx={{ fontWeight: 700, color: '#e65100' }}>
-                  {pendingSubmissions.length}
-                </Typography>
-                <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
-                  Menunggu Review Admin
-                </Typography>
+              <Paper sx={{ p: 3, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  bgcolor: '#fff3e0', 
+                  color: '#e65100',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <AssignmentIcon fontSize="large" />
+                </Box>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
+                    {pendingSubmissions.length}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
+                    Menunggu Review
+                  </Typography>
+                </Box>
               </Paper>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
-              <Paper sx={{ p: 3, textAlign: 'center', bgcolor: '#e8f5e9' }}>
-                <Typography variant="h3" sx={{ fontWeight: 700, color: '#2e7d32' }}>
-                  {reviewedSubmissions.filter(s => s.submission_status === 'admin_approved_rejection').length}
-                </Typography>
-                <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
-                  Penolakan Disetujui
-                </Typography>
+              <Paper sx={{ p: 3, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  bgcolor: '#e8f5e9', 
+                  color: '#2e7d32',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <ApproveIcon fontSize="large" />
+                </Box>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
+                    {reviewedSubmissions.filter(s => s.status === 'admin_approved').length}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
+                    Penolakan Disetujui
+                  </Typography>
+                </Box>
               </Paper>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
-              <Paper sx={{ p: 3, textAlign: 'center', bgcolor: '#e3f2fd' }}>
-                <Typography variant="h3" sx={{ fontWeight: 700, color: '#1565c0' }}>
-                  {reviewedSubmissions.filter(s => s.submission_status === 'admin_rejected_rejection').length}
-                </Typography>
-                <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
-                  Dikembalikan ke UMKM
-                </Typography>
+              <Paper sx={{ p: 3, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  bgcolor: '#e3f2fd', 
+                  color: '#1565c0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <RejectIcon fontSize="large" />
+                </Box>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
+                    {reviewedSubmissions.filter(s => s.status === 'admin_rejected').length}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
+                    Dikembalikan
+                  </Typography>
+                </Box>
               </Paper>
             </Grid>
           </Grid>
@@ -234,10 +288,12 @@ const AdminReviewSubmissions = () => {
               ) : (
                 <Grid container spacing={3}>
                   {pendingSubmissions.map((submission) => {
-                    const timeInfo = getTimeSinceRejection(submission.rejected_by_umkm_at);
+                    const timeInfo = getTimeSinceRejection(submission.reviewed_at);
+                    const campaign = submission.CampaignUser?.campaign || {};
+                    const student = submission.CampaignUser?.user || {};
                     
                     return (
-                      <Grid item xs={12} key={submission.id}>
+                      <Grid item xs={12} key={submission.submission_id}>
                         <Card 
                           sx={{ 
                             border: timeInfo.isUrgent ? '2px solid #c62828' : 'none',
@@ -248,7 +304,7 @@ const AdminReviewSubmissions = () => {
                             <Grid container spacing={3}>
                               {/* Left: Media */}
                               <Grid item xs={12} md={4}>
-                                {submission.content_url && (
+                                {submission.content_url ? (
                                   <Box
                                     component="img"
                                     src={submission.content_url}
@@ -257,9 +313,29 @@ const AdminReviewSubmissions = () => {
                                       width: '100%',
                                       height: 250,
                                       objectFit: 'cover',
-                                      borderRadius: 2
+                                      borderRadius: 2,
+                                      bgcolor: '#f5f5f5'
+                                    }}
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
                                     }}
                                   />
+                                ) : (
+                                  <Box
+                                    sx={{
+                                      width: '100%',
+                                      height: 250,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      bgcolor: '#f5f5f5',
+                                      borderRadius: 2
+                                    }}
+                                  >
+                                    <Typography sx={{ color: COLORS.textSecondary }}>
+                                      No Image
+                                    </Typography>
+                                  </Box>
                                 )}
                                 {timeInfo.isUrgent && (
                                   <Chip
@@ -269,6 +345,26 @@ const AdminReviewSubmissions = () => {
                                     sx={{ mt: 1, fontWeight: 600 }}
                                   />
                                 )}
+                                
+                                {/* Additional Info */}
+                                <Box sx={{ mt: 2 }}>
+                                  <Chip 
+                                    label={`#${submission.submission_id}`}
+                                    size="small"
+                                    sx={{ mr: 1, mb: 1 }}
+                                  />
+                                  <Chip 
+                                    label={submission.platform}
+                                    size="small"
+                                    color="primary"
+                                    sx={{ mr: 1, mb: 1 }}
+                                  />
+                                  <Chip 
+                                    label={submission.content_type}
+                                    size="small"
+                                    sx={{ mb: 1 }}
+                                  />
+                                </Box>
                               </Grid>
 
                               {/* Right: Details */}
@@ -277,9 +373,9 @@ const AdminReviewSubmissions = () => {
                                   {/* Campaign & Time */}
                                   <Box>
                                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                                      {submission.campaign.title}
+                                      {campaign.title || 'No Campaign Title'}
                                     </Typography>
-                                    <Stack direction="row" spacing={2} flexWrap="wrap" gap={1}>
+                                    <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
                                       <Chip 
                                         icon={<ScheduleIcon />}
                                         label={`Ditolak: ${timeInfo.text}`}
@@ -287,19 +383,62 @@ const AdminReviewSubmissions = () => {
                                         color={timeInfo.isUrgent ? 'error' : 'default'}
                                       />
                                       <Chip 
-                                        icon={<BusinessIcon />}
-                                        label={submission.umkm.business_name}
+                                        label={`Status: ${submission.status}`}
                                         size="small"
+                                        color="error"
                                       />
                                       <Chip 
                                         icon={<PersonIcon />}
-                                        label={submission.student.user.name}
+                                        label={student.name || 'Unknown Student'}
                                         size="small"
                                       />
+                                      {campaign.campaign_category && (
+                                        <Chip 
+                                          label={campaign.campaign_category}
+                                          size="small"
+                                          variant="outlined"
+                                        />
+                                      )}
                                     </Stack>
                                   </Box>
 
                                   <Divider />
+
+                                  {/* Submission Info */}
+                                  <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                      <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
+                                        Submitted At
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        {formatDate(submission.submitted_at)}
+                                      </Typography>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                      <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
+                                        Reviewed At
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        {formatDate(submission.reviewed_at)}
+                                      </Typography>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                      <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
+                                        Price per Post
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.primary }}>
+                                        Rp {parseInt(campaign.price_per_post || 0).toLocaleString('id-ID')}
+                                      </Typography>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                      <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
+                                        Student Email
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        {student.email || 'N/A'}
+                                      </Typography>
+                                    </Grid>
+                                  </Grid>
 
                                   {/* Caption */}
                                   {submission.caption && (
@@ -313,15 +452,48 @@ const AdminReviewSubmissions = () => {
                                     </Box>
                                   )}
 
-                                  {/* UMKM Rejection Reason */}
-                                  <Box sx={{ p: 2, bgcolor: '#ffebee', borderRadius: 1, border: '1px solid #ef5350' }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#c62828' }}>
-                                      Alasan Penolakan UMKM:
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ mt: 0.5, color: COLORS.textPrimary }}>
-                                      {submission.umkm_rejection_notes}
-                                    </Typography>
-                                  </Box>
+                                  {/* Hashtags */}
+                                  {submission.hashtags && submission.hashtags.length > 0 && (
+                                    <Box>
+                                      <Typography variant="caption" sx={{ fontWeight: 600, color: COLORS.textSecondary }}>
+                                        Hashtags:
+                                      </Typography>
+                                      <Box sx={{ mt: 0.5 }}>
+                                        {submission.hashtags.map((tag, idx) => (
+                                          <Chip 
+                                            key={idx}
+                                            label={`#${tag}`}
+                                            size="small"
+                                            sx={{ mr: 0.5, mb: 0.5 }}
+                                          />
+                                        ))}
+                                      </Box>
+                                    </Box>
+                                  )}
+
+                                  {/* Submission Notes */}
+                                  {submission.submission_notes && (
+                                    <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderRadius: 1 }}>
+                                      <Typography variant="caption" sx={{ fontWeight: 600, color: COLORS.textSecondary }}>
+                                        Student Notes:
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                        {submission.submission_notes}
+                                      </Typography>
+                                    </Box>
+                                  )}
+
+                                  {/* Review Notes */}
+                                  {submission.review_notes && (
+                                    <Box sx={{ p: 2, bgcolor: '#ffebee', borderRadius: 1, border: '1px solid #ef5350' }}>
+                                      <Typography variant="caption" sx={{ fontWeight: 600, color: '#c62828' }}>
+                                        Review Notes:
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ mt: 0.5, color: COLORS.textPrimary }}>
+                                        {submission.review_notes}
+                                      </Typography>
+                                    </Box>
+                                  )}
 
                                   {/* Action Buttons */}
                                   <Stack direction="row" spacing={2}>
@@ -380,31 +552,44 @@ const AdminReviewSubmissions = () => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    reviewedSubmissions.map((submission) => (
-                      <TableRow key={submission.id}>
-                        <TableCell>{submission.campaign.title}</TableCell>
-                        <TableCell>{submission.student.user.name}</TableCell>
-                        <TableCell>{submission.umkm.business_name}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={
-                              submission.submission_status === 'admin_approved_rejection'
-                                ? 'Penolakan Disetujui'
-                                : 'Dikembalikan ke UMKM'
-                            }
-                            color={
-                              submission.submission_status === 'admin_approved_rejection'
-                                ? 'error'
-                                : 'info'
-                            }
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {new Date(submission.admin_reviewed_at).toLocaleDateString('id-ID')}
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    reviewedSubmissions.map((submission) => {
+                      const campaign = submission.CampaignUser?.campaign || {};
+                      const student = submission.CampaignUser?.user || {};
+                      
+                      return (
+                        <TableRow key={submission.submission_id}>
+                          <TableCell>{campaign.title || 'N/A'}</TableCell>
+                          <TableCell>{student.name || 'N/A'}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={`#${submission.submission_id}`}
+                              size="small"
+                              variant="outlined"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={
+                                submission.status === 'admin_approved'
+                                  ? 'Penolakan Disetujui'
+                                  : submission.status === 'admin_rejected'
+                                  ? 'Dikembalikan ke UMKM'
+                                  : submission.status
+                              }
+                              color={
+                                submission.status === 'admin_approved'
+                                  ? 'error'
+                                  : 'info'
+                              }
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {formatDate(submission.reviewed_at)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>

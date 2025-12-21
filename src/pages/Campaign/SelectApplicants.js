@@ -126,7 +126,7 @@ function SelectApplicants() {
 
       setShowConfirmModal(false);
       toast.success('Selection confirmed successfully!');
-      navigate(`/campaigns`);
+      navigate(`/campaigns/list`);
     } catch (error) {
       console.error('Error confirming selection:', error);
       toast.error('Failed to confirm selection. Please try again.');

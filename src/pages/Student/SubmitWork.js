@@ -132,7 +132,7 @@ export default function SubmitWork({ collaboration, onBack }) {
                 variant="contained"
                 onClick={onBack}
                 sx={{
-                  background: 'linear-gradient(135deg, #6E00BE 0%, #764ba2 100%)',
+                  background: '#6E00BE',
                   color: '#fff',
                   fontWeight: 700,
                   px: 4,
@@ -439,7 +439,7 @@ export default function SubmitWork({ collaboration, onBack }) {
                 disabled={!formData.title || !formData.description || !formData.file}
                 onClick={handleSubmit}
                 sx={{
-                  background: 'linear-gradient(135deg, #6E00BE 0%, #764ba2 100%)',
+                  background: '#6E00BE',
                   color: '#fff',
                   fontWeight: 700,
                   py: 1.5,
@@ -486,7 +486,7 @@ export default function SubmitWork({ collaboration, onBack }) {
                     borderRadius: '4px',
                     backgroundColor: '#e0e0e0',
                     '& .MuiLinearProgress-bar': {
-                      background: 'linear-gradient(90deg, #6E00BE 0%, #764ba2 100%)',
+                      background: '#6E00BE',
                     },
                   }}
                 />

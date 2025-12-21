@@ -30,7 +30,7 @@ import studentService from '../../services/studentService';
 const theme = createTheme({
   palette: {
     primary: { main: '#6E00BE' },
-    secondary: { main: '#764ba2' },
+    secondary: { main: '#5a009e' },
   },
   typography: {
     fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',

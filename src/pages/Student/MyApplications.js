@@ -146,8 +146,8 @@ const MyApplications = () => {
                 variant="contained" 
                 onClick={() => navigate('/student/browse-campaigns')}
                 sx={{ 
-                  bgcolor: '#667eea',
-                  '&:hover': { bgcolor: '#5a67d8' }
+                  bgcolor: '#6E00BE',
+                  '&:hover': { bgcolor: '#5a009e' }
                 }}
               >
                 Browse Campaigns

@@ -71,7 +71,7 @@ function ViewApplicants() {
       if (!campaignId) {
         console.error('❌ No campaignId provided!');
         toast.error('Campaign ID tidak valid');
-        setTimeout(() => navigate('/campaigns'), 100);
+        setTimeout(() => navigate('/campaigns/list'), 100);
         return;
       }
       
@@ -103,7 +103,7 @@ function ViewApplicants() {
       } else {
         console.error('❌ Campaign not found with ID:', campaignId);
         toast.error('Campaign tidak ditemukan');
-        setTimeout(() => navigate('/campaigns'), 100);
+        setTimeout(() => navigate('/campaigns/list'), 100);
         return;
       }
 
@@ -146,7 +146,7 @@ function ViewApplicants() {
           phone: studentData.phone || userData.phone || '',
           niche: [], // Niche category not present in basic user object
           notes: app.application_notes || '',
-          profileImage: userData.profile_image || 'https://i.pravatar.cc/150',
+          profileImage: userData.profile_image || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
           previousBrands: [],
           isSelected: applicantStorageHelper.isSelected(app.id)
         };
@@ -370,24 +370,43 @@ function ViewApplicants() {
           <Container maxWidth="lg">
             {/* Back Button */}
             <Button
-              onClick={() => navigate('/campaigns')}
+              onClick={() => navigate('/campaigns/list')}
               startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
-              sx={{ mb: 3, fontWeight: 600, textTransform: 'none' }}
+              sx={{ 
+                mb: 3, 
+                fontWeight: 600, 
+                textTransform: 'none',
+                color: '#64748b',
+                '&:hover': { bgcolor: '#f1f5f9', color: '#1e293b' }
+              }}
             >
-              Back to Campaigns
+              Kembali ke Kampanye
             </Button>
             {/* Campaign Header */}
-            <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 2, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden', boxShadow: 6 }}>
-              {/* Decorative gradient line */}
-              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: COLORS.gradient }} />
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                borderRadius: 3, 
+                p: { xs: 2, md: 4 }, 
+                mb: 4, 
+                position: 'relative', 
+                overflow: 'hidden', 
+                border: '1px solid #e2e8f0',
+                bgcolor: '#fff'
+              }}
+            >
               <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" spacing={3}>
                 <Box sx={{ 
                   width: { xs: '100%', md: 120 }, 
                   height: { xs: 200, md: 120 }, 
                   borderRadius: 2, 
                   overflow: 'hidden',
-                  boxShadow: 3,
-                  position: 'relative'
+                  border: '1px solid #e2e8f0',
+                  bgcolor: '#f8fafc',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
                 }}>
                   {campaign.banner_image ? (
                     <Box 
@@ -397,25 +416,26 @@ function ViewApplicants() {
                       sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   ) : (
-                    <Box sx={{ width: '100%', height: '100%', background: COLORS.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <AssignmentIcon sx={{ fontSize: 56, color: '#000' }} />
-                    </Box>
+                    <AssignmentIcon sx={{ fontSize: 48, color: '#94a3b8' }} />
                   )}
                 </Box>
                 
                 <Box sx={{ flex: 1 }}>
                   <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
                       {campaign.title}
                     </Typography>
                     <Paper 
+                      elevation={0}
                       sx={{ 
                         px: 1.5, py: 0.5, 
-                        bgcolor: campaign.status?.toLowerCase() === 'active' ? '#e6fffa' : '#f0f0f0',
-                        color: campaign.status?.toLowerCase() === 'active' ? '#047857' : '#64748b',
+                        bgcolor: campaign.status?.toLowerCase() === 'active' ? '#ecfdf5' : '#f1f5f9',
+                        color: campaign.status?.toLowerCase() === 'active' ? '#059669' : '#64748b',
                         borderRadius: 1,
                         fontSize: '0.75rem',
-                        fontWeight: 600
+                        fontWeight: 600,
+                        border: '1px solid',
+                        borderColor: campaign.status?.toLowerCase() === 'active' ? '#059669' : '#cbd5e1'
                       }}
                     >
                       {campaign.status}
@@ -423,23 +443,35 @@ function ViewApplicants() {
                   </Stack>
                   
                   {campaign.user && (
-                     <Typography sx={{ fontSize: 14, color: COLORS.textSecondary, mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                       By <Box component="span" sx={{ fontWeight: 600, color: COLORS.primary }}>{campaign.user.name}</Box>
+                     <Typography sx={{ fontSize: 14, color: '#64748b', mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                       Oleh <Box component="span" sx={{ fontWeight: 600, color: '#667eea' }}>{campaign.user.name}</Box>
                      </Typography>
                   )}
 
-                  <Stack direction="row" flexWrap="wrap" gap={2} sx={{ mb: 1.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 14, color: COLORS.textSecondary }}>
-                       <strong>Price:</strong> {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(campaign.price_per_post || 0)} / post
+                  <Stack direction="row" flexWrap="wrap" gap={3} sx={{ mb: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 14, color: '#64748b' }}>
+                       <strong>Harga:</strong> {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(campaign.price_per_post || 0)} / posting
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 14, color: COLORS.textSecondary }}>
-                       <strong>Deadline:</strong> {campaign.submission_deadline ? new Date(campaign.submission_deadline).toLocaleDateString() : '-'}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 14, color: '#64748b' }}>
+                       <strong>Batas Waktu:</strong> {campaign.submission_deadline ? new Date(campaign.submission_deadline).toLocaleDateString('id-ID') : '-'}
                     </Box>
                   </Stack>
 
-                  <Stack direction="row" spacing={1}>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
                     {Array.isArray(campaign.influencer_category) && campaign.influencer_category.map((cat, idx) => (
-                      <Paper key={idx} sx={{ px: 1.5, py: 0.5, bgcolor: '#f3f4f6', fontSize: 12, borderRadius: 4 }}>
+                      <Paper 
+                        key={idx} 
+                        elevation={0}
+                        sx={{ 
+                          px: 1.5, py: 0.5, 
+                          bgcolor: '#f8fafc', 
+                          fontSize: 12, 
+                          borderRadius: 4,
+                          border: '1px solid #e2e8f0',
+                          color: '#475569',
+                          fontWeight: 500
+                        }}
+                      >
                         {cat}
                       </Paper>
                     ))}
@@ -447,8 +479,9 @@ function ViewApplicants() {
                 </Box>
               </Stack>
             </Paper>
+
             {/* Statistics Cards */}
-            <Paper elevation={0} sx={{ p: 3, bgcolor: '#fff', border: '1px solid #e0e0e0', borderRadius: 2, mb: 4 }}>
+            <Paper elevation={0} sx={{ p: 3, bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: 2, mb: 4 }}>
               <Grid container spacing={3}>
                 <Grid item xs={6} sm={4} md={2.4}>
                   <Stack direction="row" spacing={1.5} alignItems="center">
@@ -456,18 +489,18 @@ function ViewApplicants() {
                       width: 48, 
                       height: 48, 
                       borderRadius: '12px', 
-                      bgcolor: '#f5f7ff', 
+                      bgcolor: '#f0f9ff', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center' 
                     }}>
-                      <PeopleIcon sx={{ fontSize: 24, color: '#667eea' }} />
+                      <PeopleIcon sx={{ fontSize: 24, color: '#0ea5e9' }} />
                     </Box>
                     <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
                         {stats.total}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>
                         Total
                       </Typography>
                     </Box>
@@ -479,19 +512,19 @@ function ViewApplicants() {
                       width: 48, 
                       height: 48, 
                       borderRadius: '12px', 
-                      bgcolor: '#fff8f0', 
+                      bgcolor: '#fff7ed', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center' 
                     }}>
-                      <StarIcon sx={{ fontSize: 24, color: '#ffa726' }} />
+                      <StarIcon sx={{ fontSize: 24, color: '#f97316' }} />
                     </Box>
                     <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
                         {stats.selected}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
-                        Selected
+                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>
+                        Terpilih
                       </Typography>
                     </Box>
                   </Stack>
@@ -502,19 +535,19 @@ function ViewApplicants() {
                       width: 48, 
                       height: 48, 
                       borderRadius: '12px', 
-                      bgcolor: '#f5f7f9', 
+                      bgcolor: '#f1f5f9', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center' 
                     }}>
-                      <HourglassEmptyIcon sx={{ fontSize: 24, color: '#78909c' }} />
+                      <HourglassEmptyIcon sx={{ fontSize: 24, color: '#64748b' }} />
                     </Box>
                     <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
                         {stats.pending}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
-                        Pending
+                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>
+                        Menunggu
                       </Typography>
                     </Box>
                   </Stack>
@@ -525,19 +558,19 @@ function ViewApplicants() {
                       width: 48, 
                       height: 48, 
                       borderRadius: '12px', 
-                      bgcolor: '#f1f8f4', 
+                      bgcolor: '#ecfdf5', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center' 
                     }}>
-                      <CheckCircleIcon sx={{ fontSize: 24, color: '#66bb6a' }} />
+                      <CheckCircleIcon sx={{ fontSize: 24, color: '#10b981' }} />
                     </Box>
                     <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
                         {stats.accepted}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
-                        Accepted
+                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>
+                        Diterima
                       </Typography>
                     </Box>
                   </Stack>
@@ -548,41 +581,49 @@ function ViewApplicants() {
                       width: 48, 
                       height: 48, 
                       borderRadius: '12px', 
-                      bgcolor: '#fef5f5', 
+                      bgcolor: '#fef2f2', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center' 
                     }}>
-                      <CancelIcon sx={{ fontSize: 24, color: '#ef5350' }} />
+                      <CancelIcon sx={{ fontSize: 24, color: '#ef4444' }} />
                     </Box>
                     <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.2 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
                         {stats.rejected}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontSize: 12, fontWeight: 500 }}>
-                        Rejected
+                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>
+                        Ditolak
                       </Typography>
                     </Box>
                   </Stack>
                 </Grid>
               </Grid>
             </Paper>
+            
             {/* Search & Filter */}
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={4} flexWrap="wrap">
               <Box sx={{ flex: '1 1 400px', position: 'relative' }}>
                 <TextField
                   fullWidth
-                  placeholder="Search by name, username, or location..."
+                  placeholder="Cari nama, username, atau lokasi..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SearchIcon sx={{ color: COLORS.textSecondary, opacity: 0.6 }} />
+                        <SearchIcon sx={{ color: '#94a3b8' }} />
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ borderRadius: 2, bgcolor: '#fff', fontSize: 16, boxShadow: 1 }}
+                  sx={{ 
+                    bgcolor: '#fff',
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      '& fieldset': { borderColor: '#e2e8f0' },
+                      '&:hover fieldset': { borderColor: '#cbd5e1' },
+                    }
+                  }}
                 />
               </Box>
               <Box sx={{ minWidth: 200 }}>
@@ -591,41 +632,58 @@ function ViewApplicants() {
                   onChange={e => setFilter(e.target.value)}
                   fullWidth
                   displayEmpty
-                  sx={{ borderRadius: 2, bgcolor: '#fff', fontSize: 16, boxShadow: 1 }}
+                  sx={{ 
+                    bgcolor: '#fff', 
+                    borderRadius: 2, 
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#cbd5e1' }
+                  }}
                 >
-                  <MenuItem value="">All Status</MenuItem>
+                  <MenuItem value="">Semua Status</MenuItem>
                   <MenuItem value="Pending">
-                    <HourglassEmptyIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: COLORS.textSecondary }} />
-                    Pending
+                    <HourglassEmptyIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#64748b' }} />
+                    Menunggu
                   </MenuItem>
                   <MenuItem value="Selected">
-                    <StarIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#ffa726' }} />
-                    Selected
+                    <StarIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#f59e0b' }} />
+                    Terpilih
                   </MenuItem>
                   <MenuItem value="Accepted">
-                    <CheckCircleIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#66bb6a' }} />
-                    Accepted
+                    <CheckCircleIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#10b981' }} />
+                    Diterima
                   </MenuItem>
                   <MenuItem value="Rejected">
-                    <CancelIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: COLORS.textSecondary }} />
-                    Rejected
+                    <CancelIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#ef4444' }} />
+                    Ditolak
                   </MenuItem>
                 </Select>
               </Box>
             </Stack>
+            
             {/* Results Count */}
-            <Typography sx={{ mb: 2, fontSize: 15, color: COLORS.textSecondary, fontWeight: 600 }}>
-              Showing {filteredApplicants.length} of {applicants.length} applicants
+            <Typography sx={{ mb: 2, fontSize: 15, color: '#64748b', fontWeight: 600 }}>
+              Menampilkan {filteredApplicants.length} dari {applicants.length} pendaftar
             </Typography>
+
             {/* Applicants List */}
             {filteredApplicants.length === 0 ? (
-              <Paper elevation={2} sx={{ bgcolor: COLORS.white, borderRadius: 2, py: 8, px: 4, textAlign: 'center', boxShadow: 4 }}>
-                <SentimentDissatisfiedIcon sx={{ fontSize: 56, mb: 2, color: COLORS.textSecondary }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, color: COLORS.textPrimary, mb: 1 }}>
-                  No Applicants Found
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  bgcolor: '#fff', 
+                  borderRadius: 2, 
+                  py: 8, 
+                  px: 4, 
+                  textAlign: 'center', 
+                  border: '1px solid #e2e8f0'
+                }}
+              >
+                <SentimentDissatisfiedIcon sx={{ fontSize: 56, mb: 2, color: '#cbd5e1' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1 }}>
+                  Tidak Ada Pendaftar Ditemukan
                 </Typography>
-                <Typography sx={{ color: COLORS.textSecondary, fontSize: 15 }}>
-                  {search || filter ? 'Try adjusting your search or filter criteria' : 'No one has applied to this campaign yet'}
+                <Typography sx={{ color: '#64748b', fontSize: 15 }}>
+                  {search || filter ? 'Coba sesuaikan kriteria pencarian atau filter Anda' : 'Belum ada yang mendaftar untuk kampanye ini'}
                 </Typography>
               </Paper>
             ) : (

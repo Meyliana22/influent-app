@@ -33,7 +33,7 @@ export default function MenuContent() {
       case 'company':
       case 'umkm':
         return [
-          { icon: <DashboardRoundedIcon />, label: 'Dashboard', path: '/umkm/dashboard' },
+          { icon: <DashboardRoundedIcon />, label: 'Dashboard', path: '/campaign/dashboard' },
           { icon: <ListIcon />, label: 'Daftar Kampanye', path: '/campaigns' },
           { icon: <PaymentIcon />, label: 'Riwayat Transaksi', path: '/transactions' },
           { icon: <ChatIcon />, label: 'Pesan', path: '/chat' },

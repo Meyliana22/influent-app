@@ -44,7 +44,7 @@ const PaymentSuccess = () => {
   }, [searchParams]);
 
   const handleBackToCampaigns = () => {
-    navigate('/campaigns');
+    navigate('/campaigns/list');
   };
 
   return (

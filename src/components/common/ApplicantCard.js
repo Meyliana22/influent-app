@@ -41,13 +41,33 @@ const ApplicantCard = ({
   showActions = true,
   canSelectApplicants = false
 }) => {
-  // Status configuration for Material UI
+  // Status configuration for Material UI with custom flat styling
   const getStatusConfig = (status) => {
     const configs = {
-      'Pending': { color: 'warning', icon: <HourglassEmptyIcon />, label: 'Menunggu Review' },
-      'Selected': { color: 'info', icon: <CheckCircleIcon />, label: 'Dipilih' },
-      'Accepted': { color: 'success', icon: <CheckCircleIcon />, label: 'Diterima' },
-      'Rejected': { color: 'error', icon: <CancelIcon />, label: 'Ditolak' }
+      'Pending': { 
+        bgcolor: '#f1f5f9', 
+        color: '#64748b', 
+        icon: <HourglassEmptyIcon style={{ fontSize: 16 }} />, 
+        label: 'Menunggu Review' 
+      },
+      'Selected': { 
+        bgcolor: '#fff7ed', 
+        color: '#f97316', 
+        icon: <StarIcon style={{ fontSize: 16 }} />, 
+        label: 'Terpilih' 
+      },
+      'Accepted': { 
+        bgcolor: '#ecfdf5', 
+        color: '#10b981', 
+        icon: <CheckCircleIcon style={{ fontSize: 16 }} />, 
+        label: 'Diterima' 
+      },
+      'Rejected': { 
+        bgcolor: '#fef2f2', 
+        color: '#ef4444', 
+        icon: <CancelIcon style={{ fontSize: 16 }} />, 
+        label: 'Ditolak' 
+      }
     };
     return configs[status] || configs['Pending'];
   };
@@ -60,27 +80,34 @@ const ApplicantCard = ({
       elevation={0}
       sx={{ 
         mb: 2,
-        border: isFavorite ? '2px solid #ffa726' : '1px solid #e0e0e0',
-        borderRadius: 2,
-        transition: 'all 0.2s',
+        border: isFavorite ? '2px solid #f59e0b' : '1px solid #e2e8f0',
+        borderRadius: 3,
+        transition: 'all 0.2s ease-in-out',
+        position: 'relative',
+        overflow: 'visible',
         '&:hover': {
-          boxShadow: 3,
-          borderColor: isFavorite ? '#ff9800' : '#bdbdbd'
+          transform: 'translateY(-2px)',
+          borderColor: isFavorite ? '#f59e0b' : '#cbd5e1',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
         }
       }}
     >
       <CardContent sx={{ p: 3 }}>
-        <Stack direction="row" spacing={3}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
           {/* Avatar & Star Favorite */}
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 120 }}>
             <Avatar 
+              src={applicant.profileImage}
+              alt={applicant.fullName}
               sx={{ 
                 width: 100, 
                 height: 100, 
-                bgcolor: '#667eea',
+                bgcolor: '#eff6ff',
+                color: '#667eea',
                 fontSize: 40,
                 fontWeight: 700,
-                mb: 1.5
+                mb: 1.5,
+                border: '1px solid #e2e8f0'
               }}
             >
               {applicant.fullName.charAt(0).toUpperCase()}
@@ -91,19 +118,16 @@ const ApplicantCard = ({
               <IconButton
                 onClick={() => onToggleFavorite && onToggleFavorite(applicant)}
                 sx={{ 
-                  bgcolor: isFavorite ? '#fff3e0' : 'transparent',
-                  '&:hover': { bgcolor: isFavorite ? '#ffe0b2' : '#f5f5f5' }
+                  bgcolor: isFavorite ? '#fff7ed' : 'transparent',
+                  color: isFavorite ? '#f59e0b' : '#94a3b8',
+                  '&:hover': { bgcolor: isFavorite ? '#ffedd5' : '#f1f5f9' }
                 }}
               >
-                {isFavorite ? (
-                  <StarIcon sx={{ fontSize: 32, color: '#ffa726' }} />
-                ) : (
-                  <StarBorderIcon sx={{ fontSize: 32, color: '#bdbdbd' }} />
-                )}
+                {isFavorite ? <StarIcon /> : <StarBorderIcon />}
               </IconButton>
             )}
             {isFavorite && (
-              <Typography variant="caption" sx={{ color: '#ffa726', fontWeight: 600, mt: 0.5 }}>
+              <Typography variant="caption" sx={{ color: '#f59e0b', fontWeight: 600, mt: 0.5 }}>
                 Favorit
               </Typography>
             )}
@@ -114,46 +138,56 @@ const ApplicantCard = ({
             {/* Header */}
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.textPrimary, mb: 0.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', mb: 0.5 }}>
                   {applicant.fullName}
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#667eea', fontWeight: 600 }}>
                   @{applicant.instagram || applicant.influencerName}
                 </Typography>
               </Box>
-              <Chip 
-                icon={statusConfig.icon}
-                label={statusConfig.label}
-                color={statusConfig.color}
-                size="small"
-                sx={{ fontWeight: 600 }}
-              />
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1,
+                  px: 1.5, 
+                  py: 0.75, 
+                  bgcolor: statusConfig.bgcolor, 
+                  color: statusConfig.color, 
+                  borderRadius: 2,
+                  fontSize: '0.75rem', 
+                  fontWeight: 600
+                }}
+              >
+                {statusConfig.icon}
+                {statusConfig.label}
+              </Box>
             </Stack>
 
             {/* Bio */}
             {applicant.bio && (
-              <Typography variant="body2" sx={{ color: COLORS.textSecondary, mb: 2, fontStyle: 'italic' }}>
+              <Typography variant="body2" sx={{ color: '#64748b', mb: 2, fontStyle: 'italic' }}>
                 "{applicant.bio}"
               </Typography>
             )}
 
             {/* Stats */}
-            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+            <Stack direction="row" spacing={3} sx={{ mb: 2.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <LocationOnIcon sx={{ fontSize: 18, color: '#78909c' }} />
-                <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
+                <LocationOnIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                <Typography variant="body2" sx={{ color: '#64748b' }}>
                   {applicant.location}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <PeopleIcon sx={{ fontSize: 18, color: '#667eea' }} />
-                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.textPrimary }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
                   {applicant.followers?.toLocaleString('id-ID') || 0}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <TrendingUpIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
-                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.textPrimary }}>
+                <TrendingUpIcon sx={{ fontSize: 18, color: '#10b981' }} />
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
                   {applicant.engagementRate}%
                 </Typography>
               </Box>
@@ -163,8 +197,8 @@ const ApplicantCard = ({
             <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
               {applicant.email && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <EmailIcon sx={{ fontSize: 16, color: '#78909c' }} />
-                  <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
+                  <EmailIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
+                  <Typography variant="caption" sx={{ color: '#64748b' }}>
                     {applicant.email}
                   </Typography>
                 </Box>
@@ -172,7 +206,7 @@ const ApplicantCard = ({
               {applicant.instagram && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <InstagramIcon sx={{ fontSize: 16, color: '#E1306C' }} />
-                  <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
+                  <Typography variant="caption" sx={{ color: '#64748b' }}>
                     {applicant.instagram}
                   </Typography>
                 </Box>
@@ -183,18 +217,24 @@ const ApplicantCard = ({
             {applicant.niche && Array.isArray(applicant.niche) && applicant.niche.length > 0 && (
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-                  <LocalOfferIcon sx={{ fontSize: 16, color: '#78909c' }} />
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
-                    Niche
+                  <LocalOfferIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>
+                    Kategori
                   </Typography>
                 </Box>
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
                   {applicant.niche.map((tag, index) => (
                     <Chip 
                       key={index}
                       label={tag}
                       size="small"
-                      sx={{ bgcolor: '#ede7f6', color: '#673ab7', fontWeight: 600 }}
+                      sx={{ 
+                        bgcolor: '#f1f5f9', 
+                        color: '#475569', 
+                        fontWeight: 600,
+                        border: '1px solid #e2e8f0',
+                        fontSize: '0.75rem'
+                      }}
                     />
                   ))}
                 </Stack>
@@ -205,26 +245,26 @@ const ApplicantCard = ({
             {applicant.previousBrands && applicant.previousBrands.length > 0 && (
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-                  <BusinessIcon sx={{ fontSize: 16, color: '#78909c' }} />
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
-                    Previous Collaborations
+                  <BusinessIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>
+                    Kolaborasi Sebelumnya
                   </Typography>
                 </Box>
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
                   {applicant.previousBrands.map((brand, index) => (
                     <Chip 
                       key={index}
                       label={brand}
                       size="small"
                       variant="outlined"
-                      sx={{ borderColor: '#e0e0e0' }}
+                      sx={{ borderColor: '#e2e8f0', color: '#64748b' }}
                     />
                   ))}
                 </Stack>
               </Box>
             )}
 
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 2, borderColor: '#f1f5f9' }} />
 
             {/* Quick Actions */}
             <Stack direction="row" spacing={1.5} sx={{ mb: showActions ? 2 : 0 }}>
@@ -234,24 +274,28 @@ const ApplicantCard = ({
                 onClick={() => onShowDetail && onShowDetail(applicant)}
                 sx={{ 
                   flex: 1,
-                  borderColor: '#667eea',
-                  color: '#667eea',
+                  borderColor: '#e2e8f0',
+                  color: '#64748b',
                   fontWeight: 600,
-                  '&:hover': { borderColor: '#5568d3', bgcolor: '#f5f7ff' }
+                  textTransform: 'none',
+                  '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc', color: '#1e293b' }
                 }}
               >
                 Detail
               </MuiButton>
               <MuiButton
                 variant="contained"
+                disableElevation
                 startIcon={<ChatIcon />}
                 onClick={() => onChat && onChat(applicant)}
                 sx={{ 
                   flex: 1,
                   bgcolor: '#667eea',
                   fontWeight: 600,
-                  '&:hover': { bgcolor: '#5568d3' }
+                  textTransform: 'none',
+                  '&:hover': { bgcolor: '#5a67d8' }
                 }}
+                disabled={!applicant.userId}
               >
                 Chat
               </MuiButton>
@@ -259,32 +303,36 @@ const ApplicantCard = ({
 
             {/* Action Buttons - Conditional */}
             {showActions && (
-              <Box sx={{ borderTop: '1px solid #e0e0e0', pt: 2 }}>
+              <Box sx={{ borderTop: '1px solid #f1f5f9', pt: 2 }}>
                 {applicant.status === 'Pending' && (
                   <Stack direction="row" spacing={1.5}>
                     <MuiButton
                       variant="contained"
+                      disableElevation
                       onClick={() => onAccept(applicant.id)}
                       sx={{ 
                         flex: 1,
-                        bgcolor: '#66bb6a',
+                        bgcolor: '#10b981',
                         fontWeight: 600,
-                        '&:hover': { bgcolor: '#57a95b' }
+                        textTransform: 'none',
+                        '&:hover': { bgcolor: '#059669' }
                       }}
                     >
-                      ✓ Accept
+                      Terima
                     </MuiButton>
                     <MuiButton
                       variant="contained"
+                      disableElevation
                       onClick={() => onReject(applicant.id)}
                       sx={{ 
                         flex: 1,
-                        bgcolor: '#ef5350',
+                        bgcolor: '#ef4444',
                         fontWeight: 600,
-                        '&:hover': { bgcolor: '#e53935' }
+                        textTransform: 'none',
+                        '&:hover': { bgcolor: '#dc2626' }
                       }}
                     >
-                      ✕ Reject
+                      Tolak
                     </MuiButton>
                   </Stack>
                 )}
@@ -295,45 +343,48 @@ const ApplicantCard = ({
                     onClick={() => onCancel(applicant.id)}
                     sx={{ 
                       width: '100%',
-                      borderColor: '#ef5350',
-                      color: '#ef5350',
+                      borderColor: '#ef4444',
+                      color: '#ef4444',
                       fontWeight: 600,
-                      '&:hover': { borderColor: '#e53935', bgcolor: '#ffebee' }
+                      textTransform: 'none',
+                      '&:hover': { borderColor: '#dc2626', bgcolor: '#fef2f2' }
                     }}
                   >
-                    Cancel Selection
+                    Batalkan
                   </MuiButton>
                 )}
 
                 {applicant.status === 'Accepted' && (
                   <Box 
                     sx={{ 
-                      bgcolor: '#e8f5e9',
-                      color: '#2e7d32',
+                      bgcolor: '#ecfdf5',
+                      color: '#059669',
                       py: 1.5,
                       px: 2,
-                      borderRadius: 1,
+                      borderRadius: 2,
                       textAlign: 'center',
-                      fontWeight: 700
+                      fontWeight: 700,
+                      border: '1px solid #a7f3d0'
                     }}
                   >
-                    ✓ Accepted
+                    ✓ Diterima
                   </Box>
                 )}
 
                 {applicant.status === 'Rejected' && (
                   <Box 
                     sx={{ 
-                      bgcolor: '#ffebee',
-                      color: '#c62828',
+                      bgcolor: '#fef2f2',
+                      color: '#ef4444',
                       py: 1.5,
                       px: 2,
-                      borderRadius: 1,
+                      borderRadius: 2,
                       textAlign: 'center',
-                      fontWeight: 700
+                      fontWeight: 700,
+                      border: '1px solid #fecaca'
                     }}
                   >
-                    ✕ Rejected
+                    ✕ Ditolak
                   </Box>
                 )}
               </Box>

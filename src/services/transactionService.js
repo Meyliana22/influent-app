@@ -34,6 +34,38 @@ const transactionService = {
       console.error("Error fetching balance:", error);
       throw error;
     }
+  },
+
+  getPaymentsByCampaign: async (campaignId) => {
+    try {
+      const response = await authFetch(`${API_BASE_URL}/payments/campaign/${campaignId}`);
+      return await handleResponse(response);
+    } catch (error) {
+      console.error("Error fetching campaign payments:", error);
+      throw error;
+    }
+  },
+
+  getPaymentHistory: async (params = {}) => {
+    try {
+      const queryParams = new URLSearchParams(params);
+      const response = await authFetch(`${API_BASE_URL}/campaign-payments/history?${queryParams}`);
+      return await handleResponse(response);
+    } catch (error) {
+      console.error("Error fetching payment history:", error);
+      throw error;
+    }
+  },
+
+  getMyPayments: async (params = {}) => {
+    try {
+      const queryParams = new URLSearchParams(params);
+      const response = await authFetch(`${API_BASE_URL}/payments/my-payments?${queryParams}`);
+      return await handleResponse(response);
+    } catch (error) {
+      console.error("Error fetching my payments:", error);
+      throw error;
+    }
   }
 };
 

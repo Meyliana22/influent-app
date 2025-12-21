@@ -135,13 +135,13 @@ const NotificationBell = () => {
         // UMKM navigation
         if (title.includes('disetujui') || title.includes('approved')) {
           // Campaign approved - go to campaigns list to make payment
-          navigate('/campaigns');
+          navigate('/campaigns/list');
         } else if (title.includes('ditolak') || title.includes('rejected')) {
           // Campaign rejected - go to edit page to fix
           if (notification.reference_id) {
             navigate(`/campaign-edit/${notification.reference_id}`);
           } else {
-            navigate('/campaigns');
+            navigate('/campaigns/list');
           }
         } else if (notification.reference_type === 'campaign' && notification.reference_id) {
           if (title.includes('payment') || title.includes('pembayaran')) {
