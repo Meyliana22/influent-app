@@ -50,7 +50,7 @@ import { formatCurrency } from '../../utils/helpers';
 const theme = createTheme({
   palette: {
     primary: { main: '#6E00BE' },
-    secondary: { main: '#764ba2' },
+    secondary: { main: '#5a009e' },
     success: { main: '#10b981' },
     warning: { main: '#f59e0b' },
     error: { main: '#ef4444' },
@@ -185,7 +185,7 @@ function Transactions() {
             <Box sx={{ mb: 4 }}>
               <Card sx={{ 
                 p: 4, 
-                background: 'linear-gradient(135deg, #6E00BE 0%, #764ba2 100%)', 
+                background: '#6E00BE', 
                 color: 'white',
                 borderRadius: 4,
                 boxShadow: '0 10px 30px rgba(110, 0, 190, 0.2)'

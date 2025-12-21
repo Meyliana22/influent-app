@@ -264,13 +264,13 @@ function StudentDashboard() {
                 variant="contained"
                 sx={{
                   padding: '0.5rem 1rem',
-                  background: '#667eea',
+                  background: '#6E00BE',
                   color: '#fff',
                   textTransform: 'none',
                   fontSize: '0.9rem',
                   fontWeight: 600,
                   '&:hover': {
-                    background: '#5568d3'
+                    background: '#5a009e'
                   },
                   borderRadius: 2.5
                 }}
@@ -297,7 +297,7 @@ function StudentDashboard() {
                         marginBottom: index < recentCampaigns.length - 1 ? '0.75rem' : 0,
                         '&:hover': {
                           background: '#f0f3ff',
-                          borderColor: '#667eea'
+                          borderColor: '#6E00BE'
                         }
                       }}
                     >
@@ -329,7 +329,7 @@ function StudentDashboard() {
                           variant="caption"
                           sx={{
                             fontWeight: 700,
-                            color: '#667eea',
+                            color: '#6E00BE',
                             fontSize: '0.9rem'
                           }}
                         >

@@ -1,18 +1,36 @@
-import LockOutlineIcon from '@mui/icons-material/LockOutlined';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { COLORS } from '../../constants/colors';
 import { useToast } from '../../hooks/useToast';
-import { SubmitButton } from '../../components/common';
-import authService from '../../services/authService';
-import eyeIcon from '../../assets/auth/eye.svg';
-import eyeOffIcon from '../../assets/auth/eye-off.svg';
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Container,
+  Paper,
+  InputAdornment,
+  IconButton,
+  Checkbox,
+  FormControlLabel,
+  Link,
+  Stack,
+  Fade,
+  CircularProgress,
+  Alert
+} from '@mui/material';
+import {
+  Visibility,
+  VisibilityOff,
+  Email as EmailIcon,
+  Lock as LockIcon,
+  ArrowBack as ArrowBackIcon
+} from '@mui/icons-material';
 
 function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +47,6 @@ function LoginPage() {
       if (location.state?.email) {
         setEmail(location.state.email);
       }
-      // Clear the state
       window.history.replaceState({}, document.title);
     }
   }, [location]);
@@ -67,9 +84,7 @@ function LoginPage() {
     setIsLoading(true);
     
     try {
-      // Call real API
       const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
-      console.log('🔐 Login attempt to:', `${API_BASE_URL}/auth/login`);
       
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -79,15 +94,9 @@ function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', response.headers.get('content-type'));
-
-      // Check if response is JSON
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('❌ Non-JSON response:', text.substring(0, 200));
-        throw new Error('Server error. Please make sure backend is running on port 8000.');
+        throw new Error('Server error. Please try again later.');
       }
 
       const data = await response.json();
@@ -96,17 +105,14 @@ function LoginPage() {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store token
-      const token = data.data.token
-      console.log('Token:', token);
+      const token = data.data.token;
       if (token) {
         localStorage.setItem('token', token);
       }
-      console.log('User data:', data);
-      // Store user data
-      const userData = data.data.user 
-      const userRole = userData.role 
-      const userName = userData.name 
+      
+      const userData = data.data.user;
+      const userRole = userData.role;
+      const userName = userData.name;
       
       localStorage.setItem('user', JSON.stringify({
         ...userData,
@@ -116,217 +122,236 @@ function LoginPage() {
         rememberMe
       }));
 
-      // Store refresh token if provided
       if (data.refresh_token) {
         localStorage.setItem('refreshToken', data.refresh_token);
       }
 
       showToast(`Selamat datang, ${userName}!`, 'success');
 
-      // Redirect based on role
-      let dashboardPath = '/umkm/dashboard'; // Default for umkm - ALWAYS dashboard first
+      let dashboardPath = '/campaign/dashboard';
       if (userRole === 'admin') dashboardPath = '/admin/dashboard';
       else if (userRole === 'student') dashboardPath = '/student/dashboard';
-      else if (userRole === 'umkm' || userRole === 'company') dashboardPath = '/umkm/dashboard'; // Changed from /campaigns
+      else if (userRole === 'umkm' || userRole === 'company') dashboardPath = '/campaign/dashboard';
       
       setTimeout(() => navigate(dashboardPath), 1000);
 
     } catch (error) {
-      console.error('Login error:', error);
       setLoginError(error.message || 'Email atau password salah. Coba lagi.');
-      showToast('Login gagal. Periksa kembali kredensial Anda.', 'error');
+      showToast('Login gagal.', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div style={{ 
+    <Box sx={{ 
       minHeight: '100vh', 
       background: 'linear-gradient(135deg, #f8f9ff 0%, #fef5ff 100%)',
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center', 
-      padding: '24px', 
+      p: 2,
       fontFamily: "'Montserrat', sans-serif"
     }}>
-      {/* Login Card */}
-      <div style={{ background: 'rgba(255, 255, 255, 0.95)', borderRadius: '20px', padding: '48px', maxWidth: '480px', width: '100%', boxShadow: '0 20px 60px rgba(102, 126, 234, 0.15)', border: '1px solid rgba(102, 126, 234, 0.15)', position: 'relative', zIndex: 1, backdropFilter: 'blur(20px)' }}>
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '8px', color: '#2d3748', letterSpacing: '-0.5px', fontFamily: "'Montserrat', sans-serif" }}>Masuk ke Akun Influent</h1>
-          <p style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 400, fontFamily: "'Montserrat', sans-serif" }}>Kelola campaign dan kolaborasi dengan mudah</p>
-        </div>
-
-        {successMessage && (
-          <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', border: '1px solid #86efac', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <CheckCircleIcon sx={{ fontSize: '1.25rem', color: '#16a34a' }} />
-            <span style={{ color: '#16a34a', fontSize: '0.9rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{successMessage}</span>
-          </div>
-        )}
-
-        {loginError && (
-          <div style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)', border: '1px solid #fc8181', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <LockOutlineIcon sx={{ fontSize: '1.25rem', color: '#c53030' }} />
-            <span style={{ color: '#c53030', fontSize: '0.9rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{loginError}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748', fontFamily: "'Montserrat', sans-serif" }}>Email</label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => { 
-                setEmail(e.target.value); 
-                setLoginError(''); 
-                if (errors.email.length > 0) setErrors({ ...errors, email: [] }); 
-              }} 
-              placeholder="Masukkan email" 
-              disabled={isLoading} 
-              style={{ 
-                width: '100%', 
-                padding: '14px 16px', 
-                fontSize: '0.95rem', 
-                border: `2px solid ${errors.email.length > 0 ? '#fc8181' : '#e2e8f0'}`, 
-                borderRadius: '12px', 
-                outline: 'none', 
-                transition: 'all 0.2s', 
-                fontFamily: "'Montserrat', sans-serif", 
-                backgroundColor: isLoading ? '#f7fafc' : '#fff', 
-                cursor: isLoading ? 'not-allowed' : 'text',
-                boxSizing: 'border-box'
-              }} 
-            />
-            {errors.email.length > 0 && <div style={{ marginTop: '6px', fontSize: '0.85rem', color: '#e53e3e', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{errors.email[0]}</div>}
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748', fontFamily: "'Montserrat', sans-serif" }}>Password</label>
-            <div style={{ position: 'relative' }}>
-              <input 
-                type={showPassword ? 'text' : 'password'} 
-                value={password} 
-                onChange={(e) => { 
-                  setPassword(e.target.value); 
-                  setLoginError(''); 
-                  if (errors.password.length > 0) setErrors({ ...errors, password: [] }); 
-                }} 
-                placeholder="Masukkan password"
-                disabled={isLoading} 
-                style={{ 
-                  width: '100%', 
-                  padding: '14px 48px 14px 16px', 
-                  fontSize: '0.95rem', 
-                  border: `2px solid ${errors.password.length > 0 ? '#fc8181' : '#e2e8f0'}`, 
-                  borderRadius: '12px', 
-                  outline: 'none', 
-                  transition: 'all 0.2s', 
-                  fontFamily: "'Montserrat', sans-serif", 
-                  backgroundColor: isLoading ? '#f7fafc' : '#fff', 
-                  cursor: isLoading ? 'not-allowed' : 'text',
-                  boxSizing: 'border-box'
-                }} 
-              />
-              <button 
-                type="button" 
-                onClick={() => setShowPassword(!showPassword)} 
-                disabled={isLoading} 
-                style={{ 
-                  position: 'absolute', 
-                  right: '12px', 
-                  top: '50%', 
-                  transform: 'translateY(-50%)', 
-                  background: 'transparent', 
-                  border: 'none', 
-                  cursor: isLoading ? 'not-allowed' : 'pointer', 
-                  fontSize: '1.25rem', 
-                  padding: '4px', 
-                  opacity: isLoading ? 0.5 : 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                {showPassword ? <img src={eyeIcon} alt="Hide password" style={{ width: '20px', height: '20px' }} /> : <img src={eyeOffIcon} alt="Show password" style={{ width: '20px', height: '20px' }} />}
-              </button>
-            </div>
-            {errors.password.length > 0 && <div style={{ marginTop: '6px', fontSize: '0.85rem', color: '#e53e3e', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>{errors.password[0]}</div>}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', color: '#6c757d', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>
-              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} disabled={isLoading} style={{ width: '18px', height: '18px', cursor: isLoading ? 'not-allowed' : 'pointer', accentColor: '#667eea' }} />
-              Ingat saya
-            </label>
-            <button type="button" onClick={() => navigate('/forget-password')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#667eea', fontSize: '0.9rem', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 600, textDecoration: 'none', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>Lupa password?</button>
-          </div>
-
-          <div style={{ marginBottom: '24px' }}>
-            <SubmitButton
-              isLoading={isLoading}
-              text="Masuk Sekarang"
-              loadingText="Memproses..."
-            />
-          </div>
-
-          <div style={{ textAlign: 'center', fontSize: '0.95rem', color: '#6c757d', fontWeight: 500, fontFamily: "'Montserrat', sans-serif" }}>
-            Belum punya akun? Daftar sekarang sebagai{' '}
-            <button 
-              type="button" 
-              onClick={() => navigate('/register/umkm')} 
-              disabled={isLoading} 
-              style={{ 
-                background: 'transparent', 
-                border: 'none', 
-                color: '#667eea', 
-                fontWeight: 700, 
-                cursor: isLoading ? 'not-allowed' : 'pointer', 
-                fontSize: '0.95rem', 
-                opacity: isLoading ? 0.5 : 1, 
-                fontFamily: "'Montserrat', sans-serif",
-                padding: 0,
-                margin: 0
+      <Fade in={true} timeout={800}>
+        <Container maxWidth="sm">
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 4, md: 6 },
+              borderRadius: '24px',
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 20px 60px rgba(110, 0, 190, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.8)',
+              position: 'relative'
+            }}
+          >
+            <IconButton 
+              onClick={() => navigate('/')} 
+              sx={{ 
+                position: 'absolute', 
+                top: 20, 
+                left: 20,
+                color: 'text.secondary'
               }}
             >
-              UMKM
-            </button>
-            {' / '}
-            <button 
-              type="button" 
-              onClick={() => navigate('/register/influencer')} 
-              disabled={isLoading} 
-              style={{ 
-                background: 'transparent', 
-                border: 'none', 
-                color: '#667eea', 
-                fontWeight: 700, 
-                cursor: isLoading ? 'not-allowed' : 'pointer', 
-                fontSize: '0.95rem', 
-                opacity: isLoading ? 0.5 : 1, 
-                fontFamily: "'Montserrat', sans-serif",
-                padding: 0,
-                margin: 0
-              }}
-            >
-              Influencer
-            </button>
-          </div>
-        </form>
+              <ArrowBackIcon />
+            </IconButton>
 
-        {/* <div style={{ marginTop: '32px', padding: '16px', background: 'linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%)', borderRadius: '12px', border: '1px solid #cbd5e0' }}>
-          <div style={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600, marginBottom: '8px', fontFamily: "'Montserrat', sans-serif" }}>?? Demo Credentials:</div>
-          <div style={{ fontSize: '0.8rem', color: '#6c757d', lineHeight: '1.6', fontFamily: "'Montserrat', sans-serif" }}>
-            <div><strong>UMKM:</strong> umkm@influent.com / umkm123</div>
-            <div><strong>Admin:</strong> admin@influent.com / admin123</div>
-          </div>
-        </div> */}
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Typography variant="h4" fontWeight={700} color="text.primary" gutterBottom sx={{ letterSpacing: '-0.5px' }}>
+                Selamat Datang
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Silakan masuk untuk melanjutkan
+              </Typography>
+            </Box>
 
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          <button type="button" onClick={() => navigate('/')} disabled={isLoading} style={{ background: 'transparent', border: 'none', color: '#667eea', fontSize: '0.9rem', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 600, padding: '8px 16px', borderRadius: '8px', transition: 'all 0.2s', opacity: isLoading ? 0.5 : 1, fontFamily: "'Montserrat', sans-serif" }}>Kembali ke Beranda</button>
-        </div>
-      </div>
-    </div>
+            {successMessage && (
+              <Alert severity="success" sx={{ mb: 3, borderRadius: '12px' }}>
+                {successMessage}
+              </Alert>
+            )}
+
+            {loginError && (
+              <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
+                {loginError}
+              </Alert>
+            )}
+
+            <form onSubmit={handleLogin}>
+              <Stack spacing={3}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  placeholder="Masukkan email anda"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setLoginError('');
+                    if (errors.email.length > 0) setErrors({ ...errors, email: [] });
+                  }}
+                  error={errors.email.length > 0}
+                  helperText={errors.email[0]}
+                  disabled={isLoading}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    color: '#6E00BE',
+                    textColor: '#6E00BE',
+                    
+                    sx: { borderRadius: '12px' }
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Password"
+                  placeholder="Masukkan password anda"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setLoginError('');
+                    if (errors.password.length > 0) setErrors({ ...errors, password: [] });
+                  }}
+                  error={errors.password.length > 0}
+                  helperText={errors.password[0]}
+                  disabled={isLoading}
+                 
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LockIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                    color: '#6E00BE',
+                    textColor: '#6E00BE',
+                    sx: { borderRadius: '12px' }
+                  }}
+                />
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox 
+                        checked={rememberMe} 
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        sx={{ color: '#6E00BE', '&.Mui-checked': { color: '#6E00BE' } }}
+                      />
+                    }
+                    label={<Typography variant="body2" color="text.secondary">Ingat saya</Typography>}
+                  />
+                  <Link 
+                    component="button" 
+                    type="button" 
+                    onClick={() => navigate('/forget-password')} 
+                    underline="hover" 
+                    sx={{ color: '#6E00BE', fontWeight: 600, fontSize: '0.9rem' }}
+                  >
+                    Lupa password?
+                  </Link>
+                </Box>
+
+                <Button
+                  fullWidth
+                  size="large"
+                  type="submit"
+                  variant="contained"
+                  disabled={isLoading}
+                  sx={{
+                    bgcolor: '#6E00BE',
+                    color: '#fff',
+                    py: 1.5,
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    boxShadow: '0 8px 20px rgba(110, 0, 190, 0.4)',
+                    '&:hover': {
+                      bgcolor: '#5a009e',
+                      boxShadow: '0 12px 24px rgba(110, 0, 190, 0.5)',
+                    }
+                  }}
+                >
+                  {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Masuk Sekarang'}
+                </Button>
+
+                <Box sx={{ textAlign: 'center', mt: 3 }}>
+                   <Typography variant="body2" color="text.secondary">
+                     Belum punya akun?{' '}
+                   </Typography>
+                   <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 1 }}>
+                     <Button 
+                        variant="outlined" 
+                        size="small"
+                        onClick={() => navigate('/register/umkm')}
+                        sx={{ 
+                          borderRadius: '8px', 
+                          textTransform: 'none', 
+                          borderColor: '#6E00BE', 
+                          color: '#6E00BE',
+                          '&:hover': { borderColor: '#5a009e', bgcolor: 'rgba(110, 0, 190, 0.04)' }
+                        }}
+                     >
+                        Daftar UMKM
+                     </Button>
+                     <Button 
+                        variant="outlined" 
+                        size="small"
+                        onClick={() => navigate('/register/influencer')}
+                        sx={{ 
+                          borderRadius: '8px', 
+                          textTransform: 'none', 
+                          borderColor: '#6E00BE', 
+                          color: '#6E00BE',
+                          '&:hover': { borderColor: '#5a009e', bgcolor: 'rgba(110, 0, 190, 0.04)' } 
+                        }}
+                     >
+                        Daftar Influencer
+                     </Button>
+                   </Stack>
+                </Box>
+              </Stack>
+            </form>
+          </Paper>
+        </Container>
+      </Fade>
+    </Box>
   );
 }
 

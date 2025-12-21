@@ -248,8 +248,8 @@ function Reports() {
                 }]}
                 series={[{
                   data: [65, 80, 45, 90, 75, 100],
-                  // color: COLORS.gradientPrimary ? undefined : '#667eea',
-                  color: '#667eea',
+                  // color: COLORS.gradientPrimary ? undefined : '#6E00BE',
+                  color: '#6E00BE',
                   label: 'Campaigns',
                 }]}
                 height={220}
@@ -288,7 +288,7 @@ function Reports() {
                 <LineChart
                   height={200}
                   width={320}
-                  series={[{ data: [15, 30, 45, 35, 60, 80], color: '#667eea', label: 'Users' }]}
+                  series={[{ data: [15, 30, 45, 35, 60, 80], color: '#6E00BE', label: 'Users' }]}
                   xAxis={[{ scaleType: 'point', data: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'] }]}
                   sx={{ pr: 3.5 }}
                 />
@@ -426,14 +426,14 @@ function Reports() {
                           sx={{
                             px: 2,
                             py: 0.5,
-                            bgcolor: '#667eea',
+                            bgcolor: '#6E00BE',
                             borderRadius: 2.5,
                             color: '#fff',
                             fontSize: 13,
                             fontWeight: 600,
                             textTransform: 'none',
                             boxShadow: 'none',
-                            '&:hover': { bgcolor: '#5a67d8' }
+                            '&:hover': { bgcolor: '#5a009e' }
                           }}
                         >
                           View

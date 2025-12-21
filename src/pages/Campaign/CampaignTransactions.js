@@ -1,93 +1,124 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  Stack,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Tabs,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Chip,
+  Dialog,
+  Grid,
+  DialogContent,
+  DialogActions
+} from '@mui/material';
+import {
+  CheckCircle as CheckCircleIcon,
+  Undo as UndoIcon,
+  AccountBalanceWallet as AccountBalanceWalletIcon,
+  Download as DownloadIcon,
+  CreditCard as CreditCardIcon
+} from '@mui/icons-material';
+
 import Sidebar from '../../components/common/Sidebar';
 import Topbar from '../../components/common/Topbar';
-import { useNavigate } from 'react-router-dom';
-import { COLORS } from '../../constants/colors';
-import { formatCurrency, formatDate } from '../../utils/helpers';
 import { useToast } from '../../hooks/useToast';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import UndoIcon from '@mui/icons-material/Undo';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import DownloadIcon from '@mui/icons-material/Download';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-
+import { formatCurrency, formatDate } from '../../utils/helpers';
 import transactionService from '../../services/transactionService';
-import { useParams } from 'react-router-dom';
+import { COLORS } from '../../constants/colors';
 
-function TransactionsPage() {
+function CampaignTransactions() {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { id: campaignId } = useParams(); // Get campaign ID if available
+  const { id: campaignId } = useParams(); // Optional: allow filtering by campaign if needed via URL
+  
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState(0); // 0: My Payments, 1: Distributions
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Responsive state for sidebar
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1000);
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  // Responsive state
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Handle window resize for responsive design
-  React.useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1000);
-    };
-
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1000);
     window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const loadTransactions = async () => {
     setIsLoading(true);
     try {
       const params = {};
-      if (campaignId) params.campaign_id = campaignId;
       if (filterStatus !== 'all') params.status = filterStatus;
       if (searchQuery) params.search = searchQuery;
+      let data = [];
+
+      // Tab 0: My Payments (Pemasukan/Topup) - /payments/my-payments
+      // Tab 1: Distributions (Pengeluaran) - /campaign-payments/history
       
-      const response = await transactionService.getMyTransactions(params);
-      setTransactions(response.data || []);
+      if (activeTab === 0) {
+        const response = await transactionService.getMyPayments(params);
+        data = response.data || [];
+        data = data.map(item => ({
+          ...item,
+          normalizedId: item.payment_id,
+          normalizedCampaign: item.Campaign?.title,
+          normalizedUser: '-', 
+          normalizedDate: item.created_at,
+          normalizedAmount: item.amount,
+          normalizedStatus: item.status,
+          normalizedType: 'Payment'
+        }));
+      } else {
+        if (campaignId) params.campaign_id = campaignId;
+        const response = await transactionService.getPaymentHistory(params);
+        data = response.data || [];
+        data = data.map(item => ({
+          ...item,
+          normalizedId: item.id,
+          normalizedCampaign: item.details?.campaign_title,
+          normalizedUser: item.details?.student_name,
+          normalizedDate: item.date,
+          normalizedAmount: item.amount,
+          normalizedStatus: item.status,
+          normalizedType: 'Distribution'
+        }));
+      }
+      
+      setTransactions(data);
     } catch (error) {
       console.error("Error loading transactions:", error);
-      // Fallback to empty if error, or show toast
-      // showToast("Failed to load transactions", "error");
     } finally {
       setIsLoading(false);
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadTransactions();
-  }, [campaignId, filterStatus, searchQuery]);
+  }, [campaignId, filterStatus, searchQuery, activeTab]);
 
   const getStatusColor = (status) => {
     switch(status?.toLowerCase()) {
+      case 'completed':
       case 'paid': 
       case 'success':
         return { bg: '#d1fae5', color: '#065f46' };
@@ -98,16 +129,13 @@ function TransactionsPage() {
     }
   };
 
-  // Stats calculation
-  const totalPaid = transactions.filter(t => t.status?.toLowerCase() === 'paid' || t.status?.toLowerCase() === 'success')
-    .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
-  const totalRefunded = transactions.filter(t => t.status?.toLowerCase() === 'refunded')
-    .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
-
-  // Since we fetch filtered data from API (ideally), client-side filtering might be redundant 
-  // but if API doesn't support search/filter fully yet, we keep it safe:
-  const filteredTransactions = transactions; 
-
+  const totalPaid = transactions
+    .filter(t => t.normalizedStatus?.toLowerCase() === 'completed' || t.normalizedStatus?.toLowerCase() === 'paid' || t.normalizedStatus?.toLowerCase() === 'success')
+    .reduce((sum, t) => sum + (parseFloat(t.normalizedAmount) || 0), 0);
+    
+  const totalRefunded = transactions
+    .filter(t => t.normalizedStatus?.toLowerCase() === 'refunded')
+    .reduce((sum, t) => sum + (parseFloat(t.normalizedAmount) || 0), 0);
 
   const handleViewDetails = (transaction) => {
     setSelectedTransaction(transaction);
@@ -128,29 +156,47 @@ function TransactionsPage() {
             overflow: 'auto',
           }}
         >
+          {/* Header */}
           <Box sx={{ mb: 4, mt: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
               <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700} sx={{ color: '#1a1f36', m: 0, fontFamily: 'Inter, sans-serif' }}>
-                {campaignId ? 'Campaign Transactions' : 'Transactions'}
+                 Riwayat Transaksi
               </Typography>
               <Typography sx={{ fontSize: 15, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>
-                {campaignId ? 'View withdrawals and distributions for this campaign' : 'View and manage all your campaign transactions'}
+                Lihat semua riwayat transaksi, pembayaran, dan pengembalian dana
               </Typography>
             </Box>
+            {/* If we are in a filtered view, allow clearing it */}
             {campaignId && (
               <Button 
                 variant="outlined" 
-                onClick={() => navigate('/transactions')}
+                onClick={() => navigate('/campaign/transactions')}
                 sx={{ ml: 'auto', textTransform: 'none' }}
               >
-                View All Transactions
+                Lihat Semua Transaksi
               </Button>
             )}
           </Box>
+
+          {/* Tabs */}
+          <Paper sx={{ mb: 3, borderRadius: 2, borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs 
+              value={activeTab} 
+              onChange={(e, newValue) => setActiveTab(newValue)} 
+              textColor="primary"
+              indicatorColor="primary"
+              sx={{ px: 2, pt: 1 }}
+            >
+              <Tab label="Riwayat Pembayaran" sx={{ textTransform: 'none', fontWeight: 600, fontSize: 15 }} />
+              <Tab label="Riwayat Distribusi" sx={{ textTransform: 'none', fontWeight: 600, fontSize: 15 }} />
+            </Tabs>
+          </Paper>
+
+          {/* Statistics Cards */}
           <Box sx={{ display: 'flex', gap: isMobile ? 2 : 2.5, mb: 4, flexDirection: { xs: 'column', md: 'row' } }}>
             {[
               {
-                title: 'Total Paid',
+                title: 'Total Dibayarkan',
                 value: `Rp ${totalPaid.toLocaleString('id-ID')}`,
                 IconComponent: CheckCircleIcon,
                 color: '#10b981',
@@ -158,7 +204,7 @@ function TransactionsPage() {
                 count: transactions.filter(t => t.status?.toLowerCase() === 'paid' || t.status?.toLowerCase() === 'success').length
               },
               {
-                title: 'Total Refunded',
+                title: 'Total Direfund',
                 value: `Rp ${totalRefunded.toLocaleString('id-ID')}`,
                 IconComponent: UndoIcon,
                 color: '#f59e0b',
@@ -166,12 +212,12 @@ function TransactionsPage() {
                 count: transactions.filter(t => t.status?.toLowerCase() === 'refunded').length
               },
               {
-                title: 'All Transactions',
+                title: 'Total Transaksi',
                 value: transactions.length,
                 IconComponent: AccountBalanceWalletIcon,
                 color: '#3b82f6',
                 bgColor: '#dbeafe',
-                count: 'Total'
+                count: 'Semua'
               }
             ].map((stat, index) => (
               <Paper
@@ -195,7 +241,7 @@ function TransactionsPage() {
                 </Stack>
                 <Typography sx={{ fontSize: 13, color: '#6c757d', mb: 1, fontFamily: 'Inter, sans-serif' }}>{stat.title}</Typography>
                 <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1a1f36', mb: 0.5, fontFamily: 'Inter, sans-serif' }}>{stat.value}</Typography>
-                <Typography sx={{ fontSize: 12.5, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>{stat.count} transactions</Typography>
+                <Typography sx={{ fontSize: 12.5, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>{stat.count} transaksi</Typography>
               </Paper>
             ))}
           </Box>
@@ -206,7 +252,7 @@ function TransactionsPage() {
               <Box sx={{ flex: 1, minWidth: isMobile ? '100%' : 300 }}>
                 <TextField
                   fullWidth
-                  placeholder="Search transactions..."
+                  placeholder="Cari transaksi (ID, Campaign, Influencer)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   size="medium"
@@ -223,7 +269,7 @@ function TransactionsPage() {
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
                 >
-                  <MenuItem value="all">All Status</MenuItem>
+                  <MenuItem value="all">Semua Status</MenuItem>
                   <MenuItem value="Paid">Paid</MenuItem>
                   <MenuItem value="Refunded">Refunded</MenuItem>
                 </Select>
@@ -238,31 +284,53 @@ function TransactionsPage() {
                 <TableRow sx={{ bgcolor: '#f7fafc' }}>
                   <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>ID</TableCell>
                   <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Campaign</TableCell>
-                  <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Amount</TableCell>
+                  <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Nominal</TableCell>
                   <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Status</TableCell>
-                  <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Date</TableCell>
-                  <TableCell align="center" sx={{ py: 2, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Actions</TableCell>
+                  <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Tanggal</TableCell>
+                  <TableCell align="center" sx={{ py: 2, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Aksi</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredTransactions.length === 0 ? (
+                {isLoading ? (
+                   <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 5, color: '#6c757d' }}>
+                      Memuat data transaksi...
+                    </TableCell>
+                  </TableRow>
+                ) : transactions.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 5, color: '#6c757d' }}>
-                      No transactions found
+                      Tidak ada transaksi ditemukan
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredTransactions.map((trx) => {
+                  transactions.map((trx) => {
                     const statusStyle = getStatusColor(trx.status);
                     return (
-                      <TableRow key={trx.id} sx={{ borderBottom: '1px solid #e2e8f0' }}>
-                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 600, color: '#667eea' }}>{trx.id || trx.transaction_id || '-'}</TableCell>
-                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>{trx.campaignName || trx.campaign?.title || '-'}</TableCell>
-                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 700, color: '#1a1f36' }}>Rp {trx.amount.toLocaleString('id-ID')}</TableCell>
-                        <TableCell sx={{ py: 2.5, pl: 3 }}>
-                          <Chip label={trx.status} sx={{ fontSize: 12, fontWeight: 600, bgcolor: statusStyle.bg, color: statusStyle.color }} />
+                      <TableRow key={trx.normalizedId} sx={{ borderBottom: '1px solid #e2e8f0' }}>
+                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 600, color: '#667eea' }}>
+                          {trx.normalizedId || '-'}
                         </TableCell>
-                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, color: '#6c757d' }}>{formatDate(trx.date)}</TableCell>
+                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
+                          {trx.normalizedCampaign || '-'}
+                        </TableCell>
+                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 700, color: '#1a1f36' }}>
+                          Rp {(parseFloat(trx.normalizedAmount) || 0).toLocaleString('id-ID')}
+                        </TableCell>
+                        <TableCell sx={{ py: 2.5, pl: 3 }}>
+                          <Chip 
+                            label={trx.normalizedStatus} 
+                            sx={{ 
+                              fontSize: 12, 
+                              fontWeight: 600, 
+                              bgcolor: statusStyle.bg, 
+                              color: statusStyle.color 
+                            }} 
+                          />
+                        </TableCell>
+                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, color: '#6c757d' }}>
+                          {formatDate(trx.normalizedDate)}
+                        </TableCell>
                         <TableCell align="center" sx={{ py: 2.5 }}>
                           <Button
                             onClick={() => handleViewDetails(trx)}
@@ -278,7 +346,7 @@ function TransactionsPage() {
                               textTransform: 'none'
                             }}
                           >
-                            View Details
+                            Detail
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -301,7 +369,7 @@ function TransactionsPage() {
             overflow: 'visible',
           }
         }}>
-          {/* Colored header with icon and close button */}
+          {/* Header */}
           <Box sx={{
             display: 'flex',
             alignItems: 'center',
@@ -317,8 +385,12 @@ function TransactionsPage() {
             <Stack direction="row" alignItems="center" spacing={2}>
               <AccountBalanceWalletIcon sx={{ fontSize: 32, color: '#fff' }} />
               <Box>
-                <Typography variant="h6" fontWeight={700} sx={{ color: '#fff', fontFamily: 'Inter, sans-serif', mb: 0.2 }}>Transaction Details</Typography>
-                <Typography sx={{ fontSize: 14, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif' }}>{selectedTransaction.id}</Typography>
+                <Typography variant="h6" fontWeight={700} sx={{ color: '#fff', fontFamily: 'Inter, sans-serif', mb: 0.2 }}>
+                  Detail Transaksi
+                </Typography>
+                <Typography sx={{ fontSize: 14, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif' }}>
+                  {selectedTransaction.normalizedId}
+                </Typography>
               </Box>
             </Stack>
             <Button onClick={() => setShowDetailModal(false)} sx={{
@@ -340,43 +412,63 @@ function TransactionsPage() {
             <Grid container spacing={3} sx={{ mb: 2.5 }}>
               <Grid item xs={12} sm={6}>
                 <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Campaign</Typography>
-                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>{selectedTransaction.campaignName || selectedTransaction.campaign?.title || '-'}</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>
+                  {selectedTransaction.normalizedCampaign || '-'}
+                </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Influencer</Typography>
-                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>{selectedTransaction.influencer || selectedTransaction.user?.name || '-'}</Typography>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>{selectedTransaction.normalizedType === 'Distribution' ? 'Influencer' : 'User'}</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>
+                  {selectedTransaction.normalizedUser || '-'}
+                </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Amount</Typography>
-                <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#10b981' }}>Rp {selectedTransaction.amount.toLocaleString('id-ID')}</Typography>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Nominal</Typography>
+                <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#10b981' }}>
+                  Rp {(parseFloat(selectedTransaction.normalizedAmount) || 0).toLocaleString('id-ID')}
+                </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Payment Method</Typography>
-                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>{selectedTransaction.paymentMethod}</Typography>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Metode Pembayaran</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>
+                  {selectedTransaction.paymentMethod || selectedTransaction.payment_type || 'Transfer'}
+                </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Date</Typography>
-                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>{formatDate(selectedTransaction.date)}</Typography>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Tanggal</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>
+                  {formatDate(selectedTransaction.normalizedDate)}
+                </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Status</Typography>
-                <Chip label={selectedTransaction.status} sx={{ fontSize: 13, fontWeight: 700, borderRadius: 1.5, bgcolor: getStatusColor(selectedTransaction.status).bg, color: getStatusColor(selectedTransaction.status).color, px: 1.5, py: 0.5 }} />
+                <Chip 
+                  label={selectedTransaction.normalizedStatus} 
+                  sx={{ 
+                    fontSize: 13, 
+                    fontWeight: 700, 
+                    borderRadius: 1.5, 
+                    bgcolor: getStatusColor(selectedTransaction.normalizedStatus).bg, 
+                    color: getStatusColor(selectedTransaction.normalizedStatus).color, 
+                    px: 1.5, py: 0.5 
+                  }} 
+                />
               </Grid>
             </Grid>
             <Box sx={{ mb: 2.5 }}>
-              <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 1, fontWeight: 500 }}>Description</Typography>
+              <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 1, fontWeight: 500 }}>Deskripsi</Typography>
               <Box sx={{ fontSize: 14, color: '#2d3748', lineHeight: 1.7, p: 2.5, bgcolor: '#fff', borderRadius: 2, border: '1px solid #e2e8f0', minHeight: 56 }}>
-                {selectedTransaction.description}
+                {selectedTransaction.description || '-'}
               </Box>
             </Box>
           </DialogContent>
           <DialogActions sx={{ px: 4, pb: 3, bgcolor: '#f7fafc', borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
             <Button
-              onClick={() => showToast('Receipt downloaded!', 'success')}
+              onClick={() => showToast('Bukti transaksi berhasil diunduh!', 'success')}
               sx={{ flex: 1, py: 1.2, bgcolor: COLORS.gradient, borderRadius: 1.5, color: '#667eea', fontWeight: 600, textTransform: 'none', boxShadow: 'none', '& .MuiButton-startIcon': { mr: 1 } }}
               startIcon={<DownloadIcon sx={{ color: '#667eea' }} />}
             >
-              Download Receipt
+              Unduh Bukti Transaksi
             </Button>
           </DialogActions>
         </Dialog>
@@ -385,4 +477,4 @@ function TransactionsPage() {
   );
 }
 
-export default TransactionsPage;
+export default CampaignTransactions;

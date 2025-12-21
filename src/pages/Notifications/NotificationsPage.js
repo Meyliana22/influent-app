@@ -229,7 +229,7 @@ function NotificationsPage() {
           }
         } else if (notif.reference_type === 'campaign' && notif.reference_id) {
           if (title.includes('payment') || title.includes('pembayaran')) {
-            navigate('/transactions');
+            navigate('/campaign/transactions');
           } else if (title.includes('applicant') || title.includes('pelamar')) {
             navigate(`/campaign/${notif.reference_id}/applicants`);
           } else {
@@ -241,7 +241,7 @@ function NotificationsPage() {
         if (title.includes('application') || title.includes('lamaran')) {
           navigate('/applications');
         } else if (title.includes('payment') || title.includes('pembayaran')) {
-          navigate('/transactions');
+          navigate('/student/transactions');
         }
       }
   };

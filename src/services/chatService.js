@@ -40,6 +40,7 @@ export const createChatRoom = async (data) => {
  */
 export const getMyChatRooms = async () => {
     try {
+      console.log(API_BASE_URL)
       const response = await authFetch(`${API_BASE_URL}/chat-rooms/mine`);
       return await handleResponse(response);
     } catch (error) {

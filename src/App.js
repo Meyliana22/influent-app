@@ -16,7 +16,7 @@ import VerifyEmailPage from './pages/Auth/VerifyEmailPage';
 import ChatPage from './pages/Chat/ChatPage';
 import NotificationsPage from './pages/Notifications/NotificationsPage';
 import UserPage from './pages/User/UserPage';
-import TransactionsPage from './pages/Transactions/TransactionsPage';
+import CampaignTransactions from './pages/Campaign/CampaignTransactions';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ManageUsers from './pages/Admin/ManageUsers';
 import ManageCampaigns from './pages/Admin/ManageCampaigns';
@@ -24,7 +24,7 @@ import AdminTransactions from './pages/Admin/AdminTransactions';
 import ManageWithdrawals from './pages/Admin/ManageWithdrawals';
 import Reports from './pages/Admin/Reports';
 import AdminReviewSubmissions from './pages/Admin/AdminReviewSubmissions';
-import UMKMDashboard from './pages/UMKM/UMKMDashboard';
+import CampaignDashboard from './pages/Campaign/CampaignDashboard';
 import StudentDashboard from './pages/Student/StudentDashboard';
 import BrowseCampaigns from './pages/Student/BrowseCampaigns';
 import MyApplications from './pages/Student/MyApplications';
@@ -75,8 +75,8 @@ function App() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/user" element={<UserPage />} />
 
-          <Route path="/transactions" element={<TransactionsPage />} />
-          <Route path="/campaigns" element={<CampaignList />} />
+
+          <Route path="/campaigns/list" element={<CampaignList />} />
           <Route path="/campaign-create" element={<CampaignCreate />} />
           <Route path="/campaign-edit/:id" element={<CampaignCreate />} />
           <Route path="/campaign/:id/payment" element={<PaymentConfirmation />} />
@@ -87,6 +87,9 @@ function App() {
           <Route path="/campaign/:campaignId/review-submissions" element={<ReviewSubmissions />} />
           <Route path="/campaign/:campaignId/report" element={<CampaignReport />} />
           <Route path="/campaign/:id/detail" element={<CampaignCreate />} />
+          <Route path="/campaign/:id/transactions" element={<CampaignTransactions />} />
+          <Route path="/campaign/transactions" element={<CampaignTransactions />} />
+          <Route path="/transactions" element={<CampaignTransactions />} />
           
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -98,8 +101,8 @@ function App() {
           <Route path="/admin/review-submissions" element={<AdminReviewSubmissions />} />
           
           {/* UMKM Routes */}
-          <Route path="/umkm/dashboard" element={<UMKMDashboard />} />
-          <Route path="/umkm/campaigns" element={<CampaignList />} />
+          <Route path="/campaign/dashboard" element={<CampaignDashboard />} />
+          {/* <Route path="/campaign/campaigns" element={<CampaignList />} /> */}
           
           {/* Student Routes */}
           <Route path="/student/dashboard" element={<StudentDashboard />} />

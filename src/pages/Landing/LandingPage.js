@@ -1,5 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  Box,
+  Typography,
+  Container,
+  Grid,
+  Stack,
+  useTheme,
+  useMediaQuery,
+  Link,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Card,
+  CardContent,
+  Avatar,
+  Fade,
+  Grow
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import logo from '../../assets/logo.svg';
 import personDashboard from '../../assets/dashboard/person.svg';
 import personInfluent from '../../assets/dashboard/person_influent.svg';
@@ -14,608 +40,505 @@ import logoFooter from '../../assets/dashboard/footerLogo.svg';
 import emailIcon from '../../assets/dashboard/email.svg';
 import phoneIcon from '../../assets/dashboard/phone.svg';
 import locationIcon from '../../assets/dashboard/location.svg';
-import broadcastIcon from '../../assets/dashboard/broadcast.svg';
 
 function LandingPage() {
   const navigate = useNavigate();
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const isMobile = windowWidth < 800;
-  const isTablet = windowWidth < 1020 && windowWidth >= 800;
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const navItems = [
+    { label: 'Tentang', href: '#tentang' },
+    { label: 'Cara Kerja', href: '#cara-kerja' },
+    { label: 'Mengapa Influent?', href: '#mengapa' },
+  ];
+
+  const drawer = (
+    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
+      <Box sx={{ my: 2, display: 'flex', justifyContent: 'center' }}>
+         <img src={logo} alt="Influent" style={{ height: '28px' }} />
+      </Box>
+      <List>
+        {navItems.map((item) => (
+          <ListItem key={item.label} disablePadding>
+            <ListItemButton component="a" href={item.href} sx={{ textAlign: 'center' }}>
+              <ListItemText primary={item.label} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+        <ListItem disablePadding>
+             <ListItemButton onClick={() => navigate('/login')} sx={{ justifyContent: 'center' }}>
+                <ListItemText primary="Masuk" sx={{ color: '#6E00BE', fontWeight: 600 }} />
+             </ListItemButton>
+        </ListItem>
+      </List>
+    </Box>
+  );
 
   return (
-    <div style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}>
-      {/* Header */}
-      <header style={{
-        background: '#fff',
-        padding: '20px 0',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000
-      }}>
-        <div style={{ 
-          padding: '0 24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center'}}>
-            <img src={logo} alt="Influent" style={{ height: '28px' }} />
-          </div>
-          <nav style={{ 
-            display: 'flex', 
-            gap: isMobile ? '12px' : '32px', 
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            justifyContent: isMobile ? 'center' : 'flex-start'
-          }}>
-            {!isMobile && (
-              <>
-                <a href="#tentang" style={{ color: '#333', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>Tentang</a>
-                <a href="#cara-kerja" style={{ color: '#333', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>Cara Kerja</a>
-                <a href="#mengapa" style={{ color: '#333', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>Mengapa Influent?</a>
-              </>
+    <Box sx={{ fontFamily: 'Montserrat, Arial, sans-serif', bgcolor: '#F8F9FA', minHeight: '100vh' }}>
+      {/* Header with Glassmorphism */}
+      <AppBar 
+        position="sticky" 
+        elevation={scrolled ? 4 : 0}
+        sx={{ 
+          bgcolor: '#F8F9FA' ,
+          // backdropFilter: scrolled ? 'blur(20px)' : 'none',
+          // transition: 'all 0.3s ease',
+          borderBottom: '1px solid rgba(0,0,0,0.05)',
+          py: 1
+        }}
+      >
+        <Container maxWidth="xl">
+          <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <img src={logo} alt="Influent" style={{ height: '32px' }} />
+            </Box>
+            
+            {isMobile ? (
+              <IconButton
+                color="primary"
+                aria-label="open drawer"
+                edge="start"
+                onClick={handleDrawerToggle}
+              >
+                <MenuIcon />
+              </IconButton>
+            ) : (
+              <Stack direction="row" spacing={4} alignItems="center">
+                {navItems.map((item) => (
+                  <Link 
+                    key={item.label} 
+                    href={item.href} 
+                    underline="none" 
+                    sx={{ 
+                      fontWeight: 500, 
+                      fontSize: '0.95rem', 
+                      color: scrolled ? 'text.primary' : (scrolled ? 'text.primary' : '#333'), // Depending on hero bg coverage, keep text contrasting
+                      '&:hover': { color: '#6E00BE' },
+                      transition: 'color 0.2s'
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate('/login')}
+                  sx={{
+                    color: '#6E00BE',
+                    borderColor: '#6E00BE',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderRadius: '12px',
+                    px: 3,
+                    py: 1,
+                    borderWidth: '2px',
+                    '&:hover': {
+                      bgcolor: 'rgba(110, 0, 190, 0.04)',
+                      borderColor: '#6E00BE',
+                      borderWidth: '2px'
+                    }
+                  }}
+                >
+                  Masuk
+                </Button>
+              </Stack>
             )}
-            <button
-              onClick={() => navigate('/login')}
-              style={{
-                padding: isMobile ? '8px 16px' : '10px 24px',
-                background: 'transparent',
-                border: '2px solid #6E00BE',
-                borderRadius: '8px',
-                color: '#6E00BE',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: isMobile ? '0.85rem' : '0.95rem'
-              }}
-            >
-              Masuk
-            </button>
-          </nav>
-        </div>
-      </header>
+          </Toolbar>
+        </Container>
+      </AppBar>
 
-      {/* Hero Section */}
-      <section style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '80px 24px',
-        color: '#fff'
+      <Box component="nav">
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 280, borderTopRightRadius: 16, borderBottomRightRadius: 16 },
+          }}
+        >
+          {drawer}
+        </Drawer>
+      </Box>
+
+      {/* Hero Section - Flat White */}
+      <Box sx={{
+        bgcolor: '#ffffff',
+        pt: { xs: 8, md: 15 },
+        pb: { xs: 10, md: 20 },
+        color: '#1a1a1a',
+        position: 'relative',
+        overflow: 'hidden',
+        mt: -10 
       }}>
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '48px',
-          flexDirection: isMobile ? 'column' : 'row',
-          textAlign: isMobile ? 'center' : 'left'
-        }}>
-          <div style={{ flex: 1 }}>
-            <h1 style={{ 
-              fontSize: isMobile ? '2rem' : '3rem', 
-              fontWeight: 700, 
-              marginBottom: '24px',
-              lineHeight: '1.2'
-            }}>
-              PLATFORM KOLABORASI UMKM & MAHASISWA UNTUK PROMOSI DIGITAL
-            </h1>
-            <p style={{ 
-              fontSize: isMobile ? '1rem' : '1.2rem', 
-              marginBottom: '32px',
-              lineHeight: '1.6',
-              opacity: 0.9
-            }}>
-             Influent mempertemukan UMKM dengan mahasiswa influencer untuk menciptakan promosi digital yang efektif dan berdampak.
-              Gabung sekarang sebagai UMKM atau mahasiswa influencer!
-            </p>
-            <div style={{ 
-              display: 'flex', 
-              gap: '16px',
-              flexDirection: isMobile ? 'column' : 'row',
-              justifyContent: isMobile ? 'center' : 'flex-start'
-            }}>
-              <button
-                onClick={() => navigate('/register/umkm')}
-                style={{
-                  padding: '16px 32px',
-                  background: '#fff',
-                  border: 'none',
-                  borderRadius: '12px',
-                  color: '#6E00BE',
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
-                }}
-              >
-                Daftar Sebagai UMKM
-              </button>
-              <button
-                onClick={() => navigate('/register/influencer')}
-                style={{
-                  padding: '16px 32px',
-                  background: 'transparent',
-                  border: '2px solid #fff',
-                  borderRadius: '12px',
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  cursor: 'pointer'
-                }}
-              >
-                Daftar Sebagai Influencer
-              </button>
-            </div>
-          </div>
-          {!isMobile && (
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-              <div style={{
-                width: isTablet ? '300px' : '400px',
-                height: isTablet ? '300px' : '400px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '8rem',
-                transition: 'all 0.3s ease'
-              }}>
-                <img 
-                  src={personDashboard} 
+        <Container maxWidth="lg">
+          <Grid container spacing={8} alignItems="center">
+            <Grid item xs={12} md={6} >
+              <Grow in={true} timeout={1000}>
+                <Box>
+                  <Typography variant="h2" component="h1" fontWeight={800} sx={{ fontSize: { xs: '2.5rem', md: '3.5rem' }, mb: 3, lineHeight: 1.1, color: '#1a1a1a' }}>
+                    PLATFORM KOLABORASI <Box component="span" sx={{ color: '#6E00BE' }}>UMKM</Box> & <Box component="span" sx={{ color: '#6E00BE' }}>MAHASISWA</Box>
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' }, mb: 5, color: '#666', lineHeight: 1.6, maxWidth: '600px' }}>
+                    Temukan partner ideal untuk promosi digital yang efektif. Hubungkan potensi mahasiswa dengan kebutuhan bisnis UMKM.
+                  </Typography>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <Button
+                      variant="contained"
+                      onClick={() => navigate('/register/umkm')}
+                      endIcon={<ArrowForwardIcon />}
+                      sx={{
+                        bgcolor: '#6E00BE',
+                        color: '#fff',
+                        fontWeight: 700,
+                        px: 4,
+                        py: 1.8,
+                        borderRadius: '12px',
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        boxShadow: 'none', // Flat
+                        '&:hover': {
+                          bgcolor: '#5a009e',
+                          boxShadow: 'none'
+                        }
+                      }}
+                    >
+                      Daftar Sebagai UMKM
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() => navigate('/register/influencer')}
+                      sx={{
+                        color: '#6E00BE',
+                        borderColor: '#6E00BE',
+                        borderWidth: 2,
+                        fontWeight: 700,
+                        px: 4,
+                        py: 1.8,
+                        borderRadius: '12px',
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        '&:hover': {
+                          borderColor: '#5a009e',
+                          bgcolor: 'rgba(110, 0, 190, 0.05)',
+                          borderWidth: 2
+                        }
+                      }}
+                    >
+                      Daftar Sebagai Influencer
+                    </Button>
+                  </Stack>
+                </Box>
+              </Grow>
+            </Grid>
+            {!isMobile && (
+              <Grid item md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Box
+                  component="img"
+                  src={personDashboard}
                   alt="Dashboard"
-                  style={{
+                  sx={{
                     width: '100%',
-                    height: '100%',
-                    objectFit: 'contain'
+                    maxWidth: 550,
+                    height: 'auto'
                   }}
                 />
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+              </Grid>
+            )}
+          </Grid>
+        </Container>
+      </Box>
 
       {/* Tentang Kami Section */}
-      <section id="tentang" style={{ padding: isMobile ? '40px 24px' : '80px 24px', background: '#fff' }}>
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: isMobile ? '32px' : '64px',
-          flexDirection: isMobile ? 'column' : 'row'
-        }}>
-          {!isMobile && (
-            <div style={{
-              width: isTablet ? '350px' : '500px',
-              height: isTablet ? '280px' : '400px',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '4rem',
-              flexShrink: 0,
-              transition: 'all 0.3s ease'
-            }}>
-              <img src={personInfluent} alt="About Us" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-            </div>
-          )}
-          <div style={{ flex: 1, textAlign: isMobile ? 'center' : 'left' }}>
-            <h2 style={{ 
-              fontSize: isMobile ? '1.8rem' : (isTablet ? '2rem' : '2.5rem'), 
-              fontWeight: 700, 
-              marginBottom: '24px', 
-              color: '#2d3748' 
-            }}>
-              Tentang Kami
-            </h2>
-            <p style={{ 
-              fontSize: isMobile ? '0.95rem' : '1.1rem', 
-              lineHeight: '1.8', 
-              color: '#4a5568', 
-              marginBottom: '16px' 
-            }}>
-              Influent adalah platform inovatif yang menghubungkan UMKM dengan mahasiswa influencer. 
-              Kami percaya bahwa kolaborasi antara pelaku bisnis lokal dan talenta muda dapat menciptakan 
-              dampak positif untuk ekonomi digital Indonesia.
-            </p>
-            <p style={{ 
-              fontSize: isMobile ? '0.95rem' : '1.1rem', 
-              lineHeight: '1.8', 
-              color: '#4a5568' 
-            }}>
-              Dengan Influent, UMKM dapat menemukan mahasiswa influencer yang tepat untuk mempromosikan produk mereka, 
-              sementara mahasiswa influencer dapat mengembangkan skill dan mendapatkan penghasilan.
-            </p>
-          </div>
-        </div>
-      </section>
+      <Box component="section" id="tentang" sx={{ py: { xs: 8, md: 12 }, bgcolor: '#fff' }}>
+        <Container maxWidth="lg">
+           <Grid container spacing={8} alignItems="center">
+             {!isMobile && (
+               <Grid item md={5}>
+                 <Box
+                    sx={{
+                      borderRadius: '32px',
+                      overflow: 'hidden',
+                      boxShadow: '0 20px 40px rgba(110, 0, 190, 0.1)',
+                      transform: 'rotate(-3deg)',
+                      transition: 'transform 0.3s',
+                      '&:hover': { transform: 'rotate(0deg) scale(1.02)' }
+                    }}
+                 >
+                    <Box component="img" src={personInfluent} alt="About Us" sx={{ width: '100%', height: 'auto', display: 'block' }} />
+                 </Box>
+               </Grid>
+             )}
+             <Grid item xs={12} md={7} >
+                <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: 1.5 }}>
+                  TENTANG KAMI
+                </Typography>
+                <Typography variant="h3" component="h2" fontWeight={800} color="text.primary" sx={{ fontSize: { xs: '2rem', md: '3rem' }, mb: 3, mt: 1 }}>
+                   Membangun Ekosistem Digital
+                </Typography>
+                <Typography variant="body1" color="text.secondary" paragraph sx={{ fontSize: '1.1rem', lineHeight: 1.8 }}>
+                  Influent adalah jembatan inovatif yang menghubungkan aspirasi bisnis UMKM dengan kreativitas mahasiswa. 
+                  Platform kami dirancang untuk menciptakan simbiosis mutualisme yang mendorong pertumbuhan ekonomi lokal.
+                </Typography>
+                <Grid container spacing={4} sx={{ mt: 2 }}>
+                  {[
+                    { number: '1000+', label: 'UMKM Terdaftar' },
+                    { number: '5000+', label: 'Influencer Mahasiswa' },
+                  ].map((stat, idx) => (
+                    <Grid item key={idx}>
+                      <Typography variant="h4" fontWeight={800} color="primary">{stat.number}</Typography>
+                      <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
+                    </Grid>
+                  ))}
+                </Grid>
+             </Grid>
+           </Grid>
+        </Container>
+      </Box>
 
       {/* Cara Kerja Section */}
-      <section id="cara-kerja" style={{ padding: isMobile ? '40px 24px' : '80px 24px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h2 style={{ 
-            fontSize: isMobile ? '1.8rem' : (isTablet ? '2rem' : '2.5rem'), 
-            fontWeight: 700, 
-            marginBottom: isMobile ? '32px' : '64px', 
-            textAlign: 'center',
-            color: '#2d3748'
-          }}>
-            Cara Kerja
-          </h2>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: isMobile ? '1fr' : (isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)'),
-            gap: isMobile ? '32px' : '48px'
-          }}>
-            {/* Step 1 */}
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                width: isMobile ? '100px' : '120px',
-                height: isMobile ? '100px' : '120px',
-                borderRadius: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 24px',
-                fontSize: '3rem'
-              }}>
-                <img src={accountIcon} alt="Buat Akun" style={{ width: '80%', height: '80%' }} />
-              </div>
-              <h3 style={{ 
-                fontSize: isMobile ? '1.2rem' : '1.5rem', 
-                fontWeight: 600, 
-                marginBottom: '12px', 
-                color: '#2d3748' 
-              }}>
-                Buat Akun
-              </h3>
-              <p style={{ 
-                fontSize: isMobile ? '0.9rem' : '1rem', 
-                lineHeight: '1.6', 
-                color: '#6c757d' 
-              }}>
-                Daftar sebagai UMKM atau Mahasiswa dengan mengisi form pendaftaran yang mudah dan cepat
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                width: isMobile ? '100px' : '120px',
-                height: isMobile ? '100px' : '120px',
-                borderRadius: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 24px',
-                fontSize: '3rem'
-              }}>
-                <img src={searchIcon} alt="Cari atau Buat Campaign" style={{ width: '80%', height: '80%' }} />
-              </div>
-              <h3 style={{ 
-                fontSize: isMobile ? '1.2rem' : '1.5rem', 
-                fontWeight: 600, 
-                marginBottom: '12px', 
-                color: '#2d3748' 
-              }}>
-                Cari atau Buat Campaign
-              </h3>
-              <p style={{ 
-                fontSize: isMobile ? '0.9rem' : '1rem', 
-                lineHeight: '1.6', 
-                color: '#6c757d' 
-              }}>
-                UMKM membuat campaign, Mahasiswa mencari campaign yang sesuai dengan kriteria mereka
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                width: isMobile ? '100px' : '120px',
-                height: isMobile ? '100px' : '120px',
-                borderRadius: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 24px',
-                fontSize: '3rem'
-              }}>
-                <img src={collabIcon} alt="Kolaborasi" style={{ width: '80%', height: '80%' }} />
-              </div>
-              <h3 style={{ 
-                fontSize: isMobile ? '1.2rem' : '1.5rem', 
-                fontWeight: 600, 
-                marginBottom: '12px', 
-                color: '#2d3748' 
-              }}>
-                Kolaborasi
-              </h3>
-              <p style={{ 
-                fontSize: isMobile ? '0.9rem' : '1rem', 
-                lineHeight: '1.6', 
-                color: '#6c757d' 
-              }}>
-                Mahasiswa apply, UMKM review dan approve, lalu kolaborasi dimulai dengan pembayaran yang aman
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Box component="section" id="cara-kerja" sx={{ py: { xs: 8, md: 12 }, bgcolor: '#F8F9FA' }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 8 }}>
+            <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: 1.5 }}>
+              DASHBOARD WORKFLOW
+            </Typography>
+            <Typography variant="h3" component="h2" fontWeight={800} color="text.primary" sx={{ fontSize: { xs: '2rem', md: '3rem' }, mt: 1 }}>
+              Cara Kerja
+            </Typography>
+          </Box>
+          <Grid container spacing={4} justifyContent="center">
+             {[
+               { icon: accountIcon, title: "1. Buat Akun", text: "Daftar instan sebagai UMKM atau Mahasiswa dengan verifikasi cepat." },
+               { icon: searchIcon, title: "2. Eksplorasi Campaign", text: "Temukan atau buat campaign yang sesuai dengan niche dan target audience." },
+               { icon: collabIcon, title: "3. Mulai Kolaborasi", text: "Jalin kerjasama, pantau performa, dan selesaikan pembayaran dengan aman." }
+             ].map((step, index) => (
+                <Grid item xs={12} md={8} key={index}>
+                  <Card 
+                    elevation={0}
+                    sx={{
+                      height: '100%',
+                      borderRadius: '24px',
+                      bgcolor: '#fff',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      border: '1px solid #eee',
+                      position: 'relative',
+                      overflow: 'visible',
+                      '&:hover': {
+                        transform: 'translateY(-12px)',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.08)',
+                        borderColor: 'primary.main',
+                        zIndex: 1
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                      <Box sx={{
+                        width: 100,
+                        height: 100,
+                        borderRadius: '50%',
+                        bgcolor: 'primary.50', // Requires theme setup or use alpha
+                        background: 'rgba(110, 0, 190, 0.05)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mx: 'auto',
+                        mb: 3
+                      }}>
+                        <Box component="img" src={step.icon} sx={{ width: '50%', height: '50%' }} alt={step.title} />
+                      </Box>
+                      <Typography variant="h5" component="h3" fontWeight={700} gutterBottom sx={{ color: '#2d3748' }}>
+                        {step.title}
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                        {step.text}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+             ))}
+          </Grid>
+        </Container>
+      </Box>
 
       {/* Mengapa Influent Section */}
-      <section id="mengapa" style={{ padding: isMobile ? '40px 24px' : '80px 24px', background: '#fff' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h2 style={{ 
-            fontSize: isMobile ? '1.8rem' : (isTablet ? '2rem' : '2.5rem'), 
-            fontWeight: 700, 
-            marginBottom: isMobile ? '32px' : '64px', 
-            textAlign: 'center',
-            color: '#2d3748'
-          }}>
-            Mengapa Influent?
-          </h2>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', 
-            gap: isMobile ? '32px' : '48px' 
-          }}>
-            {/* Filter */}
-            <div style={{ display: 'flex', gap: isMobile ? '16px' : '24px' }}>
-              <div style={{
-                width: isMobile ? '80px' : '100px',
-                height: isMobile ? '80px' : '100px',
-                background: '#f0f0f0',
-                borderRadius: '16px',
-                flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2.5rem'
-              }}>
-                <img src={filterIcon} alt="Filter" style={{ width: '80%', height: '80%' }} />
-              </div>
-              <div>
-                <h3 style={{ 
-                  fontSize: isMobile ? '1.2rem' : '1.5rem', 
-                  fontWeight: 600, 
-                  marginBottom: '12px', 
-                  color: '#2d3748' 
-                }}>
-                  Filter
-                </h3>
-                <p style={{ 
-                  fontSize: isMobile ? '0.9rem' : '1rem', 
-                  lineHeight: '1.7', 
-                  color: '#6c757d' 
-                }}>
-                  Cari influencer berdasarkan kategori, followers, gender, dan usia. 
-                  Temukan partner yang tepat untuk brand Anda dengan sistem filter.
-                </p>
-              </div>
-            </div>
+      <Box component="section" id="mengapa" sx={{ py: { xs: 8, md: 12 }, bgcolor: '#fff' }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 8 }}>
+            <Typography variant="h3" component="h2" fontWeight={800} color="text.primary" sx={{ fontSize: { xs: '2rem', md: '3rem' } }}>
+               Mengapa Memilih Influent?
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 2, maxWidth: 600, mx: 'auto' }}>
+              Fitur unggulan yang dirancang untuk memaksimalkan hasil kolaborasi Anda.
+            </Typography>
+          </Box>
+          <Grid container spacing={4}>
+            {[
+              { icon: filterIcon, title: "Smart Filtering", text: "Filter canggih untuk menemukan influencer berdasarkan demografi, minat, dan engagement rate.", color: '#E3F2FD' },
+              { icon: paymentIcon, title: "Secure Payment", text: "Sistem Escrow menjamin keamanan dana hingga kewajiban kedua belah pihak terpenuhi.", color: '#F3E5F5' },
+              { icon: chatIcon, title: "Integrated Chat", text: "Komunikasi seamless tanpa perlu keluar platform. Diskusi brief dan revisi jadi lebih terorganisir.", color: '#E8F5E9' },
+              { icon: reviewIcon, title: "Trust System", text: "Review dan rating transparan membangun ekosistem kepercayaan yang solid.", color: '#FFF3E0' },
+            ].map((item, index) => (
+              <Grid item xs={12} md={6} key={index}>
+                <Card 
+                  elevation={0}
+                  sx={{ 
+                    height: '100%', 
+                    borderRadius: '24px', 
+                    border: '1px solid #f0f0f0',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                       boxShadow: '0 12px 24px rgba(0,0,0,0.05)',
+                       borderColor: 'transparent',
+                       transform: 'translateY(-4px)'
+                    }
+                  }}
+                >
+                  <CardContent sx={{ p: 4, display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+                    <Box sx={{
+                      width: 64,
+                      height: 64,
+                      bgcolor: '#F3E5F5', // Light purple background
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <Box component="img" src={item.icon} sx={{ width: 32, height: 32 }} alt={item.title} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h6" component="h3" fontWeight={700} gutterBottom sx={{ color: '#1a1a1a' }}>
+                        {item.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '1rem', lineHeight: 1.6 }}>
+                        {item.text}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
 
-            {/* Pembayaran */}
-            <div style={{ display: 'flex', gap: isMobile ? '16px' : '24px' }}>
-              <div style={{
-                width: isMobile ? '80px' : '100px',
-                height: isMobile ? '80px' : '100px',
-                background: '#f0f0f0',
-                borderRadius: '16px',
-                flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2.5rem'
-              }}>
-                <img src={paymentIcon} alt="Pembayaran" style={{ width: '80%', height: '80%' }} />
-              </div>
-              <div>
-                <h3 style={{ 
-                  fontSize: isMobile ? '1.2rem' : '1.5rem', 
-                  fontWeight: 600, 
-                  marginBottom: '12px', 
-                  color: '#2d3748' 
-                }}>
-                  Pembayaran
-                </h3>
-                <p style={{ 
-                  fontSize: isMobile ? '0.9rem' : '1rem', 
-                  lineHeight: '1.7', 
-                  color: '#6c757d' 
-                }}>
-                  Sistem pembayaran yang aman dan terpercaya. Dana ditahan hingga campaign selesai 
-                  untuk melindungi kedua belah pihak.
-                </p>
-              </div>
-            </div>
-
-            {/* Komunikasi */}
-            <div style={{ display: 'flex', gap: isMobile ? '16px' : '24px' }}>
-              <div style={{
-                width: isMobile ? '80px' : '100px',
-                height: isMobile ? '80px' : '100px',
-                background: '#f0f0f0',
-                borderRadius: '16px',
-                flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2.5rem'
-              }}>
-                <img src={chatIcon} alt="Komunikasi" style={{ width: '80%', height: '80%' }} />
-              </div>
-              <div>
-                <h3 style={{ 
-                  fontSize: isMobile ? '1.2rem' : '1.5rem', 
-                  fontWeight: 600, 
-                  marginBottom: '12px', 
-                  color: '#2d3748' 
-                }}>
-                  Komunikasi
-                </h3>
-                <p style={{ 
-                  fontSize: isMobile ? '0.9rem' : '1rem', 
-                  lineHeight: '1.7', 
-                  color: '#6c757d' 
-                }}>
-                  Chat terintegrasi untuk komunikasi yang mudah antara UMKM dan influencer. 
-                  Diskusi brief, revisi, dan feedback dalam satu platform.
-                </p>
-              </div>
-            </div>
-
-            {/* Review & Rating */}
-            <div style={{ display: 'flex', gap: isMobile ? '16px' : '24px' }}>
-              <div style={{
-                width: isMobile ? '80px' : '100px',
-                height: isMobile ? '80px' : '100px',
-                background: '#f0f0f0',
-                borderRadius: '16px',
-                flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2.5rem'
-              }}>
-                <img src={reviewIcon} alt="Review & Rating" style={{ width: '80%', height: '80%' }} />
-              </div>
-              <div>
-                <h3 style={{ 
-                  fontSize: isMobile ? '1.2rem' : '1.5rem', 
-                  fontWeight: 600, 
-                  marginBottom: '12px', 
-                  color: '#2d3748' 
-                }}>
-                  Review & Rating
-                </h3>
-                <p style={{ 
-                  fontSize: isMobile ? '0.9rem' : '1rem', 
-                  lineHeight: '1.7', 
-                  color: '#6c757d' 
-                }}>
-                  Sistem review dan rating untuk membangun kepercayaan. 
-                  Lihat track record influencer sebelum memulai kolaborasi.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section style={{
-        padding: isMobile ? '40px 24px' : '80px 24px',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: '#fff'
+      {/* CTA Section - Flat Purple */}
+      <Box sx={{
+        py: { xs: 8, md: 12 },
+        bgcolor: '#6E00BE',
+        color: '#fff',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ 
-            fontSize: isMobile ? '1.5rem' : (isTablet ? '2rem' : '2.5rem'), 
-            fontWeight: 700, 
-            marginBottom: '24px' 
-          }}>
-            📢 Gabung Sekarang dan Bangun Kolaborasi yang Berdampak!
-          </h2>
-          <p style={{ 
-            fontSize: isMobile ? '1rem' : '1.2rem', 
-            marginBottom: '32px', 
-            opacity: 0.9, 
-            lineHeight: '1.6' 
-          }}>
-            Mulailah perjalanan Anda bersama UMKM dan mahasiswa influencer lainnya. 
-            Raih peluang kolaborasi yang menguntungkan untuk bisnis atau karir Anda.
-          </p>
-          <button
-            onClick={() => navigate('/register-umkm')}
-            style={{
-              padding: isMobile ? '12px 32px' : '16px 48px',
-              background: '#fff',
-              border: 'none',
-              borderRadius: '12px',
-              color: '#6E00BE',
-              fontWeight: 700,
-              fontSize: isMobile ? '1rem' : '1.2rem',
-              cursor: 'pointer',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.2)'
-            }}
-          >
-            Gabung Sekarang
-          </button>
-        </div>
-      </section>
+        <Container maxWidth="md" sx={{ position: 'relative' }}>
+          <Typography variant="h3" component="h2" fontWeight={800} sx={{ fontSize: { xs: '2rem', md: '3rem' }, mb: 3 }}>
+            Siap Menciptakan Dampak?
+          </Typography>
+          <Typography variant="body1" sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' }, mb: 6, opacity: 0.9, lineHeight: 1.6 }}>
+            Bergabunglah dengan ribuan UMKM dan Mahasiswa yang telah sukses berkolaborasi di Influent.
+          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} justifyContent="center">
+            <Button
+              variant="contained"
+              onClick={() => navigate('/register-umkm')}
+              sx={{
+                bgcolor: '#ffffff',
+                color: '#6E00BE',
+                fontWeight: 700,
+                px: 5,
+                py: 2,
+                borderRadius: '12px',
+                fontSize: '1.1rem',
+                boxShadow: 'none',
+                '&:hover': { bgcolor: '#f3f3f3' }
+              }}
+            >
+              Mulai Sekarang Gratis
+            </Button>
+          </Stack>
+        </Container>
+      </Box>
 
       {/* Footer */}
-      <footer style={{
-        background: '#1a1a2e',
-        color: '#fff',
-        padding: isMobile ? '32px 24px 16px' : '48px 24px 24px'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: isMobile ? '1fr' : (isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)'), 
-            gap: isMobile ? '32px' : '48px',
-            marginBottom: '32px',
-            textAlign: isMobile ? 'center' : 'left'
-          }}>
-            <div>
-              <img src={logoFooter} alt="Influent" style={{ height: '32px', marginBottom: '16px' }} />
-              <p style={{ fontSize: '0.9rem', opacity: 0.8, lineHeight: '1.6' }}>
-                Platform kolaborasi UMKM dan mahasiswa pertama di Indonesia
-              </p>
-            </div>
-            <div>
-              <h4 style={{ marginBottom: '16px', fontSize: '1.1rem' }}>Link Cepat</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <a href="#tentang" style={{ color: '#fff', opacity: 0.8, textDecoration: 'none' }}>Tentang Kami</a>
-                <a href="#cara-kerja" style={{ color: '#fff', opacity: 0.8, textDecoration: 'none' }}>Cara Kerja</a>
-                <a href="#mengapa" style={{ color: '#fff', opacity: 0.8, textDecoration: 'none' }}>Mengapa Influent?</a>
-              </div>
-            </div>
-            <div>
-              <h4 style={{ marginBottom: '16px', fontSize: '1.1rem' }}>Kontak</h4>
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '10px', 
-                fontSize: '0.9rem', 
-                opacity: 0.8,
-                alignItems: isMobile ? 'center' : 'flex-start'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <img src={emailIcon} alt="Email" style={{ width: '16px', height: '16px' }} />
-                  <span>info@influent.id</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <img src={phoneIcon} alt="Telepon" style={{ width: '16px', height: '16px' }} />
-                  <span>+62 812-3456-7890</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <img src={locationIcon} alt="Lokasi" style={{ width: '16px', height: '16px' }} />
-                  <span>Jakarta, Indonesia</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style={{ 
-            borderTop: '1px solid rgba(255,255,255,0.1)', 
-            paddingTop: '24px',
-            textAlign: 'center',
-            fontSize: '0.9rem',
-            opacity: 0.7
-          }}>
-            © 2025 Influent. All rights reserved.
-          </div>
-        </div>
-      </footer>
-    </div>
+      <Box component="footer" sx={{ bgcolor: '#fff', color: '#2d3748', py: 8, borderTop: '1px solid #eee' }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={8}>
+            <Grid item xs={12} md={4}>
+               <Box component="img" src={logo} alt="Influent" sx={{ height: 32, mb: 3 }} />
+               <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.8, mb: 3 }}>
+                 Influent adalah platform pionir yang menghubungkan UMKM Indonesia dengan potensi tak terbatas dari mahasiswa berbakat untuk akselerasi digital.
+               </Typography>
+               <Stack direction="row" spacing={2}>
+                 {/* Social Media Icons placeholders */}
+                 {[1, 2, 3].map((i) => (
+                   <Box key={i} sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', '&:hover': { bgcolor: '#6E00BE', color: '#fff' }, transition: 'all 0.2s' }}>
+                      <Box component="span" sx={{ fontSize: 14 }}>●</Box>
+                   </Box>
+                 ))}
+               </Stack>
+            </Grid>
+            <Grid item xs={12} md={2}>
+               <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ mb: 2 }}>Platform</Typography>
+               <Stack spacing={1.5}>
+                 {['Tentang Kami', 'Cara Kerja', 'Mengapa Influent?', 'Biaya'].map((text, idx) => (
+                   <Link key={idx} href="#" color="text.secondary" underline="none" sx={{ '&:hover': { color: '#6E00BE' } }}>
+                     {text}
+                   </Link>
+                 ))}
+               </Stack>
+            </Grid>
+            <Grid item xs={12} md={2}>
+               <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ mb: 2 }}>Dukungan</Typography>
+               <Stack spacing={1.5}>
+                 {['Pusat Bantuan', 'Syarat & Ketentuan', 'Kebijakan Privasi', 'Hubungi Kami'].map((text, idx) => (
+                   <Link key={idx} href="#" color="text.secondary" underline="none" sx={{ '&:hover': { color: '#6E00BE' } }}>
+                     {text}
+                   </Link>
+                 ))}
+               </Stack>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ mb: 2 }}>Hubungi Kami</Typography>
+              <Stack spacing={2}>
+                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: '10px', bgcolor: 'rgba(110,0,190,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6E00BE' }}>
+                       <img src={emailIcon} alt="" style={{ width: 18 }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" display="block">Email</Typography>
+                      <Typography variant="body2" fontWeight={600}>info@influent.id</Typography>
+                    </Box>
+                 </Box>
+                 {/* Add more contacts similarly */}
+              </Stack>
+            </Grid>
+          </Grid>
+          
+          <Box sx={{ borderTop: '1px solid #eee', mt: 8, pt: 4, textAlign: 'center' }}>
+             <Typography variant="body2" color="text.secondary">© 2025 Influent. All rights reserved.</Typography>
+          </Box>
+        </Container>
+      </Box>
+    </Box>
   );
 }
 

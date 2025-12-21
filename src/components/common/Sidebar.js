@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Drawer,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Box,
@@ -53,9 +54,9 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
       case 'company':
       case 'umkm':
         return [
-          { icon: DashboardIcon, label: 'Dashboard', path: '/umkm/dashboard' },
-          { icon: ListIcon, label: 'Daftar Kampanye', path: '/campaigns' },
-          { icon: TransactionsIcon, label: 'Riwayat Transaksi', path: '/transactions' },
+          { icon: DashboardIcon, label: 'Dashboard', path: '/campaign/dashboard' },
+          { icon: ListIcon, label: 'Daftar Kampanye', path: '/campaigns/list' },
+          { icon: TransactionsIcon, label: 'Riwayat Transaksi', path: '/campaign/transactions' },
           { icon: ChatIcon, label: 'Pesan', path: '/chat' },
         ];
       case 'admin':
@@ -102,7 +103,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
     switch (userRole) {
       case 'umkm':
       case 'company':
-        return '/umkm/dashboard';
+        return '/campaign/dashboard';
       case 'admin':
         return '/admin/dashboard';
       case 'influencer':
@@ -134,7 +135,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
-        background: '#1a1f36',
+        background: '#4c0f77ff', // Primary Color
         fontFamily: "'Inter', sans-serif"
       }}
     >
@@ -178,7 +179,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
           sx={{
             width: '48px',
             height: '48px',
-            background: COLORS.gradient,
+            background: '#fff', // White logo bg for contrast
             borderRadius: '12px',
             display: 'flex',
             alignItems: 'center',
@@ -213,7 +214,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
           <Typography
             sx={{
               fontSize: '0.75rem',
-              color: 'rgba(255,255,255,0.6)',
+              color: 'rgba(255,255,255,0.8)',
               fontWeight: 500,
               margin: 0,
               lineHeight: 1
@@ -240,60 +241,57 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
           return (
             <ListItem
               key={index}
-              onClick={() => {
-                navigate(item.path);
-                if (isMobile) onClose();
-              }}
-              sx={{
-                margin: '4px',
-                padding: '10px 12px',
-                borderRadius: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.2,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                background: active 
-                  ? 'rgba(102,126,234,0.15)' 
-                  : 'transparent',
-                borderLeft: active 
-                  ? '3px solid #667eea' 
-                  : '3px solid transparent',
-                color: active ? '#fff' : 'rgba(255,255,255,0.7)',
-                fontSize: '0.92rem',
-                fontWeight: active ? 600 : 500,
-                maxWidth: 250,
-                width: '100%',
-                boxSizing: 'border-box',
-                // overflow: 'visible',
-                '&:hover': {
-                  background: active ? 'rgba(102,126,234,0.15)' : 'rgba(255,255,255,0.05)',
-                  color: '#fff'
-                }
-              }}
+              disablePadding
+              sx={{ display: 'block', margin: '4px 0' }}
             >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  color: active ? '#fff' : 'rgba(255,255,255,0.7)'
+              <ListItemButton
+                onClick={() => {
+                  navigate(item.path);
+                  if (isMobile) onClose();
                 }}
-              >
-                <Icon sx={{ fontSize: '22px' }} />
-              </ListItemIcon>
-              <ListItemText
-                primary={item.label}
                 sx={{
-                  '& .MuiListItemText-primary': {
-                    fontSize: '0.95rem',
-                    fontWeight: active ? 600 : 500,
-                    color: 'inherit',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    maxWidth: '100%',
+                  margin: '0 8px',
+                  borderRadius: '10px',
+                  minHeight: 48,
+                  justifyContent: 'initial',
+                  px: 2.5,
+                  background: active 
+                    ? 'rgba(255,255,255,0.2)' 
+                    : 'transparent',
+                  borderLeft: '3px solid transparent', // Remove colored border, use bg
+                  color: '#fff', // Always white text on purple
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    background: active ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+                    color: '#fff'
                   }
                 }}
-              />
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: 2,
+                    justifyContent: 'center',
+                    color: '#fff' // Always white icon
+                  }}
+                >
+                  <Icon sx={{ fontSize: '22px' }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.label}
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      fontSize: '0.95rem',
+                      fontWeight: active ? 600 : 500,
+                      color: 'inherit',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      maxWidth: '100%',
+                    }
+                  }}
+                />
+              </ListItemButton>
             </ListItem>
           );
         })}
@@ -305,7 +303,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
           padding: '20px',
           borderTop: '1px solid rgba(255,255,255,0.1)',
           fontSize: '0.8rem',
-          color: 'rgba(255,255,255,0.5)',
+          color: 'rgba(255,255,255,0.6)',
           textAlign: 'center'
         }}
       >
@@ -341,7 +339,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
           sx={{
             '& .MuiDrawer-paper': {
               width: '260px',
-              background: '#1a1f36',
+              background: '#6E00BE',
               borderRight: '1px solid rgba(255,255,255,0.1)',
               zIndex: 1000
             }

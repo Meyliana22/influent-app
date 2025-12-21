@@ -324,7 +324,7 @@ function ManageWithdrawals() {
           {/* Statistics Cards */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, background: COLORS.gradient, color: 'white' }}>
+              <Paper sx={{ p: 3, bgcolor: '#6E00BE', color: 'white' }}>
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
@@ -513,10 +513,10 @@ function ManageWithdrawals() {
                             <TableCell>
                               <Stack direction="row" spacing={0.5}>
                                 <IconButton
-                                  size="small"
-                                  onClick={() => handleViewDetail(withdrawal)}
-                                  sx={{ color: '#3b82f6' }}
-                                >
+                                    size="small"
+                                    onClick={() => handleViewDetail(withdrawal)}
+                                    sx={{ color: '#6E00BE' }}
+                                  >
                                   <VisibilityIcon fontSize="small" />
                                 </IconButton>
                                 {status === 'pending' && (

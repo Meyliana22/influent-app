@@ -64,7 +64,7 @@ function CampaignDetail() {
       const campaignData = response.data || response;
 
       if (!campaignData) {
-        navigate('/campaigns');
+        navigate('/campaigns/list');
         return;
       }
       setCampaign(campaignData);
@@ -90,7 +90,7 @@ function CampaignDetail() {
       });
     } catch (error) {
       console.error('Error loading campaign:', error);
-      navigate('/campaigns');
+      navigate('/campaigns/list');
     }
   };
 
@@ -263,6 +263,15 @@ function CampaignDetail() {
               >
                 Edit Campaign
               </Button>
+              <Button
+                variant="outlined"
+                color="info"
+                onClick={() => navigate(`/campaign/${id}/transactions`)}
+                sx={{ flex: 1, py: 1.5, fontWeight: 700 }}
+                startIcon={<CreditCardIcon />}
+              >
+                Transactions
+              </Button>
             </Stack>
           </Card>
         );
@@ -302,7 +311,7 @@ function CampaignDetail() {
                 <LinearProgress
                   variant="determinate"
                   value={stats.progressPercentage}
-                  sx={{ height: 12, borderRadius: 2, background: COLORS.backgroundLight, '& .MuiLinearProgress-bar': { background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)' } }}
+                  sx={{ height: 12, borderRadius: 2, background: COLORS.backgroundLight, '& .MuiLinearProgress-bar': { background: COLORS.primary } }}
                 />
               </Box>
               {/* Campaign Info */}
@@ -352,6 +361,16 @@ function CampaignDetail() {
                 >
                   Review Submissions
                 </Button>
+                <Button
+                  variant="outlined"
+                  color="info"
+                  onClick={() => navigate(`/campaign/${id}/transactions`)}
+                  fullWidth
+                  sx={{ py: 1.5, fontWeight: 700 }}
+                  startIcon={<CreditCardIcon />}
+                >
+                  View Transactions
+                </Button>
               </Stack>
             </Card>
             {/* Influencer Status */}
@@ -383,7 +402,7 @@ function CampaignDetail() {
                           fontSize: 13,
                           color: '#fff',
                           background: influencer.proofUploaded
-                            ? 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+                            ? '#10b981'
                             : '#ffc107',
                         }}
                       />
@@ -540,7 +559,7 @@ function CampaignDetail() {
               </Grid>
             </Paper>
             {/* Success Message */}
-            <Paper sx={{ p: 3, background: 'linear-gradient(135deg, #43e97b20 0%, #38f9d720 100%)', borderRadius: 2, border: '1px solid #43e97b', textAlign: 'center', mb: 2 }} elevation={0}>
+            <Paper sx={{ p: 3, background: '#d1fae5', borderRadius: 2, border: '1px solid #10b981', textAlign: 'center', mb: 2 }} elevation={0}>
               <Typography fontSize={16} color={COLORS.success} fontWeight={600}>
                 <CheckCircleIcon sx={{ fontSize: 20, color: COLORS.success, mr: 1, verticalAlign: 'middle' }} /> Semua pembayaran sudah cair. Terima kasih telah menggunakan Influent!
               </Typography>
@@ -582,15 +601,25 @@ function CampaignDetail() {
             {/* Back Button */}
             <Button
               color="primary"
-              onClick={() => navigate('/campaigns')}
+              onClick={() => navigate('/campaigns/list')}
               sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 600, textTransform: 'none', fontSize: 16 }}
               startIcon={<ArrowBackIcon sx={{ fontSize: 18 }} />}
             >
               Back to Campaigns
             </Button>
             {/* Campaign Header */}
-            <Card sx={{ p: 4, mb: 3, position: 'relative', overflow: 'hidden' }}>
-              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: COLORS.gradient }} />
+            <Card sx={{ mb: 3, borderRadius: 3, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+              {campaign.banner_image ? (
+                 <Box 
+                   component="img" 
+                   src={campaign.banner_image.startsWith('http') || campaign.banner_image.startsWith('data:') ? campaign.banner_image : `http://localhost:8000/api/uploads/${campaign.banner_image}`}
+                   alt={campaign.title}
+                   sx={{ width: '100%', height: 240, objectFit: 'cover' }}
+                 />
+              ) : (
+                 <Box sx={{ height: 120, background: COLORS.gradient }} />
+              )}
+              <Box sx={{ p: 4 }}>
               <Typography variant="h4" fontWeight={700} color={COLORS.textPrimary} mb={1.5}>
                 {campaign.title}
               </Typography>
@@ -611,13 +640,14 @@ function CampaignDetail() {
                   fontSize: 13,
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
-                  background: phase === 'closed' ? 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' :
-                    phase === 'ongoing' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' :
-                    phase === 'awaiting-payout' ? 'linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%)' :
-                    'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+                  background: phase === 'closed' ? '#10b981' :
+                    phase === 'ongoing' ? '#6E00BE' :
+                    phase === 'awaiting-payout' ? '#f59e0b' :
+                    '#3b82f6',
                   color: '#fff',
                 }}
               />
+              </Box>
             </Card>
 
             {/* Cancellation Reason Alert */}

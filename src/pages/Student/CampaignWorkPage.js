@@ -286,7 +286,7 @@ const CampaignWorkPage = () => {
           {/* Submissions Section */}
           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
              <Typography variant="h6" fontWeight={700}>My Submissions</Typography>
-             <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate} sx={{ bgcolor: '#667eea' }}>
+             <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate} sx={{ bgcolor: '#6E00BE' }}>
                New Submission
              </Button>
           </Stack>
@@ -326,7 +326,7 @@ const CampaignWorkPage = () => {
                        </TableCell>
                        <TableCell>
                          {sub.content_url ? (
-                           <a href={sub.content_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#667eea', textDecoration: 'none' }}>
+                           <a href={sub.content_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6E00BE', textDecoration: 'none' }}>
                              View <LaunchIcon fontSize="inherit" />
                            </a>
                          ) : '-'}
@@ -497,7 +497,7 @@ const CampaignWorkPage = () => {
                   variant="contained" 
                   onClick={() => handleSave('final')}
                   disabled={submitting}
-                  sx={{ bgcolor: '#667eea' }}
+                  sx={{ bgcolor: '#6E00BE' }}
                 >
                   Submit Final
                 </Button>

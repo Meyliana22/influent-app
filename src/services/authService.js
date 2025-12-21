@@ -182,13 +182,13 @@ export async function forgotPassword(email) {
  * @param {string} newPassword - New password
  * @returns {Promise<Object>} Response with success message
  */
-export async function resetPassword(token, newPassword) {
+export async function resetPassword(email, otp, newPassword) {
   const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ token, password: newPassword }),
+    body: JSON.stringify({ email, otp, newPassword }),
   });
 
   if (!response.ok) {
@@ -225,6 +225,31 @@ export async function getCurrentUser() {
 }
 
 /**
+ * Change password for logged in user
+ * @param {string} currentPassword
+ * @param {string} newPassword
+ * @returns {Promise<Object>} Response message
+ */
+export async function changePassword(olPassword, newPassword) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ olPassword, newPassword }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to change password');
+  }
+
+  return await response.json();
+}
+
+/**
  * Logout user
  */
 export function logout() {
@@ -243,6 +268,7 @@ const authService = {
   forgotPassword,
   resetPassword,
   getCurrentUser,
+  changePassword,
   logout,
 };
 

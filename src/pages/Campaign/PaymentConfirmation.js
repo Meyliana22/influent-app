@@ -35,17 +35,17 @@ function PaymentConfirmation() {
         let data = response?.data?.data || response?.data || response;
         if (!data || !data.campaign_id) {
           toast.error("Campaign not found or invalid data");
-          navigate("/campaigns");
+          navigate("/campaigns/list");
           return;
         }
         setCampaign(data);
       } catch (err) {
         toast.error("Error loading campaign data");
-        navigate("/campaigns");
+        navigate("/campaigns/list");
       }
     };
     if (id) fetchCampaign();
-    else navigate("/campaigns");
+    else navigate("/campaigns/list");
   }, [id, navigate]);
 
   const calculateCosts = () => {

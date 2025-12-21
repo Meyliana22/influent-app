@@ -203,6 +203,7 @@ export const uploadCampaignReferences = async (campaignId, files) => {
  * Create new campaign
  */
 export const createCampaign = async (campaignData) => {
+  console.log(campaignData);
   try {
     // Map frontend data to API format
     const apiData = {
@@ -254,7 +255,7 @@ export const createCampaign = async (campaignData) => {
       reference_images: campaignData.referenceFiles
         ? JSON.stringify(campaignData.referenceFiles)
         : null,
-      status:"admin_review", // Default to inactive (unpaid)
+      status:campaignData.status == "draft" ? "draft" : "admin_review", // Default to inactive (unpaid)
       contentTypes:
         campaignData.contentItems && campaignData.contentItems.length > 0
           ? JSON.stringify(
@@ -265,7 +266,7 @@ export const createCampaign = async (campaignData) => {
             )
           : null,
     };
-    
+    console.log(apiData);
     const response = await authFetch(`${API_BASE_URL}/campaigns`, {
       method: "POST",
       headers: {

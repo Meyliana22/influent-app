@@ -29,14 +29,14 @@ import {
   Warning as WarningIcon,
 } from "@mui/icons-material";
 
-import UMKMSidebar from "../../components/umkm/UMKMSidebar";
-import UMKMTopbar from "../../components/umkm/UMKMTopbar";
+import Sidebar from "../../components/common/Sidebar";
+import Topbar from "../../components/common/Topbar";
 import { useToast } from "../../hooks/useToast";
 import { io } from "socket.io-client";
 
 // Backend base url and socket URL
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
-const SOCKET_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || "http://localhost:5000";
 
 // Helper to decode JWT payload
 function parseJwt(token) {
@@ -54,12 +54,19 @@ function parseJwt(token) {
 function ChatPage() {
   const { showToast } = useToast();
   const theme = useTheme();
-  // We'll treat < 1000px as "mobile" for the sidebar logic found in original code,
-  // but we can also use MUI breakpoints for internal layout.
-  const isMobileScreen = useMediaQuery(theme.breakpoints.down("md")); 
+  // We'll treat < 1000px as "mobile" to match Sidebar.js logic exactly
+  // Sidebar.js uses window.innerWidth < 1000
+  const [isMobileScreen, setIsMobileScreen] = useState(window.innerWidth < 1000);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobileScreen(window.innerWidth < 1000);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Existing sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
 
   // Chat Data State
   const [chatList, setChatList] = useState([]);
@@ -109,7 +116,7 @@ function ChatPage() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat-rooms/mine`, {
+      const res = await fetch(`${API_BASE}/chat-rooms/mine`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
@@ -360,7 +367,7 @@ function ChatPage() {
   return (
     <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f4f6f8' }}>
       {/* App Shell Sidebar  */}
-      <UMKMSidebar
+      <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
@@ -369,12 +376,14 @@ function ChatPage() {
         flex: 1, 
         display: 'flex', 
         flexDirection: 'column',
-        transition: 'margin 0.2s',
+        transition: 'all 0.3s ease',
         height: '100vh',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        marginLeft: !isMobileScreen ? '260px' : '0',
+        width: !isMobileScreen ? 'calc(100% - 260px)' : '100%',
       }}>
         {/* Topbar */}
-        <UMKMTopbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
         {/* content Area (below topbar) */}
         <Box sx={{ flex: 1, display: 'flex', mt: '72px', overflow: 'hidden' }}>

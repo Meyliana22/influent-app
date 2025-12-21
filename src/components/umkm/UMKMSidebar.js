@@ -31,7 +31,7 @@ function UMKMSidebar({ isOpen = false, onClose = () => {} }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const menuItems = [
-    { icon: DashboardIcon, label: 'Dashboard', path: '/umkm/dashboard' },
+    { icon: DashboardIcon, label: 'Dashboard', path: '/campaign/dashboard' },
     { icon: ListIcon, label: 'Daftar Kampanye', path: '/campaigns' },
     { icon: TransactionsIcon, label: 'Riwayat Transaksi', path: '/transactions' },
     { icon: ChatIcon, label: 'Pesan', path: '/chat' },

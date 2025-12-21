@@ -256,17 +256,23 @@ function ManageCampaigns() {
     try {
       setSubmitting(true);
       
-      // For approval, use dedicated admin review endpoint
+      // Update campaign status manually as requested
+      const statusMap = {
+        'active': 'active',
+        'cancelled': 'cancelled',
+        'pending_payment': 'pending_payment',
+        'rejected': 'rejected'
+      };
+      
+      const updateData = { 
+        status: statusMap[newStatus] || newStatus 
+      };
+
+      await adminService.campaigns.updateCampaign(campaignId, updateData);
+      
       if (newStatus === 'pending_payment') {
-        await adminService.review.approveCampaign(campaignId);
-        setSuccessMessage('Campaign berhasil disetujui! Notifikasi telah dikirim ke UMKM.');
+        setSuccessMessage('Campaign berhasil disetujui! Status berubah menjadi Pending Payment.');
       } else {
-        // For other status updates (active, cancelled)
-        const statusMap = {
-          'active': 'active',
-          'cancelled': 'cancelled'
-        };
-        await adminService.campaigns.updateCampaign(campaignId, { status: statusMap[newStatus] || newStatus });
         setSuccessMessage('Status campaign berhasil diupdate!');
       }
       
@@ -290,10 +296,13 @@ function ManageCampaigns() {
       setSubmitting(true);
       const finalReason = cancellationReason === 'other' ? customReason : cancellationReason;
       
-      // Use dedicated admin review endpoint to cancel campaign
-      await adminService.review.rejectCampaign(selectedCampaign.campaign_id, finalReason);
+      // Use generic update endpoint for rejection as well
+      await adminService.campaigns.updateCampaign(selectedCampaign.campaign_id, {
+        status: 'cancelled',
+        cancellation_reason: finalReason
+      });
       
-      setSuccessMessage('Campaign berhasil dibatalkan. Notifikasi telah dikirim ke UMKM.');
+      setSuccessMessage('Campaign berhasil dibatalkan.');
       setShowRejectDialog(false);
       setShowDetailModal(false);
       setCancellationReason('');
@@ -386,11 +395,11 @@ function ManageCampaigns() {
                   borderRadius: 2,
                   textTransform: 'none',
                   fontWeight: 600,
-                  borderColor: '#667eea',
-                  color: '#667eea',
+                  borderColor: '#6E00BE',
+                  color: '#6E00BE',
                   '&:hover': {
-                    borderColor: '#5568d3',
-                    backgroundColor: 'rgba(102, 126, 234, 0.04)'
+                    borderColor: '#5a009e',
+                    backgroundColor: 'rgba(110, 0, 190, 0.04)'
                   }
                 }}
               >
@@ -402,10 +411,12 @@ function ManageCampaigns() {
                 onClick={handleViewTransactions}
                 disabled={loadingTransactions}
                 sx={{
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  bgcolor: '#10b981', // Keep independent green for transactions or make primary? Keeping green to distinguish.
                   borderRadius: 2,
                   textTransform: 'none',
-                  fontWeight: 600
+                  fontWeight: 600,
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#059669', boxShadow: 'none' }
                 }}
               >
                 {loadingTransactions ? <CircularProgress size={20} /> : 'View Transactions'}
@@ -433,7 +444,7 @@ function ManageCampaigns() {
             mb: 4
           }}>
             {[
-              { label: 'Total Campaigns', value: stats.total, IconComponent: CampaignIcon, bgColor: '#e0e7ff', iconColor: '#4338ca' },
+              { label: 'Total Campaigns', value: stats.total, IconComponent: CampaignIcon, bgColor: '#F3E5F5', iconColor: '#6E00BE' }, // Primary
               { label: 'Active', value: stats.active, IconComponent: OngoingIcon, bgColor: '#d1fae5', iconColor: '#059669' },
               { label: 'Completed', value: stats.completed, IconComponent: CompletedIcon, bgColor: '#dbeafe', iconColor: '#1e40af' },
               { label: 'Pending', value: stats.pending, IconComponent: ApplicantIcon, bgColor: '#fef3c7', iconColor: '#d97706' }
@@ -450,8 +461,8 @@ function ManageCampaigns() {
                   gap: 2,
                   transition: 'all 0.3s',
                   '&:hover': {
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-                    transform: 'translateY(-4px)'
+                    borderColor: '#cbd5e0',
+                    transform: 'translateY(-2px)'
                   }
                 }}
               >
@@ -506,10 +517,12 @@ function ManageCampaigns() {
                 variant="contained"
                 onClick={handleSearch}
                 sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  bgcolor: '#6E00BE', // Flat Primary
                   textTransform: 'none',
                   fontWeight: 600,
-                  minWidth: 100
+                  minWidth: 100,
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#5a009e', boxShadow: 'none' }
                 }}
               >
                 Search
@@ -644,13 +657,42 @@ function ManageCampaigns() {
                                     size="small"
                                     onClick={() => handleViewDetail(campaign)}
                                     sx={{
-                                      color: '#667eea',
-                                      '&:hover': { bgcolor: 'rgba(102, 126, 234, 0.1)' }
+                                      color: '#6E00BE',
+                                      '&:hover': { bgcolor: 'rgba(110, 0, 190, 0.1)' }
                                     }}
                                     title="View Details"
                                   >
                                     <ViewIcon fontSize="small" />
                                   </IconButton>
+                                  {campaign.status === 'admin_review' && (
+                                    <>
+                                      <IconButton
+                                        size="small"
+                                        onClick={() => handleUpdateStatus(campaign.campaign_id, 'pending_payment')}
+                                        sx={{
+                                          color: '#10b981',
+                                          '&:hover': { bgcolor: 'rgba(16, 185, 129, 0.1)' }
+                                        }}
+                                        title="Approve Campaign"
+                                      >
+                                        <ApproveIcon fontSize="small" />
+                                      </IconButton>
+                                      <IconButton
+                                        size="small"
+                                        onClick={() => {
+                                          setSelectedCampaign(campaign);
+                                          setShowRejectDialog(true);
+                                        }}
+                                        sx={{
+                                          color: '#ef4444',
+                                          '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
+                                        }}
+                                        title="Reject Campaign"
+                                      >
+                                        <RejectIcon fontSize="small" />
+                                      </IconButton>
+                                    </>
+                                  )}
                                   <IconButton
                                     size="small"
                                     onClick={() => handleEditClick(campaign)}

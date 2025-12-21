@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { toast } from 'react-toastify';
 
 /**
@@ -5,7 +6,7 @@ import { toast } from 'react-toastify';
  * @returns {object} { showToast }
  */
 export const useToast = () => {
-  const showToast = (message, type = 'success') => {
+  const showToast = useCallback((message, type = 'success') => {
     const options = {
       position: 'top-right',
       autoClose: 3000,
@@ -31,7 +32,7 @@ export const useToast = () => {
       default:
         toast(message, options);
     }
-  };
+  }, []);
 
   return { showToast };
 };

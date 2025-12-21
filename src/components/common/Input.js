@@ -56,7 +56,7 @@ const Input = ({
         type={type}
         fullWidth
         placeholder={placeholder}
-        value={value}
+        value={value || ''}
         onChange={onChange}
         required={required}
         disabled={disabled}

@@ -24,16 +24,16 @@ function SubmitButton({
         fontSize: '1rem',
         fontWeight: 600,
         color: 'white',
-        background: (isLoading || disabled) ? '#a0aec0' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: (isLoading || disabled) ? '#a0aec0' : '#6E00BE',
         borderRadius: 3, // 12px
-        boxShadow: (isLoading || disabled) ? 'none' : '0 4px 15px rgba(102, 126, 234, 0.4)',
+        boxShadow: (isLoading || disabled) ? 'none' : '0 4px 15px rgba(110, 0, 190, 0.4)',
         textTransform: 'none',
         fontFamily: "'Montserrat', sans-serif",
         transition: 'all 0.3s',
         '&:hover': {
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: '#5a009e',
           transform: (!isLoading && !disabled) ? 'translateY(-2px)' : 'none',
-          boxShadow: (!isLoading && !disabled) ? '0 6px 20px rgba(102, 126, 234, 0.5)' : 'none',
+          boxShadow: (!isLoading && !disabled) ? '0 6px 20px rgba(110, 0, 190, 0.5)' : 'none',
         },
         ...sx
       }}

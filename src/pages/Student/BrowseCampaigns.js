@@ -154,13 +154,29 @@ function BrowseCampaigns() {
     return Array.from(categories).sort();
   };
 
+  // Helper to safely parse influencer categories
+  const parseInfluencerCategory = (categoryData) => {
+    if (!categoryData) return [];
+    if (Array.isArray(categoryData)) return categoryData;
+    if (typeof categoryData === 'string') {
+      try {
+        if (categoryData.startsWith('[')) {
+          return JSON.parse(categoryData);
+        }
+        return [categoryData];
+      } catch (e) {
+        return [categoryData];
+      }
+    }
+    return [];
+  };
+
   // Get all unique influencer categories
   const getInfluencerCategories = () => {
     const categories = new Set();
     campaigns.forEach(c => {
-      if (c.influencer_category && Array.isArray(c.influencer_category)) {
-        c.influencer_category.forEach(cat => categories.add(cat));
-      }
+      const cats = parseInfluencerCategory(c.influencer_category);
+      cats.forEach(cat => categories.add(cat));
     });
     return Array.from(categories).sort();
   };
@@ -204,8 +220,10 @@ function BrowseCampaigns() {
     // If influencer category filter hasn't been explicitly applied, show all
     const matchInfluencerCategory = !influencerCategoryFilterApplied
       ? true
-      : c.influencer_category && Array.isArray(c.influencer_category) && 
-        c.influencer_category.some(cat => selectedInfluencerCategories.includes(cat));
+      : (() => {
+          const cats = parseInfluencerCategory(c.influencer_category);
+          return cats.some(cat => selectedInfluencerCategories.includes(cat));
+        })();
     
     return matchSearch && matchStatus && matchCampaignCategory && matchInfluencerCategory;
   });
@@ -301,8 +319,8 @@ function BrowseCampaigns() {
                   borderRadius: '12px',
                   background: '#fff',
                   '& fieldset': { borderColor: '#e2e8f0', borderWidth: 2 },
-                  '&:hover fieldset': { borderColor: '#667eea' },
-                  '&.Mui-focused fieldset': { borderColor: '#667eea' }
+                  '&:hover fieldset': { borderColor: '#6E00BE' },
+                  '&.Mui-focused fieldset': { borderColor: '#6E00BE' }
                 },
                 fontSize: '1rem'
               }}
@@ -343,7 +361,7 @@ function BrowseCampaigns() {
               </Button>
 
               {showCampaignCategoryFilter && (
-                <Paper sx={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #667eea', borderRadius: '10px', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', zIndex: 100, mt: '8px', maxHeight: '300px', overflowY: 'auto', p: 0 }}>
+                <Paper sx={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #6E00BE', borderRadius: '10px', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', zIndex: 100, mt: '8px', maxHeight: '300px', overflowY: 'auto', p: 0 }}>
                   <Box>
                     {getCampaignCategories().map((cat) => (
                       <Box key={cat} sx={{ display: 'flex', alignItems: 'center', p: '10px 12px', cursor: 'pointer', bgcolor: tempCampaignCategories.includes(cat) ? '#f0f3ff' : 'transparent' }}>
@@ -368,7 +386,7 @@ function BrowseCampaigns() {
                         setSelectedCampaignCategories(tempCampaignCategories);
                         setCampaignCategoryFilterApplied(true);
                       }}
-                      sx={{ flex: 1, p: '8px 12px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', fontWeight: 600, fontSize: '0.85rem', borderRadius: '8px', '&:hover': { opacity: 0.95 } }}
+                      sx={{ flex: 1, p: '8px 12px', background: '#6E00BE', color: '#fff', fontWeight: 600, fontSize: '0.85rem', borderRadius: '8px', '&:hover': { opacity: 0.95, background: '#5a009e' } }}
                     >
                       Apply
                     </Button>
@@ -378,7 +396,7 @@ function BrowseCampaigns() {
                         setTempCampaignCategories(selectedCampaignCategories);
                       }}
                       variant="outlined"
-                      sx={{ flex: 1, p: '8px 12px', borderRadius: '8px', color: '#667eea', borderColor: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem' }}
+                      sx={{ flex: 1, p: '8px 12px', borderRadius: '8px', color: '#6E00BE', borderColor: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem' }}
                     >
                       Cancel
                     </Button>
@@ -401,7 +419,7 @@ function BrowseCampaigns() {
               </Button>
 
               {showInfluencerCategoryFilter && (
-                <Paper sx={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #667eea', borderRadius: '10px', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', zIndex: 100, mt: '8px', maxHeight: '300px', overflowY: 'auto', p: 0 }}>
+                <Paper sx={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #6E00BE', borderRadius: '10px', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', zIndex: 100, mt: '8px', maxHeight: '300px', overflowY: 'auto', p: 0 }}>
                   <Box>
                     {getInfluencerCategories().map((cat) => (
                       <Box key={cat} sx={{ display: 'flex', alignItems: 'center', p: '10px 12px', cursor: 'pointer', bgcolor: tempInfluencerCategories.includes(cat) ? '#f0f3ff' : 'transparent' }}>
@@ -426,7 +444,7 @@ function BrowseCampaigns() {
                         setSelectedInfluencerCategories(tempInfluencerCategories);
                         setInfluencerCategoryFilterApplied(true);
                       }}
-                      sx={{ flex: 1, p: '8px 12px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', fontWeight: 600, fontSize: '0.85rem', borderRadius: '8px', '&:hover': { opacity: 0.95 } }}
+                      sx={{ flex: 1, p: '8px 12px', background: '#6E00BE', color: '#fff', fontWeight: 600, fontSize: '0.85rem', borderRadius: '8px', '&:hover': { opacity: 0.95, background: '#5a009e' } }}
                     >
                       Apply
                     </Button>
@@ -436,7 +454,7 @@ function BrowseCampaigns() {
                         setTempInfluencerCategories(selectedInfluencerCategories);
                       }}
                       variant="outlined"
-                      sx={{ flex: 1, p: '8px 12px', borderRadius: '8px', color: '#667eea', borderColor: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem' }}
+                      sx={{ flex: 1, p: '8px 12px', borderRadius: '8px', color: '#6E00BE', borderColor: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem' }}
                     >
                       Cancel
                     </Button>
@@ -507,7 +525,7 @@ function BrowseCampaigns() {
 
                 return (
                   <Paper key={campaign.campaign_id} elevation={0} sx={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', transition: 'all 0.3s', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', cursor: 'pointer', height: '100%', '&:hover': { boxShadow: '0 8px 24px rgba(0,0,0,0.12)', transform: 'translateY(-4px)' } }}>
-                    <Box sx={{ background: campaign.banner_image ? `url(${getImageUrl(campaign.banner_image)}) center/cover` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', height: '160px', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', p: '12px', position: 'relative' }}>
+                    <Box sx={{ background: campaign.banner_image ? `url(${getImageUrl(campaign.banner_image)}) center/cover` : '#6E00BE', height: '160px', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', p: '12px', position: 'relative' }}>
                       <Box sx={{ ...statusStyle, p: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize' }}>{campaign.status}</Box>
 
                       {campaign.rating && (
@@ -520,15 +538,15 @@ function BrowseCampaigns() {
 
                     <Box sx={{ p: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px', mb: '8px' }}>
-                        <CategoryIcon sx={{ fontSize: '1.2rem', color: '#667eea' }} />
-                        <Typography sx={{ fontSize: '0.8rem', color: '#667eea', fontWeight: 600 }}>{campaign.campaign_category || 'General'}</Typography>
+                        <CategoryIcon sx={{ fontSize: '1.2rem', color: '#6E00BE' }} />
+                        <Typography sx={{ fontSize: '0.8rem', color: '#6E00BE', fontWeight: 600 }}>{campaign.campaign_category || 'General'}</Typography>
                       </Box>
 
                       <Typography sx={{ m: 0, mb: '8px', fontSize: '1.1rem', fontWeight: 700, color: '#1a1f36', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{campaign.title}</Typography>
 
                       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', mt: 'auto', pt: '12px', borderTop: '1px solid #e2e8f0' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <AttachMoneyIcon sx={{ fontSize: '1.2rem', color: '#667eea' }} />
+                          <AttachMoneyIcon sx={{ fontSize: '1.2rem', color: '#6E00BE' }} />
                           <Box>
                             <Typography sx={{ fontSize: '0.75rem', color: '#6c757d' }}>Price</Typography>
                             <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a1f36' }}>{campaign.price_per_post ? `Rp ${Number(campaign.price_per_post).toLocaleString('id-ID')}` : 'TBD'}</Typography>
@@ -536,7 +554,7 @@ function BrowseCampaigns() {
                         </Box>
 
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <PeopleIcon sx={{ fontSize: '1.2rem', color: '#667eea' }} />
+                          <PeopleIcon sx={{ fontSize: '1.2rem', color: '#6E00BE' }} />
                           <Box>
                             <Typography sx={{ fontSize: '0.75rem', color: '#6c757d' }}>Influencers</Typography>
                             <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a1f36' }}>{campaign.influencer_count || 0}</Typography>
@@ -553,8 +571,8 @@ function BrowseCampaigns() {
                     </Box>
 
                     <Box sx={{ p: '12px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '8px' }}>
-                      <Button onClick={() => handleViewDetails(campaign)} variant="outlined" sx={{ flex: 1, p: '10px 12px', background: '#f7fafc', border: '2px solid #e2e8f0', borderRadius: '8px', color: '#667eea', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: '#e0e7ff', borderColor: '#667eea' } }}>Details</Button>
-                      <Button onClick={() => handleApply(campaign)} sx={{ flex: 1, p: '10px 12px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', opacity: campaign.status === 'active' ? 1 : 0.5, pointerEvents: campaign.status === 'active' ? 'auto' : 'none', '&:hover': { opacity: campaign.status === 'active' ? 0.95 : 0.5 } }} disabled={campaign.status !== 'active'}>Apply</Button>
+                      <Button onClick={() => handleViewDetails(campaign)} variant="outlined" sx={{ flex: 1, p: '10px 12px', background: '#f7fafc', border: '2px solid #e2e8f0', borderRadius: '8px', color: '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: '#e0e7ff', borderColor: '#6E00BE' } }}>Details</Button>
+                      <Button onClick={() => handleApply(campaign)} sx={{ flex: 1, p: '10px 12px', background: '#6E00BE', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', opacity: campaign.status === 'active' ? 1 : 0.5, pointerEvents: campaign.status === 'active' ? 'auto' : 'none', '&:hover': { opacity: campaign.status === 'active' ? 0.95 : 0.5, background: '#5a009e' } }} disabled={campaign.status !== 'active'}>Apply</Button>
                     </Box>
                   </Paper>
                 );
@@ -582,7 +600,7 @@ function BrowseCampaigns() {
               </Typography>
 
               <Box sx={{ display: 'flex', gap: '8px', order: isMobile ? 3 : 0 }}>
-                <Button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} sx={{ p: '8px 12px', background: currentPage === 1 ? '#e2e8f0' : '#fff', border: '2px solid #e2e8f0', borderRadius: '8px', color: currentPage === 1 ? '#a0aec0' : '#667eea', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: currentPage === 1 ? '#e2e8f0' : '#e0e7ff', borderColor: '#667eea' } }}>← Previous</Button>
+                <Button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} sx={{ p: '8px 12px', background: currentPage === 1 ? '#e2e8f0' : '#fff', border: '2px solid #e2e8f0', borderRadius: '8px', color: currentPage === 1 ? '#a0aec0' : '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: currentPage === 1 ? '#e2e8f0' : '#e0e7ff', borderColor: '#6E00BE' } }}>← Previous</Button>
 
                 <Box sx={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                   {[...Array(totalPages)].map((_, idx) => {
@@ -597,12 +615,12 @@ function BrowseCampaigns() {
                     if (!isVisible) return null;
 
                     return (
-                      <Button key={pageNum} onClick={() => setCurrentPage(pageNum)} sx={{ p: '8px 12px', background: isCurrentPage ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#fff', border: `2px solid ${isCurrentPage ? '#667eea' : '#e2e8f0'}`, borderRadius: '8px', color: isCurrentPage ? '#fff' : '#667eea', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', minWidth: '40px', textAlign: 'center', '&:hover': { background: isCurrentPage ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#e0e7ff', borderColor: '#667eea' } }}>{pageNum}</Button>
+                      <Button key={pageNum} onClick={() => setCurrentPage(pageNum)} sx={{ p: '8px 12px', background: isCurrentPage ? '#6E00BE' : '#fff', border: `2px solid ${isCurrentPage ? '#6E00BE' : '#e2e8f0'}`, borderRadius: '8px', color: isCurrentPage ? '#fff' : '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', minWidth: '40px', textAlign: 'center', '&:hover': { background: isCurrentPage ? '#5a009e' : '#e0e7ff', borderColor: '#6E00BE' } }}>{pageNum}</Button>
                     );
                   })}
                 </Box>
 
-                <Button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages || totalPages === 0} sx={{ p: '8px 12px', background: currentPage === totalPages || totalPages === 0 ? '#e2e8f0' : '#fff', border: '2px solid #e2e8f0', borderRadius: '8px', color: currentPage === totalPages || totalPages === 0 ? '#a0aec0' : '#667eea', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: currentPage === totalPages || totalPages === 0 ? '#e2e8f0' : '#e0e7ff', borderColor: '#667eea' } }}>Next →</Button>
+                <Button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages || totalPages === 0} sx={{ p: '8px 12px', background: currentPage === totalPages || totalPages === 0 ? '#e2e8f0' : '#fff', border: '2px solid #e2e8f0', borderRadius: '8px', color: currentPage === totalPages || totalPages === 0 ? '#a0aec0' : '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: currentPage === totalPages || totalPages === 0 ? '#e2e8f0' : '#e0e7ff', borderColor: '#6E00BE' } }}>Next →</Button>
               </Box>
             </Paper>
           )}
@@ -657,8 +675,8 @@ function BrowseCampaigns() {
                 <Box>
                   <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Influencer Categories</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px', mt: '8px' }}>
-                    {selectedCampaign.influencer_category && selectedCampaign.influencer_category.map((cat, idx) => (
-                      <Box key={idx} sx={{ background: '#e0e7ff', color: '#667eea', px: '12px', py: '6px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{cat}</Box>
+                    {parseInfluencerCategory(selectedCampaign.influencer_category).map((cat, idx) => (
+                      <Box key={idx} sx={{ background: '#f3e5f5', color: '#6E00BE', px: '12px', py: '6px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{cat}</Box>
                     ))}
                   </Box>
                 </Box>
@@ -670,7 +688,7 @@ function BrowseCampaigns() {
 
                 <Box sx={{ mb: '16px' }}>
                   <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Price Per Post</Typography>
-                  <Typography sx={{ mt: '4px', fontSize: '1.2rem', color: '#667eea', fontWeight: 700 }}>Rp {Number(selectedCampaign.price_per_post).toLocaleString('id-ID')}</Typography>
+                  <Typography sx={{ mt: '4px', fontSize: '1.2rem', color: '#6E00BE', fontWeight: 700 }}>Rp {Number(selectedCampaign.price_per_post).toLocaleString('id-ID')}</Typography>
                 </Box>
 
                 <Box sx={{ mb: '16px' }}>
@@ -726,8 +744,8 @@ function BrowseCampaigns() {
 
             {/* Action Buttons - At Bottom */}
             <Box sx={{ display: 'flex', gap: '12px', pt: '24px', borderTop: '1px solid #e2e8f0', mt: '24px' }}>
-              <Button onClick={() => setShowDetailModal(false)} variant="outlined" sx={{ flex: 1, p: '12px 24px', background: '#f7fafc', border: '2px solid #e2e8f0', borderRadius: '8px', color: '#667eea', fontWeight: 600, fontSize: '1rem', textTransform: 'none', '&:hover': { background: '#e0e7ff', borderColor: '#667eea' } }}>Close</Button>
-              <Button onClick={() => { handleApply(selectedCampaign); setShowDetailModal(false); }} sx={{ flex: 1, p: '12px 24px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '1rem', textTransform: 'none', opacity: selectedCampaign.status === 'active' ? 1 : 0.5, pointerEvents: selectedCampaign.status === 'active' ? 'auto' : 'none', '&:hover': { opacity: selectedCampaign.status === 'active' ? 0.95 : 0.5 } }} disabled={selectedCampaign.status !== 'active'}>Apply Now</Button>
+              <Button onClick={() => setShowDetailModal(false)} variant="outlined" sx={{ flex: 1, p: '12px 24px', background: '#f7fafc', border: '2px solid #e2e8f0', borderRadius: '8px', color: '#6E00BE', fontWeight: 600, fontSize: '1rem', textTransform: 'none', '&:hover': { background: '#e0e7ff', borderColor: '#6E00BE' } }}>Close</Button>
+              <Button onClick={() => { handleApply(selectedCampaign); setShowDetailModal(false); }} sx={{ flex: 1, p: '12px 24px', background: '#6E00BE', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '1rem', textTransform: 'none', opacity: selectedCampaign.status === 'active' ? 1 : 0.5, pointerEvents: selectedCampaign.status === 'active' ? 'auto' : 'none', '&:hover': { opacity: selectedCampaign.status === 'active' ? 0.95 : 0.5, background: '#a009e' } }} disabled={selectedCampaign.status !== 'active'}>Apply Now</Button>
             </Box>
           </Box>
         </Modal>
