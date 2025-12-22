@@ -68,6 +68,22 @@ const studentService = {
       console.error("Error updating profile image:", error);
       throw error;
     }
+  },
+
+  connectInstagram: async (code) => {
+    try {
+      const response = await authFetch(`${API_BASE_URL}/students/instagram/connect`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }),
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error("Error connecting Instagram:", error);
+      throw error;
+    }
   }
 };
 

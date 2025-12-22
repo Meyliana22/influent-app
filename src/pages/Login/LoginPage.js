@@ -16,15 +16,18 @@ import {
   Stack,
   Fade,
   CircularProgress,
-  Alert
+  Alert,
+  Divider,
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
   Email as EmailIcon,
   Lock as LockIcon,
-  ArrowBack as ArrowBackIcon
+  ArrowBack as ArrowBackIcon,
+  Instagram as InstagramIcon,
 } from '@mui/icons-material';
+import authService from '../../services/authService';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -139,6 +142,23 @@ function LoginPage() {
       setLoginError(error.message || 'Email atau password salah. Coba lagi.');
       showToast('Login gagal.', 'error');
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleInstagramLogin = async () => {
+    try {
+      setIsLoading(true);
+      const data = await authService.getInstagramAuthUrl();
+      console.log(data);
+      if (data && data.data.url) {
+        window.location.href = data.data.url;
+      } else {
+        throw new Error('Invalid authorization URL received');
+      }
+    } catch (error) {
+      console.error('Instagram auth error:', error);
+      showToast('Failed to initialize Instagram login', 'error');
       setIsLoading(false);
     }
   };
@@ -309,6 +329,38 @@ function LoginPage() {
                   }}
                 >
                   {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Masuk Sekarang'}
+                </Button>
+
+                <Box sx={{ position: 'relative', my: 2 }}>
+                  <Divider sx={{ my: 1 }}>
+                    <Typography variant="caption" color="text.secondary" px={1}>
+                      ATAU
+                    </Typography>
+                  </Divider>
+                </Box>
+                
+                <Button
+                  fullWidth
+                  size="large"
+                  variant="outlined"
+                  startIcon={<InstagramIcon />}
+                  onClick={handleInstagramLogin}
+                  disabled={isLoading}
+                  sx={{
+                    borderColor: '#E1306C',
+                    color: '#E1306C',
+                    py: 1.5,
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    '&:hover': {
+                      borderColor: '#C13584',
+                      bgcolor: 'rgba(225, 48, 108, 0.04)',
+                    }
+                  }}
+                >
+                  Login with Instagram
                 </Button>
 
                 <Box sx={{ textAlign: 'center', mt: 3 }}>

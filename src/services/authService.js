@@ -250,6 +250,59 @@ export async function changePassword(olPassword, newPassword) {
 }
 
 /**
+ * Get Instagram OAuth URL
+ * @returns {Promise<Object>} Object containing the auth URL { url: "..." }
+ */
+export async function getInstagramAuthUrl() {
+  const response = await fetch(`${API_BASE_URL}/auth/instagram/url`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to get authorization URL');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Login with Instagram code
+ * @param {string} code - The authorization code from Instagram
+ * @returns {Promise<Object>} Response with token and user data
+ */
+export async function loginWithInstagram(code) {
+  const response = await fetch(`${API_BASE_URL}/auth/instagram/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ code }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Instagram login failed');
+  }
+
+  const data = await response.json();
+  
+  if (data.token || data.access_token) {
+    const token = data.token || data.access_token;
+    localStorage.setItem('token', token);
+    const userData = data.user || data.data || parseJwt(token);
+    if (userData) {
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
+  }
+  
+  return data;
+}
+
+/**
  * Logout user
  */
 export function logout() {
@@ -270,6 +323,8 @@ const authService = {
   getCurrentUser,
   changePassword,
   logout,
+  getInstagramAuthUrl,
+  loginWithInstagram,
 };
 
 export default authService;
