@@ -13,6 +13,7 @@ import LoginPage from './pages/Login/LoginPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import ForgotPasswordPage from './pages/Login/ForgotPasswordPage';
 import VerifyEmailPage from './pages/Auth/VerifyEmailPage';
+import InstagramCallback from './pages/Auth/InstagramCallback';
 import ChatPage from './pages/Chat/ChatPage';
 import NotificationsPage from './pages/Notifications/NotificationsPage';
 import UserPage from './pages/User/UserPage';
@@ -76,6 +77,7 @@ function App() {
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/user" element={<UserPage />} />
+            <Route path="/auth/instagram/callback" element={<InstagramCallback />} />
 
 
             <Route path="/campaigns/list" element={<CampaignList />} />

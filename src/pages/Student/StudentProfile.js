@@ -11,7 +11,10 @@ import {
   Grid,
   Avatar,
   IconButton,
-  InputAdornment
+  InputAdornment,
+  Chip,
+  Divider,
+  Stack
 } from '@mui/material';
 import {
   PhotoCamera,
@@ -26,6 +29,7 @@ import Sidebar from '../../components/common/Sidebar';
 import Topbar from '../../components/common/Topbar';
 import { useToast } from '../../hooks/useToast';
 import studentService from '../../services/studentService';
+import authService from '../../services/authService';
 
 const theme = createTheme({
   palette: {
@@ -140,6 +144,22 @@ function StudentProfile() {
     }
   };
 
+  const handleConnectInstagram = async () => {
+    try {
+      setLoading(true);
+      const data = await authService.getInstagramAuthUrl();
+      if (data && data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('Invalid authorization URL');
+      }
+    } catch (error) {
+      console.error('Instagram connect error:', error);
+      showToast('Failed to initialize Instagram connection', 'error');
+      setLoading(false);
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f9fafb' }}>
@@ -186,6 +206,86 @@ function StudentProfile() {
                     {formData.user.email || 'email@example.com'}
                   </Typography>
                 </Card>
+              </Grid>
+
+              {/* Instagram Integration Card */}
+              <Grid item xs={12} md={4}>
+                  <Card sx={{ p: 4, borderRadius: 4, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Instagram sx={{ color: '#E1306C' }} /> Instagram Integration
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    
+                    {formData.instagram_username ? (
+                      <Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <Avatar 
+                                src={formData.instagram_profile_picture_url} 
+                                sx={{ width: 56, height: 56, mr: 2, border: '2px solid #E1306C' }}
+                            >
+                                {formData.instagram_username.charAt(0)}
+                            </Avatar>
+                            <Box>
+                                <Typography variant="subtitle1" fontWeight="bold">@{formData.instagram_username}</Typography>
+                                <Chip 
+                                  label="Connected" 
+                                  size="small" 
+                                  color="success" 
+                                  variant="outlined" 
+                                  sx={{ height: 20, fontSize: '0.7rem' }} 
+                                />
+                            </Box>
+                          </Box>
+                          
+                          <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                            <Box sx={{ textAlign: 'center', flex: 1, bgcolor: '#fdf2f8', p: 1, borderRadius: 2 }}>
+                                <Typography variant="h6" fontWeight="bold" color="#E1306C">
+                                  {formData.instagram_followers_count || 0}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">Followers</Typography>
+                            </Box>
+                            <Box sx={{ textAlign: 'center', flex: 1, bgcolor: '#f0f9ff', p: 1, borderRadius: 2 }}>
+                                <Typography variant="h6" fontWeight="bold" color="#0ea5e9">
+                                  {formData.instagram_media_count || 0}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">Posts</Typography>
+                            </Box>
+                          </Stack>
+                          
+                          <Button 
+                            fullWidth 
+                            variant="outlined" 
+                            color="error"
+                            size="small"
+                            disabled
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Disconnect Account (Contact Support)
+                          </Button>
+                      </Box>
+                    ) : (
+                      <Box sx={{ textAlign: 'center', py: 2 }}>
+                          <Typography variant="body2" color="text.secondary" paragraph>
+                            Connect your Instagram account to show your stats to brands and apply for campaigns.
+                          </Typography>
+                          <Button
+                            variant="contained"
+                            startIcon={<Instagram />}
+                            onClick={handleConnectInstagram}
+                            disabled={loading}
+                            sx={{ 
+                                bgcolor: '#E1306C', 
+                                color: '#fff',
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                '&:hover': { bgcolor: '#C13584' }
+                            }}
+                          >
+                            {loading ? 'Connecting...' : 'Connect Instagram'}
+                          </Button>
+                      </Box>
+                    )}
+                  </Card>
               </Grid>
 
               {/* Profile Form */}
