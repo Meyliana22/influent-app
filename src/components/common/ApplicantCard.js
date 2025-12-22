@@ -103,7 +103,7 @@ const ApplicantCard = ({
                 width: 100, 
                 height: 100, 
                 bgcolor: '#eff6ff',
-                color: '#667eea',
+                color: '#6E00BE',
                 fontSize: 40,
                 fontWeight: 700,
                 mb: 1.5,
@@ -141,7 +141,7 @@ const ApplicantCard = ({
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', mb: 0.5 }}>
                   {applicant.fullName}
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#667eea', fontWeight: 600 }}>
+                <Typography variant="body2" sx={{ color: '#6E00BE', fontWeight: 600 }}>
                   @{applicant.instagram || applicant.influencerName}
                 </Typography>
               </Box>
@@ -180,7 +180,7 @@ const ApplicantCard = ({
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <PeopleIcon sx={{ fontSize: 18, color: '#667eea' }} />
+                <PeopleIcon sx={{ fontSize: 18, color: '#6E00BE' }} />
                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
                   {applicant.followers?.toLocaleString('id-ID') || 0}
                 </Typography>
@@ -290,10 +290,10 @@ const ApplicantCard = ({
                 onClick={() => onChat && onChat(applicant)}
                 sx={{ 
                   flex: 1,
-                  bgcolor: '#667eea',
+                  bgcolor: '#6E00BE',
                   fontWeight: 600,
                   textTransform: 'none',
-                  '&:hover': { bgcolor: '#5a67d8' }
+                  '&:hover': { bgcolor: '#5a009e' }
                 }}
                 disabled={!applicant.userId}
               >

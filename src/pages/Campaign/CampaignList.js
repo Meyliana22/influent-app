@@ -535,7 +535,7 @@ function CampaignList() {
                               variant="contained"
                               disableElevation
                               startIcon={<CreditCardIcon />}
-                              onClick={e => { e.stopPropagation(); navigate(`/campaigns/list${campaign.campaign_id}/payment`); }}
+                              onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/payment`); }}
                               sx={{ flex: 1, bgcolor: '#6E00BE', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#5a009e' } }}
                            >
                               Bayar Sekarang

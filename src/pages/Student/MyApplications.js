@@ -28,15 +28,23 @@ import {
 import * as campaignService from '../../services/campaignService';
 import { useToast } from '../../hooks/useToast';
 
+import { Modal } from '../../components/common';
+
 const MyApplications = () => {
   const navigate = useNavigate();
-  const { showToast } = useToast(); // Fix destructuring
+  const { showToast } = useToast();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Modal state for cancellation
+  const [cancelModal, setCancelModal] = useState({ 
+    open: false, 
+    appId: null 
+  });
 
   const fetchApplications = async () => {
     try {
@@ -69,17 +77,21 @@ const MyApplications = () => {
 
   useEffect(() => {
     fetchApplications();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCancel = async (applicationId) => {
-    if (!window.confirm('Are you sure you want to cancel this application?')) return;
-    
+  const initiateCancel = (applicationId) => {
+    setCancelModal({ open: true, appId: applicationId });
+  };
+
+  const confirmCancel = async () => {
+    const applicationId = cancelModal.appId;
+    if (!applicationId) return;
+
     try {
-      await campaignService.updateCampaignUser(applicationId, {
-        application_status: 'cancelled'
-      });
+      await campaignService.cancelCampaignUser(applicationId);
       showToast('Application cancelled', 'success');
+      setCancelModal({ open: false, appId: null });
       fetchApplications();
     } catch (error) {
       console.error('Cancel error:', error);
@@ -116,7 +128,7 @@ const MyApplications = () => {
       >
         <Container maxWidth="lg">
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, borderLeft: '5px solid #6E00BE', pl: 2 }}>
               My Applications
             </Typography>
             <Typography variant="body1" color="textSecondary">
@@ -156,13 +168,13 @@ const MyApplications = () => {
           ) : (
             <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 3 }}>
               <Table sx={{ minWidth: 650 }}>
-                <TableHead sx={{ bgcolor: '#f8fafc' }}>
+                <TableHead sx={{ bgcolor: '#6E00BE' }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600 }}>Campaign</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Date Applied</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Campaign</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Date Applied</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#fff' }} align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -203,33 +215,32 @@ const MyApplications = () => {
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
                           {app.application_status === 'pending' && (
-                            <Tooltip title="Cancel Application">
-                               <IconButton 
-                                 size="small" 
-                                 color="error"
-                                 onClick={() => handleCancel(app.id || app.campaign_user_id)}
-                               >
-                                 <CancelIcon fontSize="small" />
-                               </IconButton>
-                            </Tooltip>
+                             <Button 
+                               variant="outlined" 
+                               size="small"
+                               color="error"
+                               onClick={() => initiateCancel(app.id || app.campaign_user_id)}
+                               startIcon={<CancelIcon />}
+                               sx={{ borderRadius: 2, textTransform: 'none' }}
+                             >
+                               Cancel
+                             </Button>
                           )}
                           
                           <Button 
                             variant="outlined"
                             size="small"
                             startIcon={app.application_status === 'accepted' ? <AssignmentIcon /> : <VisibilityIcon />}
-                            sx={{ borderRadius: 2, textTransform: 'none' }}
+                            sx={{ borderRadius: 2, textTransform: 'none', borderColor: '#6E00BE', color: '#6E00BE', '&:hover': { borderColor: '#5a009e', bgcolor: '#f3e5f5' } }}
                             onClick={() => {
                               if (app.application_status === 'accepted') {
                                  navigate(`/student/campaign/${app.campaign_id || app.campaign?.id}/work`);
                               } else {
-                                 // Original detail or maybe just a summary view?
-                                 // For now let's show info or navigate to public detail if available
                                  showToast('Wait for acceptance to submit work', 'info');
                               }
                             }}
                           >
-                            {app.application_status === 'accepted' ? 'Work' : 'Details'}
+                            {app.application_status === 'accepted' ? 'Submit Work' : 'Details'}
                           </Button>
                         </Box>
                       </TableCell>
@@ -239,6 +250,22 @@ const MyApplications = () => {
               </Table>
             </TableContainer>
           )}
+          
+          {/* Cancel Confirmation Modal */}
+          <Modal
+             isOpen={cancelModal.open}
+             onClose={() => setCancelModal({ ...cancelModal, open: false })}
+             title="Cancel Application"
+             onConfirm={confirmCancel}
+             confirmText="Yes, Cancel Application"
+             cancelText="No, Keep It"
+             variant="danger"
+          >
+             <Typography>
+                Are you sure you want to cancel your application? This action cannot be undone.
+             </Typography>
+          </Modal>
+
         </Container>
       </Box>
     </Box>

@@ -179,6 +179,21 @@ export const updateCampaignUser = async (id, data) => {
 };
 
 /**
+ * cancel campaign user (cancel application etc)
+ */
+export const cancelCampaignUser = async (id) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaign-users/${id}`, {
+      method: "DELETE",
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error canceling campaign user:", error);
+    throw error;
+  }
+};
+
+/**
  * Upload campaign references
  */
 export const uploadCampaignReferences = async (campaignId, files) => {

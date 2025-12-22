@@ -444,7 +444,7 @@ function ViewApplicants() {
                   
                   {campaign.user && (
                      <Typography sx={{ fontSize: 14, color: '#64748b', mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                       Oleh <Box component="span" sx={{ fontWeight: 600, color: '#667eea' }}>{campaign.user.name}</Box>
+                       Oleh <Box component="span" sx={{ fontWeight: 600, color: '#6E00BE' }}>{campaign.user.name}</Box>
                      </Typography>
                   )}
 
@@ -494,7 +494,7 @@ function ViewApplicants() {
                       alignItems: 'center', 
                       justifyContent: 'center' 
                     }}>
-                      <PeopleIcon sx={{ fontSize: 24, color: '#0ea5e9' }} />
+                      <PeopleIcon sx={{ fontSize: 24, color: '#6E00BE' }} />
                     </Box>
                     <Box>
                       <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
@@ -517,7 +517,7 @@ function ViewApplicants() {
                       alignItems: 'center', 
                       justifyContent: 'center' 
                     }}>
-                      <StarIcon sx={{ fontSize: 24, color: '#f97316' }} />
+                      <StarIcon sx={{ fontSize: 24, color: '#6E00BE' }} />
                     </Box>
                     <Box>
                       <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
