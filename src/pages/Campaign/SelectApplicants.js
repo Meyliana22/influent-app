@@ -149,7 +149,7 @@ function SelectApplicants() {
         <Box sx={{ bgcolor: COLORS.background, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Container maxWidth="sm">
             <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 3, md: 5 }, textAlign: 'center', boxShadow: 6 }}>
-              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: COLORS.gradient }} />
+              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: 'linear-gradient(90deg, #6E00BE 0%, #5a009e 100%)' }} />
               <SentimentDissatisfiedIcon sx={{ fontSize: 56, mb: 2, color: COLORS.textSecondary }} />
               <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary, mb: 2 }}>
                 Page Not Found
@@ -157,7 +157,7 @@ function SelectApplicants() {
               <Typography sx={{ color: COLORS.textSecondary, fontSize: 16, mb: 2 }}>
                 The campaign you are looking for does not exist or has been removed.
               </Typography>
-              <Button variant="contained" onClick={() => navigate('/campaigns')} sx={{ borderRadius: 2, fontWeight: 600, minWidth: 25, textTransform: 'none', fontSize: 16, bgcolor: '#667eea', color: '#fff', mt: 2 }}>
+              <Button variant="contained" onClick={() => navigate('/campaigns')} sx={{ borderRadius: 2, fontWeight: 600, minWidth: 25, textTransform: 'none', fontSize: 16, bgcolor: '#6E00BE', color: '#fff', mt: 2 }}>
                 Back to Campaigns
               </Button>
             </Paper>
@@ -191,7 +191,7 @@ function SelectApplicants() {
             </MuiButton>
             {/* Header */}
             <Paper elevation={3} sx={{ borderRadius: 3, p: 4, mb: 4, position: 'relative', overflow: 'hidden', boxShadow: 6 }}>
-              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: COLORS.gradient }} />
+              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: 'linear-gradient(90deg, #6E00BE 0%, #5a009e 100%)' }} />
               <Stack direction="row" alignItems="center" justifyContent="space-between">
                 <Box>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary, mb: 1 }}>
@@ -230,7 +230,7 @@ function SelectApplicants() {
                 variant="primary"
                 onClick={handleConfirm}
                 disabled={selectedIds.length === 0}
-                sx={{ px: 4, py: 1.5, borderRadius: 2, fontSize: 16, fontWeight: 700, bgcolor: selectedIds.length === 0 ? '#ccc' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', cursor: selectedIds.length === 0 ? 'not-allowed' : 'pointer' }}
+                sx={{ px: 4, py: 1.5, borderRadius: 2, fontSize: 16, fontWeight: 700, bgcolor: selectedIds.length === 0 ? '#ccc' : '#6E00BE', color: '#fff', cursor: selectedIds.length === 0 ? 'not-allowed' : 'pointer' }}
               >
                 Confirm Selection ({selectedIds.length})
               </Button>
@@ -251,7 +251,7 @@ function SelectApplicants() {
                 {applicants.map(applicant => {
                   const isSelected = selectedIds.includes(applicant.id);
                   return (
-                    <Grid item xs={12} sm={6} md={4} key={applicant.id}>
+                    <Grid item xs={12} sm={6} md={3} key={applicant.id}>
                       <Card
                         onClick={() => toggleSelection(applicant.id)}
                         sx={{
@@ -277,7 +277,7 @@ function SelectApplicants() {
                             <Avatar
                               src={applicant.profileImage || undefined}
                               alt={applicant.fullName}
-                              sx={{ width: 80, height: 80, mb: 2, bgcolor: COLORS.gradient, fontSize: 40 }}
+                              sx={{ width: 60, height: 60, mb: 2, bgcolor: '#6E00BE', fontSize: 32 }}
                             >
                               {!applicant.profileImage && <SmartphoneIcon sx={{ fontSize: 40, color: '#fff' }} />}
                             </Avatar>

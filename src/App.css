@@ -36,3 +36,18 @@
     transform: rotate(360deg);
   }
 }
+
+/* React Toastify Overrides */
+:root {
+  --toastify-color-progress-success: #6E00BE;
+  --toastify-color-success: #10b981; /* Keep icon green or change to #6E00BE if desired */
+}
+
+/* Force specific styling for all toasts to match brand */
+.Toastify__toast {
+  border-left: 4px solid #6E00BE;
+}
+
+.Toastify__progress-bar {
+  background: #6E00BE !important;
+}

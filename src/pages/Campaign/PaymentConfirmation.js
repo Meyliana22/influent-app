@@ -115,7 +115,7 @@ function PaymentConfirmation() {
                 variant="outlined"
                 color="primary"
                 onClick={() => navigate(`/campaign-edit/${id}`)}
-                sx={{ minWidth: 36, minHeight: 36, borderRadius: 2, p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 1, bgcolor: 'rgba(102,126,234,0.12)' }}
+                sx={{ minWidth: 36, minHeight: 36, borderRadius: 2, p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 1, bgcolor: 'rgba(110, 0, 190, 0.12)' }}
               >
                 <ArrowBackIcon sx={{ fontSize: 16, color: COLORS.textPrimary }} />
               </Button>
@@ -124,7 +124,7 @@ function PaymentConfirmation() {
               </Typography>
             </Stack>
             <Box sx={{ bgcolor: COLORS.backgroundLight, borderRadius: 3, mb: 3, p: 2 }}>
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 2, color: COLORS.textPrimary, borderBottom: '2px solid #667eea', pb: 1 }}>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 2, color: COLORS.textPrimary, borderBottom: '2px solid #6E00BE', pb: 1 }}>
                 Draft Campaign
               </Typography>
               <Stack spacing={1.5}>
@@ -143,7 +143,7 @@ function PaymentConfirmation() {
               </Stack>
             </Box>
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 2, color: COLORS.textPrimary, borderBottom: '2px solid #667eea', pb: 1 }}>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 2, color: COLORS.textPrimary, borderBottom: '2px solid #6E00BE', pb: 1 }}>
                 Biaya Campaign
               </Typography>
               <Box sx={{ bgcolor: COLORS.backgroundLight, borderRadius: 3, mb: 2, p: 2 }}>
@@ -158,7 +158,7 @@ function PaymentConfirmation() {
                   </Stack>
                 </Stack>
               </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 3, boxShadow: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 3, boxShadow: 3, background: 'linear-gradient(135deg, #6E00BE 0%, #5a009e 100%)' }}>
                 <Typography sx={{ fontSize: 18, fontWeight: 700, color: COLORS.white }}>Total Bayar</Typography>
                 <Typography sx={{ fontSize: 20, fontWeight: 700, color: COLORS.white }}>{formatCurrency(costs.total)}</Typography>
               </Box>
@@ -174,7 +174,7 @@ function PaymentConfirmation() {
               variant="contained"
               size="large"
               sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #6E00BE 0%, #5a009e 100%)',
                 borderRadius: 3,
                 fontWeight: 700,
                 py: 2,
@@ -187,7 +187,7 @@ function PaymentConfirmation() {
                 justifyContent: 'center',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'linear-gradient(135deg, #6E00BE 0%, #5a009e 100%)',
                   boxShadow: 6,
                   transform: 'translateY(-2px)'
                 },

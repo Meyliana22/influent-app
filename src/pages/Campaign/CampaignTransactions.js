@@ -308,7 +308,7 @@ function CampaignTransactions() {
                     const statusStyle = getStatusColor(trx.status);
                     return (
                       <TableRow key={trx.normalizedId} sx={{ borderBottom: '1px solid #e2e8f0' }}>
-                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 600, color: '#667eea' }}>
+                        <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 600, color: '#6E00BE' }}>
                           {trx.normalizedId || '-'}
                         </TableCell>
                         <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
@@ -336,7 +336,7 @@ function CampaignTransactions() {
                             onClick={() => handleViewDetails(trx)}
                             variant="contained"
                             sx={{
-                              bgcolor: '#667eea',
+                              bgcolor: '#6E00BE',
                               borderRadius: 3,
                               fontWeight: 600,
                               py: 1,
@@ -374,7 +374,7 @@ function CampaignTransactions() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            bgcolor: '#667eea',
+            bgcolor: '#6E00BE',
             color: '#fff',
             px: 4,
             py: 2.5,
@@ -465,8 +465,8 @@ function CampaignTransactions() {
           <DialogActions sx={{ px: 4, pb: 3, bgcolor: '#f7fafc', borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
             <Button
               onClick={() => showToast('Bukti transaksi berhasil diunduh!', 'success')}
-              sx={{ flex: 1, py: 1.2, bgcolor: COLORS.gradient, borderRadius: 1.5, color: '#667eea', fontWeight: 600, textTransform: 'none', boxShadow: 'none', '& .MuiButton-startIcon': { mr: 1 } }}
-              startIcon={<DownloadIcon sx={{ color: '#667eea' }} />}
+              sx={{ flex: 1, py: 1.2, bgcolor: COLORS.gradient, borderRadius: 1.5, color: '#6E00BE', fontWeight: 600, textTransform: 'none', boxShadow: 'none', '& .MuiButton-startIcon': { mr: 1 } }}
+              startIcon={<DownloadIcon sx={{ color: '#6E00BE' }} />}
             >
               Unduh Bukti Transaksi
             </Button>

@@ -14,6 +14,7 @@ export const useToast = () => {
       closeOnClick: true,
       pauseOnHover: true,
       draggable: true,
+      draggable: true,
     };
 
     switch (type) {
