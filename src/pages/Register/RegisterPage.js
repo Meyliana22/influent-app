@@ -50,6 +50,7 @@ function RegisterPage() {
     }
     return 'umkm';
   });
+  console.log(userRole)
 
   // Update active step index for Stepper
   useEffect(() => {
