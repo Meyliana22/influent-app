@@ -66,9 +66,9 @@ function StudentDashboard() {
 
       // Calculate stats for student
       const availableCampaigns = campaigns.filter(c => c.status === 'active').length;
-      const myCollaborations = 5; // TODO: Load from collaborations API
-      const totalEarnings = 2500000; // TODO: Load from transactions API
-      const averageRating = 4.8; // TODO: Load from reviews API
+      const myCollaborations = 0; 
+      const totalEarnings = 0; 
+      const averageRating = 0;
 
       setStats({
         availableCampaigns,
