@@ -90,14 +90,25 @@ function RegisterPage() {
     if (savedState) {
       try {
         const parsed = JSON.parse(savedState);
-        setStep(parsed.step || 'register');
-        setUserRole(parsed.userRole || 'umkm');
-        setFormData(prev => ({ ...prev, ...parsed.formData }));
+        
+        // Validation: Verify if stored role matches current URL role
+        // This prevents sticky role bug when switching directly from one register page to another
+        const currentUrlRole = role?.toLowerCase() === 'umkm' ? 'umkm' : 'influencer';
+        const storedRole = parsed.userRole;
+
+        if (storedRole === currentUrlRole) {
+          setStep(parsed.step || 'register');
+          setUserRole(storedRole);
+          setFormData(prev => ({ ...prev, ...parsed.formData }));
+        } else {
+          // If roles mismatch, clear the stale state
+          sessionStorage.removeItem('registrationState');
+        }
       } catch (e) {
         sessionStorage.removeItem('registrationState');
       }
     }
-  }, []);
+  }, [role]); // Add role as dependency to re-run if URL changes
 
   useEffect(() => {
     const stateToSave = {
