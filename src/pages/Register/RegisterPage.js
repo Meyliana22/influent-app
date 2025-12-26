@@ -44,11 +44,15 @@ function RegisterPage() {
   const [userRole, setUserRole] = useState(() => {
     console.log(role)
 
-    if (role) {
-      const lowerRole = role.toLowerCase();
-      if (['influencer', 'student'].includes(lowerRole)) return 'influencer';
+    if (!role) {
+      navigate('/');
+      return;
     }
-    return 'umkm';
+    const lowerRole = role.toLowerCase();
+    if(lowerRole === "umkm") return 'umkm';
+
+   return 'influencer';
+  
   });
   console.log(userRole)
 
