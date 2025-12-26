@@ -152,6 +152,7 @@ function LoginPage() {
       const data = await authService.getInstagramAuthUrl();
       console.log(data);
       if (data && data.data.url) {
+        console.log(data.data.url);
         window.location.href = data.data.url;
       } else {
         throw new Error('Invalid authorization URL received');
