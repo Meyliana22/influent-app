@@ -42,6 +42,8 @@ function RegisterPage() {
   
   // Initialize role directly from URL param
   const [userRole, setUserRole] = useState(() => {
+    console.log(role)
+
     if (role) {
       const lowerRole = role.toLowerCase();
       if (['influencer', 'student'].includes(lowerRole)) return 'influencer';
