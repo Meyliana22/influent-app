@@ -49,7 +49,12 @@ function RegisterPage() {
       return;
     }
     const lowerRole = role.toLowerCase();
+    console.log(lowerRole)
     if(lowerRole === "umkm") return 'umkm';
+    console.log(
+
+    "BUKAN UMKM"
+    )
 
    return 'influencer';
   
