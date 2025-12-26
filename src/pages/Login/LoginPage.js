@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../../hooks/useToast';
 import {
@@ -105,7 +105,9 @@ function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        const error = new Error(data.message || 'Login failed');
+        error.status = response.status;
+        throw error;
       }
 
       const token = data.data.token;
@@ -139,7 +141,62 @@ function LoginPage() {
       setTimeout(() => navigate(dashboardPath), 1000);
 
     } catch (error) {
-      setLoginError(error.message || 'Email atau password salah. Coba lagi.');
+      console.error("Login Result:", error);
+      // Check for 403 Forbidden (Unverified Email)
+      const isUnverified = error.status === 403;
+      console.log(error)
+      // Also fallback to message check just in case legacy or different path
+      const isUnverifiedMessage = error.message?.includes('verify your email') || error.message?.includes('not verified'); 
+
+      if (isUnverified || isUnverifiedMessage) {
+         setLoginError(
+            <Box>
+              {error.message}. 
+              <Button
+                variant="text"
+                size="small"
+                onClick={async () => {
+                  try {
+                    setIsLoading(true);
+                    await authService.resendOtp(email);
+                    showToast("OTP baru telah dikirim. Silakan cek email Anda.", "success");
+                    // Redirect to Register page (step 2) to enter OTP
+                    // We default to 'umkm' route but it doesn't matter much since we forced the step
+                    setTimeout(() => {
+                      navigate('/register/umkm', { 
+                        state: { 
+                          step: 'otp', 
+                          email: email,
+                          // Optional: pass a role if we knew it, or default
+                          userRole: 'umkm' 
+                        } 
+                      });
+                    }, 1000);
+                  } catch (err) {
+                    showToast(err.message, "error");
+                  } finally {
+                     setIsLoading(false);
+                  }
+                }}
+                sx={{ 
+                  color: '#d32f2f', 
+                  fontWeight: 'bold', 
+                  textTransform: 'none', 
+                  ml: 1,
+                  p: 0,
+                  minWidth: 'auto',
+                  textDecoration: 'underline',
+                  '&:hover': { bgcolor: 'transparent' }
+                }}
+              >
+                Kirim Ulang OTP
+              </Button>
+            </Box>
+         );
+      } else {
+         setLoginError(error.message || 'Email atau password salah. Coba lagi.');
+      }
+      
       showToast('Login gagal.', 'error');
     } finally {
       setIsLoading(false);

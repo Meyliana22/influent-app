@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useToast } from '../../hooks/useToast';
 import {
   Box,
@@ -35,6 +35,7 @@ import studentService from '../../services/studentService';
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { role } = useParams();
   const { showToast } = useToast();
   const [step, setStep] = useState('register'); // register, otp, onboarding
@@ -49,17 +50,11 @@ function RegisterPage() {
       return;
     }
     const lowerRole = role.toLowerCase();
-    console.log(lowerRole)
+
     if(lowerRole === "umkm") return 'umkm';
-    console.log(
-
-    "BUKAN UMKM"
-    )
-
    return 'influencer';
   
   });
-  console.log(userRole)
 
   // Update active step index for Stepper
   useEffect(() => {
@@ -86,6 +81,16 @@ function RegisterPage() {
 
   // Restore state logic (simplified for cleaner readability)
   useEffect(() => {
+    // Check for navigation state first (priority over session storage)
+    if (location.state?.step && location.state?.email) {
+      setStep(location.state.step);
+      setFormData(prev => ({ ...prev, email: location.state.email }));
+      // Clear state to prevent sticky behavior on refresh if needed, 
+      // but strictly speaking we might want to keep it.
+      // For now, let's allow it to override session storage.
+      return; 
+    }
+
     const savedState = sessionStorage.getItem('registrationState');
     if (savedState) {
       try {
@@ -149,7 +154,45 @@ function RegisterPage() {
       showToast("Registrasi berhasil! Cek email Anda.", "success");
       setStep('otp');
     } catch (error) {
-      setErrorMsg(error.message || "Registrasi gagal");
+       // Check if error is related to unverified email (400 with message or 403)
+       // Check if error is related to unverified email (400 with message or 403)
+       // Relaxed check: 403 implies unverified, 409 implies exists.
+       const isEmailProblem = 
+          error.status === 403 || 
+          error.status === 409 ||
+          error.message?.toLowerCase().includes('already exists') || 
+          error.message?.toLowerCase().includes('sudah terdaftar') ||
+          error.message?.toLowerCase().includes('verify') ||
+          error.message?.toLowerCase().includes('verifikasi');
+       
+       if (isEmailProblem) {
+         // Ask user if they want to resend OTP
+         setErrorMsg(
+           <Box>
+             Email sudah terdaftar. 
+             <Button 
+               size="small" 
+               sx={{ color: '#d32f2f', fontWeight: 'bold', textDecoration: 'underline', ml: 1, p: 0, minWidth: 'auto', textTransform: 'none' }}
+               onClick={async () => {
+                 try {
+                   setIsLoading(true);
+                   await authService.resendOtp(formData.email);
+                   showToast("OTP baru telah dikirim ke email Anda", "success");
+                   setStep('otp');
+                 } catch (resendError) {
+                   showToast(resendError.message || "Gagal mengirim ulang OTP", "error");
+                 } finally {
+                   setIsLoading(false);
+                 }
+               }}
+             >
+               Kirim Ulang OTP?
+             </Button>
+           </Box>
+         );
+       } else {
+         setErrorMsg(error.message || "Registrasi gagal");
+       }
     } finally {
       setIsLoading(false);
     }
@@ -161,15 +204,23 @@ function RegisterPage() {
     try {
       await authService.verifyEmail(formData.email, formData.otp);
       showToast("Verifikasi berhasil!", "success");
-      const loginResponse = await authService.login(formData.email, formData.password);
       
-      // Update userRole based on actual registered role from backend
-      if (loginResponse.data?.user?.role) {
-         const backendRole = loginResponse.data.user.role;
-         setUserRole(backendRole === 'student' ? 'influencer' : 'umkm');
+      // If we have a password (normal registration flow), try to login
+      if (formData.password) {
+        const loginResponse = await authService.login(formData.email, formData.password);
+        
+        // Update userRole based on actual registered role from backend
+        if (loginResponse.data?.user?.role) {
+           const backendRole = loginResponse.data.user.role;
+           setUserRole(backendRole === 'student' ? 'influencer' : 'umkm');
+        }
+  
+        setStep('onboarding');
+      } else {
+        // If no password (flow from Login -> Resend OTP), redirect to login
+        showToast("Silakan login dengan akun Anda", "success");
+        setTimeout(() => navigate('/login'), 1500);
       }
-
-      setStep('onboarding');
     } catch (error) {
       setErrorMsg(error.message || "Verifikasi gagal");
     } finally {

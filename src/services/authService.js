@@ -30,7 +30,10 @@ const handleResponse = async (response) => {
   const data = await response.json();
   
   if (!response.ok) {
-    throw new Error(data.error || data.message || 'Request failed');
+    const error = new Error(data.error || data.message || 'Request failed');
+    error.status = response.status;
+    error.data = data;
+    throw error;
   }
   
   return data;
@@ -83,8 +86,10 @@ export async function login(email, password) {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Login failed');
+    const errorData = await response.json();
+    const error = new Error(errorData.message || 'Login failed');
+    error.status = response.status;
+    throw error;
   }
 
   const data = await response.json();
@@ -124,8 +129,10 @@ export async function register(userData) {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Registration failed');
+    const errorData = await response.json();
+    const error = new Error(errorData.message || 'Registration failed');
+    error.status = response.status;
+    throw error;
   }
 
   return await response.json();
@@ -149,6 +156,28 @@ export async function verifyEmail(email, otp) {
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message || 'Verification failed');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Resend OTP for verification
+ * @param {string} email - User email
+ * @returns {Promise<Object>} Response with success message
+ */
+export async function resendOtp(email) {
+  const response = await fetch(`${API_BASE_URL}/auth/resend-otp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to resend OTP');
   }
 
   return await response.json();
@@ -318,6 +347,7 @@ const authService = {
   login,
   register,
   verifyEmail,
+  resendOtp,
   forgotPassword,
   resetPassword,
   getCurrentUser,

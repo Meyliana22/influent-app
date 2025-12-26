@@ -317,9 +317,6 @@ function LandingPage() {
       <Box component="section" id="cara-kerja" sx={{ py: { xs: 8, md: 12 }, bgcolor: '#F8F9FA' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 8 }}>
-            <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: 1.5 }}>
-              DASHBOARD WORKFLOW
-            </Typography>
             <Typography variant="h3" component="h2" fontWeight={800} color="text.primary" sx={{ fontSize: { xs: '2rem', md: '3rem' }, mt: 1 }}>
               Cara Kerja
             </Typography>
