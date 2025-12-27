@@ -236,6 +236,7 @@ function CampaignCreate() {
        status: isDraft ? 'draft' : 'admin_review',
        // image: imagePreview - Removed, handled via separate upload endpoint
     };
+    console.log(payload);
 
     try {
       setLoading(true);

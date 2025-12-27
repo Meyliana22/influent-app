@@ -205,7 +205,7 @@ function CampaignReport() {
           {/* Header */}
           <Button
             startIcon={<BackIcon />}
-            onClick={() => navigate('/umkm/campaigns')}
+            onClick={() => navigate('/campaign/list')}
             sx={{ mb: 3, color: COLORS.primary, textTransform: 'none', fontWeight: 600 }}
           >
             Kembali ke Dashboard

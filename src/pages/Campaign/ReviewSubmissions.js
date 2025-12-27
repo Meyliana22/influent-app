@@ -190,7 +190,7 @@ const ReviewSubmissions = () => {
               {/* Header */}
               <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
                 <IconButton 
-                  onClick={() => navigate('/umkm/campaigns')}
+                  onClick={() => navigate('/campaign/list')}
                   sx={{ 
                     bgcolor: COLORS.white, 
                     '&:hover': { bgcolor: '#f0f0f0' },
