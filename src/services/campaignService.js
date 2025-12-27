@@ -535,12 +535,32 @@ export const distributePayment = async (campaignId) => {
   }
 };
 
+/**
+ * Update campaign status (admin/system/user action)
+ */
+export const updateCampaignStatus = async (campaignId, status) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${campaignId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error updating campaign status:", error);
+    throw error;
+  }
+};
+
 export default {
   getCampaigns,
   getCampaignsByCategory,
   getCampaignById,
   createCampaign,
   updateCampaign,
+  updateCampaignStatus,
   deleteCampaign,
   mapApiToFrontend,
   payment,

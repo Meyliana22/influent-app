@@ -310,8 +310,8 @@ const ReviewSubmissions = () => {
                         }}
                       >
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
-                          {/* Media Preview */}
-                          {submission.content_url && (
+                          {/* Media Preview (First item) */}
+                          {(submission.content_url || (submission.submission_content && submission.submission_content[0]?.url)) && (
                             <Box 
                               sx={{ 
                                 width: { xs: '100%', md: 280 }, 
@@ -324,7 +324,6 @@ const ReviewSubmissions = () => {
                                 justifyContent: 'center'
                               }}
                             >
-                              {/* Simple visual fallback if not playable direct */}
                               <PlayIcon sx={{ fontSize: 48, color: '#bdbdbd' }} />
                             </Box>
                           )}
@@ -366,15 +365,24 @@ const ReviewSubmissions = () => {
                                 <Typography variant="body2" sx={{ textTransform: 'capitalize', color: COLORS.textSecondary }}>
                                   Platform: <b>{submission.platform}</b>
                                 </Typography>
-                                <Typography variant="body2" sx={{ textTransform: 'capitalize', color: COLORS.textSecondary }}>
-                                  Type: <b>{submission.content_type}</b>
-                                </Typography>
                             </Stack>
-  
-                            {/* Link */}
-                            <Typography variant="body2" sx={{ mb: 2 }}>
-                               Link: <a href={submission.content_url} target="_blank" rel="noopener noreferrer">{submission.content_url}</a>
-                            </Typography>
+
+                            {/* Links List */}
+                            <Box sx={{ mb: 2 }}>
+                                {submission.submission_content && submission.submission_content.length > 0 ? (
+                                   submission.submission_content.map((item, idx) => (
+                                      <Typography key={idx} variant="body2" sx={{ mb: 0.5 }}>
+                                         <span style={{ textTransform: 'capitalize', fontWeight: 'bold' }}>{item.content_type}</span>: <a href={item.url} target="_blank" rel="noopener noreferrer">{item.url}</a>
+                                      </Typography>
+                                   ))
+                                ) : (
+                                   submission.content_url && (
+                                     <Typography variant="body2">
+                                        Link: <a href={submission.content_url} target="_blank" rel="noopener noreferrer">{submission.content_url}</a>
+                                     </Typography>
+                                   )
+                                )}
+                            </Box>
       
                             {/* Caption */}
                             {submission.caption && (

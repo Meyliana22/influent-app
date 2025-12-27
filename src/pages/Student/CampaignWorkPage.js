@@ -30,7 +30,8 @@ import {
   IconButton,
   Alert,
   Tooltip,
-  Grid
+  Grid,
+  InputAdornment
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -57,6 +58,7 @@ const CampaignWorkPage = () => {
   const [application, setApplication] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [requiredContentTypes, setRequiredContentTypes] = useState([]);
 
   // Dialog State
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -66,9 +68,9 @@ const CampaignWorkPage = () => {
   const [submitting, setSubmitting] = useState(false);
 
   // Form Data (Student Fields Only)
+  // Form Data
+  const [submissionInputs, setSubmissionInputs] = useState([]);
   const [formData, setFormData] = useState({
-    content_type: 'post',
-    content_url: '',
     caption: '',
     hashtags: '',
     platform: 'instagram',
@@ -89,19 +91,28 @@ const CampaignWorkPage = () => {
       const campaignData = campaignRes.data || campaignRes;
       setCampaign(campaignData);
 
+      // Parse Required Content Types
+      let ctypes = [];
+      try {
+         ctypes = typeof campaignData.content_types === 'string' 
+            ? JSON.parse(campaignData.content_types) 
+            : (campaignData.content_types || campaignData.contentTypes || []);
+         if (Array.isArray(ctypes)) setRequiredContentTypes(ctypes);
+      } catch (e) {
+         console.error("Error parsing content types", e);
+      }
+
       // 2. Get Application
       const appsRes = await campaignService.getCampaignUsers();
       const myApps = appsRes.data || appsRes || [];
       const myApp = myApps.find(app => String(app.campaign_id) === String(id));
       
       if (myApp) {
-         setApplication(myApp); // This object has 'id' which is 'campaign_user_id'
+         setApplication(myApp); 
          
          // 3. Get Submissions
          const subsRes = await workSubmissionService.getCampaignSubmissions(id);
          const subsData = subsRes.data || subsRes || [];
-         
-         // Filter: IDs must match
          const myId = myApp.id || myApp.campaign_user_id;
          const mySubs = subsData.filter(s => String(s.campaign_user_id) === String(myId));
          setSubmissions(mySubs);
@@ -118,10 +129,29 @@ const CampaignWorkPage = () => {
     }
   };
 
+  const initializeInputs = (types) => {
+      let inputs = [];
+      if (types && types.length > 0) {
+          types.forEach(type => {
+              const count = type.post_count || 1;
+              for (let i = 0; i < count; i++) {
+                  inputs.push({
+                      content_type: type.content_type,
+                      url: '',
+                      label: `${type.content_type === 'foto' ? 'Instagram Feed' : (type.content_type || 'Post').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())} #${i+1}`
+                  });
+              }
+          });
+      } else {
+          // Fallback if no specific types
+          inputs.push({ content_type: 'post', url: '', label: 'Content URL' });
+      }
+      return inputs;
+  };
+
   const handleOpenCreate = () => {
+    setSubmissionInputs(initializeInputs(requiredContentTypes));
     setFormData({
-      content_type: 'post',
-      content_url: '',
       caption: '',
       hashtags: '',
       platform: 'instagram',
@@ -134,25 +164,27 @@ const CampaignWorkPage = () => {
   };
 
   const handleOpenEdit = (submission) => {
-    mapSubmissionToForm(submission);
-    setEditMode(true);
-    setViewMode(false);
-    setSelectedSubmission(submission);
-    setDialogOpen(true);
-  };
-
-  const handleOpenView = (submission) => {
-    mapSubmissionToForm(submission);
-    setEditMode(false);
-    setViewMode(true);
-    setSelectedSubmission(submission);
-    setDialogOpen(true);
-  };
-
-  const mapSubmissionToForm = (submission) => {
+    // If editing, we need to populate submissionInputs from the existing submission content
+    // Assuming submission definition has changed or we adapt. 
+    // If backend returns 'submission_content' array:
+    let inputs = [];
+    if (submission.submission_content && Array.isArray(submission.submission_content)) {
+        inputs = submission.submission_content.map((item, idx) => ({
+            content_type: item.content_type,
+            url: item.url || item.content_url || '',
+            label: `${item.content_type} #${idx+1}`
+        }));
+    } else {
+        // Legacy fallback
+        inputs = [{
+            content_type: submission.content_type,
+            url: submission.content_url,
+            label: submission.content_type
+        }];
+    }
+    
+    setSubmissionInputs(inputs);
     setFormData({
-      content_type: submission.content_type || 'post',
-      content_url: submission.content_url || '',
       caption: submission.caption || '',
       hashtags: Array.isArray(submission.hashtags) 
          ? submission.hashtags.join(' ') 
@@ -160,6 +192,17 @@ const CampaignWorkPage = () => {
       platform: submission.platform || 'instagram',
       submission_notes: submission.submission_notes || ''
     });
+
+    setEditMode(true);
+    setViewMode(false);
+    setSelectedSubmission(submission);
+    setDialogOpen(true);
+  };
+
+  const handleOpenView = (submission) => {
+    handleOpenEdit(submission); // Reuse mapping logic
+    setEditMode(false);
+    setViewMode(true);
   };
 
   const handleCloseDialog = () => {
@@ -171,13 +214,20 @@ const CampaignWorkPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleUrlChange = (idx, value) => {
+      const newInputs = [...submissionInputs];
+      newInputs[idx].url = value;
+      setSubmissionInputs(newInputs);
+  };
+
   const handleSave = async (status) => {
     if (!application) return;
     
-    // Validations: URL required for Final submission
+    // Validations
     if (status === 'final') {
-       if (!formData.content_url.trim()) {
-         showToast('Content URL is required for submission', 'warning');
+       const missingUrl = submissionInputs.some(input => !input.url.trim());
+       if (missingUrl) {
+         showToast('All Content URLs are required for final submission', 'warning');
          return;
        }
     }
@@ -185,13 +235,13 @@ const CampaignWorkPage = () => {
     try {
       setSubmitting(true);
       
-      // Construct Payload - STRICTLY STUDENT FIELDS only
       const payload = {
         campaign_user_id: application.id || application.campaign_user_id,
         submission_type: status, // 'draft' or 'final'
-        content_type: formData.content_type,
-        content_url: formData.content_url,
-        content_files: [], // Always empty array as per requirement
+        submissionContent: submissionInputs.map(input => ({
+            content_type: input.content_type,
+            url: input.url 
+        })),
         caption: formData.caption,
         hashtags: typeof formData.hashtags === 'string' 
            ? formData.hashtags.split(' ').map(tag => tag.trim()).filter(tag => tag.length > 0)
@@ -201,18 +251,16 @@ const CampaignWorkPage = () => {
       };
 
       if (editMode && selectedSubmission) {
-        // UPDATE
         const subId = selectedSubmission.submission_id || selectedSubmission.id;
         await workSubmissionService.updateWorkSubmission(subId, payload);
         showToast('Submission updated', 'success');
       } else {
-        // CREATE
         await workSubmissionService.createWorkSubmission(payload);
         showToast('Submission created', 'success');
       }
 
       setDialogOpen(false);
-      loadData(); // Refresh list
+      loadData(); 
 
     } catch (error) {
       console.error('Save error:', error);
@@ -281,6 +329,22 @@ const CampaignWorkPage = () => {
                    <Typography variant="body2">{campaign.caption_guidelines}</Typography>
                 </Box>
              )}
+
+              {/* Required Content Types Display */}
+              {requiredContentTypes.length > 0 && (
+                 <Box sx={{ mt: 3 }}>
+                    <Typography variant="subtitle2" gutterBottom fontWeight={700}>Required Content:</Typography>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                       {requiredContentTypes.map((item, idx) => (
+                          <Chip 
+                             key={idx}
+                             label={`${item.post_count || 1}x ${item.content_type === 'foto' ? 'Instagram Feed' : (item.content_type || 'Post').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}`}
+                             sx={{ bgcolor: '#e0e7ff', color: '#4338ca', fontWeight: 600 }}
+                          />
+                       ))}
+                    </Stack>
+                 </Box>
+              )}
           </Paper>
 
           {/* Submissions Section */}
@@ -317,7 +381,12 @@ const CampaignWorkPage = () => {
                      <TableRow key={sub.submission_id || sub.id}>
                        <TableCell>{new Date(sub.created_at || Date.now()).toLocaleDateString()}</TableCell>
                        <TableCell sx={{ textTransform: 'capitalize' }}>{sub.platform}</TableCell>
-                       <TableCell sx={{ textTransform: 'capitalize' }}>{sub.content_type}</TableCell>
+                       <TableCell sx={{ textTransform: 'capitalize' }}>
+                           {sub.submission_content && sub.submission_content.length > 0 
+                              ? sub.submission_content.map(c => c.content_type).filter((v, i, a) => a.indexOf(v) === i).join(', ')
+                              : (sub.content_type || '-')
+                           }
+                       </TableCell>
                        <TableCell sx={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                            {sub.caption}
                        </TableCell>
@@ -325,11 +394,23 @@ const CampaignWorkPage = () => {
                            {Array.isArray(sub.hashtags) ? sub.hashtags.join(', ') : sub.hashtags}
                        </TableCell>
                        <TableCell>
-                         {sub.content_url ? (
-                           <a href={sub.content_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6E00BE', textDecoration: 'none' }}>
-                             View <LaunchIcon fontSize="inherit" />
-                           </a>
-                         ) : '-'}
+                         {sub.submission_content && sub.submission_content.length > 0 ? (
+                            <Stack spacing={0.5}>
+                               {sub.submission_content.map((item, idx) => (
+                                  item.url ? (
+                                    <a key={idx} href={item.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6E00BE', textDecoration: 'none', fontSize: '0.8rem' }}>
+                                      Link {idx + 1} <LaunchIcon style={{ fontSize: 12 }} />
+                                    </a>
+                                  ) : null
+                               ))}
+                            </Stack>
+                         ) : (
+                             sub.content_url ? (
+                               <a href={sub.content_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6E00BE', textDecoration: 'none' }}>
+                                 View <LaunchIcon fontSize="inherit" />
+                               </a>
+                             ) : '-'
+                         )}
                        </TableCell>
                        <TableCell>
                           <Chip 
@@ -400,24 +481,35 @@ const CampaignWorkPage = () => {
            )}
 
            <Stack spacing={3} sx={{ mt: 1 }}>
+            {/* Dynamic Content Inputs */}
+            <Typography variant="subtitle2" sx={{ color: '#1e293b', fontWeight: 700 }}>
+                Submission Links
+            </Typography>
+            {submissionInputs.map((input, idx) => (
+                <Box key={idx} sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block', color: theme.palette.primary.main }}>
+                        {input.label}
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        placeholder={`Paste your ${input.label} link here...`}
+                        value={input.url}
+                        onChange={(e) => handleUrlChange(idx, e.target.value)}
+                        disabled={viewMode}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <LaunchIcon fontSize="small" color="disabled" />
+                                </InputAdornment>
+                            )
+                        }}
+                    />
+                </Box>
+            ))}
+
              <Grid container spacing={2}>
-               <Grid item xs={6}>
-                 <FormControl fullWidth disabled={viewMode}>
-                    <InputLabel>Content Type</InputLabel>
-                    <Select
-                      name="content_type"
-                      value={formData.content_type}
-                      label="Content Type"
-                      onChange={handleInputChange}
-                    >
-                      <MenuItem value="post">Instagram Feed Post</MenuItem>
-                      <MenuItem value="story">Instagram Story</MenuItem>
-                      <MenuItem value="reel">Instagram Reel</MenuItem>
-                      <MenuItem value="tiktok">TikTok Video</MenuItem>
-                    </Select>
-                 </FormControl>
-               </Grid>
-               <Grid item xs={6}>
+               <Grid item xs={12}>
                  <FormControl fullWidth disabled={viewMode}>
                     <InputLabel>Platform</InputLabel>
                     <Select
@@ -433,17 +525,6 @@ const CampaignWorkPage = () => {
                  </FormControl>
                </Grid>
              </Grid>
-
-             <TextField
-                label="Content URL"
-                name="content_url"
-                value={formData.content_url}
-                onChange={handleInputChange}
-                fullWidth
-                placeholder="https://..."
-                helperText="Link to your draft or published content"
-                disabled={viewMode}
-             />
 
              <TextField
                 label="Caption"

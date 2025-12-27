@@ -236,6 +236,33 @@ function CampaignDetail() {
               <Typography fontSize={15} color={COLORS.textSecondary}>
                 <b>Target Influencer:</b> {campaign.influencer_count || 0}
               </Typography>
+              
+               {/* Display Required Content Types */}
+               {(campaign.content_types || (campaign.contentTypes && campaign.contentTypes.length > 0)) && (
+                  <Box mt={2}>
+                    <Typography fontSize={14} fontWeight={600} color={COLORS.textPrimary} mb={1}>
+                       Required Content:
+                    </Typography>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                       {(() => {
+                          try {
+                             const ctypes = typeof campaign.content_types === 'string' 
+                                ? JSON.parse(campaign.content_types) 
+                                : (campaign.content_types || campaign.contentTypes || []);
+                             
+                             return Array.isArray(ctypes) ? ctypes.map((item, idx) => (
+                                <Chip 
+                                   key={idx}
+                                   label={`${item.post_count || 1}x ${item.content_type === 'foto' ? 'Feed' : (item.content_type || 'Post').replace('_', ' ')}`}
+                                   size="small"
+                                   sx={{ bgcolor: '#fff', border: '1px solid #e2e8f0', textTransform: 'capitalize' }}
+                                />
+                             )) : null;
+                          } catch (e) { return null; }
+                       })()}
+                    </Stack>
+                  </Box>
+               )}
             </Paper>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <Button

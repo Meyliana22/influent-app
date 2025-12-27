@@ -95,17 +95,49 @@ function CampaignList() {
       toast.success("Pembayaran berhasil didistribusikan!");
       
       // Refresh list
-      const params = { page: currentPage, limit: 10 };   
-      if (filter) params.status = filter;
-      if (search) params.title = search;
-      params.sort = 'updated_at';
-      params.order = 'DESC';
-      const response = await campaignService.getCampaigns(params);
-      setCampaigns(response.data || []);
+      loadData();
     } catch (error) {
       console.error("Payment distribution failed:", error);
       toast.error("Gagal mendistribusikan pembayaran");
     }
+  };
+
+  const handleCompleteCampaign = async (campaignId) => {
+     try {
+        if (!window.confirm("Apakah Anda yakin ingin menyelesaikan campaign ini? Pastikan semua deliverables sudah diterima.")) return;
+
+        await campaignService.updateCampaignStatus(campaignId, 'completed');
+        toast.success("Campaign berhasil diselesaikan!");
+        loadData();
+     } catch (error) {
+        console.error("Error completing campaign:", error);
+        toast.error("Gagal menyelesaikan campaign");
+     }
+  };
+
+  const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const params = { page: currentPage, limit: 10, };   
+        if (filter) { params.status = filter; }
+        if (search) { params.title = search; }
+        params.sort = 'updated_at';
+        params.order = 'DESC';
+        
+        const response = await campaignService.getCampaigns(params);
+        setCampaigns(response.data || []);
+        setPagination(response.pagination || {
+          total: 0,
+          totalPages: 0,
+          hasMore: false,
+          hasPrevious: false,
+        });
+      } catch (err) {
+        console.error('Error loading campaigns:', err);
+        setCampaigns([]);
+      } finally {
+        setIsLoading(false);
+      }
   };
 
   useEffect(() => {
@@ -559,6 +591,14 @@ function CampaignList() {
                                  sx={{ flex: 1, bgcolor: '#6E00BE', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#5a009e' } }}
                               >
                                  Review
+                              </Button>
+                              <Button
+                                 variant="outlined"
+                                 startIcon={<CheckCircleIcon />}
+                                 onClick={e => { e.stopPropagation(); handleCompleteCampaign(campaign.campaign_id); }}
+                                 sx={{ flex: 1, borderColor: '#10b981', color: '#10b981', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#ecfdf5', borderColor: '#10b981' } }}
+                              >
+                                 Selesai
                               </Button>
                            </>
                         )}

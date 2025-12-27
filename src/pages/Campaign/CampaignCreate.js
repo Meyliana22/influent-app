@@ -184,7 +184,18 @@ function CampaignCreate() {
           setInfluencerCount(data.influencer_count || 1);
           setPricePerPost(data.price_per_post ? Math.floor(parseFloat(data.price_per_post)).toString() : '');
           setIsFree(data.is_free || false);
-          if (data.contentTypes?.length) setContentItems(data.contentTypes);
+          if (data.contentTypes?.length) {
+             setContentItems(data.contentTypes);
+          } else if (data.content_types) {
+             try {
+                const parsed = typeof data.content_types === 'string' 
+                   ? JSON.parse(data.content_types) 
+                   : data.content_types;
+                if (Array.isArray(parsed)) setContentItems(parsed);
+             } catch (e) {
+                console.error("Failed to parse content_types", e);
+             }
+          }
 
           const fmtDate = (d) => d ? d.split('T')[0] : '';
           setRegistrationDeadline(fmtDate(data.registration_deadline));
