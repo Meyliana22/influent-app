@@ -698,7 +698,15 @@ function BrowseCampaigns() {
 
                 <Box sx={{ mb: '16px' }}>
                   <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Dates</Typography>
-                  <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36' }}>{selectedCampaign.start_date && new Date(selectedCampaign.start_date).toLocaleDateString('id-ID')} - {selectedCampaign.end_date && new Date(selectedCampaign.end_date).toLocaleDateString('id-ID')}</Typography>
+                  <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36' }}>
+                      Start: {selectedCampaign.start_date && new Date(selectedCampaign.start_date).toLocaleDateString('id-ID')}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.95rem', color: '#1a1f36' }}>
+                      End: {selectedCampaign.end_date && new Date(selectedCampaign.end_date).toLocaleDateString('id-ID')}
+                  </Typography>
+                   <Typography sx={{ fontSize: '0.95rem', color: '#d32f2f', fontWeight: 600, mt: 0.5 }}>
+                      Submission Deadline: {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID') : 'N/A'}
+                  </Typography>
                 </Box>
 
                 <Box>
@@ -714,7 +722,25 @@ function BrowseCampaigns() {
                     </Box>
                     <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
                       <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Age: </Typography>
-                      <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.selected_age || 'Any'}</Typography>
+                      <Typography component="span" sx={{ color: '#6c757d' }}>
+                        {(() => {
+                           if (!selectedCampaign.selected_age) return 'Any';
+                           try {
+                              // Handle double stringified JSON or regular JSON
+                              let parsed = selectedCampaign.selected_age;
+                              if (typeof parsed === 'string' && (parsed.startsWith('[') || parsed.startsWith('"'))) {
+                                 parsed = JSON.parse(parsed);
+                                 // Handle potential double stringification
+                                 if (typeof parsed === 'string' && parsed.startsWith('[')) {
+                                     parsed = JSON.parse(parsed);
+                                 }
+                              }
+                              return Array.isArray(parsed) ? parsed.join(', ') : parsed;
+                           } catch (e) {
+                              return selectedCampaign.selected_age;
+                           }
+                        })()}
+                      </Typography>
                     </Box>
                   </Box>
                 </Box>

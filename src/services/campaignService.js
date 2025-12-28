@@ -151,7 +151,7 @@ export const applyToCampaign = async (data) => {
  */
 export const getCampaignUsers = async () => {
   try {
-    const response = await authFetch(`${API_BASE_URL}/campaign-users`);
+    const response = await authFetch(`${API_BASE_URL}/campaign-users?order=desc&sort=applied_at`);
     return await handleResponse(response);
   } catch (error) {
     console.error("Error fetching campaign users:", error);

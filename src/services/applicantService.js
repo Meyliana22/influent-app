@@ -51,15 +51,13 @@ export const getApplicantById = async (applicantId) => {
  */
 export const acceptApplicant = async (applicantId, notes = '') => {
   try {
-    const response = await authFetch(`${API_BASE_URL}/campaign-users/${applicantId}`, {
-      method: "PUT",
+    const response = await authFetch(`${API_BASE_URL}/campaign-users/${applicantId}/approve`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ 
-        application_status: 'accepted',
-        application_notes: notes,
-        accepted_at: new Date().toISOString()
+        application_notes: notes
       }),
     });
     return await handleResponse(response);
@@ -74,15 +72,13 @@ export const acceptApplicant = async (applicantId, notes = '') => {
  */
 export const rejectApplicant = async (applicantId, notes = '') => {
   try {
-    const response = await authFetch(`${API_BASE_URL}/campaign-users/${applicantId}`, {
-      method: "PUT",
+    const response = await authFetch(`${API_BASE_URL}/campaign-users/${applicantId}/reject`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ 
-        application_status: 'rejected',
-        application_notes: notes,
-        rejected_at: new Date().toISOString()
+        application_notes: notes
       }),
     });
     return await handleResponse(response);

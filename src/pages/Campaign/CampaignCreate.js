@@ -58,7 +58,7 @@ import { FaInstagram, FaQuestionCircle } from 'react-icons/fa';
 // Steps configuration
 const STEPS = [
   'Detail Campaign',
-  'Target Audience',
+  'Kriteria Audience',
   'Konten & Budget',
   'Timeline & Brief'
 ];
@@ -119,9 +119,8 @@ function CampaignCreate() {
   const [price_per_post, setPricePerPost] = useState('');
   
   // Step 4: Timeline & Brief
-  const [registration_deadline, setRegistrationDeadline] = useState('');
   const [submission_deadline, setSubmissionDeadline] = useState('');
-  const [start_date, setStartDate] = useState('');
+  const [start_date, setStartDate] = useState(''); // Serves as Registration Deadline
   const [end_date, setEndDate] = useState('');
   const [enable_revision, setEnableRevision] = useState(true);
   const [max_revisions, setMaxRevisions] = useState(1);
@@ -198,9 +197,9 @@ function CampaignCreate() {
           }
 
           const fmtDate = (d) => d ? d.split('T')[0] : '';
-          setRegistrationDeadline(fmtDate(data.registration_deadline));
-          setSubmissionDeadline(fmtDate(data.submission_deadline));
+          // Map start_date from backend to UI Registration Deadline (which uses start_date state now)
           setStartDate(fmtDate(data.start_date));
+          setSubmissionDeadline(fmtDate(data.submission_deadline));
           setEndDate(fmtDate(data.end_date));
           setEnableRevision(data.enable_revision !== undefined ? data.enable_revision : true);
           setMaxRevisions(data.max_revisions || 1);
@@ -218,8 +217,133 @@ function CampaignCreate() {
     }
   }, [id, isEditMode, showToast]);
 
+  // --- Validation ---
+  const validateStep1 = () => {
+     if (!title.trim()) {
+        showToast('Judul Campaign harus diisi', 'error');
+        return false;
+     }
+     if (!campaignCategory) {
+        showToast('Kategori Campaign harus dipilih', 'error');
+        return false;
+     }
+     if (!productDesc.trim()) {
+        showToast('Deskripsi Campaign harus diisi', 'error');
+        return false;
+     }
+     if (hasProduct) {
+        if (!productName.trim()) {
+           showToast('Nama Produk harus diisi', 'error');
+           return false;
+        }
+        if (!productValue) {
+           showToast('Nilai Produk harus diisi', 'error');
+           return false;
+        }
+     }
+     return true;
+  };
+
+  const validateStep2 = () => {
+     if (category.length === 0) {
+        showToast('Minimal pilih 1 Kategori Influencer', 'error');
+        return false;
+     }
+     if (!min_followers) {
+        showToast('Minimal Followers harus diisi', 'error');
+        return false;
+     }
+     return true;
+  };
+
+  const validateStep3 = () => {
+     if (!isFree && !price_per_post) {
+        showToast('Fee per Influencer harus diisi', 'error');
+        return false;
+     }
+     if (influencer_count < 1) return false;
+     
+     // Check content items
+     const invalidItem = contentItems.find(item => item.post_count < 1);
+     if (invalidItem) {
+        showToast('Jumlah post minimal 1', 'error');
+        return false;
+     }
+     return true;
+  };
+
+  // Helper: Parse date string (YYYY-MM-DD) to Date object at 00:00:00 local time
+  const parseLocalDate = (dateStr) => {
+     if (!dateStr) return null;
+     const [year, month, day] = dateStr.split('-');
+     return new Date(year, month - 1, day);
+  };
+
+  const validateStep4 = () => {
+    const errors = [];
+    console.log('start_date (Registration Deadline)', start_date);
+    console.log('submission_deadline', submission_deadline);
+    console.log('end_date', end_date);
+    if (!start_date) errors.push('Deadline Registrasi');
+    if (!submission_deadline) errors.push('Deadline Submit Konten');
+    if (!end_date) errors.push('Tanggal Campaign Selesai');
+    
+    // Convert inputs to local Dates
+    // start_date is now used as Registration Deadline
+    const regDate = parseLocalDate(start_date);
+    const subDate = parseLocalDate(submission_deadline);
+    const endDate = parseLocalDate(end_date);
+    
+    // Get today at 00:00:00 local
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // 1. Validasi Deadline Registrasi (Minimal Besok)
+    // "deadline registrasi must +1 from today" -> means > today
+    if (regDate) {
+        if (regDate <= today) {
+           errors.push('Deadline Registrasi minimal besok (H+1 dari hari ini)');
+        }
+    }
+
+    // 2. Validasi Deadline Registrasi vs Submit Konten
+    if (regDate && subDate) {
+       if (subDate <= regDate) {
+          errors.push('Deadline Submit Konten harus setelah Deadline Registrasi');
+       }
+    }
+
+    // 3. Validasi Deadline Submit Konten vs Selesai (End Date)
+    // "Jarak antara deadline proposal dan tanggal mulai minimal 1 minggu" 
+    // Since start_date is removed, we check gap between Submission and End Date
+    if (subDate && endDate) {
+      if (endDate <= subDate) {
+         errors.push('Tanggal Selesai harus setelah Deadline Submit Konten');
+      } else {
+          const diffTime = endDate - subDate;
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (diffDays < 7) {
+            errors.push('Jarak antara deadline submit konten dan tanggal selesai minimal 1 minggu');
+          }
+      }
+    }
+
+    if (errors.length > 0) {
+      showToast(`Validasi gagal: ${errors.join(', ')}`, 'error');
+      return false;
+    }
+    return true;
+  };
+
   // --- Handlers ---
-  const handleNext = () => setActiveStep(prev => prev + 1);
+  const handleNext = () => {
+     if (activeStep === 0 && !validateStep1()) return;
+     if (activeStep === 1 && !validateStep2()) return;
+     if (activeStep === 2 && !validateStep3()) return;
+     if (activeStep === 3 && !validateStep4()) return;
+     
+     setActiveStep(prev => prev + 1);
+  };
   const handleBack = () => setActiveStep(prev => prev - 1);
 
   const handleImageUpload = (e) => {
@@ -230,18 +354,28 @@ function CampaignCreate() {
     }
   };
 
-  const handleSave = async (isDraft = false) => {
-    const payload = {
-       title, campaignCategory, category, hasProduct, 
-       productName: hasProduct ? productName : null,
-       productValue: hasProduct ? parseCurrency(productValue) : null,
-       productDesc, 
-       influencer_count, 
-       price_per_post: parseCurrency(price_per_post),
-       isFree, min_followers: parseCurrency(min_followers),
-       selectedGender, selectedAge, criteriaDesc,
+   const handleSave = async (isDraft = false) => {
+     // Validate all steps if publishing (not draft)
+     if (!isDraft) {
+        if (!validateStep1()) { setActiveStep(0); return; }
+        if (!validateStep2()) { setActiveStep(1); return; }
+        if (!validateStep3()) { setActiveStep(2); return; }
+        if (!validateStep4()) { setActiveStep(3); return; }
+     }
+
+     const payload = {
+        title, campaignCategory, category, hasProduct, 
+        productName: hasProduct ? productName : null,
+        productValue: hasProduct ? parseCurrency(productValue) : null,
+        productDesc, 
+        influencer_count, 
+        price_per_post: parseCurrency(price_per_post),
+        isFree, min_followers: parseCurrency(min_followers),
+        selectedGender, selectedAge, criteriaDesc,
        contentItems: contentItems.map(c => ({...c})),
-       registration_deadline, submission_deadline, start_date, end_date,
+       start_date, // Mapped from "Deadline Registrasi" input
+       submission_deadline, 
+       end_date,
        enable_revision, max_revisions: parseInt(max_revisions), revision_duration: parseInt(revision_duration),
        content_guidelines, caption_guidelines,
        status: isDraft ? 'draft' : 'admin_review',
@@ -320,8 +454,8 @@ function CampaignCreate() {
         <Grid item xs={12} md={8}>
            <Stack spacing={4}>
               {/* Basic Info Section */}
-              <Box>
-                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2, color: '#334155' }}>Informasi Utama</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column',alignItems: 'left', gap: 2 }}>
+                 <Typography variant="h6" fontWeight={700}  sx={{ mb: 2, color: '#334155' }}>Informasi Utama</Typography>
                  
                     <Grid item xs={12}>
                        <TextField 
@@ -680,24 +814,23 @@ function CampaignCreate() {
                 
                 <Stack spacing={3} sx={{ mt: 2 }}>
                    <Box>
-                      <Typography variant="caption" fontWeight={700} color="textSecondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Fase Registrasi</Typography>
+                      <Typography variant="caption" fontWeight={700} color="textSecondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Fase Registrasi & Submisi</Typography>
                       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                         <TextField label="Deadline Registrasi" type="date" InputLabelProps={{shrink:true}} fullWidth value={registration_deadline} onChange={e => setRegistrationDeadline(e.target.value)} disabled={isReadOnly} />
-                         <TextField label="Deadline Submit Konten" type="date" InputLabelProps={{shrink:true}} fullWidth value={submission_deadline} onChange={e => setSubmissionDeadline(e.target.value)} disabled={isReadOnly} />
+                         <TextField label="Deadline Registrasi" type="date" InputLabelProps={{shrink:true}} fullWidth value={start_date} onChange={e => setStartDate(e.target.value)} disabled={isReadOnly} required />
+                         <TextField label="Deadline Submit Konten" type="date" InputLabelProps={{shrink:true}} fullWidth value={submission_deadline} onChange={e => setSubmissionDeadline(e.target.value)} disabled={isReadOnly} required />
                       </Stack>
                    </Box>
                    
                    <Box>
-                      <Typography variant="caption" fontWeight={700} color="textSecondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Fase Tayang (Posting)</Typography>
+                      <Typography variant="caption" fontWeight={700} color="textSecondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Fase Akhir</Typography>
                       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                          <TextField label="Mulai Posting" type="date" InputLabelProps={{shrink:true}} fullWidth value={start_date} onChange={e => setStartDate(e.target.value)} disabled={isReadOnly} />
-                          <TextField label="Selesai Posting" type="date" InputLabelProps={{shrink:true}} fullWidth value={end_date} onChange={e => setEndDate(e.target.value)} disabled={isReadOnly} />
+                          <TextField label="Selesai Campaign" type="date" InputLabelProps={{shrink:true}} fullWidth value={end_date} onChange={e => setEndDate(e.target.value)} disabled={isReadOnly} required />
                       </Stack>
                    </Box>
                 </Stack>
              </Paper>
 
-             <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, borderColor: '#e2e8f0', flex: 1 }}>
+             {/* <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, borderColor: '#e2e8f0', flex: 1 }}>
                 <Typography variant="h6" fontWeight={700} gutterBottom>Kebijakan Revisi</Typography>
                 <FormControlLabel control={<Checkbox checked={enable_revision} onChange={e => setEnableRevision(e.target.checked)} disabled={isReadOnly}/>} label="Aktifkan Revisi untuk Influencer" />
                 {enable_revision && (
@@ -710,7 +843,7 @@ function CampaignCreate() {
                       </Grid>
                    </Grid>
                 )}
-             </Paper>
+             </Paper> */}
           </Box>
        </Grid>
 

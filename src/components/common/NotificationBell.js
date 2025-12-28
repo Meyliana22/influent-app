@@ -65,7 +65,7 @@ const NotificationBell = () => {
     try {
       setLoading(true);
       // Fetch all and slice for dropdown
-      const data = await getNotifications({ order: 'DESC' });
+      const data = await getNotifications({ sort: 'created_at', order: 'desc' });
       // Ensure data is an array before slicing
       const list = Array.isArray(data.data) ? data.data : [];
       setNotifications(list.slice(0, 5));
@@ -145,7 +145,7 @@ const NotificationBell = () => {
           }
         } else if (notification.reference_type === 'campaign' && notification.reference_id) {
           if (title.includes('payment') || title.includes('pembayaran')) {
-            navigate('/transactions');
+            navigate('/campaign/transactions');
           } else if (title.includes('applicant') || title.includes('pelamar')) {
             navigate(`/campaign/${notification.reference_id}/applicants`);
           } else {
@@ -157,9 +157,9 @@ const NotificationBell = () => {
       } else {
         // Influencer navigation
         if (title.includes('application') || title.includes('lamaran')) {
-          navigate('/applications');
+          navigate('/student/my-applications');
         } else if (title.includes('payment') || title.includes('pembayaran')) {
-          navigate('/transactions');
+          navigate('/student/transactions');
         } else {
           navigate('/notifications');
         }

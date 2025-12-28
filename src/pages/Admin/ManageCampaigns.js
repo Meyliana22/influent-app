@@ -256,23 +256,25 @@ function ManageCampaigns() {
     try {
       setSubmitting(true);
       
-      // Update campaign status manually as requested
-      const statusMap = {
-        'active': 'active',
-        'cancelled': 'cancelled',
-        'pending_payment': 'pending_payment',
-        'rejected': 'rejected'
-      };
-      
-      const updateData = { 
-        status: statusMap[newStatus] || newStatus 
-      };
-
-      await adminService.campaigns.updateCampaign(campaignId, updateData);
-      
       if (newStatus === 'pending_payment') {
+        // Approve campaign
+        await adminService.campaigns.approveCampaign(campaignId);
         setSuccessMessage('Campaign berhasil disetujui! Status berubah menjadi Pending Payment.');
       } else {
+        // Other status updates (if any) still use generic update or specific endpoints if available
+        // For now, mapping back to generic update for non-approval status changes if they exist
+        const statusMap = {
+          'active': 'active',
+          'cancelled': 'cancelled',
+          'pending_payment': 'pending_payment',
+          'rejected': 'rejected'
+        };
+        
+        const updateData = { 
+          status: statusMap[newStatus] || newStatus 
+        };
+  
+        await adminService.campaigns.updateCampaign(campaignId, updateData);
         setSuccessMessage('Status campaign berhasil diupdate!');
       }
       
@@ -296,11 +298,8 @@ function ManageCampaigns() {
       setSubmitting(true);
       const finalReason = cancellationReason === 'other' ? customReason : cancellationReason;
       
-      // Use generic update endpoint for rejection as well
-      await adminService.campaigns.updateCampaign(selectedCampaign.campaign_id, {
-        status: 'cancelled',
-        cancellation_reason: finalReason
-      });
+      // Use specific reject endpoint
+      await adminService.campaigns.rejectCampaign(selectedCampaign.campaign_id, finalReason);
       
       setSuccessMessage('Campaign berhasil dibatalkan.');
       setShowRejectDialog(false);

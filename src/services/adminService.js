@@ -71,6 +71,25 @@ export const adminCampaignService = {
     return response.json();
   },
 
+  // Approve campaign
+  approveCampaign: async (id) => {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${id}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return response.json();
+  },
+
+  // Reject campaign
+  rejectCampaign: async (id, reason) => {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${id}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cancellation_reason: reason })
+    });
+    return response.json();
+  },
+
   // Delete campaign
   deleteCampaign: async (id) => {
     const response = await authFetch(`${API_BASE_URL}/campaigns/${id}`, {

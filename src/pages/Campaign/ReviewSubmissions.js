@@ -33,6 +33,7 @@ import {
 import { toast } from 'react-toastify';
 import { COLORS } from '../../constants/colors';
 import workSubmissionService from '../../services/workSubmissionService';
+import postSubmissionService from '../../services/postSubmissionService';
 import campaignService from '../../services/campaignService';
 import { useToast } from '../../hooks/useToast';
 import { Sidebar, Topbar } from '../../components/common';
@@ -75,7 +76,27 @@ const ReviewSubmissions = () => {
       const submissionsRes = await workSubmissionService.getCampaignSubmissions(campaignId);
       const submissionsData = submissionsRes.data || submissionsRes || [];
       
-      setSubmissions(submissionsData);
+
+
+      // Enrich approved submissions with Post Submission data
+      const enrichedSubmissions = await Promise.all(submissionsData.map(async (sub) => {
+         if (sub.status === 'approved') {
+             try {
+                const postRes = await postSubmissionService.getByWorkSubmissionId(sub.id || sub.submission_id);
+                // Check if postRes has data property (standard API response) or is the data itself
+                const postData = postRes.data || postRes;
+                
+                if (postData && postData.id) {
+                    return { ...sub, post_submission: postData };
+                }
+             } catch (e) {
+                // No post submission yet
+             }
+         }
+         return sub;
+      }));
+
+      setSubmissions(enrichedSubmissions);
       
     } catch (error) {
       console.error('Error loading data:', error);
@@ -139,6 +160,22 @@ const ReviewSubmissions = () => {
     } finally {
       setIsLoading(false);
     }
+
+  };
+
+  const handleVerifyPost = async (postSubId, status) => {
+      try {
+          setIsLoading(true);
+          await postSubmissionService.verifySubmission(postSubId, status);
+          showToast ? showToast(`Link ${status === 'verified' ? 'Verified' : 'Rejected'}`, status === 'verified' ? 'success' : 'warning') 
+                    : toast.success(`Link ${status}`);
+          loadData();
+      } catch (error) {
+          console.error("Verify post error", error);
+          showToast ? showToast('Action failed', 'error') : toast.error('Action failed');
+      } finally {
+          setIsLoading(false);
+      }
   };
 
   const getStatusColor = (status) => {
@@ -190,7 +227,7 @@ const ReviewSubmissions = () => {
               {/* Header */}
               <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
                 <IconButton 
-                  onClick={() => navigate('/campaign/list')}
+                  onClick={() => navigate('/campaigns/list')}
                   sx={{ 
                     bgcolor: COLORS.white, 
                     '&:hover': { bgcolor: '#f0f0f0' },
@@ -444,6 +481,58 @@ const ReviewSubmissions = () => {
                                   Reject
                                 </Button>
                               </Stack>
+                            )}
+                            
+                            {/* Approved & Post Submission Verification */}
+                            {submission.status === 'approved' && (
+                                <Box sx={{ mt: 2, pt: 2, borderTop: '1px dashed #e0e0e0' }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                                        Post Link Verification
+                                    </Typography>
+                                    {submission.post_submission ? (
+                                        <Box>
+                                            <Stack direction="row" alignItems="center" spacing={1} mb={2}>
+                                                <Typography variant="body2">
+                                                    Link: 
+                                                    <a href={submission.post_submission.post_link} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 8, color: '#6E00BE', fontWeight: 600 }}>
+                                                        {submission.post_submission.post_link}
+                                                    </a>
+                                                </Typography>
+                                                <Chip 
+                                                    label={submission.post_submission.status} 
+                                                    color={submission.post_submission.status === 'verified' ? 'success' : submission.post_submission.status === 'rejected' ? 'error' : 'warning'}
+                                                    size="small"
+                                                    variant="outlined"
+                                                />
+                                            </Stack>
+                                            
+                                            {submission.post_submission.status === 'pending' && (
+                                                <Stack direction="row" spacing={2}>
+                                                    <Button 
+                                                        variant="contained" 
+                                                        color="success" 
+                                                        size="small"
+                                                        onClick={() => handleVerifyPost(submission.post_submission.id, 'verified')}
+                                                    >
+                                                        Verify Link
+                                                    </Button>
+                                                    <Button 
+                                                        variant="outlined" 
+                                                        color="error" 
+                                                        size="small"
+                                                        onClick={() => handleVerifyPost(submission.post_submission.id, 'rejected')}
+                                                    >
+                                                        Reject Link
+                                                    </Button>
+                                                </Stack>
+                                            )}
+                                        </Box>
+                                    ) : (
+                                        <Typography variant="body2" color="text.secondary" fontStyle="italic">
+                                            Student has not submitted the post link yet.
+                                        </Typography>
+                                    )}
+                                </Box>
                             )}
                           </Box>
                         </Box>

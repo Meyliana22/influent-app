@@ -46,6 +46,36 @@ const MyApplications = () => {
     appId: null 
   });
 
+  // Modal state for details
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+  };
+
+  const parseInfluencerCategory = (category) => {
+    if (!category) return [];
+    if (Array.isArray(category)) return category;
+    try {
+        if (category.startsWith('[')) {
+            return JSON.parse(category);
+        }
+        return [category];
+    } catch (e) {
+        return [category];
+    }
+  };
+
+  const handleViewDetails = (application) => {
+    // access campaign object from application
+    const campaignData = application.campaign || application;
+    setSelectedCampaign(campaignData);
+    setShowDetailModal(true);
+  };
+
   const fetchApplications = async () => {
     try {
       const userString = localStorage.getItem('user');
@@ -236,7 +266,7 @@ const MyApplications = () => {
                               if (app.application_status === 'accepted') {
                                  navigate(`/student/campaign/${app.campaign_id || app.campaign?.id}/work`);
                               } else {
-                                 showToast('Wait for acceptance to submit work', 'info');
+                                 handleViewDetails(app);
                               }
                             }}
                           >
@@ -265,6 +295,160 @@ const MyApplications = () => {
                 Are you sure you want to cancel your application? This action cannot be undone.
              </Typography>
           </Modal>
+
+          {/* Campaign Detail Modal */}
+          {selectedCampaign && (
+            <Modal
+              isOpen={showDetailModal}
+              onClose={() => setShowDetailModal(false)}
+              title={selectedCampaign.title || 'Campaign Details'}
+              // maxWidth="lg"
+              // Note: The common/Modal component might handle props differently. 
+              // If it doesn't support maxWidth directly, it might be fine or need sx props.
+              // Assuming compatibility or wrapping children in Box.
+            >
+              <Box sx={{ maxHeight: '70vh', overflowY: 'auto', p: 1 }}>
+                {/* Banner Image */}
+                {selectedCampaign.banner_image && (
+                  <Box sx={{ width: '100%', height: '200px', background: `url(${getImageUrl(selectedCampaign.banner_image)}) center/cover`, borderRadius: '12px', mb: '24px' }} />
+                )}
+
+                {/* Campaign Details Grid */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: '24px', mb: '24px' }}>
+                  {/* Left Column */}
+                  <Box>
+                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Product Information</Typography>
+
+                    {selectedCampaign.has_product && (
+                      <>
+                        <Box sx={{ mb: '16px' }}>
+                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Product Name</Typography>
+                          <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>{selectedCampaign.product_name}</Typography>
+                        </Box>
+
+                        <Box sx={{ mb: '16px' }}>
+                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Product Value</Typography>
+                          <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>Rp {Number(selectedCampaign.product_value).toLocaleString('id-ID')}</Typography>
+                        </Box>
+
+                        <Box sx={{ mb: '16px' }}>
+                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Description</Typography>
+                          <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5 }}>{selectedCampaign.product_desc}</Typography>
+                        </Box>
+                      </>
+                    )}
+
+                    <Box sx={{ mb: '16px' }}>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Category</Typography>
+                      <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>{selectedCampaign.campaign_category}</Typography>
+                    </Box>
+
+                    <Box>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Influencer Categories</Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px', mt: '8px' }}>
+                        {parseInfluencerCategory(selectedCampaign.influencer_category).map((cat, idx) => (
+                          <Box key={idx} sx={{ background: '#f3e5f5', color: '#6E00BE', px: '12px', py: '6px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{cat}</Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  </Box>
+
+                  {/* Right Column */}
+                  <Box>
+                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Campaign Details</Typography>
+
+                    <Box sx={{ mb: '16px' }}>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Price Per Post</Typography>
+                      <Typography sx={{ mt: '4px', fontSize: '1.2rem', color: '#6E00BE', fontWeight: 700 }}>Rp {Number(selectedCampaign.price_per_post).toLocaleString('id-ID')}</Typography>
+                    </Box>
+
+                    <Box sx={{ mb: '16px' }}>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Status</Typography>
+                      <Typography sx={{ mt: '4px', fontSize: '1rem', fontWeight: 700, textTransform: 'capitalize', color: selectedCampaign.status === 'active' ? '#155724' : '#6c757d' }}>{selectedCampaign.status}</Typography>
+                    </Box>
+
+                    <Box sx={{ mb: '16px' }}>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Dates</Typography>
+                      <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36' }}>
+                          Start: {selectedCampaign.start_date && new Date(selectedCampaign.start_date).toLocaleDateString('id-ID')}
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.95rem', color: '#1a1f36' }}>
+                          End: {selectedCampaign.end_date && new Date(selectedCampaign.end_date).toLocaleDateString('id-ID')}
+                      </Typography>
+                       <Typography sx={{ fontSize: '0.95rem', color: '#d32f2f', fontWeight: 600, mt: 0.5 }}>
+                          Submission Deadline: {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID') : 'N/A'}
+                      </Typography>
+                    </Box>
+
+                    <Box>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Requirements</Typography>
+                      <Box sx={{ mt: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
+                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Min Followers: </Typography>
+                          <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.min_followers?.toLocaleString('id-ID') || 'N/A'}</Typography>
+                        </Box>
+                        <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
+                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Gender: </Typography>
+                          <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.selected_gender || 'Any'}</Typography>
+                        </Box>
+                        <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
+                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Age: </Typography>
+                          <Typography component="span" sx={{ color: '#6c757d' }}>
+                            {(() => {
+                               if (!selectedCampaign.selected_age) return 'Any';
+                               try {
+                                  let parsed = selectedCampaign.selected_age;
+                                  if (typeof parsed === 'string' && (parsed.startsWith('[') || parsed.startsWith('"'))) {
+                                     parsed = JSON.parse(parsed);
+                                     if (typeof parsed === 'string' && parsed.startsWith('[')) {
+                                         parsed = JSON.parse(parsed);
+                                     }
+                                  }
+                                  return Array.isArray(parsed) ? parsed.join(', ') : parsed;
+                               } catch (e) {
+                                  return selectedCampaign.selected_age;
+                               }
+                            })()}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+
+                {/* Guidelines */}
+                {(selectedCampaign.content_guidelines || selectedCampaign.caption_guidelines) && (
+                  <Box sx={{ mb: '24px' }}>
+                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Guidelines</Typography>
+
+                    {selectedCampaign.content_guidelines && (
+                      <Box sx={{ mb: '12px' }}>
+                        <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Content Guidelines</Typography>
+                        <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{selectedCampaign.content_guidelines}</Typography>
+                      </Box>
+                    )}
+
+                    {selectedCampaign.caption_guidelines && (
+                      <Box>
+                        <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Caption Guidelines</Typography>
+                        <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{selectedCampaign.caption_guidelines}</Typography>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+                
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+                    <Button 
+                      onClick={() => setShowDetailModal(false)}
+                      variant="contained"
+                      sx={{ bgcolor: '#6E00BE', '&:hover': { bgcolor: '#5a009e' } }}
+                    >
+                      Close
+                    </Button>
+                </Box>
+              </Box>
+            </Modal>
+          )}
 
         </Container>
       </Box>

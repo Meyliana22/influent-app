@@ -25,6 +25,8 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import GroupIcon from '@mui/icons-material/Group';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { toast } from 'react-toastify';
 
 function CampaignList() {
@@ -32,16 +34,25 @@ function CampaignList() {
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
-  const [campaigns, setCampaigns] = useState([]);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [campaigns, setCampaigns] = useState([]); // Stores ALL campaigns (raw data)
   const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({
-    total: 0,
-    totalPages: 0,
-    hasMore: false,
-    hasPrevious: false,
+  const ITEMS_PER_PAGE = 10;
+
+  // 1. Filter and Search (Frontend)
+  const filteredCampaigns = campaigns.filter(campaign => {
+    console.log(campaign.status)
+    const matchesStatus = filter ? campaign.status === filter : true;
+    const matchesSearch = search ? campaign.title.toLowerCase().includes(search.toLowerCase()) : true;
+    return matchesStatus && matchesSearch;
   });
+
+  // 2. Pagination (Frontend)
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentCampaigns = filteredCampaigns.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredCampaigns.length / ITEMS_PER_PAGE);
+
+  // Removed unused pagination state
   const [isLoading, setIsLoading] = useState(false);
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -59,6 +70,17 @@ function CampaignList() {
     setMenuCampaignId(null);
   };
 
+  // Confirmation Dialog State
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmTitle, setConfirmTitle] = useState('');
+  const [confirmMessage, setConfirmMessage] = useState('');
+  const [onConfirm, setOnConfirm] = useState(() => {});
+
+  const handleConfirmAction = () => {
+    onConfirm();
+    setShowConfirmDialog(false);
+  };
+
   const handleArchiveClick = (campaign) => {
     setSelectedCampaign(campaign);
     setShowArchiveModal(true);
@@ -67,71 +89,75 @@ function CampaignList() {
 
   const handleArchiveConfirm = async () => {
     if (!selectedCampaign) return;
-    
     try {
       await campaignService.updateCampaignStatus(selectedCampaign.campaign_id, 'archived');
       toast.success('Campaign berhasil diarsipkan');
       setShowArchiveModal(false);
       setSelectedCampaign(null);
-      const params = { page: currentPage, limit: 10 };   
-      if (filter) params.status = filter;
-      if (search) params.title = search;
-      params.sort = 'updated_at';
-      params.order = 'DESC';
-      const response = await campaignService.getCampaigns(params);
-      setCampaigns(response.data || []);
-      setPagination(response.pagination || { total: 0, totalPages: 0, hasMore: false, hasPrevious: false });
+      loadData(); 
     } catch (error) {
       console.error('Error archiving campaign:', error);
       toast.error('Gagal mengarsipkan campaign');
     }
   };
 
-  const handleDistributePayment = async (campaignId) => {
-    try {
-      if (!window.confirm("Apakah Anda yakin ingin mendistribusikan pembayaran kepada semua influencer yang memenuhi syarat untuk campaign ini?")) return;
-      
-      await campaignService.distributePayment(campaignId);
-      toast.success("Pembayaran berhasil didistribusikan!");
-      
-      // Refresh list
-      loadData();
-    } catch (error) {
-      console.error("Payment distribution failed:", error);
-      toast.error("Gagal mendistribusikan pembayaran");
-    }
+  const handleDeleteCampaign = (campaignId) => {
+     setConfirmTitle("Hapus Campaign");
+     setConfirmMessage("Apakah Anda yakin ingin menghapus campaign draft ini? Tindakan ini tidak dapat dibatalkan.");
+     setOnConfirm(() => async () => {
+       try {
+         await campaignService.deleteCampaign(campaignId);
+         toast.success("Campaign berhasil dihapus");
+         loadData();
+       } catch (error) {
+         console.error("Error deleting campaign:", error);
+         toast.error("Gagal menghapus campaign");
+       }
+     });
+     setShowConfirmDialog(true);
   };
 
-  const handleCompleteCampaign = async (campaignId) => {
-     try {
-        if (!window.confirm("Apakah Anda yakin ingin menyelesaikan campaign ini? Pastikan semua deliverables sudah diterima.")) return;
-
-        await campaignService.updateCampaignStatus(campaignId, 'completed');
-        toast.success("Campaign berhasil diselesaikan!");
+  const handleDistributePayment = (campaignId) => {
+    setConfirmTitle("Distribusi Pembayaran");
+    setConfirmMessage("Apakah Anda yakin ingin mendistribusikan pembayaran kepada semua influencer yang memenuhi syarat untuk campaign ini?");
+    setOnConfirm(() => async () => {
+      try {
+        await campaignService.distributePayment(campaignId);
+        toast.success("Pembayaran berhasil didistribusikan!");
         loadData();
-     } catch (error) {
-        console.error("Error completing campaign:", error);
-        toast.error("Gagal menyelesaikan campaign");
-     }
+      } catch (error) {
+        console.error("Payment distribution failed:", error);
+        toast.error("Gagal mendistribusikan pembayaran");
+      }
+    });
+    setShowConfirmDialog(true);
+  };
+
+  const handleCompleteCampaign = (campaignId) => {
+    setConfirmTitle("Selesaikan Campaign");
+    setConfirmMessage("Apakah Anda yakin ingin menyelesaikan campaign ini? Pastikan semua deliverables sudah diterima.");
+    setOnConfirm(() => async () => {
+       try {
+          await campaignService.updateCampaignStatus(campaignId, 'completed');
+          toast.success("Campaign berhasil diselesaikan!");
+          loadData();
+       } catch (error) {
+          console.error("Error completing campaign:", error);
+          toast.error("Gagal menyelesaikan campaign");
+       }
+    });
+    setShowConfirmDialog(true);
   };
 
   const loadData = async () => {
       setIsLoading(true);
       try {
-        const params = { page: currentPage, limit: 10, };   
-        if (filter) { params.status = filter; }
-        if (search) { params.title = search; }
-        params.sort = 'updated_at';
-        params.order = 'DESC';
+        // Fetch ALL data without filters for true frontend handling
+        // Use a high limit to ensure we get everything if backend paginates by default
+        const params = { limit: 1000, sort: 'updated_at', order: 'DESC' };   
         
         const response = await campaignService.getCampaigns(params);
         setCampaigns(response.data || []);
-        setPagination(response.pagination || {
-          total: 0,
-          totalPages: 0,
-          hasMore: false,
-          hasPrevious: false,
-        });
       } catch (err) {
         console.error('Error loading campaigns:', err);
         setCampaigns([]);
@@ -139,6 +165,9 @@ function CampaignList() {
         setIsLoading(false);
       }
   };
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1000);
@@ -146,36 +175,17 @@ function CampaignList() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Reload data only when Filters/Search change (not page)
   useEffect(() => {
-    const loadCampaigns = async () => {
-      setIsLoading(true);
-      try {
-        const params = { page: currentPage, limit: 10, };   
-        if (filter) { params.status = filter; }
-        if (search) { params.title = search; }
-        params.sort = 'updated_at';
-        params.order = 'DESC';
-        
-        const response = await campaignService.getCampaigns(params);
-        setCampaigns(response.data || []);
-        setPagination(response.pagination || {
-          total: 0,
-          totalPages: 0,
-          hasMore: false,
-          hasPrevious: false,
-        });
-      } catch (err) {
-        console.error('Error loading campaigns:', err);
-        setCampaigns([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadCampaigns();
-    const handleStorageChange = () => loadCampaigns();
+    loadData();
+    setCurrentPage(1); // Reset page on filter/search change
+  }, [filter, search]);
+
+  useEffect(() => {
+    const handleStorageChange = () => loadData();
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [currentPage, filter, search]);
+  }, [filter, search]);
 
   // Consolidated status configuration - FLAT DESIGN
   const STATUS_CONFIG = {
@@ -237,9 +247,19 @@ function CampaignList() {
         title: 'Campaign Selesai', 
         message: (campaign) => `Campaign ${campaign.title} telah resmi selesai. Terima kasih telah mempercayakan kolaborasi Anda kepada InfluEnt.` }
     },
+    paid: {
+      badge: { bg: '#f0fdf4', color: '#16a34a' }, // Green-600
+      text: 'Terbayar',
+      alert: { bg: '#f0fdf4', border: '#86efac', color: '#16a34a', icon: CheckCircleIcon,
+        title: 'Pembayaran Selesai', 
+        message: (campaign) => `Pembayaran untuk campaign ${campaign.title} telah berhasil didistribusikan kepada semua influencer.` }
+    },
     draft: {
       badge: { bg: '#f1f5f9', color: '#475569' }, // Slate
-      text: 'Draft'
+      text: 'Draft',
+      alert: { bg: '#f8fafc', border: '#e2e8f0', color: '#64748b', icon: CampaignIcon,
+        title: 'Campaign Draft', 
+        message: 'Campaign ini masih dalam status draft. Silakan lengkapi pembayaran atau publish untuk memulai.' }
     },
     archived: {
       badge: { bg: '#f8fafc', color: '#64748b' }, // Gray
@@ -408,6 +428,7 @@ function CampaignList() {
                      <MenuItem value="pending_payment">Menunggu Pembayaran</MenuItem>
                      <MenuItem value="draft">Draft</MenuItem>
                      <MenuItem value="completed">Selesai</MenuItem>
+                     <MenuItem value="paid">Terbayar</MenuItem>
                      <MenuItem value="cancelled">Dibatalkan</MenuItem>
                      <MenuItem value="archived">Diarsipkan</MenuItem>
                   </Select>
@@ -419,7 +440,7 @@ function CampaignList() {
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography sx={{ color: '#94a3b8' }}>Memuat campaign...</Typography>
               </Box>
-            ) : campaigns.length === 0 ? (
+            ) : currentCampaigns.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 12, bgcolor: '#fff', borderRadius: 4, border: '1px solid #e2e8f0' }}>
                  <Box sx={{ mb: 2, display: 'inline-flex', p: 2, bgcolor: '#f1f5f9', borderRadius: '50%' }}>
                      <CampaignIcon sx={{ fontSize: 40, color: '#94a3b8' }} />
@@ -427,7 +448,7 @@ function CampaignList() {
                 <Typography sx={{ color: '#1e293b', fontWeight: 600, fontSize: 16 }}>Belum ada campaign</Typography>
                 <Typography sx={{ color: '#64748b', fontSize: 14 }}>Buat campaign pertama anda sekarang</Typography>
               </Box>
-            ) : campaigns.map(campaign => (
+            ) : currentCampaigns.map(campaign => (
               <Card
                 key={campaign.campaign_id}
                 elevation={0}
@@ -513,7 +534,7 @@ function CampaignList() {
                      </Stack>
 
                      {/* Stats - Flat Text Only */}
-                     <Stack direction="row" spacing={3} sx={{ mb: 2 }}>
+                     <Stack direction="row" spacing={3} sx={{ mb: 1 }}>
                         <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
                            {campaign.influencer_count || 0} Influencer
                         </Typography>
@@ -521,111 +542,136 @@ function CampaignList() {
                           <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
                               •
                            </Typography>
-                           <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
-                              Rp {parseInt(campaign.price_per_post || 0).toLocaleString('id-ID')}
-                           </Typography>
-                        </Stack>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                           <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
-                              •
-                           </Typography>
-                           <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
-                              {campaign.min_followers ? `${parseInt(campaign.min_followers).toLocaleString('id-ID')}+` : '0'} Followers
-                           </Typography>
-                        </Stack>
-                     </Stack>
-
-                     {/* Status Alert */}
-                     <StatusAlert 
-                        status={campaign.status} 
-                        subStatus={campaign.sub_status}
-                        cancellationReason={campaign.cancellation_reason} 
-                        campaign={campaign}
-                     />
-
-                     {/* Actions - Flat/Outlined Buttons */}
-                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>
-                        <Button
-                           variant="outlined"
-                           onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
-                           sx={{
-                              flex: 1,
-                              borderColor: '#e2e8f0',
-                              color: '#475569',
-                              textTransform: 'none',
-                              fontWeight: 600,
-                              borderRadius: 2,
-                              '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
-                           }}
-                        >
-                           {campaign.status?.toLowerCase() === 'draft' ? 'Edit Campaign' : 'Lihat Detail'}
-                        </Button>
-
-                        {/* Specific Action Buttons based on status */}
-                        {campaign.status && campaign.status.toLowerCase() === 'pending_payment' && (
-                           <Button
-                              variant="contained"
-                              disableElevation
-                              startIcon={<CreditCardIcon />}
-                              onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/payment`); }}
-                              sx={{ flex: 1, bgcolor: '#6E00BE', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#5a009e' } }}
-                           >
-                              Bayar Sekarang
-                           </Button>
-                        )}
-                        {campaign.status && campaign.status.toLowerCase() === 'active' && (
-                           <>
-                              <Button
-                                 variant="outlined"
-                                 startIcon={<GroupIcon />}
-                                 onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/applicants`); }}
-                                 sx={{ flex: 1, borderColor: '#6E00BE', color: '#6E00BE', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#F3E5F5' } }}
-                              >
-                                 Pelamar
-                              </Button>
-                              <Button
-                                 variant="contained"
-                                 disableElevation
-                                 startIcon={<RateReviewIcon />}
-                                 onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/review-submissions`); }}
-                                 sx={{ flex: 1, bgcolor: '#6E00BE', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#5a009e' } }}
-                              >
-                                 Review
-                              </Button>
-                              <Button
-                                 variant="outlined"
-                                 startIcon={<CheckCircleIcon />}
-                                 onClick={e => { e.stopPropagation(); handleCompleteCampaign(campaign.campaign_id); }}
-                                 sx={{ flex: 1, borderColor: '#10b981', color: '#10b981', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#ecfdf5', borderColor: '#10b981' } }}
-                              >
-                                 Selesai
-                              </Button>
-                           </>
-                        )}
-                        {campaign.status && campaign.status.toLowerCase() === 'completed' && (
-                           <Button
-                              variant="contained"
-                              disableElevation
-                              startIcon={<CreditCardIcon />}
-                              onClick={e => { e.stopPropagation(); handleDistributePayment(campaign.campaign_id); }}
-                              sx={{ flex: 1, bgcolor: '#10b981', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#059669' } }}
-                           >
-                              Distribusi Pembayaran
-                           </Button>
-                        )}
-                     </Stack>
-                   </Box>
-                </Stack>
+                            <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
+                               Rp {parseInt(campaign.price_per_post || 0).toLocaleString('id-ID')}
+                            </Typography>
+                         </Stack>
+                         <Stack direction="row" spacing={1} alignItems="center">
+                            <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
+                               •
+                            </Typography>
+                            <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
+                               {campaign.min_followers ? `${parseInt(campaign.min_followers).toLocaleString('id-ID')}+` : '0'} Followers
+                            </Typography>
+                         </Stack>
+                      </Stack>
+ 
+                      {/* Date Range */}
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                         <CalendarTodayIcon sx={{ fontSize: 14, color: '#64748b' }} />
+                         <Typography sx={{ fontSize: 13, color: '#64748b' }}>
+                            {campaign.start_date ? new Date(campaign.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBA'} 
+                            {' — '}
+                            {campaign.end_date ? new Date(campaign.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBA'}
+                         </Typography>
+                      </Stack>
+ 
+                      {/* Status Alert */}
+                      <StatusAlert 
+                         status={campaign.status} 
+                         subStatus={campaign.sub_status}
+                         cancellationReason={campaign.cancellation_reason} 
+                         campaign={campaign}
+                      />
+ 
+                      {/* Actions - Flat/Outlined Buttons */}
+                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>
+                         <Button
+                            variant="outlined"
+                            onClick={() => navigate(`/campaign-edit/${campaign.campaign_id}`)}
+                            sx={{
+                               flex: 1,
+                               borderColor: '#e2e8f0',
+                               color: '#475569',
+                               textTransform: 'none',
+                               fontWeight: 600,
+                               borderRadius: 2,
+                               '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
+                            }}
+                         >
+                            {campaign.status?.toLowerCase() === 'draft' ? 'Edit Campaign' : 'Lihat Detail'}
+                         </Button>
+ 
+                         {/* Specific Action Buttons based on status */}
+                         {campaign.status && campaign.status.toLowerCase() === 'pending_payment' && (
+                            <Button
+                               variant="contained"
+                               disableElevation
+                               startIcon={<CreditCardIcon />}
+                               onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/payment`); }}
+                               sx={{ flex: 1, bgcolor: '#6E00BE', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#5a009e' } }}
+                            >
+                               Bayar Sekarang
+                            </Button>
+                         )}
+                         {(campaign.status && campaign.status.toLowerCase() === 'active') || (campaign.status && campaign.status.toLowerCase() === 'paid') ? (
+                            <>
+                               <Button
+                                  variant="outlined"
+                                  startIcon={<GroupIcon />}
+                                  onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/applicants`); }}
+                                  sx={{ flex: 1, borderColor: '#6E00BE', color: '#6E00BE', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#F3E5F5' } }}
+                               >
+                                  Pelamar
+                               </Button>
+                               <Button
+                                  variant="contained"
+                                  disableElevation
+                                  startIcon={<RateReviewIcon />}
+                                  onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/review-submissions`); }}
+                                  sx={{ flex: 1, bgcolor: '#6E00BE', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#5a009e' } }}
+                               >
+                                  Review
+                               </Button>
+                               {(campaign.status.toLowerCase() === 'active' && campaign.end_date && new Date(campaign.end_date) < new Date()) && (
+                                 <Button
+                                    variant="outlined"
+                                    startIcon={<CheckCircleIcon />}
+                                    onClick={e => { e.stopPropagation(); handleCompleteCampaign(campaign.campaign_id); }}
+                                    sx={{ flex: 1, borderColor: '#10b981', color: '#10b981', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#ecfdf5', borderColor: '#10b981' } }}
+                                 >
+                                    Selesai
+                                 </Button>
+                               )}
+                            </>
+                         ) : null}
+                         {campaign.status && campaign.status.toLowerCase() === 'completed' && (
+                            <Button
+                               variant="contained"
+                               disableElevation
+                               startIcon={<CreditCardIcon />}
+                               onClick={e => { e.stopPropagation(); handleDistributePayment(campaign.campaign_id); }}
+                               sx={{ flex: 1, bgcolor: '#10b981', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#059669' } }}
+                            >
+                               Distribusi Pembayaran
+                            </Button>
+                         )}
+                         {campaign.status && campaign.status.toLowerCase() === 'draft' && (
+                            <Button
+                               variant="outlined"
+                               startIcon={<DeleteIcon />}
+                               onClick={e => { e.stopPropagation(); handleDeleteCampaign(campaign.campaign_id); }}
+                               sx={{ flex: 1, borderColor: '#ef4444', color: '#ef4444', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#fef2f2', borderColor: '#ef4444' } }}
+                            >
+                               Hapus
+                            </Button>
+                         )}
+                      </Stack>
+                    </Box>
+                 </Stack>
               </Card>
             ))}
             
-            {/* Pagination controls - reused previous logic but styled flat */}
-            {!isLoading && pagination.total > 0 && (
-              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 1 }}>
-                 <Button variant="outlined" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} sx={{ borderColor: '#e2e8f0', color: '#475569', borderRadius: 2, textTransform: 'none' }}>Sebelumnya</Button>
-                 <Button variant="outlined" disabled={currentPage === pagination.totalPages} onClick={() => setCurrentPage(prev => prev + 1)} sx={{ borderColor: '#e2e8f0', color: '#475569', borderRadius: 2, textTransform: 'none' }}>Berikutnya</Button>
-              </Box>
-            )}
+             {/* Pagination controls - Frontend Pagination */}
+             {!isLoading && filteredCampaigns.length > ITEMS_PER_PAGE && (
+               <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 1 }}>
+                  <Button variant="outlined" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} sx={{ borderColor: '#e2e8f0', color: '#475569', borderRadius: 2, textTransform: 'none' }}>Sebelumnya</Button>
+                  <Typography sx={{ display: 'flex', alignItems: 'center', px: 2, color: '#475569' }}>
+                     Halaman {currentPage} dari {totalPages}
+                  </Typography>
+                  <Button variant="outlined" disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} sx={{ borderColor: '#e2e8f0', color: '#475569', borderRadius: 2, textTransform: 'none' }}>Berikutnya</Button>
+               </Box>
+             )}
            </Container>
         </Box>
       </Box>
@@ -652,6 +698,22 @@ function CampaignList() {
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setShowArchiveModal(false)} sx={{ color: '#64748b', fontWeight: 600 }}>Batal</Button>
           <Button onClick={handleArchiveConfirm} variant="contained" disableElevation sx={{ bgcolor: '#d32f2f', fontWeight: 600, color: '#fff', '&:hover': { bgcolor: '#b71c1c' } }}>Arsipkan</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Generic Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onClose={() => setShowConfirmDialog(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ fontWeight: 700, color: '#1e293b' }}>{confirmTitle}</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: '#64748b' }}>
+            {confirmMessage}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => setShowConfirmDialog(false)} sx={{ color: '#64748b', fontWeight: 600 }}>Batal</Button>
+          <Button onClick={handleConfirmAction} variant="contained" disableElevation sx={{ bgcolor: '#6E00BE', fontWeight: 600, color: '#fff', '&:hover': { bgcolor: '#5a009e' } }}>
+            Konfirmasi
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

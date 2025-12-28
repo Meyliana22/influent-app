@@ -65,7 +65,7 @@ function NotificationsPage() {
       
       // Fetch notifications
       // Note: Backend filters by user from token. We get all notifications sorted by date.
-      const data = await getNotifications({ order: 'DESC' });
+      const data = await getNotifications({ sort: 'created_at', order: 'desc' });
       console.log(data);
       const notifsList = Array.isArray(data.data) ? data.data : [];
       
@@ -239,7 +239,7 @@ function NotificationsPage() {
       } else {
         // Influencer navigation
         if (title.includes('application') || title.includes('lamaran')) {
-          navigate('/applications');
+          navigate('/student/my-applications');
         } else if (title.includes('payment') || title.includes('pembayaran')) {
           navigate('/student/transactions');
         }

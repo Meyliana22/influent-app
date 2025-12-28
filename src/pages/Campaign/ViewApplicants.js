@@ -192,13 +192,26 @@ function ViewApplicants() {
   const confirmAccept = async (applicantId) => {
     try {
       setIsLoading(true);
-      await applicantService.acceptApplicant(applicantId, 'Applicant has been accepted');
-      toast.success('Applicant berhasil diterima!');
-      await loadData();
-      setShowModal(false);
+      const response = await applicantService.acceptApplicant(applicantId, 'Applicant has been accepted');
+      
+      if (response.success) {
+        toast.success('Applicant berhasil diterima!');
+        await loadData();
+        setShowModal(false);
+      } else {
+        // Handle specific business logic errors from backend
+        const errorMessage = response.error || 'Gagal menerima applicant';
+        toast.error(errorMessage);
+        if (response.error && response.error.includes('influencer limit')) {
+           // Optional: You could show a more specific modal here if needed
+        }
+        setShowModal(false);
+      }
     } catch (error) {
       console.error('Failed to accept applicant:', error);
-      toast.error('Gagal menerima applicant');
+      // Try to extract error message from response if available
+      const errMsg = error.response?.data?.error || error.message || 'Gagal menerima applicant';
+      toast.error(errMsg);
     } finally {
       setIsLoading(false);
     }
