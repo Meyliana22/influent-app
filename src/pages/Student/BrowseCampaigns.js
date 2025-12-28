@@ -250,7 +250,7 @@ function BrowseCampaigns() {
     // Check if user is logged in (basic check, could be more robust)
     const userString = localStorage.getItem('user');
     if (!userString) {
-      toast.showToast('Please login to apply', 'error');
+      toast.showToast('Silakan masuk untuk melamar', 'error');
       navigate('/login');
       return;
     }
@@ -260,7 +260,7 @@ function BrowseCampaigns() {
     console.log(studentId)
 
     if (!studentId) {
-      toast.showToast('Student profile not found. Please complete your profile.', 'error');
+      toast.showToast('Profil siswa tidak ditemukan. Harap lengkapi profil Anda.', 'error');
       return;
     }
 
@@ -270,11 +270,11 @@ function BrowseCampaigns() {
         student_id: studentId,
         application_notes: `Applying to ${campaign.title}` // Can be enhanced with a modal for notes later
       });
-      toast.showToast(`Successfully applied to ${campaign.title}!`, 'success');
+      toast.showToast(`Berhasil melamar ke ${campaign.title}!`, 'success');
       // Update local state to reflect application (optional, dependent on how we want to track 'applied' status locally)
     } catch (error) {
       console.error('Apply error:', error);
-      toast.showToast(error.message || 'Failed to apply to campaign', 'error');
+      toast.showToast(error.message || 'Gagal melamar ke kampanye', 'error');
     }
   };
 
@@ -291,17 +291,17 @@ function BrowseCampaigns() {
           {/* Header Section */}
           <Box sx={{ mb: '32px' }}>
             <Typography component="h1" sx={{ m: 0, mb: '8px', fontSize: '2rem', fontWeight: 700, color: '#1a1f36' }}>
-              Browse Campaigns
+              Jelajahi Kampanye
             </Typography>
             <Typography sx={{ m: 0, fontSize: '1rem', color: '#6c757d' }}>
-              Discover and apply for campaigns that match your profile
+              Temukan dan lamar kampanye yang sesuai dengan profil Anda
             </Typography>
           </Box>
 
           {/* Search Bar - Full Width */}
           <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', mb: '20px' }}>
             <TextField
-              placeholder="Search campaigns..."
+              placeholder="Cari kampanye..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               fullWidth
@@ -341,9 +341,9 @@ function BrowseCampaigns() {
                   border: '2px solid #e2e8f0'
                 }}
               >
-                <MenuItem value="all">All Status</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
+                <MenuItem value="all">Semua Status</MenuItem>
+                <MenuItem value="active">Aktif</MenuItem>
+                <MenuItem value="inactive">Tidak Aktif</MenuItem>
               </Select>
             </FormControl>
 
@@ -357,7 +357,7 @@ function BrowseCampaigns() {
                 variant="outlined"
                 sx={{ width: '100%', justifyContent: 'flex-start', textTransform: 'none', color: '#6c757d', fontWeight: 400, borderRadius: '10px', borderColor: '#e2e8f0', p: '10px 12px' }}
               >
-                Campaign Categories
+                Kategori Kampanye
               </Button>
 
               {showCampaignCategoryFilter && (
@@ -388,7 +388,7 @@ function BrowseCampaigns() {
                       }}
                       sx={{ flex: 1, p: '8px 12px', background: '#6E00BE', color: '#fff', fontWeight: 600, fontSize: '0.85rem', borderRadius: '8px', '&:hover': { opacity: 0.95, background: '#5a009e' } }}
                     >
-                      Apply
+                      Terapkan
                     </Button>
                     <Button
                       onClick={() => {
@@ -398,7 +398,7 @@ function BrowseCampaigns() {
                       variant="outlined"
                       sx={{ flex: 1, p: '8px 12px', borderRadius: '8px', color: '#6E00BE', borderColor: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem' }}
                     >
-                      Cancel
+                      Batal
                     </Button>
                   </Box>
                 </Paper>
@@ -415,7 +415,7 @@ function BrowseCampaigns() {
                 variant="outlined"
                 sx={{ width: '100%', justifyContent: 'flex-start', textTransform: 'none', color: '#6c757d', fontWeight: 400, borderRadius: '10px', borderColor: '#e2e8f0', p: '10px 12px' }}
               >
-                Influencer Categories
+                Kategori Influencer
               </Button>
 
               {showInfluencerCategoryFilter && (
@@ -446,7 +446,7 @@ function BrowseCampaigns() {
                       }}
                       sx={{ flex: 1, p: '8px 12px', background: '#6E00BE', color: '#fff', fontWeight: 600, fontSize: '0.85rem', borderRadius: '8px', '&:hover': { opacity: 0.95, background: '#5a009e' } }}
                     >
-                      Apply
+                      Terapkan
                     </Button>
                     <Button
                       onClick={() => {
@@ -456,7 +456,7 @@ function BrowseCampaigns() {
                       variant="outlined"
                       sx={{ flex: 1, p: '8px 12px', borderRadius: '8px', color: '#6E00BE', borderColor: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem' }}
                     >
-                      Cancel
+                      Batal
                     </Button>
                   </Box>
                 </Paper>
@@ -510,8 +510,8 @@ function BrowseCampaigns() {
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '400px', color: '#6c757d' }}>
               <Box sx={{ textAlign: 'center' }}>
                 <SearchIcon sx={{ fontSize: '3rem', mb: '16px' }} />
-                <Typography variant="h6" sx={{ m: 0, mb: '8px', color: '#1a1f36' }}>No campaigns found</Typography>
-                <Typography sx={{ m: 0 }}>Try adjusting your search or filters</Typography>
+                <Typography variant="h6" sx={{ m: 0, mb: '8px', color: '#1a1f36' }}>Tidak ada kampanye ditemukan</Typography>
+                <Typography sx={{ m: 0 }}>Coba sesuaikan pencarian atau filter Anda</Typography>
               </Box>
             </Box>
           )}
@@ -539,7 +539,7 @@ function BrowseCampaigns() {
                     <Box sx={{ p: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px', mb: '8px' }}>
                         <CategoryIcon sx={{ fontSize: '1.2rem', color: '#6E00BE' }} />
-                        <Typography sx={{ fontSize: '0.8rem', color: '#6E00BE', fontWeight: 600 }}>{campaign.campaign_category || 'General'}</Typography>
+                        <Typography sx={{ fontSize: '0.8rem', color: '#6E00BE', fontWeight: 600 }}>{campaign.campaign_category || 'Umum'}</Typography>
                       </Box>
 
                       <Typography sx={{ m: 0, mb: '8px', fontSize: '1.1rem', fontWeight: 700, color: '#1a1f36', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{campaign.title}</Typography>
@@ -548,7 +548,7 @@ function BrowseCampaigns() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <AttachMoneyIcon sx={{ fontSize: '1.2rem', color: '#6E00BE' }} />
                           <Box>
-                            <Typography sx={{ fontSize: '0.75rem', color: '#6c757d' }}>Price</Typography>
+                            <Typography sx={{ fontSize: '0.75rem', color: '#6c757d' }}>Harga</Typography>
                             <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a1f36' }}>{campaign.price_per_post ? `Rp ${Number(campaign.price_per_post).toLocaleString('id-ID')}` : 'TBD'}</Typography>
                           </Box>
                         </Box>
@@ -556,7 +556,7 @@ function BrowseCampaigns() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <PeopleIcon sx={{ fontSize: '1.2rem', color: '#6E00BE' }} />
                           <Box>
-                            <Typography sx={{ fontSize: '0.75rem', color: '#6c757d' }}>Influencers</Typography>
+                            <Typography sx={{ fontSize: '0.75rem', color: '#6c757d' }}>Influencer</Typography>
                             <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a1f36' }}>{campaign.influencer_count || 0}</Typography>
                           </Box>
                         </Box>
@@ -571,8 +571,8 @@ function BrowseCampaigns() {
                     </Box>
 
                     <Box sx={{ p: '12px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '8px' }}>
-                      <Button onClick={() => handleViewDetails(campaign)} variant="outlined" sx={{ flex: 1, p: '10px 12px', background: '#f7fafc', border: '2px solid #e2e8f0', borderRadius: '8px', color: '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: '#e0e7ff', borderColor: '#6E00BE' } }}>Details</Button>
-                      <Button onClick={() => handleApply(campaign)} sx={{ flex: 1, p: '10px 12px', background: '#6E00BE', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', opacity: campaign.status === 'active' ? 1 : 0.5, pointerEvents: campaign.status === 'active' ? 'auto' : 'none', '&:hover': { opacity: campaign.status === 'active' ? 0.95 : 0.5, background: '#5a009e' } }} disabled={campaign.status !== 'active'}>Apply</Button>
+                      <Button onClick={() => handleViewDetails(campaign)} variant="outlined" sx={{ flex: 1, p: '10px 12px', background: '#f7fafc', border: '2px solid #e2e8f0', borderRadius: '8px', color: '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: '#e0e7ff', borderColor: '#6E00BE' } }}>Detail</Button>
+                      <Button onClick={() => handleApply(campaign)} sx={{ flex: 1, p: '10px 12px', background: '#6E00BE', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', opacity: campaign.status === 'active' ? 1 : 0.5, pointerEvents: campaign.status === 'active' ? 'auto' : 'none', '&:hover': { opacity: campaign.status === 'active' ? 0.95 : 0.5, background: '#5a009e' } }} disabled={campaign.status !== 'active'}>Lamar</Button>
                     </Box>
                   </Paper>
                 );
@@ -584,23 +584,23 @@ function BrowseCampaigns() {
           {!loading && totalFilteredItems > 0 && (
             <Paper sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: '40px', p: '20px', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '16px' }} elevation={0}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px', order: isMobile ? 2 : 0 }}>
-                <Typography sx={{ fontSize: '0.95rem', color: '#6c757d', fontWeight: 600, whiteSpace: 'nowrap' }}>Show:</Typography>
+                <Typography sx={{ fontSize: '0.95rem', color: '#6c757d', fontWeight: 600, whiteSpace: 'nowrap' }}>Tampilkan:</Typography>
                 <FormControl sx={{ minWidth: 120 }}>
                   <Select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} sx={{ p: '8px 12px', borderRadius: '8px', background: '#fff', border: '2px solid #e2e8f0', fontSize: '0.95rem', color: '#1a1f36', fontWeight: 600 }}>
-                    <MenuItem value={6}>6 per page</MenuItem>
-                    <MenuItem value={12}>12 per page</MenuItem>
-                    <MenuItem value={18}>18 per page</MenuItem>
-                    <MenuItem value={24}>24 per page</MenuItem>
+                    <MenuItem value={6}>6 per halaman</MenuItem>
+                    <MenuItem value={12}>12 per halaman</MenuItem>
+                    <MenuItem value={18}>18 per halaman</MenuItem>
+                    <MenuItem value={24}>24 per halaman</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
 
               <Typography sx={{ fontSize: '0.9rem', color: '#6c757d', order: isMobile ? 1 : 0, textAlign: isMobile ? 'center' : 'auto', flex: isMobile ? '1 0 100%' : 'auto' }}>
-                Showing {Math.min((currentPage - 1) * itemsPerPage + 1, totalFilteredItems)} to {Math.min(currentPage * itemsPerPage, totalFilteredItems)} of {totalFilteredItems} campaigns
+                Menampilkan {Math.min((currentPage - 1) * itemsPerPage + 1, totalFilteredItems)} hingga {Math.min(currentPage * itemsPerPage, totalFilteredItems)} dari {totalFilteredItems} kampanye
               </Typography>
 
               <Box sx={{ display: 'flex', gap: '8px', order: isMobile ? 3 : 0 }}>
-                <Button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} sx={{ p: '8px 12px', background: currentPage === 1 ? '#e2e8f0' : '#fff', border: '2px solid #e2e8f0', borderRadius: '8px', color: currentPage === 1 ? '#a0aec0' : '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: currentPage === 1 ? '#e2e8f0' : '#e0e7ff', borderColor: '#6E00BE' } }}>← Previous</Button>
+                <Button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} sx={{ p: '8px 12px', background: currentPage === 1 ? '#e2e8f0' : '#fff', border: '2px solid #e2e8f0', borderRadius: '8px', color: currentPage === 1 ? '#a0aec0' : '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: currentPage === 1 ? '#e2e8f0' : '#e0e7ff', borderColor: '#6E00BE' } }}>← Sebelumnya</Button>
 
                 <Box sx={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                   {[...Array(totalPages)].map((_, idx) => {
@@ -620,7 +620,7 @@ function BrowseCampaigns() {
                   })}
                 </Box>
 
-                <Button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages || totalPages === 0} sx={{ p: '8px 12px', background: currentPage === totalPages || totalPages === 0 ? '#e2e8f0' : '#fff', border: '2px solid #e2e8f0', borderRadius: '8px', color: currentPage === totalPages || totalPages === 0 ? '#a0aec0' : '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: currentPage === totalPages || totalPages === 0 ? '#e2e8f0' : '#e0e7ff', borderColor: '#6E00BE' } }}>Next →</Button>
+                <Button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages || totalPages === 0} sx={{ p: '8px 12px', background: currentPage === totalPages || totalPages === 0 ? '#e2e8f0' : '#fff', border: '2px solid #e2e8f0', borderRadius: '8px', color: currentPage === totalPages || totalPages === 0 ? '#a0aec0' : '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: currentPage === totalPages || totalPages === 0 ? '#e2e8f0' : '#e0e7ff', borderColor: '#6E00BE' } }}>Selanjutnya →</Button>
               </Box>
             </Paper>
           )}
@@ -646,34 +646,34 @@ function BrowseCampaigns() {
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', mb: '24px' }}>
               {/* Left Column */}
               <Box>
-                <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Product Information</Typography>
+                <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Informasi Produk</Typography>
 
                 {selectedCampaign.has_product && (
                   <>
                     <Box sx={{ mb: '16px' }}>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Product Name</Typography>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Nama Produk</Typography>
                       <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>{selectedCampaign.product_name}</Typography>
                     </Box>
 
                     <Box sx={{ mb: '16px' }}>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Product Value</Typography>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Nilai Produk</Typography>
                       <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>Rp {Number(selectedCampaign.product_value).toLocaleString('id-ID')}</Typography>
                     </Box>
 
                     <Box sx={{ mb: '16px' }}>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Description</Typography>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Deskripsi</Typography>
                       <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5 }}>{selectedCampaign.product_desc}</Typography>
                     </Box>
                   </>
                 )}
 
                 <Box sx={{ mb: '16px' }}>
-                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Category</Typography>
+                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Kategori</Typography>
                   <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>{selectedCampaign.campaign_category}</Typography>
                 </Box>
 
                 <Box>
-                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Influencer Categories</Typography>
+                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Kategori Influencer</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px', mt: '8px' }}>
                     {parseInfluencerCategory(selectedCampaign.influencer_category).map((cat, idx) => (
                       <Box key={idx} sx={{ background: '#f3e5f5', color: '#6E00BE', px: '12px', py: '6px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{cat}</Box>
@@ -684,10 +684,10 @@ function BrowseCampaigns() {
 
               {/* Right Column */}
               <Box>
-                <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Campaign Details</Typography>
+                <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Detail Kampanye</Typography>
 
                 <Box sx={{ mb: '16px' }}>
-                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Price Per Post</Typography>
+                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Harga Per Postingan</Typography>
                   <Typography sx={{ mt: '4px', fontSize: '1.2rem', color: '#6E00BE', fontWeight: 700 }}>Rp {Number(selectedCampaign.price_per_post).toLocaleString('id-ID')}</Typography>
                 </Box>
 
@@ -697,34 +697,34 @@ function BrowseCampaigns() {
                 </Box>
 
                 <Box sx={{ mb: '16px' }}>
-                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Dates</Typography>
+                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Tanggal</Typography>
                   <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36' }}>
-                      Start: {selectedCampaign.start_date && new Date(selectedCampaign.start_date).toLocaleDateString('id-ID')}
+                      Mulai: {selectedCampaign.start_date && new Date(selectedCampaign.start_date).toLocaleDateString('id-ID')}
                   </Typography>
                   <Typography sx={{ fontSize: '0.95rem', color: '#1a1f36' }}>
-                      End: {selectedCampaign.end_date && new Date(selectedCampaign.end_date).toLocaleDateString('id-ID')}
+                      Selesai: {selectedCampaign.end_date && new Date(selectedCampaign.end_date).toLocaleDateString('id-ID')}
                   </Typography>
                    <Typography sx={{ fontSize: '0.95rem', color: '#d32f2f', fontWeight: 600, mt: 0.5 }}>
-                      Submission Deadline: {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID') : 'N/A'}
+                      Batas Waktu Pengiriman: {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID') : 'N/A'}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Requirements</Typography>
+                  <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Persyaratan</Typography>
                   <Box sx={{ mt: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
-                      <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Min Followers: </Typography>
+                      <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Min Pengikut: </Typography>
                       <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.min_followers?.toLocaleString('id-ID') || 'N/A'}</Typography>
                     </Box>
                     <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
-                      <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Gender: </Typography>
-                      <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.selected_gender || 'Any'}</Typography>
+                      <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Jenis Kelamin: </Typography>
+                      <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.selected_gender || 'Semua'}</Typography>
                     </Box>
                     <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
-                      <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Age: </Typography>
+                      <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Usia: </Typography>
                       <Typography component="span" sx={{ color: '#6c757d' }}>
                         {(() => {
-                           if (!selectedCampaign.selected_age) return 'Any';
+                           if (!selectedCampaign.selected_age) return 'Semua';
                            try {
                               // Handle double stringified JSON or regular JSON
                               let parsed = selectedCampaign.selected_age;
@@ -750,18 +750,18 @@ function BrowseCampaigns() {
             {/* Guidelines */}
             {(selectedCampaign.content_guidelines || selectedCampaign.caption_guidelines) && (
               <Box sx={{ mb: '24px' }}>
-                <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Guidelines</Typography>
+                <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Panduan</Typography>
 
                 {selectedCampaign.content_guidelines && (
                   <Box sx={{ mb: '12px' }}>
-                    <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Content Guidelines</Typography>
+                    <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Panduan Konten</Typography>
                     <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{selectedCampaign.content_guidelines}</Typography>
                   </Box>
                 )}
 
                 {selectedCampaign.caption_guidelines && (
                   <Box>
-                    <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Caption Guidelines</Typography>
+                    <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Panduan Caption</Typography>
                     <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{selectedCampaign.caption_guidelines}</Typography>
                   </Box>
                 )}
@@ -770,8 +770,8 @@ function BrowseCampaigns() {
 
             {/* Action Buttons - At Bottom */}
             <Box sx={{ display: 'flex', gap: '12px', pt: '24px', borderTop: '1px solid #e2e8f0', mt: '24px' }}>
-              <Button onClick={() => setShowDetailModal(false)} variant="outlined" sx={{ flex: 1, p: '12px 24px', background: '#f7fafc', border: '2px solid #e2e8f0', borderRadius: '8px', color: '#6E00BE', fontWeight: 600, fontSize: '1rem', textTransform: 'none', '&:hover': { background: '#e0e7ff', borderColor: '#6E00BE' } }}>Close</Button>
-              <Button onClick={() => { handleApply(selectedCampaign); setShowDetailModal(false); }} sx={{ flex: 1, p: '12px 24px', background: '#6E00BE', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '1rem', textTransform: 'none', opacity: selectedCampaign.status === 'active' ? 1 : 0.5, pointerEvents: selectedCampaign.status === 'active' ? 'auto' : 'none', '&:hover': { opacity: selectedCampaign.status === 'active' ? 0.95 : 0.5, background: '#a009e' } }} disabled={selectedCampaign.status !== 'active'}>Apply Now</Button>
+              <Button onClick={() => setShowDetailModal(false)} variant="outlined" sx={{ flex: 1, p: '12px 24px', background: '#f7fafc', border: '2px solid #e2e8f0', borderRadius: '8px', color: '#6E00BE', fontWeight: 600, fontSize: '1rem', textTransform: 'none', '&:hover': { background: '#e0e7ff', borderColor: '#6E00BE' } }}>Tutup</Button>
+              <Button onClick={() => { handleApply(selectedCampaign); setShowDetailModal(false); }} sx={{ flex: 1, p: '12px 24px', background: '#6E00BE', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '1rem', textTransform: 'none', opacity: selectedCampaign.status === 'active' ? 1 : 0.5, pointerEvents: selectedCampaign.status === 'active' ? 'auto' : 'none', '&:hover': { opacity: selectedCampaign.status === 'active' ? 0.95 : 0.5, background: '#a009e' } }} disabled={selectedCampaign.status !== 'active'}>Lamar Sekarang</Button>
             </Box>
           </Box>
         </Modal>

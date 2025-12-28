@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material';
 import authService from '../../services/authService';
 import studentService from '../../services/studentService';
+import companyService from '../../services/companyService';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -41,19 +42,11 @@ function RegisterPage() {
   const [step, setStep] = useState('register'); // register, otp, onboarding
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   
-  // Initialize role directly from URL param
+  // Initialize role based on URL param or pathname
   const [userRole, setUserRole] = useState(() => {
-    console.log(role)
-
-    if (!role) {
-      navigate('/');
-      return;
-    }
-    const lowerRole = role.toLowerCase();
-
-    if(lowerRole === "umkm") return 'umkm';
-   return 'influencer';
-  
+    if (location.pathname === '/register-umkm') return 'umkm';
+    if (role && role.toLowerCase() === 'umkm') return 'umkm';
+    return 'influencer';
   });
 
   // Update active step index for Stepper
@@ -80,14 +73,20 @@ function RegisterPage() {
   const [errorMsg, setErrorMsg] = useState('');
 
   // Restore state logic (simplified for cleaner readability)
+  // Update userRole if URL changes (e.g. navigation between register pages)
+  useEffect(() => {
+    if (location.pathname === '/register-umkm') {
+      setUserRole('umkm');
+    } else if (role) {
+      setUserRole(role.toLowerCase() === 'umkm' ? 'umkm' : 'influencer');
+    }
+  }, [location.pathname, role]);
+
   useEffect(() => {
     // Check for navigation state first (priority over session storage)
     if (location.state?.step && location.state?.email) {
       setStep(location.state.step);
       setFormData(prev => ({ ...prev, email: location.state.email }));
-      // Clear state to prevent sticky behavior on refresh if needed, 
-      // but strictly speaking we might want to keep it.
-      // For now, let's allow it to override session storage.
       return; 
     }
 
@@ -97,8 +96,7 @@ function RegisterPage() {
         const parsed = JSON.parse(savedState);
         
         // Validation: Verify if stored role matches current URL role
-        // This prevents sticky role bug when switching directly from one register page to another
-        const currentUrlRole = role?.toLowerCase() === 'umkm' ? 'umkm' : 'influencer';
+        const currentUrlRole = (location.pathname === '/register-umkm' || role?.toLowerCase() === 'umkm') ? 'umkm' : 'influencer';
         const storedRole = parsed.userRole;
 
         if (storedRole === currentUrlRole) {
@@ -113,7 +111,7 @@ function RegisterPage() {
         sessionStorage.removeItem('registrationState');
       }
     }
-  }, [role]); // Add role as dependency to re-run if URL changes
+  }, [location.pathname, role]);
 
   useEffect(() => {
     const stateToSave = {
@@ -237,8 +235,12 @@ function RegisterPage() {
           university: formData.university,
           phone_number: formData.phone
         });
+      } else if (userRole === 'umkm') {
+        await companyService.createProfile({
+          business_name: formData.companyName,
+          phone_number: formData.phone
+        });
       }
-      // UMKM logic handled as per requirement (often auto-handled or simple update)
       
       showToast("Setup profil berhasil!", "success");
       sessionStorage.removeItem('registrationState');
@@ -626,6 +628,58 @@ function RegisterPage() {
                    </Button>
                  </Typography>
                </Box>
+            )}
+            
+            {step === 'register' && userRole === 'influencer' && (
+              <Box sx={{ textAlign: 'center', mt: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Daftar sebagai UMKM?{' '}
+                   <Button 
+                      variant="text" 
+                      onClick={() => {
+                        navigate('/register-umkm');
+                        setUserRole('umkm');
+                        sessionStorage.removeItem('registrationState');
+                      }}
+                      sx={{ 
+                        fontWeight: 600, 
+                        color: '#6E00BE', 
+                        textTransform: 'none', 
+                        minWidth: 'auto', 
+                        p: 0,
+                        '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } 
+                      }}
+                   >
+                     Klik disini
+                   </Button>
+                </Typography>
+              </Box>
+            )}
+
+            {step === 'register' && userRole === 'umkm' && (
+              <Box sx={{ textAlign: 'center', mt: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Daftar sebagai Influencer?{' '}
+                   <Button 
+                      variant="text" 
+                      onClick={() => {
+                        navigate('/register/influencer');
+                        setUserRole('influencer');
+                        sessionStorage.removeItem('registrationState');
+                      }}
+                      sx={{ 
+                        fontWeight: 600, 
+                        color: '#6E00BE', 
+                        textTransform: 'none', 
+                        minWidth: 'auto', 
+                        p: 0,
+                        '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } 
+                      }}
+                   >
+                     Klik disini
+                   </Button>
+                </Typography>
+              </Box>
             )}
             
           </Paper>

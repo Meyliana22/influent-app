@@ -254,10 +254,10 @@ function UserPage() {
 
   return (
     <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif", background: '#f8fafc', minHeight: '100vh' }}>
-      <SidebarComponent isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
       <div style={{ marginLeft: !isMobile ? '260px' : '0', flex: 1, overflowX: 'hidden' }}>
-        <TopbarComponent onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
         
         <div style={{ marginTop: '72px', padding: '32px' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
@@ -320,7 +320,6 @@ function UserPage() {
                     {[
                       { id: 'profile', label: 'Profil Saya', icon: '👤' },
                       { id: 'password', label: 'Keamanan', icon: '🔒' },
-                      { id: 'notifications', label: 'Notifikasi', icon: '🔔' },
                     ].map(tab => (
                       <button
                         key={tab.id}

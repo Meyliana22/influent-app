@@ -62,23 +62,23 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
       case 'admin':
         return [
           { icon: DashboardIcon, label: 'Dashboard', path: '/admin/dashboard' },
-          { icon: PeopleIcon, label: 'Manage Users', path: '/admin/users' },
-          { icon: CampaignIcon, label: 'Manage Campaigns', path: '/admin/campaigns' },
-          { icon: GavelIcon, label: 'Review Submissions', path: '/admin/review-submissions' },
-          { icon: TransactionsIcon, label: 'Transactions', path: '/admin/transactions' },
-          { icon: AccountBalanceWalletIcon, label: 'Withdrawals', path: '/admin/withdrawals' },
-          { icon: BarChartIcon, label: 'Reports', path: '/admin/reports' },
-          { icon: ChatIcon, label: 'Chat', path: '/chat' },
+          { icon: PeopleIcon, label: 'Kelola Pengguna', path: '/admin/users' },
+          { icon: CampaignIcon, label: 'Kelola Kampanye', path: '/admin/campaigns' },
+          { icon: GavelIcon, label: 'Tinjau Pengajuan', path: '/admin/review-submissions' },
+          { icon: TransactionsIcon, label: 'Transaksi', path: '/admin/transactions' },
+          { icon: AccountBalanceWalletIcon, label: 'Penarikan', path: '/admin/withdrawals' },
+          { icon: BarChartIcon, label: 'Laporan', path: '/admin/reports' },
+          { icon: ChatIcon, label: 'Pesan', path: '/chat' },
         ];
       case 'influencer':
       case 'student':
       default:
         return [
           { icon: DashboardIcon, label: 'Dashboard', path: '/student/dashboard' },
-          { icon: BrowseIcon, label: 'Browse Campaigns', path: '/student/browse-campaigns' },
-          { icon: CollaborationsIcon, label: 'My Collaborations', path: '/student/my-applications' },
-          { icon: TransactionsIcon, label: 'Transactions', path: '/student/transactions' },
-          { icon: ChatIcon, label: 'Chat', path: '/chat' },
+          { icon: BrowseIcon, label: 'Jelajahi Kampanye', path: '/student/browse-campaigns' },
+          { icon: CollaborationsIcon, label: 'Kolaborasi Saya', path: '/student/my-applications' },
+          { icon: TransactionsIcon, label: 'Transaksi', path: '/student/transactions' },
+          { icon: ChatIcon, label: 'Pesan', path: '/chat' },
         ];
     }
   };
@@ -88,13 +88,13 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
     switch (userRole) {
       case 'umkm':
       case 'company':
-        return 'UMKM Dashboard';
+        return 'Dashboard UMKM';
       case 'admin':
-        return 'Admin Dashboard';
+        return 'Dashboard Admin';
       case 'influencer':
       case 'student':
       default:
-        return 'Influencer Dashboard';
+        return 'Dashboard Influencer';
     }
   };
 

@@ -106,7 +106,7 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
               {formatNumber(applicant.followers)}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Followers
+              Pengikut
             </Typography>
           </Box>
           <Box sx={{ flex: 1, p: 2, textAlign: 'center', borderRight: '1px solid #e0e0e0' }}>
@@ -172,7 +172,7 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Gender
+                  Jenis Kelamin
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 500 }}>
                   {applicant.gender === 'Female' ? '👩' : '👨'} {applicant.gender}
@@ -180,7 +180,7 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Applied Date
+                  Tanggal Melamar
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 500 }}>
                   📅 {new Date(applicant.appliedDate).toLocaleDateString('id-ID')}

@@ -128,36 +128,36 @@ function AdminDashboard() {
 
   const statCards = [
     {
-      title: 'Total Users',
+      title: 'Total Pengguna',
       value: stats.totalUsers,
-      subtitle: `${stats.totalStudents} Students, ${stats.totalCompanies} Companies`,
+      subtitle: `${stats.totalStudents} Mahasiswa, ${stats.totalCompanies} UMKM`,
       IconComponent: PeopleIcon,
       color: '#6E00BE',
       bgColor: '#F3E5F5',
       path: '/admin/users'
     },
     {
-      title: 'Total Campaigns',
+      title: 'Total Kampanye',
       value: stats.totalCampaigns,
-      subtitle: `${stats.activeCampaigns} Active, ${stats.completedCampaigns} Completed`,
+      subtitle: `${stats.activeCampaigns} Aktif, ${stats.completedCampaigns} Selesai`,
       IconComponent: CampaignIcon,
       color: '#10b981',
       bgColor: 'rgba(16, 185, 129, 0.1)',
       path: '/admin/campaigns'
     },
     {
-      title: 'Pending Withdrawals',
+      title: 'Penarikan Tertunda',
       value: stats.pendingWithdrawals,
-      subtitle: `${stats.totalWithdrawals} Total Requests`,
+      subtitle: `${stats.totalWithdrawals} Total Permintaan`,
       IconComponent: AccountBalanceIcon,
       color: '#f59e0b',
       bgColor: 'rgba(245, 158, 11, 0.1)',
       path: '/admin/manage-withdrawals'
     },
     {
-      title: 'Total Revenue',
+      title: 'Total Pendapatan',
       value: `Rp ${stats.totalRevenue?.toLocaleString('id-ID') || 0}`,
-      subtitle: `${stats.totalTransactions} Transactions`,
+      subtitle: `${stats.totalTransactions} Transaksi`,
       IconComponent: AttachMoneyIcon,
       color: '#8b5cf6',
       bgColor: 'rgba(139, 92, 246, 0.1)',
@@ -214,13 +214,13 @@ function AdminDashboard() {
                 color: '#1a1f36',
                 mb: 1
               }}>
-                Welcome, {userName}!
+                Selamat Datang, {userName}!
               </Typography>
               <Typography sx={{
                 fontSize: 16,
                 color: '#6c757d'
               }}>
-                Here's what's happening with your platform today.
+                Berikut adalah ringkasan platform Anda hari ini.
               </Typography>
             </Box>
             <Button
@@ -327,7 +327,7 @@ function AdminDashboard() {
                 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 700, color: '#1a1f36' }}>
-                      Pending Withdrawals
+                      Penarikan Tertunda
                     </Typography>
                     <Chip 
                       label={recentWithdrawals.length} 
@@ -339,7 +339,7 @@ function AdminDashboard() {
                     <Box sx={{ textAlign: 'center', py: 4 }}>
                       <AccountBalanceIcon sx={{ fontSize: 48, color: '#cbd5e0', mb: 1 }} />
                       <Typography sx={{ color: '#6c757d', fontSize: 14 }}>
-                        No pending withdrawals
+                        Tidak ada penarikan tertunda
                       </Typography>
                     </Box>
                   ) : (
@@ -385,7 +385,7 @@ function AdminDashboard() {
                 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 700, color: '#1a1f36' }}>
-                      Recent Campaigns
+                      Kampanye Terbaru
                     </Typography>
                     <Button
                       size="small"
@@ -393,14 +393,14 @@ function AdminDashboard() {
                       onClick={() => navigate('/admin/campaigns')}
                       sx={{ textTransform: 'none', color: '#6E00BE' }}
                     >
-                      View All
+                      Lihat Semua
                     </Button>
                   </Box>
                   {recentCampaigns.length === 0 ? (
                     <Box sx={{ textAlign: 'center', py: 4 }}>
                       <CampaignIcon sx={{ fontSize: 48, color: '#cbd5e0', mb: 1 }} />
                       <Typography sx={{ color: '#6c757d', fontSize: 14 }}>
-                        No campaigns yet
+                        Belum ada kampanye
                       </Typography>
                     </Box>
                   ) : (
@@ -437,7 +437,7 @@ function AdminDashboard() {
                             />
                           </Box>
                           <Typography sx={{ fontSize: 12, color: '#6c757d' }}>
-                            Budget: Rp {campaign.budget?.toLocaleString('id-ID')}
+                            Anggaran: Rp {campaign.budget?.toLocaleString('id-ID')}
                           </Typography>
                         </Box>
                       ))}
@@ -453,7 +453,7 @@ function AdminDashboard() {
                 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 700, color: '#1a1f36' }}>
-                      Recent Users
+                      Pengguna Terbaru
                     </Typography>
                     <Button
                       size="small"
@@ -461,14 +461,14 @@ function AdminDashboard() {
                       onClick={() => navigate('/admin/users')}
                       sx={{ textTransform: 'none', color: '#6E00BE' }}
                     >
-                      View All
+                      Lihat Semua
                     </Button>
                   </Box>
                   {recentUsers.length === 0 ? (
                     <Box sx={{ textAlign: 'center', py: 4 }}>
                       <PeopleIcon sx={{ fontSize: 48, color: '#cbd5e0', mb: 1 }} />
                       <Typography sx={{ color: '#6c757d', fontSize: 14 }}>
-                        No users registered yet
+                        Belum ada pengguna terdaftar
                       </Typography>
                     </Box>
                   ) : (
@@ -537,14 +537,14 @@ function AdminDashboard() {
                   border: '1px solid #e2e8f0'
                 }}>
                   <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 700, color: '#1a1f36', mb: 2 }}>
-                    Platform Overview
+                    Ringkasan Platform
                   </Typography>
                   <Stack spacing={2}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <TrendingUpIcon sx={{ fontSize: 20, color: '#10b981' }} />
                         <Typography sx={{ fontSize: 14, color: '#6c757d' }}>
-                          Active Users
+                          Pengguna Aktif
                         </Typography>
                       </Box>
                       <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#1a1f36' }}>
@@ -555,7 +555,7 @@ function AdminDashboard() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <CampaignIcon sx={{ fontSize: 20, color: '#667eea' }} />
                         <Typography sx={{ fontSize: 14, color: '#6c757d' }}>
-                          Running Campaigns
+                          Kampanye Berjalan
                         </Typography>
                       </Box>
                       <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#1a1f36' }}>
@@ -566,7 +566,7 @@ function AdminDashboard() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <AttachMoneyIcon sx={{ fontSize: 20, color: '#f59e0b' }} />
                         <Typography sx={{ fontSize: 14, color: '#6c757d' }}>
-                          Total Transactions
+                          Total Transaksi
                         </Typography>
                       </Box>
                       <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#1a1f36' }}>
@@ -577,7 +577,7 @@ function AdminDashboard() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <AccountBalanceIcon sx={{ fontSize: 20, color: '#8b5cf6' }} />
                         <Typography sx={{ fontSize: 14, color: '#6c757d' }}>
-                          Platform Revenue
+                          Pendapatan Platform
                         </Typography>
                       </Box>
                       <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#1a1f36' }}>

@@ -143,13 +143,13 @@ const CampaignWorkPage = () => {
 
          setSubmissions(enhancedSubs);
       } else {
-         showToast('Application not found', 'error');
+         showToast('Aplikasi tidak ditemukan', 'error');
          navigate('/student/my-applications');
       }
 
     } catch (error) {
       console.error('Error loading data:', error);
-      showToast('Failed to load campaign data', 'error');
+      showToast('Gagal memuat data kampanye', 'error');
     } finally {
       setLoading(false);
     }
@@ -164,13 +164,13 @@ const CampaignWorkPage = () => {
                   inputs.push({
                       content_type: type.content_type,
                       url: '',
-                      label: `${type.content_type === 'foto' ? 'Instagram Feed' : (type.content_type || 'Post').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())} #${i+1}`
+                      label: `${type.content_type === 'foto' ? 'Feed Instagram' : (type.content_type || 'Post').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())} #${i+1}`
                   });
               }
           });
       } else {
           // Fallback if no specific types
-          inputs.push({ content_type: 'post', url: '', label: 'Content URL' });
+          inputs.push({ content_type: 'post', url: '', label: 'URL Konten' });
       }
       return inputs;
   };
@@ -253,7 +253,7 @@ const CampaignWorkPage = () => {
     if (status === 'final') {
        const missingUrl = submissionInputs.some(input => !input.url.trim());
        if (missingUrl) {
-         showToast('All Content URLs are required for final submission', 'warning');
+          showToast('Semua URL Konten diperlukan untuk pengiriman final', 'warning');
          return;
        }
     }
@@ -279,10 +279,10 @@ const CampaignWorkPage = () => {
       if (editMode && selectedSubmission) {
         const subId = selectedSubmission.submission_id || selectedSubmission.id;
         await workSubmissionService.updateWorkSubmission(subId, payload);
-        showToast('Submission updated', 'success');
+        showToast('Kiriman diperbarui', 'success');
       } else {
         await workSubmissionService.createWorkSubmission(payload);
-        showToast('Submission created', 'success');
+        showToast('Kiriman dibuat', 'success');
       }
 
       setDialogOpen(false);
@@ -290,7 +290,7 @@ const CampaignWorkPage = () => {
 
     } catch (error) {
       console.error('Save error:', error);
-      showToast('Failed to save submission', 'error');
+      showToast('Gagal menyimpan kiriman', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -311,7 +311,7 @@ const CampaignWorkPage = () => {
 
   const handleSubmitPostLink = async () => {
     if (!postLink.trim()) {
-        showToast('Please enter a valid link', 'warning');
+        showToast('Harap masukkan tautan yang valid', 'warning');
         return;
     }
 
@@ -324,13 +324,13 @@ const CampaignWorkPage = () => {
             post_link: postLink
         });
 
-        showToast('Post link submitted successfully', 'success');
+        showToast('Tautan posting berhasil dikirim', 'success');
         setPostSubmissionOpen(false);
         loadData(); // Reload to update status
 
     } catch (error) {
         console.error("Submit post link error:", error);
-        showToast('Failed to submit post link', 'error');
+        showToast('Gagal mengirim tautan posting', 'error');
     } finally {
         setSubmitting(false);
     }
@@ -348,9 +348,9 @@ const CampaignWorkPage = () => {
   };
 
   const getStatusLabel = (status, type) => {
-    if (type === 'draft') return 'Draft';
+    if (type === 'draft') return 'Draf';
     // Capitalize status
-    return status ? status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ') : 'Submitted';
+    return status ? status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ') : 'Dikirim';
   };
 
   if (loading) {
@@ -375,7 +375,7 @@ const CampaignWorkPage = () => {
           {/* Header */}
           <Stack direction="row" alignItems="center" spacing={2} mb={3}>
              <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/student/my-applications')}>
-               Back
+               Kembali
              </Button>
              <Box flex={1}>
                <Typography variant="h5" fontWeight={700}>{campaign?.title}</Typography>
@@ -389,7 +389,7 @@ const CampaignWorkPage = () => {
                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                        <InfoIcon sx={{ fontSize: 16, color: '#d32f2f' }} />
                        <Typography variant="body2" sx={{ color: '#d32f2f', fontWeight: 600 }}>
-                           Deadline: {campaign?.submission_deadline ? new Date(campaign.submission_deadline).toLocaleDateString() : 'No Deadline'}
+                           Batas Waktu: {campaign?.submission_deadline ? new Date(campaign.submission_deadline).toLocaleDateString() : 'Tidak Ada Batas Waktu'}
                        </Typography>
                    </Box>
                </Stack>
@@ -399,13 +399,13 @@ const CampaignWorkPage = () => {
 
           {/* Campaign Guidelines (Brief) */}
           <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: 2, border: '1px solid #e2e8f0', bgcolor: '#fff' }}>
-             <Typography variant="h6" fontWeight={600} gutterBottom>Requirements & Guidelines</Typography>
+             <Typography variant="h6" fontWeight={600} gutterBottom>Persyaratan & Panduan</Typography>
              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
-               {campaign?.content_guidelines || 'No content guidelines.'}
+               {campaign?.content_guidelines || 'Tidak ada panduan konten.'}
              </Typography>
              {campaign?.caption_guidelines && (
                 <Box sx={{ bgcolor: '#f1f5f9', p: 2, borderRadius: 1 }}>
-                   <Typography variant="subtitle2" gutterBottom>Caption Guidelines:</Typography>
+                   <Typography variant="subtitle2" gutterBottom>Panduan Caption:</Typography>
                    <Typography variant="body2">{campaign.caption_guidelines}</Typography>
                 </Box>
              )}
@@ -413,7 +413,7 @@ const CampaignWorkPage = () => {
               {/* Required Content Types Display */}
               {requiredContentTypes.length > 0 && (
                  <Box sx={{ mt: 3 }}>
-                    <Typography variant="subtitle2" gutterBottom fontWeight={700}>Required Content:</Typography>
+                    <Typography variant="subtitle2" gutterBottom fontWeight={700}>Konten yang Diperlukan:</Typography>
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                        {requiredContentTypes.map((item, idx) => (
                           <Chip 
@@ -429,9 +429,9 @@ const CampaignWorkPage = () => {
 
           {/* Submissions Section */}
           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-             <Typography variant="h6" fontWeight={700}>My Submissions</Typography>
+             <Typography variant="h6" fontWeight={700}>Kiriman Saya</Typography>
              <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate} sx={{ bgcolor: '#6E00BE' }}>
-               New Submission
+               Kiriman Baru
              </Button>
           </Stack>
 
@@ -439,22 +439,22 @@ const CampaignWorkPage = () => {
             <Table>
               <TableHead sx={{ bgcolor: '#f8fafc' }}>
                 <TableRow>
-                   <TableCell fontWeight={600}>Date</TableCell>
+                   <TableCell fontWeight={600}>Tanggal</TableCell>
                    <TableCell fontWeight={600}>Platform</TableCell>
-                   <TableCell fontWeight={600}>Type</TableCell>
+                   <TableCell fontWeight={600}>Tipe</TableCell>
                    <TableCell fontWeight={600}>Caption</TableCell>
-                   <TableCell fontWeight={600}>Hashtags</TableCell>
-                   <TableCell fontWeight={600}>Link</TableCell>
+                   <TableCell fontWeight={600}>Hashtag</TableCell>
+                   <TableCell fontWeight={600}>Tautan</TableCell>
                    <TableCell fontWeight={600}>Status</TableCell>
-                   <TableCell fontWeight={600}>Action</TableCell> {/* For Post Submission */}
-                   <TableCell align="right">Manage</TableCell>
+                   <TableCell fontWeight={600}>Aksi</TableCell> {/* For Post Submission */}
+                   <TableCell align="right">Kelola</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {submissions.length === 0 ? (
                    <TableRow>
                      <TableCell colSpan={9} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                       No submissions yet. Create one to get started!
+                       Belum ada kiriman. Buat satu untuk memulai!
                      </TableCell>
                    </TableRow>
                 ) : (
@@ -488,7 +488,7 @@ const CampaignWorkPage = () => {
                          ) : (
                              sub.content_url ? (
                                <a href={sub.content_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6E00BE', textDecoration: 'none' }}>
-                                 View <LaunchIcon fontSize="inherit" />
+                                 Lihat <LaunchIcon fontSize="inherit" />
                                </a>
                              ) : '-'
                          )}
@@ -512,7 +512,7 @@ const CampaignWorkPage = () => {
                              sub.post_submission ? (
                                 <Box>
                                     <Chip 
-                                        label={sub.post_submission.status === 'verified' ? 'Post Verified' : sub.post_submission.status === 'rejected' ? 'Post Rejected' : 'Post Pending'} 
+                                        label={sub.post_submission.status === 'verified' ? 'Posting Diverifikasi' : sub.post_submission.status === 'rejected' ? 'Posting Ditolak' : 'Posting Tertunda'} 
                                         color={sub.post_submission.status === 'verified' ? 'success' : sub.post_submission.status === 'rejected' ? 'error' : 'warning'}
                                         variant="outlined"
                                         size="small"
@@ -527,7 +527,7 @@ const CampaignWorkPage = () => {
                                     onClick={() => handleOpenPostSubmission(sub)}
                                     sx={{ textTransform: 'none', borderRadius: 2 }}
                                 >
-                                    Submit Post Link
+                                    Kirim Tautan Posting
                                 </Button>
                              )
                           )}
@@ -548,7 +548,7 @@ const CampaignWorkPage = () => {
                                size="small" 
                                onClick={() => handleOpenView(sub)} 
                              >
-                               View
+                               Lihat
                              </Button>
                           )}
                        </TableCell>
@@ -565,7 +565,7 @@ const CampaignWorkPage = () => {
       {/* Submission Dialog */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
          <DialogTitle>
-            {viewMode ? 'View Submission' : (editMode ? 'Edit Submission' : 'Create New Submission')}
+            {viewMode ? 'Lihat Kiriman' : (editMode ? 'Edit Kiriman' : 'Buat Kiriman Baru')}
             <IconButton
               onClick={handleCloseDialog}
               sx={{ position: 'absolute', right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}
@@ -591,7 +591,7 @@ const CampaignWorkPage = () => {
            <Stack spacing={3} sx={{ mt: 1 }}>
             {/* Dynamic Content Inputs */}
             <Typography variant="subtitle2" sx={{ color: '#1e293b', fontWeight: 700 }}>
-                Submission Links
+                Tautan Kiriman
             </Typography>
             {submissionInputs.map((input, idx) => (
                 <Box key={idx} sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0' }}>
@@ -601,7 +601,7 @@ const CampaignWorkPage = () => {
                     <TextField
                         fullWidth
                         size="small"
-                        placeholder={`Paste your ${input.label} link here...`}
+                        placeholder={`Tempel tautan ${input.label} Anda di sini...`}
                         value={input.url}
                         onChange={(e) => handleUrlChange(idx, e.target.value)}
                         disabled={viewMode}
@@ -646,18 +646,18 @@ const CampaignWorkPage = () => {
              />
 
              <TextField
-                label="Hashtags"
+                label="Hashtag"
                 name="hashtags"
                 value={formData.hashtags}
                 onChange={handleInputChange}
                 fullWidth
-                placeholder="#campaign #brand"
-                helperText="Space separated"
+                placeholder="#kampanye #merek"
+                helperText="Dipisahkan spasi"
                 disabled={viewMode}
              />
 
              <TextField
-                label="Notes"
+                label="Catatan"
                 name="submission_notes"
                 value={formData.submission_notes}
                 onChange={handleInputChange}
@@ -670,7 +670,7 @@ const CampaignWorkPage = () => {
          </DialogContent>
          <DialogActions sx={{ p: 2.5 }}>
             <Button onClick={handleCloseDialog} disabled={submitting}>
-              {viewMode ? 'Close' : 'Cancel'}
+              {viewMode ? 'Tutup' : 'Batal'}
             </Button>
             
             {!viewMode && (
@@ -680,7 +680,7 @@ const CampaignWorkPage = () => {
                   onClick={() => handleSave('draft')}
                   disabled={submitting}
                 >
-                  Save as Draft
+                  Simpan sebagai Draf
                 </Button>
                 <Button 
                   variant="contained" 
@@ -688,7 +688,7 @@ const CampaignWorkPage = () => {
                   disabled={submitting}
                   sx={{ bgcolor: '#6E00BE' }}
                 >
-                  Submit Final
+                  Kirim Final
                 </Button>
               </>
             )}
@@ -697,20 +697,20 @@ const CampaignWorkPage = () => {
 
       {/* Post Submission Dialog */}
       <Dialog open={postSubmissionOpen} onClose={() => setPostSubmissionOpen(false)} maxWidth="sm" fullWidth>
-         <DialogTitle>Submit Post Link</DialogTitle>
+         <DialogTitle>Kirim Tautan Posting</DialogTitle>
          <DialogContent>
              <Alert severity="info" sx={{ mb: 2 }}>
-                 Your work has been approved! Please submit the link to your live post (e.g. Instagram URL) so we can verify it.
+                 Pekerjaan Anda telah disetujui! Silakan kirim tautan ke postingan langsung Anda (mis. URL Instagram) agar kami dapat memverifikasinya.
              </Alert>
              {currentPostSubmission && currentPostSubmission.status === 'rejected' && (
                  <Alert severity="error" sx={{ mb: 2 }}>
-                     Your previous link was rejected. Please check and submit a valid link.
+                     Tautan sebelumnya ditolak. Harap periksa dan kirim tautan yang valid.
                  </Alert>
              )}
              <TextField
                  autoFocus
                  margin="dense"
-                 label="Live Post URL"
+                 label="URL Postingan Langsung"
                  type="url"
                  fullWidth
                  variant="outlined"
@@ -721,10 +721,10 @@ const CampaignWorkPage = () => {
              />
          </DialogContent>
          <DialogActions>
-             <Button onClick={() => setPostSubmissionOpen(false)}>Cancel</Button>
+             <Button onClick={() => setPostSubmissionOpen(false)}>Batal</Button>
              {(!currentPostSubmission || currentPostSubmission.status !== 'verified') && (
                  <Button onClick={handleSubmitPostLink} variant="contained" disabled={submitting}>
-                     {submitting ? 'Submitting...' : 'Submit Link'}
+                     {submitting ? 'Mengirim...' : 'Kirim Tautan'}
                  </Button>
              )}
          </DialogActions>

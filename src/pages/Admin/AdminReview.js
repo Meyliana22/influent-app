@@ -66,7 +66,7 @@ function AdminReview() {
       });
     } catch (err) {
       console.error('Error loading pending campaigns:', err);
-      toast.error('Failed to load pending campaigns');
+      toast.error('Gagal memuat kampanye yang tertunda');
       setCampaigns([]);
     } finally {
       setIsLoading(false);
@@ -76,11 +76,11 @@ function AdminReview() {
   const handleApprove = async (campaignId) => {
     try {
       await adminReviewService.approveCampaign(campaignId);
-      toast.success('✅ Campaign approved! UMKM can now proceed to payment.');
+      toast.success('✅ Kampanye disetujui! UMKM sekarang dapat melanjutkan pembayaran.');
       loadPendingCampaigns();
     } catch (err) {
       console.error('Error approving campaign:', err);
-      toast.error('Failed to approve campaign');
+      toast.error('Gagal menyetujui kampanye');
     }
   };
 
@@ -94,18 +94,18 @@ function AdminReview() {
 
   const handleRejectConfirm = async () => {
     if (!rejectDialog.reason.trim()) {
-      toast.error('Please provide a rejection reason');
+      toast.error('Mohon berikan alasan penolakan');
       return;
     }
 
     try {
       await adminReviewService.rejectCampaign(rejectDialog.campaignId, rejectDialog.reason);
-      toast.success('Campaign rejected');
+      toast.success('Kampanye ditolak');
       setRejectDialog({ open: false, campaignId: null, reason: '' });
       loadPendingCampaigns();
     } catch (err) {
       console.error('Error rejecting campaign:', err);
-      toast.error('Failed to reject campaign');
+      toast.error('Gagal menolak kampanye');
     }
   };
 
@@ -139,16 +139,16 @@ function AdminReview() {
         <Box sx={{ mt: 9, bgcolor: '#f7fafc', minHeight: 'calc(100vh - 72px)' }}>
           <Container maxWidth={false} sx={{ py: 4 }}>
             <Typography variant="h5" sx={{ fontWeight: 600, color: COLORS.textPrimary, mb: 4 }}>
-              Campaign Review ({pagination.total} Pending)
+              Tinjauan Kampanye ({pagination.total} Tertunda)
             </Typography>
 
             {isLoading ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography sx={{ color: COLORS.textSecondary }}>Loading campaigns...</Typography>
+                <Typography sx={{ color: COLORS.textSecondary }}>Memuat kampanye...</Typography>
               </Box>
             ) : campaigns.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography sx={{ color: COLORS.textSecondary }}>No campaigns pending review</Typography>
+                <Typography sx={{ color: COLORS.textSecondary }}>Tidak ada kampanye yang menunggu tinjauan</Typography>
               </Box>
             ) : (
               campaigns.map(campaign => (
@@ -161,11 +161,11 @@ function AdminReview() {
                           {campaign.title}
                         </Typography>
                         <Typography sx={{ color: COLORS.textSecondary, fontSize: 14 }}>
-                          by {campaign.user?.name || 'Unknown'} • Submitted {formatDate(campaign.created_at)}
+                          oleh {campaign.user?.name || 'Unknown'} • Dikirim {formatDate(campaign.created_at)}
                         </Typography>
                       </Box>
                       <Chip 
-                        label="Pending Review" 
+                        label="Menunggu Tinjauan" 
                         sx={{ 
                           bgcolor: '#fff3cd', 
                           color: '#856404',
@@ -177,19 +177,19 @@ function AdminReview() {
                     {/* Campaign Info */}
                     <Stack direction="row" spacing={3} flexWrap="wrap">
                       <Box>
-                        <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>Category</Typography>
+                        <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>Kategori</Typography>
                         <Typography sx={{ fontWeight: 600, fontSize: 14 }}>{campaign.campaign_category || '-'}</Typography>
                       </Box>
                       <Box>
-                        <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>Influencers</Typography>
+                        <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>Influencer</Typography>
                         <Typography sx={{ fontWeight: 600, fontSize: 14 }}>{campaign.influencer_count || 0}</Typography>
                       </Box>
                       <Box>
-                        <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>Budget/Influencer</Typography>
+                        <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>Anggaran/Influencer</Typography>
                         <Typography sx={{ fontWeight: 600, fontSize: 14 }}>{formatCurrency(campaign.price_per_post)}</Typography>
                       </Box>
                       <Box>
-                        <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>Period</Typography>
+                        <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>Periode</Typography>
                         <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
                           {formatDate(campaign.start_date)} - {formatDate(campaign.end_date)}
                         </Typography>
@@ -204,7 +204,7 @@ function AdminReview() {
                         onClick={() => navigate(`/campaign/${campaign.campaign_id}/detail`)}
                         sx={{ textTransform: 'none', fontWeight: 600 }}
                       >
-                        View Details
+                        Lihat Detail
                       </Button>
                       <Button
                         variant="contained"
@@ -217,7 +217,7 @@ function AdminReview() {
                           fontWeight: 600
                         }}
                       >
-                        Approve
+                        Setujui
                       </Button>
                       <Button
                         variant="outlined"
@@ -226,7 +226,7 @@ function AdminReview() {
                         onClick={() => handleRejectClick(campaign.campaign_id)}
                         sx={{ textTransform: 'none', fontWeight: 600 }}
                       >
-                        Reject
+                        Tolak
                       </Button>
                     </Stack>
                   </Stack>
@@ -242,17 +242,17 @@ function AdminReview() {
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => prev - 1)}
                 >
-                  Previous
+                  Sebelumnya
                 </Button>
                 <Typography sx={{ px: 2, py: 1, color: COLORS.textSecondary }}>
-                  Page {currentPage} of {pagination.totalPages}
+                  Halaman {currentPage} dari {pagination.totalPages}
                 </Typography>
                 <Button
                   variant="outlined"
                   disabled={currentPage === pagination.totalPages}
                   onClick={() => setCurrentPage(prev => prev + 1)}
                 >
-                  Next
+                  Selanjutnya
                 </Button>
               </Box>
             )}
@@ -262,27 +262,27 @@ function AdminReview() {
 
       {/* Reject Dialog */}
       <Dialog open={rejectDialog.open} onClose={() => setRejectDialog({ open: false, campaignId: null, reason: '' })} maxWidth="sm" fullWidth>
-        <DialogTitle>Reject Campaign</DialogTitle>
+        <DialogTitle>Tolak Kampanye</DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2, color: COLORS.textSecondary }}>
-            Please provide a reason for rejection. This will be shown to the UMKM.
+            Mohon berikan alasan penolakan. Ini akan ditampilkan kepada UMKM.
           </Typography>
           <TextField
             fullWidth
             multiline
             rows={4}
-            label="Rejection Reason"
+            label="Alasan Penolakan"
             value={rejectDialog.reason}
             onChange={(e) => setRejectDialog({ ...rejectDialog, reason: e.target.value })}
-            placeholder="e.g., Campaign content violates guidelines, insufficient budget, etc."
+            placeholder="contoh: Konten kampanye melanggar pedoman, anggaran tidak mencukupi, dll."
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRejectDialog({ open: false, campaignId: null, reason: '' })}>
-            Cancel
+            Batal
           </Button>
           <Button variant="contained" color="error" onClick={handleRejectConfirm}>
-            Reject Campaign
+            Tolak Kampanye
           </Button>
         </DialogActions>
       </Dialog>

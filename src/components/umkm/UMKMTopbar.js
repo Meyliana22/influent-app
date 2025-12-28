@@ -132,7 +132,7 @@ function UMKMTopbar({ onMenuClick = () => {} }) {
                   lineHeight: 1.2
                 }}
               >
-                UMKM Account
+                Akun UMKM
               </Typography>
             </Box>
           </ButtonBase>
@@ -166,14 +166,14 @@ function UMKMTopbar({ onMenuClick = () => {} }) {
               <ListItemIcon>
                 <PersonIcon fontSize="small" />
               </ListItemIcon>
-              Profile
+              Profil
             </MenuItem>
             <Divider />
             <MenuItem onClick={handleLogout} sx={{ color: '#ef4444' }}>
               <ListItemIcon>
                 <LogoutIcon fontSize="small" sx={{ color: '#ef4444' }} />
               </ListItemIcon>
-              Logout
+              Keluar
             </MenuItem>
           </Menu>
         </Box>

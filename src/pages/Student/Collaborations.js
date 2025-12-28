@@ -153,7 +153,7 @@ const theme = createTheme({
 
 function Collaborations() {
   const [tabValue, setTabValue] = useState(0);
-  const tabLabels = ['Upcoming', 'Ongoing', 'Completed'];
+  const tabLabels = ['Akan Datang', 'Sedang Berlangsung', 'Selesai'];
   const [selectedCollaboration, setSelectedCollaboration] = useState(null);
   const [showSubmitWork, setShowSubmitWork] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -297,7 +297,7 @@ function Collaborations() {
                       <Box sx={{ mb: 1.5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                           <Typography variant="caption" sx={{ color: '#6c757d', fontSize: '0.75rem' }}>
-                            Progress
+                            Kemajuan
                           </Typography>
                           <Typography variant="caption" sx={{ color: '#6E00BE', fontWeight: 600, fontSize: '0.75rem' }}>
                             {collab.progress}% ({collab.completedTasks}/{collab.totalTasks} tasks)
@@ -337,7 +337,7 @@ function Collaborations() {
                   <Grid item xs="auto" sx={{ display: 'flex', gap: 2, alignItems: 'center', ml: 'auto', justifyContent: 'flex-end' }}>
                     <Box sx={{ textAlign: 'right' }}>
                       <Typography variant="caption" sx={{ color: '#6c757d', display: 'block', mb: 0.5 }}>
-                        Compensation
+                        Kompensasi
                       </Typography>
                       <Typography
                         sx={{
@@ -399,7 +399,7 @@ function Collaborations() {
           },
         }}
       >
-        Back to List
+        Kembali ke Daftar
       </Button>
 
       <Card
@@ -437,8 +437,8 @@ function Collaborations() {
                 </Typography>
                 <Chip
                   label={
-                    collab.status === 'upcoming' ? 'Upcoming' :
-                    collab.status === 'ongoing' ? 'Ongoing' : 'Completed'
+                    collab.status === 'upcoming' ? 'Akan Datang' :
+                    collab.status === 'ongoing' ? 'Sedang Berlangsung' : 'Selesai'
                   }
                   sx={{
                     background: 
@@ -473,7 +473,7 @@ function Collaborations() {
                     mb: 0.8,
                   }}
                 >
-                  Campaign Period
+                  Periode Kampanye
                 </Typography>
                 <Typography sx={{ color: '#1a1a2e', fontWeight: 600 }}>
                   {new Date(collab.startDate).toLocaleDateString('en-US', {
@@ -500,7 +500,7 @@ function Collaborations() {
                     mb: 0.8,
                   }}
                 >
-                  Compensation
+                  Kompensasi
                 </Typography>
                 <Typography sx={{ color: '#6E00BE', fontWeight: 700, fontSize: '1.3rem' }}>
                   {collab.compensation}
@@ -520,7 +520,7 @@ function Collaborations() {
                     mb: 0.8,
                   }}
                 >
-                  Requirements
+                  Persyaratan
                 </Typography>
                 <Typography sx={{ color: '#1a1a2e', lineHeight: 1.7 }}>
                   {collab.requirements}
@@ -540,7 +540,7 @@ function Collaborations() {
                     mb: 0.8,
                   }}
                 >
-                  Description
+                  Deskripsi
                 </Typography>
                 <Typography sx={{ color: '#1a1a2e', lineHeight: 1.7 }}>
                   {collab.description}
@@ -566,7 +566,7 @@ function Collaborations() {
                   },
                 }}
               >
-                Submit Work
+                Kirim Pekerjaan
               </Button>
               <Button
                 variant="outlined"
@@ -583,7 +583,7 @@ function Collaborations() {
                   },
                 }}
               >
-                Message Brand
+                Pesan Merek
               </Button>
             </Box>
           )}
@@ -594,11 +594,11 @@ function Collaborations() {
 
   const renderApplicationsDialog = () => (
     <Dialog open={applicationsOpen} onClose={handleCloseApplications} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ fontWeight: 800 }}>My Applications</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 800 }}>Lamaran Saya</DialogTitle>
       <DialogContent dividers>
         <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
           <Chip
-            label={`All (${applications.length})`}
+            label={`Semua (${applications.length})`}
             color="primary"
             clickable
             onClick={() => handleFilter('all')}
@@ -606,7 +606,7 @@ function Collaborations() {
             sx={{ cursor: 'pointer', '& .MuiChip-label': { fontWeight: 800 } }}
           />
           <Chip
-            label={`Pending (${applications.filter((a) => a.status === 'pending').length})`}
+            label={`Tertunda (${applications.filter((a) => a.status === 'pending').length})`}
             color="warning"
             clickable
             onClick={() => handleFilter('pending')}
@@ -614,7 +614,7 @@ function Collaborations() {
             sx={{ cursor: 'pointer', '& .MuiChip-label': { fontWeight: 800 } }}
           />
           <Chip
-            label={`Accepted (${applications.filter((a) => a.status === 'accepted').length})`}
+            label={`Diterima (${applications.filter((a) => a.status === 'accepted').length})`}
             color="success"
             clickable
             onClick={() => handleFilter('accepted')}
@@ -622,7 +622,7 @@ function Collaborations() {
             sx={{ cursor: 'pointer', '& .MuiChip-label': { fontWeight: 800 } }}
           />
           <Chip
-            label={`Rejected (${applications.filter((a) => a.status === 'rejected').length})`}
+            label={`Ditolak (${applications.filter((a) => a.status === 'rejected').length})`}
             color="default"
             clickable
             onClick={() => handleFilter('rejected')}
@@ -663,7 +663,7 @@ function Collaborations() {
         </List>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseApplications} sx={{ fontWeight: 800, textTransform: 'none' }}>Close</Button>
+        <Button onClick={handleCloseApplications} sx={{ fontWeight: 800, textTransform: 'none' }}>Tutup</Button>
       </DialogActions>
     </Dialog>
   );
@@ -700,10 +700,10 @@ function Collaborations() {
                       backgroundClip: 'text',
                     }}
                   >
-                    My Collaborations
+                    Kolaborasi Saya
                   </Typography>
                   <Typography sx={{ fontSize: '1rem', color: '#6c757d', mt: 1 }}>
-                    Track and manage all your active and completed campaigns in one place
+                    Lacak dan kelola semua kampanye aktif dan selesai Anda di satu tempat
                   </Typography>
                 </Box>
 
@@ -722,7 +722,7 @@ function Collaborations() {
                       py: 0.7,
                     }}
                   >
-                    <Typography component="span" sx={{ fontWeight: 800 }}>My Applications</Typography>
+                    <Typography component="span" sx={{ fontWeight: 800 }}>Lamaran Saya</Typography>
                   </Button>
                 </Box>
               </Box>
@@ -743,7 +743,7 @@ function Collaborations() {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Earnings
+                      Total Pendapatan
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
                       Rp 15,000,000
@@ -751,7 +751,7 @@ function Collaborations() {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <TrendingUp sx={{ fontSize: '1rem' }} />
                       <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                        +12% from last month
+                        +12% dari bulan lalu
                       </Typography>
                     </Box>
                   </Box>
@@ -815,7 +815,7 @@ function Collaborations() {
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <AccessTime fontSize="small" />
-                        <Typography component="span">Upcoming ({mockCollaborations.upcoming.length})</Typography>
+                        <Typography component="span">Akan Datang ({mockCollaborations.upcoming.length})</Typography>
                       </Box>
                     }
                   />
@@ -823,7 +823,7 @@ function Collaborations() {
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <TrendingUp fontSize="small" />
-                        <Typography component="span">Ongoing ({mockCollaborations.ongoing.length})</Typography>
+                        <Typography component="span">Sedang Berlangsung ({mockCollaborations.ongoing.length})</Typography>
                       </Box>
                     }
                   />
@@ -831,7 +831,7 @@ function Collaborations() {
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <CheckCircle fontSize="small" />
-                        <Typography component="span">Completed ({mockCollaborations.completed.length})</Typography>
+                        <Typography component="span">Selesai ({mockCollaborations.completed.length})</Typography>
                       </Box>
                     }
                   />

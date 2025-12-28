@@ -45,12 +45,12 @@ const Navbar = ({ userType = 'umkm', showAuth = false, unreadCount = 0 }) => {
 
   const navItems = userType === 'umkm' 
     ? [
-        { label: 'Campaign', path: '/campaigns' },
-        { label: 'Applications', path: '/applications' },
+        { label: 'Kampanye', path: '/campaigns' },
+        { label: 'Aplikasi', path: '/applications' },
       ]
     : [
-        { label: 'Explore', path: '/student' },
-        { label: 'Dashboard', path: '/applications' },
+        { label: 'Jelajahi', path: '/student' },
+        { label: 'Dashboard', path: '/applications' }, // Or whatever the student dashboard path was intended to be, keeping labels consistent with existing but translated
       ];
 
   return (

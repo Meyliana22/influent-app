@@ -130,7 +130,7 @@ const AdminReviewSubmissions = () => {
   };
 
   const getTimeSinceRejection = (rejectedAt) => {
-    if (!rejectedAt) return { text: 'N/A', isUrgent: false };
+    if (!rejectedAt) return { text: '-', isUrgent: false };
     const now = new Date();
     const rejected = new Date(rejectedAt);
     const diffHours = Math.floor((now - rejected) / (1000 * 60 * 60));
@@ -144,7 +144,7 @@ const AdminReviewSubmissions = () => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('id-ID', {
       year: 'numeric',
       month: 'long',
@@ -267,8 +267,8 @@ const AdminReviewSubmissions = () => {
               onChange={(e, newValue) => setTabValue(newValue)}
               sx={{ borderBottom: 1, borderColor: 'divider' }}
             >
-              <Tab label={`Pending Review (${pendingSubmissions.length})`} />
-              <Tab label={`Reviewed (${reviewedSubmissions.length})`} />
+              <Tab label={`Menunggu Tinjauan (${pendingSubmissions.length})`} />
+              <Tab label={`Sudah Direview (${reviewedSubmissions.length})`} />
             </Tabs>
           </Paper>
 
@@ -333,7 +333,7 @@ const AdminReviewSubmissions = () => {
                                     }}
                                   >
                                     <Typography sx={{ color: COLORS.textSecondary }}>
-                                      No Image
+                                      Tidak Ada Gambar
                                     </Typography>
                                   </Box>
                                 )}
@@ -373,7 +373,7 @@ const AdminReviewSubmissions = () => {
                                   {/* Campaign & Time */}
                                   <Box>
                                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                                      {campaign.title || 'No Campaign Title'}
+                                      {campaign.title || 'Tanpa Judul Kampanye'}
                                     </Typography>
                                     <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
                                       <Chip 
@@ -389,7 +389,7 @@ const AdminReviewSubmissions = () => {
                                       />
                                       <Chip 
                                         icon={<PersonIcon />}
-                                        label={student.name || 'Unknown Student'}
+                                        label={student.name || 'Siswa Tidak Diketahui'}
                                         size="small"
                                       />
                                       {campaign.campaign_category && (
@@ -408,7 +408,7 @@ const AdminReviewSubmissions = () => {
                                   <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
                                       <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
-                                        Submitted At
+                                        Diajukan Pada
                                       </Typography>
                                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                         {formatDate(submission.submitted_at)}
@@ -416,7 +416,7 @@ const AdminReviewSubmissions = () => {
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                       <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
-                                        Reviewed At
+                                        Direview Pada
                                       </Typography>
                                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                         {formatDate(submission.reviewed_at)}
@@ -424,7 +424,7 @@ const AdminReviewSubmissions = () => {
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                       <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
-                                        Price per Post
+                                        Harga per Post
                                       </Typography>
                                       <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.primary }}>
                                         Rp {parseInt(campaign.price_per_post || 0).toLocaleString('id-ID')}
@@ -432,10 +432,10 @@ const AdminReviewSubmissions = () => {
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                       <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
-                                        Student Email
+                                        Email Siswa
                                       </Typography>
                                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                        {student.email || 'N/A'}
+                                        {student.email || '-'}
                                       </Typography>
                                     </Grid>
                                   </Grid>
@@ -475,7 +475,7 @@ const AdminReviewSubmissions = () => {
                                   {submission.submission_notes && (
                                     <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderRadius: 1 }}>
                                       <Typography variant="caption" sx={{ fontWeight: 600, color: COLORS.textSecondary }}>
-                                        Student Notes:
+                                        Catatan Siswa:
                                       </Typography>
                                       <Typography variant="body2" sx={{ mt: 0.5 }}>
                                         {submission.submission_notes}
@@ -487,7 +487,7 @@ const AdminReviewSubmissions = () => {
                                   {submission.review_notes && (
                                     <Box sx={{ p: 2, bgcolor: '#ffebee', borderRadius: 1, border: '1px solid #ef5350' }}>
                                       <Typography variant="caption" sx={{ fontWeight: 600, color: '#c62828' }}>
-                                        Review Notes:
+                                        Catatan Review:
                                       </Typography>
                                       <Typography variant="body2" sx={{ mt: 0.5, color: COLORS.textPrimary }}>
                                         {submission.review_notes}
@@ -535,11 +535,11 @@ const AdminReviewSubmissions = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell><strong>Campaign</strong></TableCell>
-                    <TableCell><strong>Student</strong></TableCell>
+                    <TableCell><strong>Kampanye</strong></TableCell>
+                    <TableCell><strong>Siswa</strong></TableCell>
                     <TableCell><strong>UMKM</strong></TableCell>
-                    <TableCell><strong>Admin Decision</strong></TableCell>
-                    <TableCell><strong>Reviewed At</strong></TableCell>
+                    <TableCell><strong>Keputusan Admin</strong></TableCell>
+                    <TableCell><strong>Direview Pada</strong></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

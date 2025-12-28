@@ -52,32 +52,32 @@ function Reports() {
         id: 1,
         campaignName: 'Summer Beauty Campaign',
         reportedBy: 'Sarah Johnson',
-        reason: 'Influencer not posting content',
-        status: 'Pending',
+        reason: 'Influencer tidak memposting konten',
+        status: 'Tertunda',
         date: '2024-01-15'
       },
       {
         id: 2,
         campaignName: 'Gaming Gear Promo',
         reportedBy: 'Mike Chen',
-        reason: 'Payment issue',
-        status: 'Resolved',
+        reason: 'Masalah pembayaran',
+        status: 'Selesai',
         date: '2024-01-14'
       },
       {
         id: 3,
         campaignName: 'Food Festival Event',
         reportedBy: 'Jessica Lee',
-        reason: 'Campaign requirements unclear',
-        status: 'In Review',
+        reason: 'Persyaratan kampanye tidak jelas',
+        status: 'Sedang Ditinjau',
         date: '2024-01-13'
       },
       {
         id: 4,
         campaignName: 'Tech Launch Event',
         reportedBy: 'Admin User',
-        reason: 'Spam application detected',
-        status: 'Resolved',
+        reason: 'Aplikasi spam terdeteksi',
+        status: 'Selesai',
         date: '2024-01-12'
       }
     ];
@@ -86,11 +86,11 @@ function Reports() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Resolved':
+      case 'Selesai':
         return { bg: '#d1fae5', color: '#065f46' };
-      case 'Pending':
+      case 'Tertunda':
         return { bg: '#fef3c7', color: '#92400e' };
-      case 'In Review':
+      case 'Sedang Ditinjau':
         return { bg: '#dbeafe', color: '#1e40af' };
       default:
         return { bg: '#e2e8f0', color: '#475569' };
@@ -127,10 +127,10 @@ function Reports() {
           {/* Page Header */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontFamily: "'Inter', sans-serif", fontSize: 32 }}>
-              Reports & Analytics
+              Laporan & Analitik
             </Typography>
             <Typography sx={{ fontSize: 16, color: '#6c757d', fontFamily: "'Inter', sans-serif" }}>
-              Monitor platform performance and review problem reports
+              Pantau performa platform dan tinjau laporan masalah
             </Typography>
           </Box>
 
@@ -143,28 +143,28 @@ function Reports() {
           }}>
             {[
               {
-                title: 'Total Revenue',
+                title: 'Total Pendapatan',
                 value: `Rp ${analytics.totalRevenue.toLocaleString('id-ID')}`,
                 IconComponent: PaymentIcon,
                 color: '#10b981',
                 bgColor: '#d1fae5'
               },
               {
-                title: 'Active Campaigns',
+                title: 'Kampanye Aktif',
                 value: analytics.activeCampaigns,
                 IconComponent: CampaignIcon,
                 color: '#3b82f6',
                 bgColor: '#dbeafe'
               },
               {
-                title: 'Total Influencers',
+                title: 'Total Influencer',
                 value: analytics.totalInfluencers,
                 IconComponent: PeopleIcon,
                 color: '#8b5cf6',
                 bgColor: '#ede9fe'
               },
               {
-                title: 'Success Rate',
+                title: 'Tingkat Keberhasilan',
                 value: `${analytics.successRate}%`,
                 IconComponent: TrendingUpIcon,
                 color: '#f59e0b',
@@ -237,20 +237,20 @@ function Reports() {
                 mb: 2.5,
                 fontFamily: "'Inter', sans-serif"
               }}>
-                Campaigns per Month
+                Kampanye per Bulan
               </Typography>
               <BarChart
                 xAxis={[{
                   id: 'months',
-                  data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                  data: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
                   scaleType: 'band',
-                  label: 'Month',
+                  label: 'Bulan',
                 }]}
                 series={[{
                   data: [65, 80, 45, 90, 75, 100],
                   // color: COLORS.gradientPrimary ? undefined : '#6E00BE',
                   color: '#6E00BE',
-                  label: 'Campaigns',
+                  label: 'Kampanye',
                 }]}
                 height={220}
                 sx={{
@@ -282,13 +282,13 @@ function Reports() {
                 mb: 2.5,
                 fontFamily: "'Inter', sans-serif"
               }}>
-                New Users per Week
+                Pengguna Baru per Minggu
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f7fafc', borderRadius: 3, p: 2.5 }}>
                 <LineChart
                   height={200}
                   width={320}
-                  series={[{ data: [15, 30, 45, 35, 60, 80], color: '#6E00BE', label: 'Users' }]}
+                  series={[{ data: [15, 30, 45, 35, 60, 80], color: '#6E00BE', label: 'Pengguna' }]}
                   xAxis={[{ scaleType: 'point', data: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'] }]}
                   sx={{ pr: 3.5 }}
                 />
@@ -309,7 +309,7 @@ function Reports() {
                 mb: 2.5,
                 fontFamily: "'Inter', sans-serif"
               }}>
-                Campaign Status
+                Status Kampanye
               </Typography>
               <Box sx={{
                 height: 220,
@@ -321,9 +321,9 @@ function Reports() {
                 <PieChart
                   series={[{
                     data: [
-                      { id: 0, value: 50, label: 'Active', color: '#10b981' },
-                      { id: 1, value: 25, label: 'Pending', color: '#f59e0b' },
-                      { id: 2, value: 25, label: 'Completed', color: '#3b82f6' }
+                      { id: 0, value: 50, label: 'Aktif', color: '#10b981' },
+                      { id: 1, value: 25, label: 'Tertunda', color: '#f59e0b' },
+                      { id: 2, value: 25, label: 'Selesai', color: '#3b82f6' }
                     ],
                     innerRadius: 60,
                     outerRadius: 80,
@@ -370,7 +370,7 @@ function Reports() {
               alignItems: 'center'
             }}>
               <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
-                Problem Reports
+                Laporan Masalah
               </Typography>
               <Select
                 value={filterStatus}
@@ -378,22 +378,22 @@ function Reports() {
                 variant="outlined"
                 sx={{ minWidth: 140, fontFamily: "'Inter', sans-serif", fontSize: 14, borderRadius: 2 }}
               >
-                <MenuItem value="All">All Status</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="In Review">In Review</MenuItem>
-                <MenuItem value="Resolved">Resolved</MenuItem>
+                <MenuItem value="All">Semua Status</MenuItem>
+                <MenuItem value="Pending">Tertunda</MenuItem>
+                <MenuItem value="In Review">Sedang Ditinjau</MenuItem>
+                <MenuItem value="Resolved">Selesai</MenuItem>
               </Select>
             </Box>
             <Table sx={{ width: '100%', fontFamily: "'Inter', sans-serif" }}>
               <TableHead>
                 <TableRow sx={{ background: '#f7fafc' }}>
                   <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>ID</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Campaign</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Reported By</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Reason</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Kampanye</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Dilaporkan Oleh</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Alasan</TableCell>
                   <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Status</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Date</TableCell>
-                  <TableCell sx={{ px: 3, py: 2, textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Actions</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Tanggal</TableCell>
+                  <TableCell sx={{ px: 3, py: 2, textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#6c757d', textTransform: 'uppercase' }}>Aksi</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -436,7 +436,7 @@ function Reports() {
                             '&:hover': { bgcolor: '#5a009e' }
                           }}
                         >
-                          View
+                          Lihat
                         </Button>
                       </TableCell>
                     </TableRow>

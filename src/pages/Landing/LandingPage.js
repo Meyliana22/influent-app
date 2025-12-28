@@ -469,7 +469,7 @@ function LandingPage() {
                 '&:hover': { bgcolor: '#f3f3f3' }
               }}
             >
-              Mulai Sekarang Gratis
+              Mulai Sekarang
             </Button>
           </Stack>
         </Container>

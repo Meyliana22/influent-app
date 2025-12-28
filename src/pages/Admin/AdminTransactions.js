@@ -99,7 +99,7 @@ function AdminTransactions() {
       setTransactions(transactionsData);
     } catch (err) {
       console.error('Error loading transactions:', err);
-      setError(err.message || 'Failed to load transactions');
+      setError(err.message || 'Gagal memuat transaksi');
     } finally {
       setLoading(false);
     }
@@ -230,10 +230,10 @@ function AdminTransactions() {
           {/* Header */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1 }}>
-              Transaction Management
+              Manajemen Transaksi
             </Typography>
             <Typography variant="body1" sx={{ color: '#64748b' }}>
-              View and manage all platform transactions
+              Lihat dan kelola semua transaksi platform
             </Typography>
           </Box>
 
@@ -244,7 +244,7 @@ function AdminTransactions() {
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Transactions
+                      Total Transaksi
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {stats.totalTransactions}
@@ -260,7 +260,7 @@ function AdminTransactions() {
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Revenue
+                      Total Pendapatan
                     </Typography>
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>
                       {formatCurrency(stats.totalRevenue)}
@@ -276,7 +276,7 @@ function AdminTransactions() {
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Expenses
+                      Total Pengeluaran
                     </Typography>
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>
                       {formatCurrency(stats.totalExpenses)}
@@ -292,7 +292,7 @@ function AdminTransactions() {
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Pending
+                      Tertunda
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {stats.pendingCount}
@@ -311,7 +311,7 @@ function AdminTransactions() {
                 <TextField
                   fullWidth
                   size="small"
-                  placeholder="Search transactions..."
+                  placeholder="Cari transaksi..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   InputProps={{
@@ -322,14 +322,14 @@ function AdminTransactions() {
 
               <Grid item xs={12} sm={4} md={2}>
                 <FormControl fullWidth size="small">
-                  <InputLabel>Type</InputLabel>
+                  <InputLabel>Tipe</InputLabel>
                   <Select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    label="Type"
+                    label="Tipe"
                   >
-                    <MenuItem value="all">All Types</MenuItem>
-                    <MenuItem value="credit">Credit</MenuItem>
+                    <MenuItem value="all">Semua Tipe</MenuItem>
+                    <MenuItem value="credit">Kredit</MenuItem>
                     <MenuItem value="debit">Debit</MenuItem>
                   </Select>
                 </FormControl>
@@ -337,17 +337,17 @@ function AdminTransactions() {
 
               <Grid item xs={12} sm={4} md={2}>
                 <FormControl fullWidth size="small">
-                  <InputLabel>Category</InputLabel>
+                  <InputLabel>Kategori</InputLabel>
                   <Select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
-                    label="Category"
+                    label="Kategori"
                   >
-                    <MenuItem value="all">All Categories</MenuItem>
-                    <MenuItem value="campaign">Campaign</MenuItem>
-                    <MenuItem value="withdrawal">Withdrawal</MenuItem>
-                    <MenuItem value="refund">Refund</MenuItem>
-                    <MenuItem value="payment">Payment</MenuItem>
+                    <MenuItem value="all">Semua Kategori</MenuItem>
+                    <MenuItem value="campaign">Kampanye</MenuItem>
+                    <MenuItem value="withdrawal">Penarikan</MenuItem>
+                    <MenuItem value="refund">Pengembalian Dana</MenuItem>
+                    <MenuItem value="payment">Pembayaran</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -360,10 +360,10 @@ function AdminTransactions() {
                     onChange={(e) => setFilterStatus(e.target.value)}
                     label="Status"
                   >
-                    <MenuItem value="all">All Status</MenuItem>
-                    <MenuItem value="completed">Completed</MenuItem>
-                    <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="failed">Failed</MenuItem>
+                    <MenuItem value="all">Semua Status</MenuItem>
+                    <MenuItem value="completed">Selesai</MenuItem>
+                    <MenuItem value="pending">Tertunda</MenuItem>
+                    <MenuItem value="failed">Gagal</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -384,7 +384,7 @@ function AdminTransactions() {
                     onClick={handleExport}
                     sx={{ bgcolor: '#6E00BE', '&:hover': { bgcolor: '#5a009e' } }}
                   >
-                    Export
+                    Ekspor
                   </Button>
                 </Stack>
               </Grid>
@@ -404,7 +404,7 @@ function AdminTransactions() {
             ) : filteredTransactions.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography variant="h6" color="text.secondary">
-                  No transactions found
+                  Tidak ada transaksi ditemukan
                 </Typography>
               </Box>
             ) : (
@@ -414,13 +414,13 @@ function AdminTransactions() {
                     <TableHead>
                       <TableRow sx={{ bgcolor: '#f8fafc' }}>
                         <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>User</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Tanggal</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Pengguna</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Tipe</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Kategori</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Jumlah</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Aksi</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -479,7 +479,7 @@ function AdminTransactions() {
                                 startIcon={<VisibilityIcon />}
                                 onClick={() => handleViewDetail(transaction)}
                               >
-                                View
+                                Lihat
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -513,14 +513,14 @@ function AdminTransactions() {
       >
         <DialogTitle>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Transaction Details
+            Detail Transaksi
           </Typography>
         </DialogTitle>
         <DialogContent dividers>
           {selectedTransaction && (
             <Stack spacing={2}>
               <Box>
-                <Typography variant="caption" color="text.secondary">Transaction ID</Typography>
+                <Typography variant="caption" color="text.secondary">ID Transaksi</Typography>
                 <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
                   #{selectedTransaction.transaction_id || selectedTransaction.id}
                 </Typography>
@@ -530,13 +530,13 @@ function AdminTransactions() {
 
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">Date</Typography>
+                  <Typography variant="caption" color="text.secondary">Tanggal</Typography>
                   <Typography variant="body2">
                     {formatDate(selectedTransaction.created_at || selectedTransaction.transaction_date)}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">User</Typography>
+                  <Typography variant="caption" color="text.secondary">Pengguna</Typography>
                   <Typography variant="body2">
                     {selectedTransaction.user?.name || selectedTransaction.user_name || '-'}
                   </Typography>
@@ -545,7 +545,7 @@ function AdminTransactions() {
 
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">Type</Typography>
+                  <Typography variant="caption" color="text.secondary">Tipe</Typography>
                   <Box sx={{ mt: 0.5 }}>
                     <Chip
                       label={(selectedTransaction.type || selectedTransaction.transaction_type)?.toUpperCase()}
@@ -567,21 +567,21 @@ function AdminTransactions() {
               </Grid>
 
               <Box>
-                <Typography variant="caption" color="text.secondary">Category</Typography>
+                <Typography variant="caption" color="text.secondary">Kategori</Typography>
                 <Typography variant="body2">
                   {selectedTransaction.category || selectedTransaction.transaction_category || '-'}
                 </Typography>
               </Box>
 
               <Box>
-                <Typography variant="caption" color="text.secondary">Amount</Typography>
+                <Typography variant="caption" color="text.secondary">Jumlah</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1f36' }}>
                   {formatCurrency(selectedTransaction.amount)}
                 </Typography>
               </Box>
 
               <Box>
-                <Typography variant="caption" color="text.secondary">Description</Typography>
+                <Typography variant="caption" color="text.secondary">Deskripsi</Typography>
                 <Typography variant="body2">
                   {selectedTransaction.description || '-'}
                 </Typography>
@@ -590,7 +590,7 @@ function AdminTransactions() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDetailModalOpen(false)}>Close</Button>
+          <Button onClick={() => setDetailModalOpen(false)}>Tutup</Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -113,7 +113,7 @@ function ManageUsers() {
       setTotalUsers(allUsers.length);
     } catch (err) {
       console.error('Error loading users:', err);
-      setError(err.message || 'Failed to load users');
+      setError(err.message || 'Gagal memuat pengguna');
     } finally {
       setLoading(false);
     }
@@ -148,13 +148,13 @@ function ManageUsers() {
       setSubmitting(true);
       console.log(userToDelete);
       await adminService.users.deleteUser(userToDelete.user_id);
-      setSuccessMessage('User deleted successfully');
+      setSuccessMessage('Pengguna berhasil dihapus');
       setShowDeleteDialog(false);
       setUserToDelete(null);
       loadUsers();
     } catch (err) {
       console.error('Error deleting user:', err);
-      setError(err.message || 'Failed to delete user');
+      setError(err.message || 'Gagal menghapus pengguna');
     } finally {
       setSubmitting(false);
     }
@@ -166,7 +166,7 @@ function ManageUsers() {
       setError(null);
 
       if (!formData.name || !formData.email) {
-        setError('Name and email are required');
+        setError('Nama dan email wajib diisi');
         return;
       }
 
@@ -182,12 +182,12 @@ function ManageUsers() {
       }
 
       await adminService.users.updateUser(selectedUser._id, updateData);
-      setSuccessMessage('User updated successfully');
+      setSuccessMessage('Pengguna berhasil diperbarui');
       setShowModal(false);
       loadUsers();
     } catch (err) {
       console.error('Error saving user:', err);
-      setError(err.message || 'Failed to save user');
+      setError(err.message || 'Gagal menyimpan pengguna');
     } finally {
       setSubmitting(false);
     }
@@ -250,10 +250,10 @@ function ManageUsers() {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
             <Box>
               <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontSize: 32 }}>
-                Manage Users
+                Kelola Pengguna
               </Typography>
               <Typography sx={{ fontSize: 16, color: '#6c757d' }}>
-                Total: {totalUsers} users
+                Total: {totalUsers} pengguna
               </Typography>
             </Box>
             <Button
@@ -273,7 +273,7 @@ function ManageUsers() {
                 }
               }}
             >
-              Refresh
+              Segarkan
             </Button>
           </Box>
 
@@ -293,7 +293,7 @@ function ManageUsers() {
           <Paper sx={{ p: 3, mb: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
               <TextField
-                placeholder="Search by name or email..."
+                placeholder="Cari berdasarkan nama atau email..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -319,21 +319,21 @@ function ManageUsers() {
                   '&:hover': { bgcolor: '#5a009e', boxShadow: 'none' }
                 }}
               >
-                Search
+                Cari
               </Button>
               <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Role</InputLabel>
+                <InputLabel>Peran</InputLabel>
                 <Select
                   value={filterRole}
-                  label="Role"
+                  label="Peran"
                   onChange={(e) => {
                     setFilterRole(e.target.value);
                     setPage(1);
                   }}
                 >
-                  <MenuItem value="">All Roles</MenuItem>
-                  <MenuItem value="student">Student</MenuItem>
-                  <MenuItem value="company">Company</MenuItem>
+                  <MenuItem value="">Semua Peran</MenuItem>
+                  <MenuItem value="student">Mahasiswa</MenuItem>
+                  <MenuItem value="company">UMKM</MenuItem>
                   <MenuItem value="admin">Admin</MenuItem>
                 </Select>
               </FormControl>
@@ -347,10 +347,10 @@ function ManageUsers() {
                     setPage(1);
                   }}
                 >
-                  <MenuItem value="">All Status</MenuItem>
-                  <MenuItem value="active">Active</MenuItem>
-                  <MenuItem value="inactive">Inactive</MenuItem>
-                  <MenuItem value="suspended">Suspended</MenuItem>
+                  <MenuItem value="">Semua Status</MenuItem>
+                  <MenuItem value="active">Aktif</MenuItem>
+                  <MenuItem value="inactive">Tidak Aktif</MenuItem>
+                  <MenuItem value="suspended">Ditangguhkan</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
@@ -366,10 +366,10 @@ function ManageUsers() {
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <PersonIcon sx={{ fontSize: 64, color: '#cbd5e0', mb: 2 }} />
                 <Typography sx={{ fontSize: 18, color: '#6c757d', fontWeight: 500 }}>
-                  No users found
+                  Tidak ada pengguna ditemukan
                 </Typography>
                 <Typography sx={{ fontSize: 14, color: '#a0aec0', mt: 1 }}>
-                  {searchQuery || filterRole || filterStatus ? 'Try adjusting your filters' : 'Users will appear here once registered'}
+                  {searchQuery || filterRole || filterStatus ? 'Coba sesuaikan filter Anda' : 'Pengguna akan muncul di sini setelah terdaftar'}
                 </Typography>
               </Box>
             ) : (
@@ -378,12 +378,12 @@ function ManageUsers() {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: '#f7fafc' }}>
-                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>User</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Pengguna</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Email</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Role</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Peran</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Joined</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14, textAlign: 'center' }}>Actions</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Bergabung</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14, textAlign: 'center' }}>Aksi</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -445,12 +445,12 @@ function ManageUsers() {
                             <TableCell>
                               <Typography sx={{ color: '#6c757d', fontSize: 14 }}>
                                 {user.created_at || user.createdAt 
-                                  ? new Date(user.created_at || user.createdAt).toLocaleDateString('en-US', {
+                                  ? new Date(user.created_at || user.createdAt).toLocaleDateString('id-ID', {
                                       year: 'numeric',
                                       month: 'short',
                                       day: 'numeric'
                                     })
-                                  : 'N/A'}
+                                  : '-'}
                               </Typography>
                             </TableCell>
                             <TableCell>
@@ -506,12 +506,12 @@ function ManageUsers() {
             fullWidth
           >
             <DialogTitle sx={{ fontWeight: 700, fontSize: 20 }}>
-              Edit User
+              Edit Pengguna
             </DialogTitle>
             <DialogContent dividers>
               <Stack spacing={3} sx={{ pt: 1 }}>
                 <TextField
-                  label="Name"
+                  label="Nama"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   fullWidth
@@ -526,7 +526,7 @@ function ManageUsers() {
                   required
                 />
                 <TextField
-                  label="Password (leave blank to keep current)"
+                  label="Kata Sandi (kosongkan jika tidak ingin mengubah)"
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -534,14 +534,14 @@ function ManageUsers() {
                   placeholder="••••••••"
                 />
                 <FormControl fullWidth>
-                  <InputLabel>Role</InputLabel>
+                  <InputLabel>Peran</InputLabel>
                   <Select
                     value={formData.role}
-                    label="Role"
+                    label="Peran"
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   >
-                    <MenuItem value="student">Student</MenuItem>
-                    <MenuItem value="company">Company</MenuItem>
+                    <MenuItem value="student">Mahasiswa</MenuItem>
+                    <MenuItem value="company">UMKM</MenuItem>
                     <MenuItem value="admin">Admin</MenuItem>
                   </Select>
                 </FormControl>
@@ -552,9 +552,9 @@ function ManageUsers() {
                     label="Status"
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   >
-                    <MenuItem value="active">Active</MenuItem>
-                    <MenuItem value="inactive">Inactive</MenuItem>
-                    <MenuItem value="suspended">Suspended</MenuItem>
+                    <MenuItem value="active">Aktif</MenuItem>
+                    <MenuItem value="inactive">Tidak Aktif</MenuItem>
+                    <MenuItem value="suspended">Ditangguhkan</MenuItem>
                   </Select>
                 </FormControl>
               </Stack>
@@ -578,7 +578,7 @@ function ManageUsers() {
                   '&:hover': { bgcolor: '#5a009e' }
                 }}
               >
-                {submitting ? <CircularProgress size={24} /> : 'Save Changes'}
+                {submitting ? <CircularProgress size={24} /> : 'Simpan Perubahan'}
               </Button>
             </DialogActions>
           </Dialog>
@@ -592,11 +592,11 @@ function ManageUsers() {
           >
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningIcon sx={{ color: '#ef4444' }} />
-              <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Confirm Delete</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Konfirmasi Hapus</Typography>
             </DialogTitle>
             <DialogContent>
               <Typography sx={{ color: '#6c757d', fontSize: 15 }}>
-                Are you sure you want to delete user <strong>{userToDelete?.name}</strong>? This action cannot be undone.
+                Apakah Anda yakin ingin menghapus pengguna <strong>{userToDelete?.name}</strong>? Tindakan ini tidak dapat dibatalkan.
               </Typography>
             </DialogContent>
             <DialogActions sx={{ p: 2 }}>
@@ -618,7 +618,7 @@ function ManageUsers() {
                   '&:hover': { bgcolor: '#dc2626' }
                 }}
               >
-                {submitting ? <CircularProgress size={24} /> : 'Delete'}
+                {submitting ? <CircularProgress size={24} /> : 'Hapus'}
               </Button>
             </DialogActions>
           </Dialog>

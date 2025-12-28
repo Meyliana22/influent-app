@@ -100,36 +100,36 @@ function StudentDashboard() {
 
   const statCards = [
     {
-      title: 'Available Campaigns',
+      title: 'Kampanye Tersedia',
       value: stats.availableCampaigns,
       IconComponent: CampaignIcon,
       bgColor: '#e0e7ff',
       iconColor: '#4c51bf',
-      description: 'Campaigns you can join'
+      description: 'Kampanye yang bisa Anda ikuti'
     },
     {
-      title: 'My Collaborations',
+      title: 'Kolaborasi Saya',
       value: stats.myCollaborations,
       IconComponent: CollaborationIcon,
       bgColor: '#dcfce7',
       iconColor: '#15803d',
-      description: 'Active collaborations'
+      description: 'Kolaborasi aktif'
     },
     {
-      title: 'Total Earnings',
+      title: 'Total Pendapatan',
       value: `Rp ${(stats.totalEarnings || 0).toLocaleString('id-ID')}`,
       IconComponent: EarningsIcon,
       bgColor: '#fef3c7',
       iconColor: '#b45309',
-      description: 'From collaborations'
+      description: 'Dari kolaborasi'
     },
     {
-      title: 'Average Rating',
+      title: 'Rating Rata-rata',
       value: `${stats.averageRating}`,
       IconComponent: RatingIcon,
       bgColor: '#fecdd3',
       iconColor: '#be123c',
-      description: 'From collaborators'
+      description: 'Dari kolaborator'
     }
   ];
 
@@ -159,7 +159,7 @@ function StudentDashboard() {
                 color: 'text.primary',
               }}
             >
-              Welcome, {userName}!
+              Selamat Datang, {userName}!
               <WavingHandIcon sx={{ fontSize: 32, transform: 'scaleX(-1)', color: '#fbbf24', ml: 1 }} />
             </Typography>
             <Typography
@@ -169,7 +169,7 @@ function StudentDashboard() {
                 m: 0
               }}
             >
-              Discover exciting campaigns and grow your influence
+              Temukan kampanye menarik dan kembangkan pengaruh Anda
             </Typography>
           </Box>
 
@@ -257,7 +257,7 @@ function StudentDashboard() {
                   margin: 0
                 }}
               >
-                Recent Campaigns
+                Kampanye Terbaru
               </Typography>
               <Button
                 onClick={() => navigate('/student/browse-campaigns')}
@@ -275,7 +275,7 @@ function StudentDashboard() {
                   borderRadius: 2.5
                 }}
               >
-                View All
+                Lihat Semua
               </Button>
             </Box>
 
@@ -321,7 +321,7 @@ function StudentDashboard() {
                             display: 'block'
                           }}
                         >
-                          {campaign.product_desc?.substring(0, 60) || 'No description'}
+                          {campaign.product_desc?.substring(0, 60) || 'Tidak ada deskripsi'}
                         </Typography>
                       </Box>
                       <Box sx={{ textAlign: 'right', ml: 2 }}>
@@ -345,7 +345,7 @@ function StudentDashboard() {
                             <Box sx={{ textAlign: 'center', paddingY: '2rem' }}>
                 <CampaignIcon sx={{ fontSize: '3rem', color: '#cbd5e1', mb: 1 }} />
                 <Typography sx={{ fontSize: '0.95rem', color: '#6c757d' }}>
-                  No campaigns available yet
+                  Belum ada kampanye yang tersedia
                 </Typography>
               </Box>
             )}

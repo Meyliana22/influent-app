@@ -114,11 +114,11 @@ function Transactions() {
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount <= 0) return;
     if (amount > balance.current_balance) {
-      showToast("Insufficient balance", "error");
+      showToast("Saldo tidak mencukupi", "error");
       return;
     }
     if (!bankName || !accountNumber || !accountHolder) {
-      showToast("Please fill in all bank details", "error");
+      showToast("Harap isi semua detail bank", "error");
       return;
     }
 
@@ -130,7 +130,7 @@ function Transactions() {
         account_number: accountNumber,
         account_holder_name: accountHolder
       });
-      showToast("Withdrawal requested successfully", "success");
+      showToast("Penarikan berhasil diminta", "success");
       setOpenWithdrawDialog(false);
       setWithdrawAmount('');
       setBankName('');
@@ -139,7 +139,7 @@ function Transactions() {
       fetchData(); // Refresh data
     } catch (error) {
       console.error("Withdrawal error:", error);
-      showToast(error.response?.data?.message || "Failed to request withdrawal", "error");
+      showToast(error.response?.data?.message || "Gagal meminta penarikan", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -166,10 +166,10 @@ function Transactions() {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
               <Box>
                 <Typography variant="h4" fontWeight="900" color="text.primary" gutterBottom>
-                  My Wallet
+                  Dompet Saya
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Manage your earnings and withdrawals
+                  Kelola pendapatan dan penarikan Anda
                 </Typography>
               </Box>
               <Button 
@@ -177,7 +177,7 @@ function Transactions() {
                 onClick={fetchData}
                 variant="outlined"
               >
-                Refresh
+                Segarkan
               </Button>
             </Box>
 
@@ -193,7 +193,7 @@ function Transactions() {
                 <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={3}>
                   <Box>
                     <Typography variant="body1" sx={{ opacity: 0.8, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Wallet fontSize="small" /> Current Balance
+                      <Wallet fontSize="small" /> Saldo Saat Ini
                     </Typography>
                     <Typography variant="h3" fontWeight="bold">
                       {formatCurrency(balance.current_balance || 0)}
@@ -212,7 +212,7 @@ function Transactions() {
                     }}
                     onClick={() => setOpenWithdrawDialog(true)}
                   >
-                    Withdraw Funds
+                    Tarik Dana
                   </Button>
                 </Stack>
               </Card>
@@ -227,8 +227,8 @@ function Transactions() {
                 textColor="primary"
                 sx={{ px: 2 }}
               >
-                <Tab label="Transactions" icon={<History />} iconPosition="start" />
-                <Tab label="Withdrawals" icon={<AccountBalance />} iconPosition="start" />
+                <Tab label="Transaksi" icon={<History />} iconPosition="start" />
+                <Tab label="Penarikan" icon={<AccountBalance />} iconPosition="start" />
               </Tabs>
             </Paper>
 
@@ -239,11 +239,11 @@ function Transactions() {
                   <Table>
                     <TableHead sx={{ bgcolor: '#f3f4f6' }}>
                       <TableRow>
-                        <TableCell>Date</TableCell>
-                        <TableCell>Description</TableCell>
-                        <TableCell>Category</TableCell>
-                        <TableCell>Type</TableCell>
-                        <TableCell align="right">Amount</TableCell>
+                        <TableCell>Tanggal</TableCell>
+                        <TableCell>Deskripsi</TableCell>
+                        <TableCell>Kategori</TableCell>
+                        <TableCell>Tipe</TableCell>
+                        <TableCell align="right">Jumlah</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -274,7 +274,7 @@ function Transactions() {
                       ) : (
                         <TableRow>
                           <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
-                            <Typography color="text.secondary">No transactions found</Typography>
+                            <Typography color="text.secondary">Tidak ada transaksi ditemukan</Typography>
                           </TableCell>
                         </TableRow>
                       )}
@@ -291,11 +291,11 @@ function Transactions() {
                   <Table>
                     <TableHead sx={{ bgcolor: '#f3f4f6' }}>
                       <TableRow>
-                        <TableCell>Request Date</TableCell>
-                        <TableCell>Bank Info</TableCell>
-                        <TableCell>Account Holder</TableCell>
+                        <TableCell>Tanggal Permintaan</TableCell>
+                        <TableCell>Info Bank</TableCell>
+                        <TableCell>Pemilik Rekening</TableCell>
                         <TableCell>Status</TableCell>
-                        <TableCell align="right">Amount</TableCell>
+                        <TableCell align="right">Jumlah</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -323,7 +323,7 @@ function Transactions() {
                       ) : (
                         <TableRow>
                           <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
-                            <Typography color="text.secondary">No withdrawal history available</Typography>
+                            <Typography color="text.secondary">Tidak ada riwayat penarikan</Typography>
                           </TableCell>
                         </TableRow>
                       )}
@@ -339,18 +339,18 @@ function Transactions() {
         {/* Withdrawal Dialog */}
         <Dialog open={openWithdrawDialog} onClose={() => setOpenWithdrawDialog(false)} maxWidth="sm" fullWidth>
           <DialogTitle sx={{ fontWeight: 'bold', borderBottom: 1, borderColor: 'divider' }}>
-            Request Withdrawal
+            Ajukan Penarikan
           </DialogTitle>
           <DialogContent sx={{ pt: 3 }}>
             <Box sx={{ mb: 3, p: 2, bgcolor: '#f3f4f6', borderRadius: 2 }}>
-              <Typography variant="body2" color="text.secondary">Available Balance</Typography>
+              <Typography variant="body2" color="text.secondary">Saldo Tersedia</Typography>
               <Typography variant="h5" fontWeight="bold" color="primary.main">
                 {formatCurrency(balance.current_balance || 0)}
               </Typography>
             </Box>
             <Stack spacing={2} sx={{ mt: 1 }}>
               <TextField
-                label="Amount"
+                label="Jumlah"
                 type="number"
                 fullWidth
                 value={withdrawAmount}
@@ -360,20 +360,20 @@ function Transactions() {
                 }}
               />
               <TextField
-                label="Bank Name"
+                label="Nama Bank"
                 fullWidth
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 placeholder="e.g. BCA, Mandiri"
               />
               <TextField
-                label="Account Number"
+                label="Nomor Rekening"
                 fullWidth
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
               />
               <TextField
-                label="Account Holder Name"
+                label="Nama Pemilik Rekening"
                 fullWidth
                 value={accountHolder}
                 onChange={(e) => setAccountHolder(e.target.value)}
@@ -382,14 +382,14 @@ function Transactions() {
           </DialogContent>
           <DialogActions sx={{ p: 2.5, borderTop: 1, borderColor: 'divider' }}>
             <Button onClick={() => setOpenWithdrawDialog(false)} disabled={isSubmitting}>
-              Cancel
+              Batal
             </Button>
             <Button 
               variant="contained" 
               onClick={handleWithdrawSubmit} 
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Request'}
+              {isSubmitting ? 'Mengirim...' : 'Kirim Permintaan'}
             </Button>
           </DialogActions>
         </Dialog>

@@ -135,7 +135,7 @@ function ManageCampaigns() {
       setTotalPages(response?.totalPages || Math.ceil(campaignsList.length / limit));
     } catch (error) {
       console.error('Error loading campaigns:', error);
-      setError('Failed to load campaigns');
+      setError('Gagal memuat kampanye');
       setCampaigns([]);
     } finally {
       setLoading(false);
@@ -198,7 +198,7 @@ function ManageCampaigns() {
       setError(null);
 
       if (!editFormData.title || !editFormData.price_per_post) {
-        setError('Title and price per post are required');
+        setError('Judul dan harga per post wajib diisi');
         return;
       }
 
@@ -226,12 +226,12 @@ function ManageCampaigns() {
       };
 
       await adminService.campaigns.updateCampaign(selectedCampaign.campaign_id, updateData);
-      setSuccessMessage('Campaign updated successfully');
+      setSuccessMessage('Kampanye berhasil diperbarui');
       setShowEditModal(false);
       loadCampaigns();
     } catch (err) {
       console.error('Error updating campaign:', err);
-      setError(err.message || 'Failed to update campaign');
+      setError(err.message || 'Gagal memperbarui kampanye');
     } finally {
       setSubmitting(false);
     }
@@ -246,7 +246,7 @@ function ManageCampaigns() {
       setShowTransactionsModal(true);
     } catch (err) {
       console.error('Error loading transactions:', err);
-      setError(err.message || 'Failed to load transactions');
+      setError(err.message || 'Gagal memuat transaksi');
     } finally {
       setLoadingTransactions(false);
     }
@@ -282,7 +282,7 @@ function ManageCampaigns() {
       loadCampaigns();
     } catch (err) {
       console.error('Error updating campaign:', err);
-      setError(err.message || 'Failed to update campaign');
+      setError(err.message || 'Gagal memperbarui kampanye');
     } finally {
       setSubmitting(false);
     }
@@ -309,7 +309,7 @@ function ManageCampaigns() {
       loadCampaigns();
     } catch (err) {
       console.error('Error cancelling campaign:', err);
-      setError(err.message || 'Failed to cancel campaign');
+      setError(err.message || 'Gagal membatalkan kampanye');
     } finally {
       setSubmitting(false);
     }
@@ -324,13 +324,13 @@ function ManageCampaigns() {
     try {
       setSubmitting(true);
       await adminService.campaigns.deleteCampaign(campaignToDelete.campaign_id);
-      setSuccessMessage('Campaign deleted successfully');
+      setSuccessMessage('Kampanye berhasil dihapus');
       setShowDeleteDialog(false);
       setCampaignToDelete(null);
       loadCampaigns();
     } catch (err) {
       console.error('Error deleting campaign:', err);
-      setError(err.message || 'Failed to delete campaign');
+      setError(err.message || 'Gagal menghapus kampanye');
     } finally {
       setSubmitting(false);
     }
@@ -378,10 +378,10 @@ function ManageCampaigns() {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
             <Box>
               <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, fontSize: 32 }}>
-                Manage Campaigns
+                Kelola Kampanye
               </Typography>
               <Typography sx={{ fontSize: 16, color: '#6c757d' }}>
-                Monitor and manage all campaigns on the platform
+                Pantau dan kelola semua kampanye di platform
               </Typography>
             </Box>
             <Stack direction="row" spacing={2}>
@@ -418,7 +418,7 @@ function ManageCampaigns() {
                   '&:hover': { bgcolor: '#059669', boxShadow: 'none' }
                 }}
               >
-                {loadingTransactions ? <CircularProgress size={20} /> : 'View Transactions'}
+                {loadingTransactions ? <CircularProgress size={20} /> : 'Lihat Transaksi'}
               </Button>
             </Stack>
           </Box>
@@ -443,10 +443,10 @@ function ManageCampaigns() {
             mb: 4
           }}>
             {[
-              { label: 'Total Campaigns', value: stats.total, IconComponent: CampaignIcon, bgColor: '#F3E5F5', iconColor: '#6E00BE' }, // Primary
-              { label: 'Active', value: stats.active, IconComponent: OngoingIcon, bgColor: '#d1fae5', iconColor: '#059669' },
-              { label: 'Completed', value: stats.completed, IconComponent: CompletedIcon, bgColor: '#dbeafe', iconColor: '#1e40af' },
-              { label: 'Pending', value: stats.pending, IconComponent: ApplicantIcon, bgColor: '#fef3c7', iconColor: '#d97706' }
+              { label: 'Total Kampanye', value: stats.total, IconComponent: CampaignIcon, bgColor: '#F3E5F5', iconColor: '#6E00BE' }, // Primary
+              { label: 'Aktif', value: stats.active, IconComponent: OngoingIcon, bgColor: '#d1fae5', iconColor: '#059669' },
+              { label: 'Selesai', value: stats.completed, IconComponent: CompletedIcon, bgColor: '#dbeafe', iconColor: '#1e40af' },
+              { label: 'Tertunda', value: stats.pending, IconComponent: ApplicantIcon, bgColor: '#fef3c7', iconColor: '#d97706' }
             ].map((stat, index) => (
               <Box
                 key={index}
@@ -498,7 +498,7 @@ function ManageCampaigns() {
           }}>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
               <TextField
-                placeholder="Search campaigns..."
+                placeholder="Cari kampanye..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -524,7 +524,7 @@ function ManageCampaigns() {
                   '&:hover': { bgcolor: '#5a009e', boxShadow: 'none' }
                 }}
               >
-                Search
+                Cari
               </Button>
               <Select
                 value={filterStatus}
@@ -576,10 +576,10 @@ function ManageCampaigns() {
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <CampaignIcon sx={{ fontSize: 64, color: '#cbd5e0', mb: 2 }} />
                 <Typography sx={{ fontSize: 18, color: '#6c757d', fontWeight: 500 }}>
-                  No campaigns found
+                  Tidak ada kampanye ditemukan
                 </Typography>
                 <Typography sx={{ fontSize: 14, color: '#a0aec0', mt: 1 }}>
-                  {searchQuery || filterStatus ? 'Try adjusting your filters' : 'Campaigns will appear here once created'}
+                  {searchQuery || filterStatus ? 'Coba sesuaikan filter Anda' : 'Kampanye akan muncul di sini setelah dibuat'}
                 </Typography>
               </Box>
             ) : (
@@ -588,12 +588,12 @@ function ManageCampaigns() {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: '#f7fafc' }}>
-                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Campaign</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Company</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Budget</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Kampanye</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Perusahaan</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Anggaran</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Created</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14, textAlign: 'center' }}>Actions</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Dibuat</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14, textAlign: 'center' }}>Aksi</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -609,10 +609,10 @@ function ManageCampaigns() {
                           >
                             <TableCell>
                               <Typography sx={{ fontWeight: 600, color: '#1a1f36', fontSize: 14 }}>
-                                {campaign.title || 'Untitled'}
+                                {campaign.title || 'Tanpa Judul'}
                               </Typography>
                               <Typography sx={{ fontSize: 12, color: '#6c757d' }}>
-                                {campaign.campaign_category || 'No category'}
+                                {campaign.campaign_category || 'Tanpa kategori'}
                               </Typography>
                             </TableCell>
                             <TableCell>
@@ -625,7 +625,7 @@ function ManageCampaigns() {
                                 Rp {((campaign.price_per_post * campaign.influencer_count) || 0).toLocaleString('id-ID')}
                               </Typography>
                               <Typography sx={{ fontSize: 11, color: '#6c757d' }}>
-                                {campaign.influencer_count} influencers
+                                {campaign.influencer_count} influencer
                               </Typography>
                             </TableCell>
                             <TableCell>
@@ -659,7 +659,7 @@ function ManageCampaigns() {
                                       color: '#6E00BE',
                                       '&:hover': { bgcolor: 'rgba(110, 0, 190, 0.1)' }
                                     }}
-                                    title="View Details"
+                                    title="Lihat Detail"
                                   >
                                     <ViewIcon fontSize="small" />
                                   </IconButton>
@@ -672,7 +672,7 @@ function ManageCampaigns() {
                                           color: '#10b981',
                                           '&:hover': { bgcolor: 'rgba(16, 185, 129, 0.1)' }
                                         }}
-                                        title="Approve Campaign"
+                                        title="Setujui Kampanye"
                                       >
                                         <ApproveIcon fontSize="small" />
                                       </IconButton>
@@ -686,7 +686,7 @@ function ManageCampaigns() {
                                           color: '#ef4444',
                                           '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
                                         }}
-                                        title="Reject Campaign"
+                                        title="Tolak Kampanye"
                                       >
                                         <RejectIcon fontSize="small" />
                                       </IconButton>
@@ -699,7 +699,7 @@ function ManageCampaigns() {
                                       color: '#ed8936',
                                       '&:hover': { bgcolor: 'rgba(237, 137, 54, 0.1)' }
                                     }}
-                                    title="Edit Campaign"
+                                    title="Edit Kampanye"
                                   >
                                     <EditIcon fontSize="small" />
                                   </IconButton>
@@ -710,7 +710,7 @@ function ManageCampaigns() {
                                       color: '#ef4444',
                                       '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
                                     }}
-                                    title="Delete Campaign"
+                                    title="Hapus Kampanye"
                                   >
                                     <DeleteIcon fontSize="small" />
                                   </IconButton>
@@ -746,7 +746,7 @@ function ManageCampaigns() {
             fullWidth
           >
             <DialogTitle sx={{ fontWeight: 700, fontSize: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              Campaign Details
+              Detail Kampanye
               <IconButton onClick={() => setShowDetailModal(false)} disabled={submitting}>
                 <CloseIcon />
               </IconButton>
@@ -756,7 +756,7 @@ function ManageCampaigns() {
                 <Stack spacing={2}>
                   <Box>
                     <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                      Campaign Title
+                      Judul Kampanye
                     </Typography>
                     <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#1a1f36' }}>
                       {selectedCampaign.title}
@@ -766,7 +766,7 @@ function ManageCampaigns() {
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Campaign Category
+                        Kategori Kampanye
                       </Typography>
                       <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
                         {selectedCampaign.campaign_category || 'N/A'}
@@ -774,7 +774,7 @@ function ManageCampaigns() {
                     </Grid>
                     <Grid item xs={6}>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Company
+                        Perusahaan
                       </Typography>
                       <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
                         {selectedCampaign.user?.name || 'N/A'}
@@ -788,7 +788,7 @@ function ManageCampaigns() {
                   {selectedCampaign.influencer_category && (
                     <Box>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Influencer Categories
+                        Kategori Influencer
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
                         {(() => {
@@ -802,7 +802,7 @@ function ManageCampaigns() {
                                 ))
                               : null;
                           } catch (e) {
-                            return <Typography sx={{ fontSize: 14, color: '#6c757d' }}>N/A</Typography>;
+                            return <Typography sx={{ fontSize: 14, color: '#6c757d' }}>-</Typography>;
                           }
                         })()}
                       </Box>
@@ -812,7 +812,7 @@ function ManageCampaigns() {
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Price Per Post
+                        Harga Per Post
                       </Typography>
                       <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
                         Rp {(selectedCampaign.price_per_post || 0).toLocaleString('id-ID')}
@@ -820,7 +820,7 @@ function ManageCampaigns() {
                     </Grid>
                     <Grid item xs={6}>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Influencer Count
+                        Jumlah Influencer
                       </Typography>
                       <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
                         {selectedCampaign.influencer_count || 0}
@@ -831,26 +831,26 @@ function ManageCampaigns() {
                   <Grid container spacing={2}>
                     <Grid item xs={4}>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Start Date
+                        Tanggal Mulai
                       </Typography>
                       <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
-                        {selectedCampaign.start_date ? new Date(selectedCampaign.start_date).toLocaleDateString() : 'N/A'}
+                        {selectedCampaign.start_date ? new Date(selectedCampaign.start_date).toLocaleDateString() : '-'}
                       </Typography>
                     </Grid>
                     <Grid item xs={4}>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        End Date
+                        Tanggal Selesai
                       </Typography>
                       <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
-                        {selectedCampaign.end_date ? new Date(selectedCampaign.end_date).toLocaleDateString() : 'N/A'}
+                        {selectedCampaign.end_date ? new Date(selectedCampaign.end_date).toLocaleDateString() : '-'}
                       </Typography>
                     </Grid>
                     <Grid item xs={4}>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Deadline
+                        Batas Waktu
                       </Typography>
                       <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
-                        {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString() : 'N/A'}
+                        {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString() : '-'}
                       </Typography>
                     </Grid>
                   </Grid>
@@ -858,7 +858,7 @@ function ManageCampaigns() {
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Min Followers
+                        Min Pengikut
                       </Typography>
                       <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
                         {(selectedCampaign.min_followers || 0).toLocaleString()}
@@ -866,7 +866,7 @@ function ManageCampaigns() {
                     </Grid>
                     <Grid item xs={6}>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Target Demographics
+                        Target Demografi
                       </Typography>
                       <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
                         {selectedCampaign.selected_gender} • {selectedCampaign.selected_age}
@@ -877,13 +877,13 @@ function ManageCampaigns() {
                   {selectedCampaign.has_product && (
                     <Box sx={{ bgcolor: '#f7fafc', p: 2, borderRadius: 2 }}>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 1, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Product Information
+                        Informasi Produk
                       </Typography>
                       <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
                         {selectedCampaign.product_name}
                       </Typography>
                       <Typography sx={{ fontSize: 13, color: '#6c757d' }}>
-                        Value: Rp {(selectedCampaign.product_value || 0).toLocaleString('id-ID')}
+                        Nilai: Rp {(selectedCampaign.product_value || 0).toLocaleString('id-ID')}
                       </Typography>
                       <Typography sx={{ fontSize: 13, color: '#6c757d', mt: 0.5 }}>
                         {selectedCampaign.product_desc}
@@ -894,7 +894,7 @@ function ManageCampaigns() {
                   {selectedCampaign.content_guidelines && (
                     <Box>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Content Guidelines
+                        Panduan Konten
                       </Typography>
                       <Typography sx={{ fontSize: 14, color: '#1a1f36', whiteSpace: 'pre-wrap' }}>
                         {selectedCampaign.content_guidelines}
@@ -905,7 +905,7 @@ function ManageCampaigns() {
                   {selectedCampaign.caption_guidelines && (
                     <Box>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Caption Guidelines
+                        Panduan Caption
                       </Typography>
                       <Typography sx={{ fontSize: 14, color: '#1a1f36', whiteSpace: 'pre-wrap' }}>
                         {selectedCampaign.caption_guidelines}
@@ -916,7 +916,7 @@ function ManageCampaigns() {
                   {selectedCampaign.criteria_desc && (
                     <Box>
                       <Typography sx={{ fontSize: 12, color: '#6c757d', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
-                        Criteria Description
+                        Deskripsi Kriteria
                       </Typography>
                       <Typography sx={{ fontSize: 14, color: '#1a1f36' }}>
                         {selectedCampaign.criteria_desc}
@@ -979,7 +979,7 @@ function ManageCampaigns() {
                       fontWeight: 600
                     }}
                   >
-                    {submitting ? <CircularProgress size={20} /> : 'Approve'}
+                    {submitting ? <CircularProgress size={20} /> : 'Setujui'}
                   </Button>
                 </>
               )}
@@ -994,12 +994,12 @@ function ManageCampaigns() {
             fullWidth
           >
             <DialogTitle sx={{ fontWeight: 700, fontSize: 20 }}>
-              Edit Campaign
+              Edit Kampanye
             </DialogTitle>
             <DialogContent dividers>
               <Stack spacing={3} sx={{ pt: 1 }}>
                 <TextField
-                  label="Campaign Title"
+                  label="Judul Kampanye"
                   value={editFormData.title}
                   onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
                   fullWidth
@@ -1011,21 +1011,21 @@ function ManageCampaigns() {
                   fullWidth
                   displayEmpty
                 >
-                  <MenuItem value="">Select Category</MenuItem>
-                  <MenuItem value="Entertainment">Entertainment</MenuItem>
-                  <MenuItem value="Fashion">Fashion</MenuItem>
-                  <MenuItem value="Beauty">Beauty</MenuItem>
-                  <MenuItem value="Food & Beverage">Food & Beverage</MenuItem>
-                  <MenuItem value="Health & Sport">Health & Sport</MenuItem>
-                  <MenuItem value="Technology">Technology</MenuItem>
-                  <MenuItem value="Travel">Travel</MenuItem>
-                  <MenuItem value="Lifestyle">Lifestyle</MenuItem>
+                  <MenuItem value="">Pilih Kategori</MenuItem>
+                  <MenuItem value="Entertainment">Hiburan</MenuItem>
+                  <MenuItem value="Fashion">Mode</MenuItem>
+                  <MenuItem value="Beauty">Kecantikan</MenuItem>
+                  <MenuItem value="Food & Beverage">Makanan & Minuman</MenuItem>
+                  <MenuItem value="Health & Sport">Kesehatan & Olahraga</MenuItem>
+                  <MenuItem value="Technology">Teknologi</MenuItem>
+                  <MenuItem value="Travel">Perjalanan</MenuItem>
+                  <MenuItem value="Lifestyle">Gaya Hidup</MenuItem>
                 </Select>
                 
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <TextField
-                      label="Price Per Post (Rp)"
+                      label="Harga Per Post (Rp)"
                       type="number"
                       value={editFormData.price_per_post}
                       onChange={(e) => setEditFormData({ ...editFormData, price_per_post: e.target.value })}
@@ -1035,7 +1035,7 @@ function ManageCampaigns() {
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
-                      label="Influencer Count"
+                      label="Jumlah Influencer"
                       type="number"
                       value={editFormData.influencer_count}
                       onChange={(e) => setEditFormData({ ...editFormData, influencer_count: e.target.value })}
@@ -1047,7 +1047,7 @@ function ManageCampaigns() {
                 <Grid container spacing={2}>
                   <Grid item xs={4}>
                     <TextField
-                      label="Start Date"
+                      label="Tanggal Mulai"
                       type="date"
                       value={editFormData.startDate}
                       onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
@@ -1057,7 +1057,7 @@ function ManageCampaigns() {
                   </Grid>
                   <Grid item xs={4}>
                     <TextField
-                      label="End Date"
+                      label="Tanggal Selesai"
                       type="date"
                       value={editFormData.endDate}
                       onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
@@ -1067,7 +1067,7 @@ function ManageCampaigns() {
                   </Grid>
                   <Grid item xs={4}>
                     <TextField
-                      label="Submission Deadline"
+                      label="Batas Waktu"
                       type="date"
                       value={editFormData.submission_deadline}
                       onChange={(e) => setEditFormData({ ...editFormData, submission_deadline: e.target.value })}
@@ -1080,7 +1080,7 @@ function ManageCampaigns() {
                 <Grid container spacing={2}>
                   <Grid item xs={4}>
                     <TextField
-                      label="Min Followers"
+                      label="Min Pengikut"
                       type="number"
                       value={editFormData.min_followers}
                       onChange={(e) => setEditFormData({ ...editFormData, min_followers: e.target.value })}
@@ -1094,10 +1094,10 @@ function ManageCampaigns() {
                       fullWidth
                       displayEmpty
                     >
-                      <MenuItem value="">Gender</MenuItem>
-                      <MenuItem value="male">Male</MenuItem>
-                      <MenuItem value="female">Female</MenuItem>
-                      <MenuItem value="all">All</MenuItem>
+                      <MenuItem value="">Jenis Kelamin</MenuItem>
+                      <MenuItem value="male">Laki-laki</MenuItem>
+                      <MenuItem value="female">Perempuan</MenuItem>
+                      <MenuItem value="all">Semua</MenuItem>
                     </Select>
                   </Grid>
                   <Grid item xs={4}>
@@ -1107,11 +1107,11 @@ function ManageCampaigns() {
                       fullWidth
                       displayEmpty
                     >
-                      <MenuItem value="">Age Range</MenuItem>
-                      <MenuItem value="13-17 tahun">13-17 years</MenuItem>
-                      <MenuItem value="18-24 tahun">18-24 years</MenuItem>
-                      <MenuItem value="25-34 tahun">25-34 years</MenuItem>
-                      <MenuItem value="35+ tahun">35+ years</MenuItem>
+                      <MenuItem value="">Rentang Usia</MenuItem>
+                      <MenuItem value="13-17 tahun">13-17 tahun</MenuItem>
+                      <MenuItem value="18-24 tahun">18-24 tahun</MenuItem>
+                      <MenuItem value="25-34 tahun">25-34 tahun</MenuItem>
+                      <MenuItem value="35+ tahun">35+ tahun</MenuItem>
                     </Select>
                   </Grid>
                 </Grid>
@@ -1119,23 +1119,23 @@ function ManageCampaigns() {
                 <Divider />
                 
                 <Box>
-                  <Typography sx={{ fontWeight: 600, mb: 1 }}>Product Information (Optional)</Typography>
+                  <Typography sx={{ fontWeight: 600, mb: 1 }}>Informasi Produk (Opsional)</Typography>
                   <Stack spacing={2}>
                     <TextField
-                      label="Product Name"
+                      label="Nama Produk"
                       value={editFormData.product_name}
                       onChange={(e) => setEditFormData({ ...editFormData, product_name: e.target.value })}
                       fullWidth
                     />
                     <TextField
-                      label="Product Value (Rp)"
+                      label="Nilai Produk (Rp)"
                       type="number"
                       value={editFormData.product_value}
                       onChange={(e) => setEditFormData({ ...editFormData, product_value: e.target.value })}
                       fullWidth
                     />
                     <TextField
-                      label="Product Description"
+                      label="Deskripsi Produk"
                       value={editFormData.product_desc}
                       onChange={(e) => setEditFormData({ ...editFormData, product_desc: e.target.value })}
                       fullWidth
@@ -1146,7 +1146,7 @@ function ManageCampaigns() {
                 </Box>
 
                 <TextField
-                  label="Content Guidelines"
+                  label="Panduan Konten"
                   value={editFormData.content_guidelines}
                   onChange={(e) => setEditFormData({ ...editFormData, content_guidelines: e.target.value })}
                   fullWidth
@@ -1154,7 +1154,7 @@ function ManageCampaigns() {
                   rows={3}
                 />
                 <TextField
-                  label="Caption Guidelines"
+                  label="Panduan Caption"
                   value={editFormData.caption_guidelines}
                   onChange={(e) => setEditFormData({ ...editFormData, caption_guidelines: e.target.value })}
                   fullWidth
@@ -1162,7 +1162,7 @@ function ManageCampaigns() {
                   rows={2}
                 />
                 <TextField
-                  label="Criteria Description"
+                  label="Deskripsi Kriteria"
                   value={editFormData.criteria_desc}
                   onChange={(e) => setEditFormData({ ...editFormData, criteria_desc: e.target.value })}
                   fullWidth
@@ -1176,11 +1176,11 @@ function ManageCampaigns() {
                   fullWidth
                 >
                   <MenuItem value="draft">Draft</MenuItem>
-                  <MenuItem value="admin_review">Admin Review</MenuItem>
-                  <MenuItem value="pending_payment">Pending Payment</MenuItem>
-                  <MenuItem value="active">Active</MenuItem>
-                  <MenuItem value="completed">Completed</MenuItem>
-                  <MenuItem value="cancelled">Cancelled</MenuItem>
+                  <MenuItem value="admin_review">Tinjauan Admin</MenuItem>
+                  <MenuItem value="pending_payment">Menunggu Pembayaran</MenuItem>
+                  <MenuItem value="active">Aktif</MenuItem>
+                  <MenuItem value="completed">Selesai</MenuItem>
+                  <MenuItem value="cancelled">Dibatalkan</MenuItem>
                 </Select>
               </Stack>
             </DialogContent>
@@ -1202,7 +1202,7 @@ function ManageCampaigns() {
                   fontWeight: 600
                 }}
               >
-                {submitting ? <CircularProgress size={24} /> : 'Save Changes'}
+                {submitting ? <CircularProgress size={24} /> : 'Simpan Perubahan'}
               </Button>
             </DialogActions>
           </Dialog>
@@ -1215,7 +1215,7 @@ function ManageCampaigns() {
             fullWidth
           >
             <DialogTitle sx={{ fontWeight: 700, fontSize: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              All Transactions
+              Semua Transaksi
               <IconButton onClick={() => setShowTransactionsModal(false)}>
                 <CloseIcon />
               </IconButton>
@@ -1224,19 +1224,19 @@ function ManageCampaigns() {
               {transactions.length === 0 ? (
                 <Box sx={{ textAlign: 'center', py: 4 }}>
                   <ReceiptIcon sx={{ fontSize: 64, color: '#cbd5e0', mb: 2 }} />
-                  <Typography sx={{ fontSize: 18, color: '#6c757d' }}>No transactions found</Typography>
+                  <Typography sx={{ fontSize: 18, color: '#6c757d' }}>Tidak ada transaksi ditemukan</Typography>
                 </Box>
               ) : (
                 <TableContainer>
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: '#f7fafc' }}>
-                        <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>User</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Amount</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Tanggal</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Pengguna</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Tipe</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Jumlah</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Deskripsi</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -1253,12 +1253,12 @@ function ManageCampaigns() {
                           </TableCell>
                           <TableCell>
                             <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
-                              {tx.userId?.name || 'Unknown'}
+                              {tx.userId?.name || 'Tidak Diketahui'}
                             </Typography>
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={tx.type || 'N/A'}
+                              label={tx.type || '-'}
                               size="small"
                               sx={{
                                 bgcolor: tx.type === 'credit' ? '#d1fae5' : '#fee2e2',
@@ -1284,7 +1284,7 @@ function ManageCampaigns() {
                           </TableCell>
                           <TableCell>
                             <Typography sx={{ fontSize: 14, color: '#6c757d' }}>
-                              {tx.description || tx.category || 'N/A'}
+                              {tx.description || tx.category || '-'}
                             </Typography>
                           </TableCell>
                         </TableRow>
@@ -1296,7 +1296,7 @@ function ManageCampaigns() {
             </DialogContent>
             <DialogActions sx={{ p: 2 }}>
               <Button onClick={() => setShowTransactionsModal(false)} sx={{ textTransform: 'none' }}>
-                Close
+                Tutup
               </Button>
             </DialogActions>
           </Dialog>
@@ -1444,12 +1444,12 @@ function ManageCampaigns() {
           >
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningIcon sx={{ color: '#ef4444' }} />
-              <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Confirm Delete</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Konfirmasi Hapus</Typography>
             </DialogTitle>
             <DialogContent>
               <Typography sx={{ color: '#6c757d', fontSize: 15 }}>
-                Are you sure you want to delete campaign <strong>{campaignToDelete?.title || campaignToDelete?.campaign_title}</strong>? 
-                This action cannot be undone.
+                Apakah Anda yakin ingin menghapus kampanye <strong>{campaignToDelete?.title || campaignToDelete?.campaign_title}</strong>? 
+                Tindakan ini tidak dapat dibatalkan.
               </Typography>
             </DialogContent>
             <DialogActions sx={{ p: 2 }}>
@@ -1471,7 +1471,7 @@ function ManageCampaigns() {
                   '&:hover': { bgcolor: '#dc2626' }
                 }}
               >
-                {submitting ? <CircularProgress size={24} /> : 'Delete'}
+                {submitting ? <CircularProgress size={24} /> : 'Hapus'}
               </Button>
             </DialogActions>
           </Dialog>

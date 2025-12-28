@@ -99,7 +99,7 @@ const MyApplications = () => {
       setApplications(data);
     } catch (error) {
       console.error('Error fetching applications:', error);
-      showToast('Failed to load applications', 'error');
+      showToast('Gagal memuat lamaran', 'error');
     } finally {
       setLoading(false);
     }
@@ -120,12 +120,12 @@ const MyApplications = () => {
 
     try {
       await campaignService.cancelCampaignUser(applicationId);
-      showToast('Application cancelled', 'success');
+      showToast('Lamaran dibatalkan', 'success');
       setCancelModal({ open: false, appId: null });
       fetchApplications();
     } catch (error) {
       console.error('Cancel error:', error);
-      showToast('Failed to cancel application', 'error');
+      showToast('Gagal membatalkan lamaran', 'error');
     }
   };
 
@@ -159,10 +159,10 @@ const MyApplications = () => {
         <Container maxWidth="lg">
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, borderLeft: '5px solid #6E00BE', pl: 2 }}>
-              My Applications
+              Lamaran Saya
             </Typography>
             <Typography variant="body1" color="textSecondary">
-              Track the status of your campaign applications
+              Lacak status lamaran kampanye Anda
             </Typography>
           </Box>
           
@@ -182,7 +182,7 @@ const MyApplications = () => {
               }}
             >
               <Typography variant="h6" color="textSecondary" sx={{ mb: 2 }}>
-                You haven't applied to any campaigns yet.
+                Anda belum melamar kampanye apa pun.
               </Typography>
               <Button 
                 variant="contained" 
@@ -192,7 +192,7 @@ const MyApplications = () => {
                   '&:hover': { bgcolor: '#5a009e' }
                 }}
               >
-                Browse Campaigns
+                Jelajahi Kampanye
               </Button>
             </Paper>
           ) : (
@@ -200,11 +200,11 @@ const MyApplications = () => {
               <Table sx={{ minWidth: 650 }}>
                 <TableHead sx={{ bgcolor: '#6E00BE' }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Campaign</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Kampanye</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Kategori</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Date Applied</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#fff' }} align="right">Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#fff' }}>Tanggal Melamar</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#fff' }} align="right">Aksi</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -225,7 +225,7 @@ const MyApplications = () => {
                       </TableCell>
                       <TableCell>
                          <Chip 
-                            label={app.campaign?.campaign_category || 'Campaign'} 
+                            label={app.campaign?.campaign_category || 'Kampanye'} 
                             size="small" 
                             variant="outlined" 
                             sx={{ borderRadius: 1 }}
@@ -233,7 +233,7 @@ const MyApplications = () => {
                       </TableCell>
                       <TableCell>
                         <Chip 
-                          label={app.application_status || 'Pending'} 
+                          label={app.application_status || 'Tertunda'} 
                           color={getStatusColor(app.application_status)}
                           size="small"
                           sx={{ fontWeight: 600, textTransform: 'capitalize' }}
@@ -253,7 +253,7 @@ const MyApplications = () => {
                                startIcon={<CancelIcon />}
                                sx={{ borderRadius: 2, textTransform: 'none' }}
                              >
-                               Cancel
+                               Batal
                              </Button>
                           )}
                           
@@ -270,7 +270,7 @@ const MyApplications = () => {
                               }
                             }}
                           >
-                            {app.application_status === 'accepted' ? 'Submit Work' : 'Details'}
+                            {app.application_status === 'accepted' ? 'Kirim Pekerjaan' : 'Detail'}
                           </Button>
                         </Box>
                       </TableCell>
@@ -285,14 +285,14 @@ const MyApplications = () => {
           <Modal
              isOpen={cancelModal.open}
              onClose={() => setCancelModal({ ...cancelModal, open: false })}
-             title="Cancel Application"
+             title="Batalkan Lamaran"
              onConfirm={confirmCancel}
-             confirmText="Yes, Cancel Application"
-             cancelText="No, Keep It"
+             confirmText="Ya, Batalkan Lamaran"
+             cancelText="Tidak, Simpan"
              variant="danger"
           >
              <Typography>
-                Are you sure you want to cancel your application? This action cannot be undone.
+                Apakah Anda yakin ingin membatalkan lamaran Anda? Tindakan ini tidak dapat dibatalkan.
              </Typography>
           </Modal>
 
@@ -301,7 +301,7 @@ const MyApplications = () => {
             <Modal
               isOpen={showDetailModal}
               onClose={() => setShowDetailModal(false)}
-              title={selectedCampaign.title || 'Campaign Details'}
+              title={selectedCampaign.title || 'Detail Kampanye'}
               // maxWidth="lg"
               // Note: The common/Modal component might handle props differently. 
               // If it doesn't support maxWidth directly, it might be fine or need sx props.
@@ -317,34 +317,34 @@ const MyApplications = () => {
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: '24px', mb: '24px' }}>
                   {/* Left Column */}
                   <Box>
-                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Product Information</Typography>
+                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Informasi Produk</Typography>
 
                     {selectedCampaign.has_product && (
                       <>
                         <Box sx={{ mb: '16px' }}>
-                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Product Name</Typography>
+                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Nama Produk</Typography>
                           <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>{selectedCampaign.product_name}</Typography>
                         </Box>
 
                         <Box sx={{ mb: '16px' }}>
-                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Product Value</Typography>
+                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Nilai Produk</Typography>
                           <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>Rp {Number(selectedCampaign.product_value).toLocaleString('id-ID')}</Typography>
                         </Box>
 
                         <Box sx={{ mb: '16px' }}>
-                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Description</Typography>
+                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Deskripsi</Typography>
                           <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5 }}>{selectedCampaign.product_desc}</Typography>
                         </Box>
                       </>
                     )}
 
                     <Box sx={{ mb: '16px' }}>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Category</Typography>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Kategori</Typography>
                       <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>{selectedCampaign.campaign_category}</Typography>
                     </Box>
 
                     <Box>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Influencer Categories</Typography>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Kategori Influencer</Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px', mt: '8px' }}>
                         {parseInfluencerCategory(selectedCampaign.influencer_category).map((cat, idx) => (
                           <Box key={idx} sx={{ background: '#f3e5f5', color: '#6E00BE', px: '12px', py: '6px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{cat}</Box>
@@ -355,10 +355,10 @@ const MyApplications = () => {
 
                   {/* Right Column */}
                   <Box>
-                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Campaign Details</Typography>
+                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Detail Kampanye</Typography>
 
                     <Box sx={{ mb: '16px' }}>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Price Per Post</Typography>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Harga Per Postingan</Typography>
                       <Typography sx={{ mt: '4px', fontSize: '1.2rem', color: '#6E00BE', fontWeight: 700 }}>Rp {Number(selectedCampaign.price_per_post).toLocaleString('id-ID')}</Typography>
                     </Box>
 
@@ -368,34 +368,34 @@ const MyApplications = () => {
                     </Box>
 
                     <Box sx={{ mb: '16px' }}>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Dates</Typography>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Tanggal</Typography>
                       <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36' }}>
-                          Start: {selectedCampaign.start_date && new Date(selectedCampaign.start_date).toLocaleDateString('id-ID')}
+                          Mulai: {selectedCampaign.start_date && new Date(selectedCampaign.start_date).toLocaleDateString('id-ID')}
                       </Typography>
                       <Typography sx={{ fontSize: '0.95rem', color: '#1a1f36' }}>
-                          End: {selectedCampaign.end_date && new Date(selectedCampaign.end_date).toLocaleDateString('id-ID')}
+                          Selesai: {selectedCampaign.end_date && new Date(selectedCampaign.end_date).toLocaleDateString('id-ID')}
                       </Typography>
                        <Typography sx={{ fontSize: '0.95rem', color: '#d32f2f', fontWeight: 600, mt: 0.5 }}>
-                          Submission Deadline: {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID') : 'N/A'}
+                          Batas Waktu Pengiriman: {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID') : 'N/A'}
                       </Typography>
                     </Box>
 
                     <Box>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Requirements</Typography>
+                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Persyaratan</Typography>
                       <Box sx={{ mt: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
-                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Min Followers: </Typography>
+                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Min Pengikut: </Typography>
                           <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.min_followers?.toLocaleString('id-ID') || 'N/A'}</Typography>
                         </Box>
                         <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
-                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Gender: </Typography>
-                          <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.selected_gender || 'Any'}</Typography>
+                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Jenis Kelamin: </Typography>
+                          <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.selected_gender || 'Semua'}</Typography>
                         </Box>
                         <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
-                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Age: </Typography>
+                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Usia: </Typography>
                           <Typography component="span" sx={{ color: '#6c757d' }}>
                             {(() => {
-                               if (!selectedCampaign.selected_age) return 'Any';
+                               if (!selectedCampaign.selected_age) return 'Semua';
                                try {
                                   let parsed = selectedCampaign.selected_age;
                                   if (typeof parsed === 'string' && (parsed.startsWith('[') || parsed.startsWith('"'))) {
@@ -419,18 +419,18 @@ const MyApplications = () => {
                 {/* Guidelines */}
                 {(selectedCampaign.content_guidelines || selectedCampaign.caption_guidelines) && (
                   <Box sx={{ mb: '24px' }}>
-                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Guidelines</Typography>
+                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Panduan</Typography>
 
                     {selectedCampaign.content_guidelines && (
                       <Box sx={{ mb: '12px' }}>
-                        <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Content Guidelines</Typography>
+                        <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Panduan Konten</Typography>
                         <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{selectedCampaign.content_guidelines}</Typography>
                       </Box>
                     )}
 
                     {selectedCampaign.caption_guidelines && (
                       <Box>
-                        <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Caption Guidelines</Typography>
+                        <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Panduan Caption</Typography>
                         <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{selectedCampaign.caption_guidelines}</Typography>
                       </Box>
                     )}
@@ -443,7 +443,7 @@ const MyApplications = () => {
                       variant="contained"
                       sx={{ bgcolor: '#6E00BE', '&:hover': { bgcolor: '#5a009e' } }}
                     >
-                      Close
+                      Tutup
                     </Button>
                 </Box>
               </Box>

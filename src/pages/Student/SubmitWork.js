@@ -29,14 +29,14 @@ export default function SubmitWork({ collaboration, onBack }) {
     if (file) {
       // Check file size (100MB limit)
       if (file.size > 100 * 1024 * 1024) {
-        alert('File size should not exceed 100MB');
+        alert('Ukuran file tidak boleh melebihi 100MB');
         return;
       }
       
       // Check file type
       const validTypes = ['image/jpeg', 'image/png', 'application/pdf', 'video/mp4', 'video/quicktime'];
       if (!validTypes.includes(file.type)) {
-        alert('Please upload a valid file type (JPEG, PNG, PDF, MP4, MOV)');
+        alert('Harap unggah jenis file yang valid (JPEG, PNG, PDF, MP4, MOV)');
         return;
       }
       
@@ -80,7 +80,7 @@ export default function SubmitWork({ collaboration, onBack }) {
             },
           }}
         >
-          Back to Collaboration
+          Kembali ke Kolaborasi
         </Button>
 
         <Card
@@ -108,7 +108,7 @@ export default function SubmitWork({ collaboration, onBack }) {
                 mb: 1.5,
               }}
             >
-              Work Submitted Successfully!
+              Pekerjaan Berhasil Dikirim!
             </Typography>
             <Typography
               sx={{
@@ -120,11 +120,11 @@ export default function SubmitWork({ collaboration, onBack }) {
                 mb: 3,
               }}
             >
-              Your work proof and details have been uploaded. Please wait for{' '}
+              Bukti pekerjaan dan detail Anda telah diunggah. Harap tunggu {' '}
               <span style={{ fontWeight: 600, color: '#1a1a2e' }}>
                 {collaboration.brand}
               </span>{' '}
-              to review your work. We'll notify you once they've reviewed it.
+              {' '}untuk meninjau pekerjaan Anda. Kami akan memberi tahu Anda setelah mereka meninjaunya.
             </Typography>
 
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexDirection: { xs: 'column', sm: 'row' } }}>
@@ -140,7 +140,7 @@ export default function SubmitWork({ collaboration, onBack }) {
                   borderRadius: '12px',
                 }}
               >
-                Back to Collaborations
+                Kembali ke Kolaborasi
               </Button>
             </Box>
           </CardContent>
@@ -163,7 +163,7 @@ export default function SubmitWork({ collaboration, onBack }) {
           },
         }}
       >
-        Back to Collaboration
+        Kembali ke Kolaborasi
       </Button>
 
       <Card
@@ -183,7 +183,7 @@ export default function SubmitWork({ collaboration, onBack }) {
               mb: 1,
             }}
           >
-            Submit Your Work
+            Kirim Pekerjaan Anda
           </Typography>
           <Typography
             sx={{
@@ -191,7 +191,7 @@ export default function SubmitWork({ collaboration, onBack }) {
               mb: 3,
             }}
           >
-            Campaign: <span style={{ fontWeight: 600, color: '#1a1a2e' }}>{collaboration.title}</span>
+            Kampanye: <span style={{ fontWeight: 600, color: '#1a1a2e' }}>{collaboration.title}</span>
           </Typography>
 
           <Alert
@@ -204,7 +204,7 @@ export default function SubmitWork({ collaboration, onBack }) {
               border: 'none',
             }}
           >
-            Please upload your work proof and provide details about your submission.
+            Harap unggah bukti pekerjaan Anda dan berikan detail tentang kiriman Anda.
           </Alert>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -220,11 +220,11 @@ export default function SubmitWork({ collaboration, onBack }) {
                   mb: 1,
                 }}
               >
-                Work Title
+                Judul Pekerjaan
               </Typography>
               <TextField
                 fullWidth
-                placeholder="e.g., Instagram Reel - Summer Campaign"
+                placeholder="misal, Instagram Reel - Kampanye Musim Panas"
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
@@ -257,13 +257,13 @@ export default function SubmitWork({ collaboration, onBack }) {
                   mb: 1,
                 }}
               >
-                Description
+                Deskripsi
               </Typography>
               <TextField
                 fullWidth
                 multiline
                 rows={4}
-                placeholder="Describe your work, what you did, any challenges you overcame, etc."
+                placeholder="Jelaskan pekerjaan Anda, apa yang Anda lakukan, tantangan apa pun yang Anda atasi, dll."
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
@@ -296,7 +296,7 @@ export default function SubmitWork({ collaboration, onBack }) {
                   mb: 1,
                 }}
               >
-                Upload Proof
+                Unggah Bukti
               </Typography>
               <Box
                 sx={{
@@ -327,12 +327,12 @@ export default function SubmitWork({ collaboration, onBack }) {
                   if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                     const file = e.dataTransfer.files[0];
                     if (file.size > 100 * 1024 * 1024) {
-                      alert('File size should not exceed 100MB');
+                      alert('Ukuran file tidak boleh melebihi 100MB');
                       return;
                     }
                     const validTypes = ['image/jpeg', 'image/png', 'application/pdf', 'video/mp4', 'video/quicktime'];
                     if (!validTypes.includes(file.type)) {
-                      alert('Please upload a valid file type (JPEG, PNG, PDF, MP4, MOV)');
+                      alert('Harap unggah jenis file yang valid (JPEG, PNG, PDF, MP4, MOV)');
                       return;
                     }
                     setFormData(prev => ({
@@ -375,7 +375,7 @@ export default function SubmitWork({ collaboration, onBack }) {
                       lineHeight: 1.4,
                     }}
                   >
-                    {formData.file ? 'File Selected' : 'Click to upload or drag and drop'}
+                    {formData.file ? 'File Dipilih' : 'Klik untuk mengunggah atau seret dan lepas'}
                   </Typography>
                   <Typography sx={{ 
                     color: '#6c757d', 
@@ -383,7 +383,7 @@ export default function SubmitWork({ collaboration, onBack }) {
                     mb: 2,
                     lineHeight: 1.5,
                   }}>
-                    PNG, JPG, PDF, MP4 or MOV (Max 100MB)
+                    PNG, JPG, PDF, MP4 atau MOV (Maks 100MB)
                   </Typography>
                 </Box>
                 {formData.file && (
@@ -452,8 +452,8 @@ export default function SubmitWork({ collaboration, onBack }) {
                 }}
               >
                 {uploadProgress > 0 && uploadProgress < 100 
-                  ? `Uploading... ${Math.round(uploadProgress)}%` 
-                  : 'Submit Work'}
+                  ? `Mengunggah... ${Math.round(uploadProgress)}%` 
+                  : 'Kirim Pekerjaan'}
               </Button>
               <Button
                 variant="outlined"
@@ -471,7 +471,7 @@ export default function SubmitWork({ collaboration, onBack }) {
                   },
                 }}
               >
-                Cancel
+                Batal
               </Button>
             </Box>
 

@@ -112,7 +112,7 @@ function ManageWithdrawals() {
       setWithdrawals(withdrawalsData);
     } catch (err) {
       console.error('Error loading withdrawals:', err);
-      setError(err.message || 'Failed to load withdrawals');
+      setError(err.message || 'Gagal memuat penarikan');
     } finally {
       setLoading(false);
     }
@@ -203,14 +203,14 @@ function ManageWithdrawals() {
       const withdrawalId = selectedWithdrawal.withdrawal_id || selectedWithdrawal.id;
       await adminService.withdrawals.approveWithdrawal(withdrawalId, reviewNotes);
       
-      setSuccessMessage('Withdrawal approved successfully!');
+      setSuccessMessage('Penarikan berhasil disetujui!');
       setApproveModalOpen(false);
       loadWithdrawals();
       
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       console.error('Error approving withdrawal:', err);
-      setError(err.message || 'Failed to approve withdrawal');
+      setError(err.message || 'Gagal menyetujui penarikan');
     } finally {
       setProcessing(false);
     }
@@ -218,7 +218,7 @@ function ManageWithdrawals() {
 
   const handleReject = async () => {
     if (!selectedWithdrawal || !rejectionReason.trim()) {
-      setError('Rejection reason is required');
+      setError('Alasan penolakan wajib diisi');
       return;
     }
     
@@ -229,14 +229,14 @@ function ManageWithdrawals() {
       const withdrawalId = selectedWithdrawal.withdrawal_id || selectedWithdrawal.id;
       await adminService.withdrawals.rejectWithdrawal(withdrawalId, rejectionReason);
       
-      setSuccessMessage('Withdrawal rejected successfully!');
+      setSuccessMessage('Penarikan berhasil ditolak!');
       setRejectModalOpen(false);
       loadWithdrawals();
       
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       console.error('Error rejecting withdrawal:', err);
-      setError(err.message || 'Failed to reject withdrawal');
+      setError(err.message || 'Gagal menolak penarikan');
     } finally {
       setProcessing(false);
     }
@@ -244,7 +244,7 @@ function ManageWithdrawals() {
 
   const handleComplete = async () => {
     if (!selectedWithdrawal || !transferProof) {
-      setError('Transfer proof is required');
+      setError('Bukti transfer wajib diunggah');
       return;
     }
     
@@ -255,14 +255,14 @@ function ManageWithdrawals() {
       const withdrawalId = selectedWithdrawal.withdrawal_id || selectedWithdrawal.id;
       await adminService.withdrawals.completeWithdrawal(withdrawalId, transferProof, reviewNotes);
       
-      setSuccessMessage('Withdrawal completed successfully!');
+      setSuccessMessage('Penarikan berhasil diselesaikan!');
       setCompleteModalOpen(false);
       loadWithdrawals();
       
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       console.error('Error completing withdrawal:', err);
-      setError(err.message || 'Failed to complete withdrawal');
+      setError(err.message || 'Gagal menyelesaikan penarikan');
     } finally {
       setProcessing(false);
     }
@@ -307,10 +307,10 @@ function ManageWithdrawals() {
           {/* Header */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1 }}>
-              Withdrawal Management
+              Manajemen Penarikan
             </Typography>
             <Typography variant="body1" sx={{ color: '#64748b' }}>
-              Review and process withdrawal requests
+              Tinjau dan proses permintaan penarikan
             </Typography>
           </Box>
 
@@ -328,7 +328,7 @@ function ManageWithdrawals() {
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Requests
+                      Total Permintaan
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {stats.totalWithdrawals}
@@ -344,7 +344,7 @@ function ManageWithdrawals() {
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Pending
+                      Tertunda
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {stats.pendingCount}
@@ -360,7 +360,7 @@ function ManageWithdrawals() {
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Approved
+                      Disetujui
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {stats.approvedCount}
@@ -376,7 +376,7 @@ function ManageWithdrawals() {
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Paid
+                      Total Dibayarkan
                     </Typography>
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>
                       {formatCurrency(stats.totalAmount)}
@@ -395,7 +395,7 @@ function ManageWithdrawals() {
                 <TextField
                   fullWidth
                   size="small"
-                  placeholder="Search by user, bank, account..."
+                  placeholder="Cari berdasarkan pengguna, bank, akun..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   InputProps={{
@@ -412,11 +412,11 @@ function ManageWithdrawals() {
                     onChange={(e) => setFilterStatus(e.target.value)}
                     label="Status"
                   >
-                    <MenuItem value="all">All Status</MenuItem>
-                    <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="approved">Approved</MenuItem>
-                    <MenuItem value="completed">Completed</MenuItem>
-                    <MenuItem value="rejected">Rejected</MenuItem>
+                    <MenuItem value="all">Semua Status</MenuItem>
+                    <MenuItem value="pending">Tertunda</MenuItem>
+                    <MenuItem value="approved">Disetujui</MenuItem>
+                    <MenuItem value="completed">Selesai</MenuItem>
+                    <MenuItem value="rejected">Ditolak</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -429,7 +429,7 @@ function ManageWithdrawals() {
                   onClick={loadWithdrawals}
                   disabled={loading}
                 >
-                  Refresh
+                  Segarkan
                 </Button>
               </Grid>
             </Grid>
@@ -448,7 +448,7 @@ function ManageWithdrawals() {
             ) : filteredWithdrawals.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography variant="h6" color="text.secondary">
-                  No withdrawal requests found
+                  Tidak ada permintaan penarikan ditemukan
                 </Typography>
               </Box>
             ) : (
@@ -458,12 +458,12 @@ function ManageWithdrawals() {
                     <TableHead>
                       <TableRow sx={{ bgcolor: '#f8fafc' }}>
                         <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>User</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Bank Details</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Pengguna</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Jumlah</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Detail Bank</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Tanggal</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Aksi</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -579,14 +579,14 @@ function ManageWithdrawals() {
       >
         <DialogTitle>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Withdrawal Request Details
+             Detail Permintaan Penarikan
           </Typography>
         </DialogTitle>
         <DialogContent dividers>
           {selectedWithdrawal && (
             <Stack spacing={2}>
               <Box>
-                <Typography variant="caption" color="text.secondary">Request ID</Typography>
+                <Typography variant="caption" color="text.secondary">ID Permintaan</Typography>
                 <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
                   #{selectedWithdrawal.withdrawal_id || selectedWithdrawal.id}
                 </Typography>
@@ -596,13 +596,13 @@ function ManageWithdrawals() {
 
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">User</Typography>
+                  <Typography variant="caption" color="text.secondary">Pengguna</Typography>
                   <Typography variant="body2">
                     {selectedWithdrawal.user?.name || selectedWithdrawal.user_name || '-'}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">Amount</Typography>
+                  <Typography variant="caption" color="text.secondary">Jumlah</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {formatCurrency(selectedWithdrawal.amount)}
                   </Typography>
@@ -610,17 +610,17 @@ function ManageWithdrawals() {
               </Grid>
 
               <Box>
-                <Typography variant="caption" color="text.secondary">Bank Name</Typography>
+                <Typography variant="caption" color="text.secondary">Nama Bank</Typography>
                 <Typography variant="body2">{selectedWithdrawal.bank_name || '-'}</Typography>
               </Box>
 
               <Box>
-                <Typography variant="caption" color="text.secondary">Account Number</Typography>
+                <Typography variant="caption" color="text.secondary">Nomor Rekening</Typography>
                 <Typography variant="body2">{selectedWithdrawal.account_number || '-'}</Typography>
               </Box>
 
               <Box>
-                <Typography variant="caption" color="text.secondary">Account Name</Typography>
+                <Typography variant="caption" color="text.secondary">Nama Akun</Typography>
                 <Typography variant="body2">{selectedWithdrawal.account_name || '-'}</Typography>
               </Box>
 
@@ -636,7 +636,7 @@ function ManageWithdrawals() {
               </Box>
 
               <Box>
-                <Typography variant="caption" color="text.secondary">Request Date</Typography>
+                <Typography variant="caption" color="text.secondary">Tanggal Permintaan</Typography>
                 <Typography variant="body2">
                   {formatDate(selectedWithdrawal.created_at || selectedWithdrawal.request_date)}
                 </Typography>
@@ -647,7 +647,7 @@ function ManageWithdrawals() {
                   <Divider />
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      {selectedWithdrawal.rejection_reason ? 'Rejection Reason' : 'Review Notes'}
+                      {selectedWithdrawal.rejection_reason ? 'Alasan Penolakan' : 'Catatan Tinjauan'}
                     </Typography>
                     <Typography variant="body2">
                       {selectedWithdrawal.review_notes || selectedWithdrawal.rejection_reason}
@@ -659,17 +659,17 @@ function ManageWithdrawals() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDetailModalOpen(false)}>Close</Button>
+          <Button onClick={() => setDetailModalOpen(false)}>Tutup</Button>
         </DialogActions>
       </Dialog>
 
       {/* Approve Modal */}
       <Dialog open={approveModalOpen} onClose={() => setApproveModalOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Approve Withdrawal</DialogTitle>
+        <DialogTitle>Setujui Penarikan</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <Alert severity="info">
-              This will approve the withdrawal request and allow it to proceed to payment.
+              Ini akan menyetujui permintaan penarikan dan mengizinkannya untuk diproses ke pembayaran.
             </Alert>
             <TextField
               label="Review Notes (Optional)"
@@ -683,7 +683,7 @@ function ManageWithdrawals() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setApproveModalOpen(false)} disabled={processing}>
-            Cancel
+            Batal
           </Button>
           <Button
             variant="contained"
@@ -692,21 +692,21 @@ function ManageWithdrawals() {
             disabled={processing}
             startIcon={processing ? <CircularProgress size={16} /> : <CheckCircleIcon />}
           >
-            Approve
+            Setujui
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Reject Modal */}
       <Dialog open={rejectModalOpen} onClose={() => setRejectModalOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Reject Withdrawal</DialogTitle>
+        <DialogTitle>Tolak Penarikan</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <Alert severity="warning">
-              Please provide a reason for rejecting this withdrawal request.
+              Mohon berikan alasan untuk menolak permintaan penarikan ini.
             </Alert>
             <TextField
-              label="Rejection Reason *"
+              label="Alasan Penolakan *"
               multiline
               rows={3}
               value={rejectionReason}
@@ -718,7 +718,7 @@ function ManageWithdrawals() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRejectModalOpen(false)} disabled={processing}>
-            Cancel
+            Batal
           </Button>
           <Button
             variant="contained"
@@ -727,7 +727,7 @@ function ManageWithdrawals() {
             disabled={processing || !rejectionReason.trim()}
             startIcon={processing ? <CircularProgress size={16} /> : <CancelIcon />}
           >
-            Reject
+            Tolak
           </Button>
         </DialogActions>
       </Dialog>
@@ -736,20 +736,20 @@ function ManageWithdrawals() {
       <Dialog open={completeModalOpen} onClose={() => setCompleteModalOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Complete Withdrawal
+            Selesaikan Penarikan
           </Typography>
         </DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
             <Alert severity="info" icon={<UploadIcon />}>
-              Upload transfer proof (image or PDF) to complete this withdrawal payment.
+              Unggah bukti transfer (gambar atau PDF) untuk menyelesaikan pembayaran penarikan ini.
             </Alert>
 
             {selectedWithdrawal && (
               <Paper sx={{ p: 2, bgcolor: '#f8fafc' }}>
                 <Grid container spacing={1}>
                   <Grid item xs={6}>
-                    <Typography variant="caption" color="text.secondary">Amount</Typography>
+                    <Typography variant="caption" color="text.secondary">Jumlah</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {formatCurrency(selectedWithdrawal.amount)}
                     </Typography>
@@ -761,7 +761,7 @@ function ManageWithdrawals() {
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography variant="caption" color="text.secondary">Account</Typography>
+                    <Typography variant="caption" color="text.secondary">Akun</Typography>
                     <Typography variant="body2">
                       {selectedWithdrawal.account_number} - {selectedWithdrawal.account_name}
                     </Typography>
@@ -796,7 +796,7 @@ function ManageWithdrawals() {
                     </Typography>
                   </Stack>
                 ) : (
-                  'Click to Upload Transfer Proof *'
+                  'Klik untuk Mengunggah Bukti Transfer *'
                 )}
                 <input
                   type="file"
@@ -807,7 +807,7 @@ function ManageWithdrawals() {
                     if (file) {
                       // Validate file size (max 5MB)
                       if (file.size > 5 * 1024 * 1024) {
-                        setError('File size must be less than 5MB');
+                        setError('Ukuran file harus kurang dari 5MB');
                         return;
                       }
                       setTransferProof(file);
@@ -817,14 +817,14 @@ function ManageWithdrawals() {
                 />
               </Button>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                Accepted formats: JPG, PNG, PDF (Max 5MB)
+                Format yang diterima: JPG, PNG, PDF (Maks 5MB)
               </Typography>
             </Box>
 
             {transferProof && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="body2" color="text.secondary">
-                  File size: {(transferProof.size / 1024).toFixed(2)} KB
+                  Ukuran file: {(transferProof.size / 1024).toFixed(2)} KB
                 </Typography>
                 <Button
                   size="small"
@@ -832,19 +832,19 @@ function ManageWithdrawals() {
                   onClick={() => setTransferProof(null)}
                   startIcon={<CloseIcon />}
                 >
-                  Remove
+                  Hapus
                 </Button>
               </Box>
             )}
 
             <TextField
-              label="Review Notes (Optional)"
+              label="Catatan Tinjauan (Opsional)"
               multiline
               rows={3}
               value={reviewNotes}
               onChange={(e) => setReviewNotes(e.target.value)}
               fullWidth
-              placeholder="Add any notes about this transfer..."
+              placeholder="Tambahkan catatan tentang transfer ini..."
             />
 
             {error && (
@@ -861,7 +861,7 @@ function ManageWithdrawals() {
             setReviewNotes('');
             setError(null);
           }} disabled={processing}>
-            Cancel
+            Batal
           </Button>
           <Button
             variant="contained"
@@ -878,7 +878,7 @@ function ManageWithdrawals() {
               }
             }}
           >
-            {processing ? 'Processing...' : 'Complete Payment'}
+            {processing ? 'Memproses...' : 'Selesaikan Pembayaran'}
           </Button>
         </DialogActions>
       </Dialog>

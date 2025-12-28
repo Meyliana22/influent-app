@@ -93,7 +93,7 @@ function StudentProfile() {
       }
     } catch (error) {
       console.error("Failed to fetch profile:", error);
-      // showToast("Failed to load profile", "error");
+      // showToast("Gagal memuat profil", "error");
     } finally {
       setLoading(false);
     }
@@ -110,12 +110,12 @@ function StudentProfile() {
     try {
       setUploading(true);
       const res = await studentService.updateProfileImage(file);
-      showToast("Profile image updated successfully", "success");
+      showToast("Gambar profil berhasil diperbarui", "success");
       // Update local state to show new image immediately
       // Assuming res.data contains the new image path or user object
       fetchProfile(); 
     } catch (error) {
-      showToast(error.message || "Failed to upload image", "error");
+      showToast(error.message || "Gagal mengunggah gambar", "error");
     } finally {
       setUploading(false);
     }
@@ -136,9 +136,9 @@ function StudentProfile() {
       };
 
       await studentService.updateProfile(payload);
-      showToast("Profile updated successfully", "success");
+      showToast("Profil berhasil diperbarui", "success");
     } catch (error) {
-      showToast(error.message || "Failed to update profile", "error");
+      showToast(error.message || "Gagal memperbarui profil", "error");
     } finally {
       setLoading(false);
     }
@@ -151,11 +151,11 @@ function StudentProfile() {
       if (data && data.url) {
         window.location.href = data.url;
       } else {
-        throw new Error('Invalid authorization URL');
+        throw new Error('URL otorisasi tidak valid');
       }
     } catch (error) {
       console.error('Instagram connect error:', error);
-      showToast('Failed to initialize Instagram connection', 'error');
+      showToast('Gagal memulai koneksi Instagram', 'error');
       setLoading(false);
     }
   };
@@ -169,7 +169,7 @@ function StudentProfile() {
           
           <Container maxWidth="md" sx={{ py: 4, mt: 8 }}>
             <Typography variant="h4" fontWeight="bold" sx={{ mb: 4, color: '#111827' }}>
-              My Profile
+              Profil Saya
             </Typography>
 
             <Grid container spacing={4}>
@@ -200,7 +200,7 @@ function StudentProfile() {
                     </IconButton>
                   </Box>
                   <Typography variant="h6" fontWeight="bold">
-                    {formData.user.name || 'Student Name'}
+                    {formData.user.name || 'Nama Siswa'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {formData.user.email || 'email@example.com'}
@@ -212,7 +212,7 @@ function StudentProfile() {
               <Grid item xs={12} md={4}>
                   <Card sx={{ p: 4, borderRadius: 4, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
                     <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Instagram sx={{ color: '#E1306C' }} /> Instagram Integration
+                      <Instagram sx={{ color: '#E1306C' }} /> Integrasi Instagram
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                     
@@ -228,7 +228,7 @@ function StudentProfile() {
                             <Box>
                                 <Typography variant="subtitle1" fontWeight="bold">@{formData.instagram_username}</Typography>
                                 <Chip 
-                                  label="Connected" 
+                                  label="Terhubung" 
                                   size="small" 
                                   color="success" 
                                   variant="outlined" 
@@ -242,13 +242,13 @@ function StudentProfile() {
                                 <Typography variant="h6" fontWeight="bold" color="#E1306C">
                                   {formData.instagram_followers_count || 0}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">Followers</Typography>
+                                <Typography variant="caption" color="text.secondary">Pengikut</Typography>
                             </Box>
                             <Box sx={{ textAlign: 'center', flex: 1, bgcolor: '#f0f9ff', p: 1, borderRadius: 2 }}>
                                 <Typography variant="h6" fontWeight="bold" color="#0ea5e9">
                                   {formData.instagram_media_count || 0}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">Posts</Typography>
+                                <Typography variant="caption" color="text.secondary">Postingan</Typography>
                             </Box>
                           </Stack>
                           
@@ -260,13 +260,13 @@ function StudentProfile() {
                             disabled
                             sx={{ textTransform: 'none' }}
                           >
-                            Disconnect Account (Contact Support)
+                            Putuskan Akun (Hubungi Dukungan)
                           </Button>
                       </Box>
                     ) : (
                       <Box sx={{ textAlign: 'center', py: 2 }}>
                           <Typography variant="body2" color="text.secondary" paragraph>
-                            Connect your Instagram account to show your stats to brands and apply for campaigns.
+                            Hubungkan akun Instagram Anda untuk menunjukkan statistik Anda kepada merek dan melamar kampanye.
                           </Typography>
                           <Button
                             variant="contained"
@@ -281,7 +281,7 @@ function StudentProfile() {
                                 '&:hover': { bgcolor: '#C13584' }
                             }}
                           >
-                            {loading ? 'Connecting...' : 'Connect Instagram'}
+                            {loading ? 'Menghubungkan...' : 'Hubungkan Instagram'}
                           </Button>
                       </Box>
                     )}
@@ -295,14 +295,14 @@ function StudentProfile() {
                     <Grid container spacing={3}>
                       <Grid item xs={12}>
                         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <School color="primary" /> Academic Information
+                          <School color="primary" /> Informasi Akademik
                         </Typography>
                       </Grid>
 
                       <Grid item xs={12} sm={6}>
                         <TextField
                           fullWidth
-                          label="University"
+                          label="Universitas"
                           name="university"
                           value={formData.university || ''}
                           onChange={handleChange}
@@ -312,7 +312,7 @@ function StudentProfile() {
                       <Grid item xs={12} sm={6}>
                         <TextField
                           fullWidth
-                          label="Major"
+                          label="Jurusan"
                           name="major"
                           value={formData.major || ''}
                           onChange={handleChange}
@@ -322,7 +322,7 @@ function StudentProfile() {
                       <Grid item xs={12} sm={6}>
                         <TextField
                           fullWidth
-                          label="Enrollment Year"
+                          label="Tahun Angkatan"
                           type="date"
                           name="year"
                           value={formData.year || ''}
@@ -333,7 +333,7 @@ function StudentProfile() {
                       <Grid item xs={12} sm={6}>
                         <TextField
                           fullWidth
-                          label="GPA"
+                          label="IPK"
                           name="gpa"
                           type="number"
                           inputProps={{ step: "0.01", min: "0", max: "4" }}
@@ -347,14 +347,14 @@ function StudentProfile() {
 
                       <Grid item xs={12} sx={{ mt: 2 }}>
                         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Person color="primary" /> Personal Information
+                          <Person color="primary" /> Informasi Pribadi
                         </Typography>
                       </Grid>
 
                       <Grid item xs={12} sm={6}>
                         <TextField
                           fullWidth
-                          label="Phone Number"
+                          label="Nomor Telepon"
                           name="phone_number"
                           value={formData.phone_number || ''}
                           onChange={handleChange}
@@ -391,7 +391,7 @@ function StudentProfile() {
                             '&:hover': { bgcolor: '#5b21b6' }
                           }}
                         >
-                          {loading ? 'Saving...' : 'Save Changes'}
+                          {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
                         </Button>
                       </Grid>
                     </Grid>

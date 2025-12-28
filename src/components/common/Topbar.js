@@ -35,12 +35,12 @@ function Topbar({ onMenuClick = () => {} }) {
   const getRoleLabel = () => {
     switch (userRole) {
       case 'company':
-        return 'UMKM Account';
+        return 'Akun UMKM';
       case 'admin':
-        return 'Admin Account';
+        return 'Akun Admin';
       case 'influencer':
       default:
-        return 'Influencer Account';
+        return 'Akun Influencer';
     }
   };
 
@@ -188,7 +188,7 @@ function Topbar({ onMenuClick = () => {} }) {
               <ListItemIcon sx={{ minWidth: 32 }}>
                 <PersonIcon sx={{ color: '#2d3748' }} />
               </ListItemIcon>
-              Profile
+              Profil
             </MenuItem>
             
             <Divider sx={{ my: 0.5 }} />
@@ -205,7 +205,7 @@ function Topbar({ onMenuClick = () => {} }) {
               <ListItemIcon sx={{ minWidth: 32 }}>
                 <LogoutIcon sx={{ fontSize: 20, color: '#ef4444' }} />
               </ListItemIcon>
-              Log Out
+              Keluar
             </MenuItem>
           </Menu>
         </Box>

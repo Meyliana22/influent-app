@@ -26,11 +26,11 @@ function AdminSidebar() {
 
   const menuItems = [
     { path: '/admin/dashboard', icon: DashboardIcon, label: 'Dashboard' },
-    { path: '/admin/users', icon: PeopleIcon, label: 'Manage Users' },
-    { path: '/admin/campaigns', icon: CampaignIcon, label: 'Manage Campaigns' },
-    { path: '/admin/review-submissions', icon: GavelIcon, label: 'Review Submissions' },
-    { path: '/admin/reports', icon: BarChartIcon, label: 'Reports' },
-    { path: '/chat', icon: ChatIcon, label: 'Chat' },
+    { path: '/admin/users', icon: PeopleIcon, label: 'Kelola Pengguna' },
+    { path: '/admin/campaigns', icon: CampaignIcon, label: 'Kelola Kampanye' },
+    { path: '/admin/review-submissions', icon: GavelIcon, label: 'Tinjau Pengajuan' },
+    { path: '/admin/reports', icon: BarChartIcon, label: 'Laporan' },
+    { path: '/chat', icon: ChatIcon, label: 'Pesan' },
   ];
 
   const isActive = (path) => location.pathname === path;
