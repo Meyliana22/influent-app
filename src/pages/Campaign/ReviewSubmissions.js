@@ -329,7 +329,8 @@ const ReviewSubmissions = () => {
               ) : (
                 <Stack spacing={2}>
                   {filteredSubmissions.map((submission) => {
-                     const student = submission.CampaignUser?.Student?.user || submission.student?.user || {};
+                     // Check for 'User' (capitalized) which matches the provided JSON, fallback to 'user'
+                     const student = submission.CampaignUser?.Student?.User || submission.CampaignUser?.Student?.user || submission.student?.user || {};
                      const studentProfile = submission.CampaignUser?.Student || submission.student || {};
                      return (
                       <Card 
@@ -380,7 +381,7 @@ const ReviewSubmissions = () => {
                                   <Stack direction="row" spacing={1} alignItems="center">
                                     <InstagramIcon sx={{ fontSize: 16, color: COLORS.textSecondary }} />
                                     <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
-                                      {studentProfile.instagram_username || 'N/A'}
+                                      {studentProfile.instagram_username || studentProfile.instagram || 'N/A'}
                                     </Typography>
                                   </Stack>
                                 </Box>

@@ -554,6 +554,24 @@ export const updateCampaignStatus = async (campaignId, status) => {
   }
 };
 
+/**
+ * Complete campaign (mark as completed via endpoint)
+ */
+export const completeCampaign = async (campaignId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${campaignId}/complete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error completing campaign:", error);
+    throw error;
+  }
+};
+
 export default {
   getCampaigns,
   getCampaignsByCategory,
@@ -574,4 +592,5 @@ export default {
   getCampaignUsers,
   updateCampaignUser,
   distributePayment,
+  completeCampaign,
 };

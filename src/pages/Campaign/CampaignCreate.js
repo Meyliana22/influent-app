@@ -137,6 +137,12 @@ function CampaignCreate() {
     'Gaming', 'Gaya Hidup & Travel', 'Hiburan', 'Kecantikan & Fashion', 
     'Keluarga & Parenting', 'Kesehatan & Olahraga', 'Makanan & Minuman', 'Teknologi'
   ];
+  const CONTENT_TYPE_OPTIONS = [
+    { value: 'foto', label: 'Instagram Feed' },
+    { value: 'story', label: 'Instagram Story' },
+    { value: 'reels', label: 'Instagram Reels' },
+    { value: 'video', label: 'Instagram Video' },
+  ];
   const AGE_OPTIONS = ['< 18 tahun', '18-24 tahun', '25-34 tahun', '35-49 tahun', '> 50 tahun'];
 
   // --- Helpers ---
@@ -690,10 +696,11 @@ function CampaignCreate() {
                                   }}
                                   disabled={isReadOnly}
                                >
-                                  <MenuItem value="foto">Instagram Feed</MenuItem>
-                                  <MenuItem value="story">Instagram Story</MenuItem>
-                                  <MenuItem value="reels">Instagram Reels</MenuItem>
-                                  <MenuItem value="video">Instagram Video</MenuItem>
+                                  {CONTENT_TYPE_OPTIONS.map(opt => {
+                                     const isSelectedElsewhere = contentItems.some((c, cIdx) => cIdx !== idx && c.content_type === opt.value);
+                                     if (isSelectedElsewhere && item.content_type !== opt.value) return null;
+                                     return <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>;
+                                  })}
                                </Select>
                             </FormControl>
                          </Grid>
@@ -726,10 +733,13 @@ function CampaignCreate() {
                       </Grid>
                    </Paper>
                 ))}
-                {!isReadOnly && contentItems.length < 5 && (
+                {!isReadOnly && contentItems.length < 4 && (
                    <Button 
                       startIcon={<AddIcon />} 
-                      onClick={() => setContentItems([...contentItems, { id: Date.now(), post_count: 1, content_type: 'foto' }])}
+                      onClick={() => {
+                         const availableType = CONTENT_TYPE_OPTIONS.find(opt => !contentItems.some(c => c.content_type === opt.value))?.value || 'foto';
+                         setContentItems([...contentItems, { id: Date.now(), post_count: 1, content_type: availableType }]);
+                      }}
                       variant="outlined"
                       sx={{ borderStyle: 'dashed', borderRadius: 3, py: 1.5 }}
                    >

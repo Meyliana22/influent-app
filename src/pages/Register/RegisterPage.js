@@ -28,7 +28,10 @@ import {
   Business,
   School,
   ArrowBack,
-  VpnKey
+  VpnKey,
+  CalendarMonth,
+  Grade,
+  Instagram
 } from '@mui/icons-material';
 import authService from '../../services/authService';
 import studentService from '../../services/studentService';
@@ -64,7 +67,11 @@ function RegisterPage() {
     phone: '',
     otp: '',
     university: '',  
-    companyName: '' 
+    companyName: '',
+    major: '',
+    year: '',
+    gpa: '',
+    instagram_username: '' 
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -196,24 +203,55 @@ function RegisterPage() {
     }
   };
 
+  // Dynamic steps based on role
+  const steps = userRole === 'umkm' ? ['Daftar', 'Verifikasi'] : ['Daftar', 'Verifikasi', 'Profil'];
+
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await authService.verifyEmail(formData.email, formData.otp);
+      const verifyResponse = await authService.verifyEmail(formData.email, formData.otp);
       showToast("Verifikasi berhasil!", "success");
       
-      // If we have a password (normal registration flow), try to login
-      if (formData.password) {
-        const loginResponse = await authService.login(formData.email, formData.password);
+      // If we have a password (normal registration flow) or if we got a token, proceed
+      if (formData.password || localStorage.getItem('token')) {
+        // No need to login again if verifyEmail returned token
+        // const loginResponse = await authService.login(formData.email, formData.password);
         
         // Update userRole based on actual registered role from backend
-        if (loginResponse.data?.user?.role) {
-           const backendRole = loginResponse.data.user.role;
-           setUserRole(backendRole === 'student' ? 'influencer' : 'umkm');
+        let currentRole = userRole;
+        // Check structure: verifyResponse.data.user.role based on user snippet
+        const userData = verifyResponse.data?.user;
+        
+        if (userData?.role) {
+           const backendRole = userData.role;
+           currentRole = backendRole === 'student' ? 'influencer' : 'umkm';
+           setUserRole(currentRole);
         }
-  
-        setStep('onboarding');
+
+        // For UMKM: Auto-create profile and finish (Skip Step 3)
+        if (currentRole === 'umkm') {
+            try {
+                await companyService.createProfile({
+                    business_name: formData.username, // Use the name from Step 1 as Business Name
+                    phone_number: formData.phone
+                });
+                showToast("Registrasi Selesai!", "success");
+                sessionStorage.removeItem('registrationState');
+                setTimeout(() => {
+                    navigate('/campaign/dashboard');
+                }, 500);
+            } catch (profileError) {
+                console.error(profileError);
+                // Even if profile creation fails slightly, try to redirect or show error
+                showToast("Gagal menyimpan profil otomatis", "warning");
+                navigate('/campaign/dashboard');
+            }
+        } else {
+            // For Influencer: Proceed to Step 3 (Onboarding)
+            setStep('onboarding');
+        }
+
       } else {
         // If no password (flow from Login -> Resend OTP), redirect to login
         showToast("Silakan login dengan akun Anda", "success");
@@ -228,34 +266,48 @@ function RegisterPage() {
 
   const handleOnboarding = async (e) => {
     e.preventDefault();
+    console.log("handleOnboarding triggered");
+    console.log("Current State:", { userRole, formData });
+    
     setIsLoading(true);
     try {
       if (userRole === 'influencer') {
-        await studentService.createProfile({
+        const payload = {
           university: formData.university,
+          major: formData.major,
+          year: formData.year,
+          gpa: formData.gpa,
+          instagram_username: formData.instagram_username,
           phone_number: formData.phone
-        });
+        };
+        console.log("Sending Influencer Payload:", payload);
+        
+        await studentService.createProfile(payload);
       } else if (userRole === 'umkm') {
-        await companyService.createProfile({
+        const payload = {
           business_name: formData.companyName,
           phone_number: formData.phone
-        });
+        };
+        console.log("Sending UMKM Payload:", payload);
+
+        await companyService.createProfile(payload);
       }
       
+      console.log("Profile created successfully");
       showToast("Setup profil berhasil!", "success");
       sessionStorage.removeItem('registrationState');
       setTimeout(() => {
         navigate(userRole === 'umkm' ? '/campaign/dashboard' : '/student/dashboard');
       }, 500);
     } catch (error) {
-       console.error(error);
-       setErrorMsg("Gagal menyimpan profil");
+       console.error("Error in handleOnboarding:", error);
+       setErrorMsg("Gagal menyimpan profil: " + (error.message || "Unknown error"));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const steps = ['Daftar', 'Verifikasi', 'Profil'];
+
 
   return (
     <Box sx={{ 
@@ -340,7 +392,7 @@ function RegisterPage() {
                 <Stack spacing={2.5}>
                   <TextField
                     fullWidth
-                    label="Nama Lengkap"
+                    label={userRole === 'umkm' ? "Nama Usaha" : "Nama Lengkap"}
                     name="username"
                     value={formData.username}
                     onChange={handleChange}
@@ -539,6 +591,7 @@ function RegisterPage() {
               <form onSubmit={handleOnboarding}>
                 <Stack spacing={3}>
                   {userRole === 'influencer' ? (
+                    <>
                     <TextField
                       fullWidth
                       label="Nama Universitas"
@@ -560,6 +613,97 @@ function RegisterPage() {
                         sx: { borderRadius: '12px' }
                       }}
                     />
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <TextField
+                        fullWidth
+                        label="Jurusan"
+                        name="major"
+                        value={formData.major}
+                        onChange={handleChange}
+                        required
+                        placeholder="Contoh: Ilmu Komputer"
+                        disabled={isLoading}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '&.Mui-focused fieldset': { borderColor: '#6E00BE' },
+                            '&:hover fieldset': { borderColor: '#6E00BE' }
+                          },
+                          '& .MuiInputLabel-root.Mui-focused': { color: '#6E00BE' }
+                        }}
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start"><School sx={{ color: '#6E00BE' }} /></InputAdornment>,
+                          sx: { borderRadius: '12px' }
+                        }}
+                      />
+                      <TextField
+                        fullWidth
+                        label="Tahun Angkatan"
+                        name="year"
+                        type="number"
+                        value={formData.year}
+                        onChange={handleChange}
+                        required
+                        placeholder="2023"
+                        disabled={isLoading}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '&.Mui-focused fieldset': { borderColor: '#6E00BE' },
+                            '&:hover fieldset': { borderColor: '#6E00BE' }
+                          },
+                          '& .MuiInputLabel-root.Mui-focused': { color: '#6E00BE' }
+                        }}
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start"><CalendarMonth sx={{ color: '#6E00BE' }} /></InputAdornment>,
+                          sx: { borderRadius: '12px' }
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                         <TextField
+                            fullWidth
+                            label="IPK"
+                            name="gpa"
+                            value={formData.gpa}
+                            onChange={handleChange}
+                            required
+                            placeholder="3.50"
+                            disabled={isLoading}
+                            inputProps={{ step: "0.01", min: "0", max: "4.00" }}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                '&.Mui-focused fieldset': { borderColor: '#6E00BE' },
+                                '&:hover fieldset': { borderColor: '#6E00BE' }
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': { color: '#6E00BE' }
+                            }}
+                            InputProps={{
+                              startAdornment: <InputAdornment position="start"><Grade sx={{ color: '#6E00BE' }} /></InputAdornment>,
+                              sx: { borderRadius: '12px' }
+                            }}
+                          />
+                          <TextField
+                            fullWidth
+                            label="Instagram Username"
+                            name="instagram_username"
+                            value={formData.instagram_username}
+                            onChange={handleChange}
+                            required
+                            placeholder="@username"
+                            disabled={isLoading}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                '&.Mui-focused fieldset': { borderColor: '#6E00BE' },
+                                '&:hover fieldset': { borderColor: '#6E00BE' }
+                              },
+                              '& .MuiInputLabel-root.Mui-focused': { color: '#6E00BE' }
+                            }}
+                            InputProps={{
+                              startAdornment: <InputAdornment position="start"><Instagram sx={{ color: '#6E00BE' }} /></InputAdornment>,
+                              sx: { borderRadius: '12px' }
+                            }}
+                          />
+                    </Box>
+                    </>
                   ) : (
                     <TextField
                       fullWidth

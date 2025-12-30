@@ -30,3 +30,27 @@ code {
 .step-indicator-container::-webkit-scrollbar-thumb:hover {
   background: #a0aec0;
 }
+
+/* Toastify Customization */
+:root {
+  --toastify-color-success: #6E00BE !important;
+}
+
+.Toastify__toast--success {
+  background: #fff !important;
+  color: #333 !important;
+  border-left: 6px solid #6E00BE !important;
+}
+
+.Toastify__progress-bar--success {
+  background: #6E00BE !important;
+}
+
+.Toastify__toast-icon.Toastify--animate-icon.Toastify__zoom-enter {
+  color: #6E00BE !important;
+  fill: #6E00BE !important;
+}
+
+.Toastify__toast-icon > svg {
+  fill: #6E00BE !important;
+}

@@ -297,7 +297,7 @@ function LandingPage() {
                   Influent adalah jembatan inovatif yang menghubungkan aspirasi bisnis UMKM dengan kreativitas mahasiswa. 
                   Platform kami dirancang untuk menciptakan simbiosis mutualisme yang mendorong pertumbuhan ekonomi lokal.
                 </Typography>
-                <Grid container spacing={4} sx={{ mt: 2 }}>
+                {/* <Grid container spacing={4} sx={{ mt: 2 }}>
                   {[
                     { number: '1000+', label: 'UMKM Terdaftar' },
                     { number: '5000+', label: 'Influencer Mahasiswa' },
@@ -307,7 +307,7 @@ function LandingPage() {
                       <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
                     </Grid>
                   ))}
-                </Grid>
+                </Grid> */}
              </Grid>
            </Grid>
         </Container>
@@ -503,7 +503,7 @@ function LandingPage() {
                  ))}
                </Stack>
             </Grid>
-            <Grid item xs={12} md={2}>
+            {/* <Grid item xs={12} md={2}>
                <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ mb: 2 }}>Dukungan</Typography>
                <Stack spacing={1.5}>
                  {['Pusat Bantuan', 'Syarat & Ketentuan', 'Kebijakan Privasi', 'Hubungi Kami'].map((text, idx) => (
@@ -512,7 +512,7 @@ function LandingPage() {
                    </Link>
                  ))}
                </Stack>
-            </Grid>
+            </Grid> */}
             <Grid item xs={12} md={4}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ mb: 2 }}>Hubungi Kami</Typography>
               <Stack spacing={2}>

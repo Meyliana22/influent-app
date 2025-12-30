@@ -54,13 +54,13 @@ const studentService = {
     }
   },
 
-  updateProfileImage: async (imageFile) => {
+  updateProfileImage: async (userId, imageFile) => {
     try {
       const formData = new FormData();
       formData.append('profile_image', imageFile);
 
-      const response = await authFetch(`${API_BASE_URL}/students/profile/image`, {
-        method: 'PUT',
+      const response = await authFetch(`${API_BASE_URL}/upload/user/${userId}/profile`, {
+        method: 'POST',
         body: formData,
       });
       return await handleResponse(response);

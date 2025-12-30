@@ -158,7 +158,17 @@ export async function verifyEmail(email, otp) {
     throw new Error(error.message || 'Verification failed');
   }
 
-  return await response.json();
+  const data = await response.json();
+  
+  // Handle token storage if provided in verification response
+  if (data.success && data.data && data.data.token) {
+    localStorage.setItem('token', data.data.token);
+    if (data.data.user) {
+      localStorage.setItem('user', JSON.stringify(data.data.user));
+    }
+  }
+
+  return data;
 }
 
 /**
@@ -314,7 +324,7 @@ export async function loginWithInstagram(code) {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || 'Instagram login failed');
+    throw new Error(error.message || 'Gagal Masuk dengan Instagram');
   }
 
   const data = await response.json();

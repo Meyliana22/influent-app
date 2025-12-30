@@ -10,8 +10,12 @@ import { useToast } from '../../hooks/useToast';
 import authService from '../../services/authService';
 import studentService from '../../services/studentService';
 import companyService from '../../services/companyService';
-import { Avatar, IconButton, Badge } from '@mui/material';
+import { Avatar, IconButton, Badge, Divider } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import PersonIcon from '@mui/icons-material/Person';
+import LockIcon from '@mui/icons-material/Lock';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 function UserPage() {
   const navigate = useNavigate();
@@ -149,8 +153,13 @@ function UserPage() {
       if (!file) return;
       try {
           if (userRole === 'student') {
-              await studentService.updateProfileImage(file);
-              fetchStudentProfile();
+              const userId = studentData.user_id || studentData.user?.id;
+              if (userId) {
+                  await studentService.updateProfileImage(userId, file);
+                  fetchStudentProfile();
+              } else {
+                  showToast('Gagal: ID User tidak ditemukan', 'error');
+              }
           } else {
               // Use user_id from fetched data
               const userId = companyData.user.user_id || companyData.user.id;
@@ -256,7 +265,7 @@ function UserPage() {
     <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif", background: '#f8fafc', minHeight: '100vh' }}>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
-      <div style={{ marginLeft: !isMobile ? '260px' : '0', flex: 1, overflowX: 'hidden' }}>
+      <div style={{ marginLeft: !isMobile ? '0' : '0', flex: 1, overflowX: 'hidden' }}>
         <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
         
         <div style={{ marginTop: '72px', padding: '32px' }}>
@@ -316,38 +325,55 @@ function UserPage() {
                 </Card>
 
                 <Card style={{ padding: '16px', border: '1px solid #e2e8f0', boxShadow: 'none', borderRadius: '16px' }}>
-                  <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {[
-                      { id: 'profile', label: 'Profil Saya', icon: '👤' },
-                      { id: 'password', label: 'Keamanan', icon: '🔒' },
-                    ].map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        style={{
-                          width: '100%',
-                          padding: '12px 16px',
-                          border: 'none',
-                          borderRadius: '12px',
-                          background: activeTab === tab.id ? '#eff6ff' : 'transparent',
-                          color: activeTab === tab.id ? '#4f46e5' : '#64748b',
-                          fontWeight: activeTab === tab.id ? 600 : 500,
-                          fontSize: '0.9rem',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>{tab.icon}</span>
-                        {tab.label}
-                      </button>
-                    ))}
-                  </nav>
+                      { id: 'profile', label: 'Profil Saya', icon: PersonIcon },
+                      { id: 'password', label: 'Keamanan', icon: LockIcon },
+                      { id: 'notifications', label: 'Notifikasi', icon: NotificationsIcon },
+                    ].map(tab => {
+                      const Icon = tab.icon;
+                      const isActive = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            border: 'none',
+                            borderRadius: '12px',
+                            background: isActive ? '#eff6ff' : 'transparent',
+                            color: isActive ? '#4f46e5' : '#64748b',
+                            fontWeight: isActive ? 600 : 500,
+                            fontSize: '0.95rem',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                             if (!isActive) {
+                               e.currentTarget.style.background = '#f8fafc';
+                               e.currentTarget.style.color = '#1e293b';
+                             }
+                          }}
+                          onMouseLeave={(e) => {
+                             if (!isActive) {
+                               e.currentTarget.style.background = 'transparent';
+                               e.currentTarget.style.color = '#64748b';
+                             }
+                          }}
+                        >
+                          <Icon sx={{ fontSize: 20 }} />
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                   
-                  <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid #f1f5f9' }} />
+                  <Divider sx={{ my: 2 }} />
                   
                   <button
                     onClick={handleLogout}
@@ -359,16 +385,18 @@ function UserPage() {
                       background: '#fef2f2',
                       color: '#ef4444',
                       fontWeight: 600,
-                      fontSize: '0.9rem',
+                      fontSize: '0.95rem',
                       cursor: 'pointer',
                       textAlign: 'left',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s ease'
                     }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#fee2e2'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#fef2f2'}
                   >
-                    <span>🚪</span>
+                    <LogoutIcon sx={{ fontSize: 20 }} />
                     Keluar
                   </button>
                 </Card>

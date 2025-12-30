@@ -31,7 +31,7 @@ import { toast } from 'react-toastify';
 
 function CampaignList() {
   const navigate = useNavigate();
-
+  const apiImage = process.env.REACT_APP_API_IMAGE_URL;
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [campaigns, setCampaigns] = useState([]); // Stores ALL campaigns (raw data)
@@ -138,7 +138,7 @@ function CampaignList() {
     setConfirmMessage("Apakah Anda yakin ingin menyelesaikan campaign ini? Pastikan semua deliverables sudah diterima.");
     setOnConfirm(() => async () => {
        try {
-          await campaignService.updateCampaignStatus(campaignId, 'completed');
+          await campaignService.completeCampaign(campaignId);
           toast.success("Campaign berhasil diselesaikan!");
           loadData();
        } catch (error) {
@@ -336,7 +336,7 @@ function CampaignList() {
   const getBannerUrl = (image) => {
      if (!image) return null;
      if (image.startsWith('http') || image.startsWith('data:')) return image;
-     return `http://localhost:8000/api/uploads/${image}`;
+     return `${apiImage}/${image}`;
   };
 
   return (

@@ -20,6 +20,11 @@ import {
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import ErrorIcon from '@mui/icons-material/Error';
+import InfoIcon from '@mui/icons-material/Info';
+import MailIcon from '@mui/icons-material/Mail';
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '../../services/notificationService';
 const NotificationBell = () => {
   const navigate = useNavigate();
@@ -181,19 +186,30 @@ const NotificationBell = () => {
   };
 
   // Get notification icon based on type
-  const getNotificationIcon = (type) => {
-    const iconStyle = { fontSize: 20, mr: 1.5 };
+  const getNotificationIcon = (type, title = '') => {
+    const iconProps = { fontSize: 'small' };
+    
+    // Check title specific scenarios first if type is generic
+    const lowerTitle = title.toLowerCase();
+    
+    if (lowerTitle.includes('approved') || lowerTitle.includes('disetujui')) {
+        return <CheckCircleIcon {...iconProps} sx={{ color: '#10b981' }} />; // Green
+    }
+    if (lowerTitle.includes('rejected') || lowerTitle.includes('ditolak')) {
+        return <ErrorIcon {...iconProps} sx={{ color: '#ef4444' }} />; // Red
+    }
+
     switch (type) {
       case 'campaign':
-        return '📋';
+        return <CampaignIcon {...iconProps} sx={{ color: '#6E00BE' }} />;
       case 'payment':
-        return '💰';
+        return <MonetizationOnIcon {...iconProps} sx={{ color: '#f59e0b' }} />; // Amber
       case 'violation':
-        return '⚠️';
+        return <ErrorIcon {...iconProps} sx={{ color: '#ef4444' }} />;
       case 'system':
-        return '🔔';
+        return <InfoIcon {...iconProps} sx={{ color: '#3b82f6' }} />; // Blue
       default:
-        return '📬';
+        return <MailIcon {...iconProps} sx={{ color: '#64748b' }} />;
     }
   };
 
@@ -315,41 +331,56 @@ const NotificationBell = () => {
               onClick={() => handleNotificationClick(notification)}
               sx={{
                 px: 2,
-                py: 1.5,
+                py: 2,
                 display: 'flex',
                 alignItems: 'flex-start',
-                gap: 1.5,
-                bgcolor: notification.is_read ? 'transparent' : 'rgba(102, 126, 234, 0.05)',
-                borderLeft: notification.is_read ? 'none' : '3px solid #667eea',
+                gap: 2,
+                bgcolor: notification.is_read ? 'transparent' : '#f5f3ff', // Light purple bg for unread
+                borderLeft: notification.is_read ? '3px solid transparent' : '3px solid #6E00BE',
+                borderBottom: '1px solid #f1f5f9',
+                transition: 'all 0.2s',
                 '&:hover': {
-                  bgcolor: 'rgba(102, 126, 234, 0.1)',
+                  bgcolor: '#faf5ff',
                 },
               }}
             >
               {/* Icon */}
-              <Box sx={{ fontSize: 24, flexShrink: 0, mt: 0.5 }}>
-                {getNotificationIcon(notification.type)}
+              <Box sx={{ 
+                mt: 0.5,
+                p: 1, 
+                bgcolor: '#fff', 
+                borderRadius: '50%', 
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {getNotificationIcon(notification.type, notification.title)}
               </Box>
 
               {/* Content */}
               <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.5 }}>
+                    <Typography
+                      sx={{
+                        fontSize: 14,
+                        fontWeight: notification.is_read ? 500 : 700,
+                        color: notification.is_read ? '#475569' : '#1e293b',
+                        lineHeight: 1.3,
+                        mr: 1
+                      }}
+                    >
+                      {notification.title}
+                    </Typography>
+                    <Typography sx={{ fontSize: 11, color: '#94a3b8', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                      {formatTimeAgo(notification.created_at)}
+                    </Typography>
+                </Box>
                 <Typography
                   sx={{
                     fontSize: 13,
-                    fontWeight: notification.is_read ? 500 : 700,
-                    color: '#333',
-                    mb: 0.5,
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {notification.title}
-                </Typography>
-                <Typography
-                  sx={{
-                    fontSize: 12,
-                    color: '#666',
-                    mb: 0.5,
-                    lineHeight: 1.4,
+                    color: '#64748b',
+                    lineHeight: 1.5,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     display: '-webkit-box',
@@ -359,24 +390,9 @@ const NotificationBell = () => {
                 >
                   {notification.message}
                 </Typography>
-                <Typography sx={{ fontSize: 11, color: '#999', mt: 0.5 }}>
-                  {formatTimeAgo(notification.created_at)}
-                </Typography>
               </Box>
 
-              {/* Read indicator */}
-              {!notification.is_read && (
-                <Box
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    bgcolor: '#667eea',
-                    flexShrink: 0,
-                    mt: 1,
-                  }}
-                />
-              )}
+              {/* Read indicator - remove redundant dot since we have background color and border */}
             </MenuItem>
           ))
         )}
