@@ -185,6 +185,37 @@ function AdminTransactions() {
     window.URL.revokeObjectURL(url);
   };
 
+  const translateType = (type) => {
+    switch (type?.toLowerCase()) {
+      case 'credit': return 'Kredit';
+      case 'debit': return 'Debit';
+      default: return type || '-';
+    }
+  };
+
+  const translateStatus = (status) => {
+    const normalized = status?.toLowerCase();
+    switch (normalized) {
+      case 'completed':
+      case 'success': return 'Berhasil';
+      case 'pending': return 'Tertunda';
+      case 'failed': return 'Gagal';
+      case 'cancelled': return 'Dibatalkan';
+      default: return status || '-';
+    }
+  };
+
+  const translateCategory = (category) => {
+    switch (category?.toLowerCase()) {
+      case 'campaign': return 'Kampanye';
+      case 'withdrawal': return 'Penarikan';
+      case 'refund': return 'Pengembalian Dana';
+      case 'payment': return 'Pembayaran';
+      case 'topup': return 'Top Up';
+      default: return category || '-';
+    }
+  };
+
   const getTypeColor = (type) => {
     const normalizedType = (type || '').toLowerCase();
     if (normalizedType === 'credit') return 'success';
@@ -376,7 +407,7 @@ function AdminTransactions() {
                     onClick={loadTransactions}
                     disabled={loading}
                   >
-                    Refresh
+                    Muat Ula
                   </Button>
                   <Button
                     variant="contained"
@@ -447,13 +478,14 @@ function AdminTransactions() {
                             <TableCell>{userName}</TableCell>
                             <TableCell>
                               <Chip
-                                label={type?.toUpperCase() || '-'}
+                                label={translateType(type)}
                                 color={getTypeColor(type)}
                                 size="small"
+                                sx={{ textTransform: 'capitalize' }}
                               />
                             </TableCell>
                             <TableCell>
-                              {category || '-'}
+                              {translateCategory(category)}
                             </TableCell>
                             <TableCell>
                               <Typography
@@ -468,9 +500,10 @@ function AdminTransactions() {
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={status?.replace('_', ' ') || '-'}
+                                label={translateStatus(status)}
                                 color={getStatusColor(status)}
                                 size="small"
+                                sx={{ textTransform: 'capitalize' }}
                               />
                             </TableCell>
                             <TableCell>
@@ -548,9 +581,10 @@ function AdminTransactions() {
                   <Typography variant="caption" color="text.secondary">Tipe</Typography>
                   <Box sx={{ mt: 0.5 }}>
                     <Chip
-                      label={(selectedTransaction.type || selectedTransaction.transaction_type)?.toUpperCase()}
+                      label={translateType(selectedTransaction.type || selectedTransaction.transaction_type)}
                       color={getTypeColor(selectedTransaction.type || selectedTransaction.transaction_type)}
                       size="small"
+                      sx={{ textTransform: 'capitalize' }}
                     />
                   </Box>
                 </Grid>
@@ -558,9 +592,10 @@ function AdminTransactions() {
                   <Typography variant="caption" color="text.secondary">Status</Typography>
                   <Box sx={{ mt: 0.5 }}>
                     <Chip
-                      label={selectedTransaction.status || selectedTransaction.transaction_status}
+                      label={translateStatus(selectedTransaction.status || selectedTransaction.transaction_status)}
                       color={getStatusColor(selectedTransaction.status || selectedTransaction.transaction_status)}
                       size="small"
+                      sx={{ textTransform: 'capitalize' }}
                     />
                   </Box>
                 </Grid>
@@ -569,7 +604,7 @@ function AdminTransactions() {
               <Box>
                 <Typography variant="caption" color="text.secondary">Kategori</Typography>
                 <Typography variant="body2">
-                  {selectedTransaction.category || selectedTransaction.transaction_category || '-'}
+                  {translateCategory(selectedTransaction.category || selectedTransaction.transaction_category)}
                 </Typography>
               </Box>
 

@@ -97,7 +97,7 @@ function ForgotPasswordPage() {
                    <img src={lockIcon} alt="Lock" style={{ width: '100px', height: '100px', marginBottom: '16px' }} />
                </div>
                <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '8px', color: '#2d3748' }}>
-                 {stage === 'email' ? 'Lupa Password?' : 'Reset Password'}
+                 {stage === 'email' ? 'Lupa Kata Sandi?' : 'Reset kata Sandi'}
                </h1>
                <p style={{ color: '#6c757d', fontSize: '0.95rem', lineHeight: '1.6' }}>
                  {stage === 'email' 

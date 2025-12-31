@@ -139,6 +139,19 @@ const MyApplications = () => {
     }
   };
 
+  const translateStatus = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'accepted': return 'Diterima';
+      case 'rejected': return 'Ditolak';
+      case 'cancelled': return 'Dibatalkan';
+      case 'pending': return 'Menunggu';
+      case 'active': return 'Aktif';
+      case 'inactive': return 'Tidak Aktif';
+      case 'completed': return 'Selesai';
+      default: return status || '-';
+    }
+  };
+
   return (
     <Box sx={{ display: 'flex', fontFamily: "'Inter', sans-serif" }}>
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -233,7 +246,7 @@ const MyApplications = () => {
                       </TableCell>
                       <TableCell>
                         <Chip 
-                          label={app.application_status || 'Tertunda'} 
+                          label={translateStatus(app.application_status)} 
                           color={getStatusColor(app.application_status)}
                           size="small"
                           sx={{ fontWeight: 600, textTransform: 'capitalize' }}
@@ -364,7 +377,7 @@ const MyApplications = () => {
 
                     <Box sx={{ mb: '16px' }}>
                       <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Status</Typography>
-                      <Typography sx={{ mt: '4px', fontSize: '1rem', fontWeight: 700, textTransform: 'capitalize', color: selectedCampaign.status === 'active' ? '#155724' : '#6c757d' }}>{selectedCampaign.status}</Typography>
+                      <Typography sx={{ mt: '4px', fontSize: '1rem', fontWeight: 700, textTransform: 'capitalize', color: selectedCampaign.status === 'active' ? '#155724' : '#6c757d' }}>{translateStatus(selectedCampaign.status)}</Typography>
                     </Box>
 
                     <Box sx={{ mb: '16px' }}>

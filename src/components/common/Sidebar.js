@@ -54,27 +54,27 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
       case 'company':
       case 'umkm':
         return [
-          { icon: DashboardIcon, label: 'Dashboard', path: '/campaign/dashboard' },
-          { icon: ListIcon, label: 'Daftar Kampanye', path: '/campaigns/list' },
-          { icon: TransactionsIcon, label: 'Riwayat Transaksi', path: '/campaign/transactions' },
+          { icon: DashboardIcon, label: 'Dasbor', path: '/campaign/dashboard' },
+          { icon: ListIcon, label: 'Kampanye', path: '/campaigns/list' },
+          { icon: TransactionsIcon, label: 'Transaksi', path: '/campaign/transactions' },
           { icon: ChatIcon, label: 'Pesan', path: '/chat' },
         ];
       case 'admin':
         return [
-          { icon: DashboardIcon, label: 'Dashboard', path: '/admin/dashboard' },
-          { icon: PeopleIcon, label: 'Kelola Pengguna', path: '/admin/users' },
-          { icon: CampaignIcon, label: 'Kelola Kampanye', path: '/admin/campaigns' },
+          { icon: DashboardIcon, label: 'Dasbor', path: '/admin/dashboard' },
+          { icon: PeopleIcon, label: 'Pengguna', path: '/admin/users' },
+          { icon: CampaignIcon, label: 'Kampanye', path: '/admin/campaigns' },
           { icon: GavelIcon, label: 'Tinjau Pengajuan', path: '/admin/review-submissions' },
           { icon: TransactionsIcon, label: 'Transaksi', path: '/admin/transactions' },
           { icon: AccountBalanceWalletIcon, label: 'Penarikan', path: '/admin/withdrawals' },
-          { icon: BarChartIcon, label: 'Laporan', path: '/admin/reports' },
+          // { icon: BarChartIcon, label: 'Laporan', path: '/admin/reports' },
           { icon: ChatIcon, label: 'Pesan', path: '/chat' },
         ];
       case 'influencer':
       case 'student':
       default:
         return [
-          { icon: DashboardIcon, label: 'Dashboard', path: '/student/dashboard' },
+          { icon: DashboardIcon, label: 'Dasbor', path: '/student/dashboard' },
           { icon: BrowseIcon, label: 'Jelajahi Kampanye', path: '/student/browse-campaigns' },
           { icon: CollaborationsIcon, label: 'Kolaborasi Saya', path: '/student/my-applications' },
           { icon: TransactionsIcon, label: 'Transaksi', path: '/student/transactions' },
@@ -88,13 +88,13 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
     switch (userRole) {
       case 'umkm':
       case 'company':
-        return 'Dashboard UMKM';
+        return 'Dasbor UMKM';
       case 'admin':
-        return 'Dashboard Admin';
+        return 'Dasbor Admin';
       case 'influencer':
       case 'student':
       default:
-        return 'Dashboard Influencer';
+        return 'Dasbor Influencer';
     }
   };
 
@@ -307,7 +307,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
           textAlign: 'center'
         }}
       >
-        © 2025 Influent. All rights reserved.
+        © 2025 Influent. Semua hak dilindungi.
       </Box>
     </Box>
   );

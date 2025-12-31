@@ -155,6 +155,36 @@ function Transactions() {
     }
   };
 
+  const translateStatus = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'completed': return 'Selesai';
+      case 'pending': return 'Menunggu';
+      case 'failed': return 'Gagal';
+      case 'rejected': return 'Ditolak';
+      case 'approved': return 'Disetujui';
+      case 'processed': return 'Diproses';
+      default: return status || '-';
+    }
+  };
+
+  const translateType = (type) => {
+    switch (type?.toLowerCase()) {
+      case 'credit': return 'Pemasukan';
+      case 'debit': return 'Pengeluaran';
+      default: return type?.toUpperCase() || '-';
+    }
+  };
+
+  const translateCategory = (category) => {
+    switch (category?.toLowerCase()) {
+      case 'campaign_payment': return 'Pembayaran Kampanye';
+      case 'withdrawal': return 'Penarikan Dana';
+      case 'refund': return 'Pengembalian Dana';
+      case 'bonus': return 'Bonus';
+      default: return category?.replace('_', ' ') || '-';
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f9fafb' }}>
@@ -254,14 +284,14 @@ function Transactions() {
                             <TableCell>{tx.description}</TableCell>
                             <TableCell>
                               <Chip 
-                                label={tx.category.replace('_', ' ')} 
+                                label={translateCategory(tx.category)} 
                                 size="small" 
                                 sx={{ textTransform: 'capitalize' }} 
                               />
                             </TableCell>
                             <TableCell>
                               <Typography color={tx.type === 'credit' ? 'success.main' : 'error.main'} fontWeight="600" fontSize="0.875rem">
-                                {tx.type.toUpperCase()}
+                                {translateType(tx.type)}
                               </Typography>
                             </TableCell>
                             <TableCell align="right">
@@ -307,7 +337,7 @@ function Transactions() {
                             <TableCell>{wd.account_holder_name}</TableCell>
                             <TableCell>
                               <Chip 
-                                label={wd.status} 
+                                label={translateStatus(wd.status)} 
                                 color={getStatusColor(wd.status)}
                                 size="small"
                                 sx={{ textTransform: 'capitalize', fontWeight: 'bold' }} 

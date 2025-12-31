@@ -132,8 +132,9 @@ function ManageWithdrawals() {
     ).length,
     totalAmount: withdrawals
       .filter(w => (w.status || w.withdrawal_status) === 'completed')
-      .reduce((sum, w) => sum + (w.amount || 0), 0)
+      .reduce((sum, w) => sum + (parseInt(w.amount) || 0), 0)
   };
+  console.log(stats)
 
   // Filter withdrawals
   const filteredWithdrawals = withdrawals.filter(withdrawal => {
@@ -277,7 +278,19 @@ function ManageWithdrawals() {
     return 'default';
   };
 
+  const translateStatus = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'approved': return 'Disetujui';
+      case 'rejected': return 'Ditolak';
+      case 'pending': return 'Tertunda';
+      case 'completed': return 'Selesai';
+      case 'cancelled': return 'Dibatalkan';
+      default: return status?.replace('_', ' ') || '-';
+    }
+  };
+
   const formatCurrency = (amount) => {
+    console.log(amount  )
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
@@ -429,7 +442,7 @@ function ManageWithdrawals() {
                   onClick={loadWithdrawals}
                   disabled={loading}
                 >
-                  Segarkan
+                  Muat Ulang
                 </Button>
               </Grid>
             </Grid>
@@ -500,9 +513,10 @@ function ManageWithdrawals() {
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={status?.replace('_', ' ').toUpperCase() || '-'}
+                                label={translateStatus(status)}
                                 color={getStatusColor(status)}
                                 size="small"
+                                sx={{ textTransform: 'capitalize' }}
                               />
                             </TableCell>
                             <TableCell>
@@ -628,9 +642,10 @@ function ManageWithdrawals() {
                 <Typography variant="caption" color="text.secondary">Status</Typography>
                 <Box sx={{ mt: 0.5 }}>
                   <Chip
-                    label={(selectedWithdrawal.status || selectedWithdrawal.withdrawal_status)?.replace('_', ' ').toUpperCase()}
+                    label={translateStatus(selectedWithdrawal.status || selectedWithdrawal.withdrawal_status)}
                     color={getStatusColor(selectedWithdrawal.status || selectedWithdrawal.withdrawal_status)}
                     size="small"
+                    sx={{ textTransform: 'capitalize' }}
                   />
                 </Box>
               </Box>
@@ -672,7 +687,7 @@ function ManageWithdrawals() {
               Ini akan menyetujui permintaan penarikan dan mengizinkannya untuk diproses ke pembayaran.
             </Alert>
             <TextField
-              label="Review Notes (Optional)"
+              label="Catatan Tinjauan (Opsional)"
               multiline
               rows={3}
               value={reviewNotes}

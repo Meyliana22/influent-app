@@ -348,9 +348,15 @@ const CampaignWorkPage = () => {
   };
 
   const getStatusLabel = (status, type) => {
-    if (type === 'draft') return 'Draf';
-    // Capitalize status
-    return status ? status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ') : 'Dikirim';
+    if (type === 'draft') return 'Draft';
+    switch (status?.toLowerCase()) {
+      case 'approved': return 'Disetujui';
+      case 'rejected': return 'Ditolak';
+      case 'revision_requested': return 'Revisi Diminta';
+      case 'pending': return 'Menunggu';
+      case 'verified': return 'Terverifikasi';
+      default: return 'Dikirim';
+    }
   };
 
   if (loading) {
@@ -540,7 +546,7 @@ const CampaignWorkPage = () => {
                                size="small" 
                                onClick={() => handleOpenEdit(sub)}
                              >
-                               Edit
+                               Ubah
                              </Button>
                           ) : (
                              <Button 

@@ -41,7 +41,14 @@ const ApplicantCard = ({
   showActions = true,
   canSelectApplicants = false
 }) => {
+  const apiImage = process.env.REACT_APP_API_IMAGE_URL;
   // Status configuration for Material UI with custom flat styling
+  const getProfileImage = (profileImage) => {
+    if (profileImage) {
+      return `${apiImage}/${profileImage}`;
+    }
+    // return 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png';
+  };
   const getStatusConfig = (status) => {
     const configs = {
       'Pending': { 
@@ -97,7 +104,7 @@ const ApplicantCard = ({
           {/* Avatar & Star Favorite */}
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 120 }}>
             <Avatar 
-              src={applicant.profileImage}
+              src={getProfileImage(applicant.profileImage)}
               alt={applicant.fullName}
               sx={{ 
                 width: 100, 

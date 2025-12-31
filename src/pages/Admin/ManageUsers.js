@@ -219,6 +219,24 @@ function ManageUsers() {
     }
   };
 
+  const translateRole = (role) => {
+    switch (role?.toLowerCase()) {
+      case 'student': return 'Mahasiswa';
+      case 'company': return 'UMKM';
+      case 'admin': return 'Admin';
+      default: return role;
+    }
+  };
+
+  const translateStatus = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'active': return 'Aktif';
+      case 'inactive': return 'Tidak Aktif';
+      case 'suspended': return 'Ditangguhkan';
+      default: return status;
+    }
+  };
+
   // Filter users based on role, status, and search
   const filteredUsers = users.filter(user => {
     const matchesRole = !filterRole || user.role === filterRole;
@@ -273,7 +291,7 @@ function ManageUsers() {
                 }
               }}
             >
-              Segarkan
+              Muat Ulang
             </Button>
           </Box>
 
@@ -420,7 +438,7 @@ function ManageUsers() {
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={user.role}
+                                label={translateRole(user.role)}
                                 size="small"
                                 sx={{
                                   fontSize: 12,
@@ -431,7 +449,7 @@ function ManageUsers() {
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={user.status || 'active'}
+                                label={translateStatus(user.status || 'active')}
                                 size="small"
                                 sx={{
                                   bgcolor: statusColors.bg,

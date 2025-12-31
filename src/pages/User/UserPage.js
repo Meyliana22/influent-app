@@ -23,7 +23,7 @@ function UserPage() {
   const [activeTab, setActiveTab] = useState('profile');
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+  const apiImage = process.env.REACT_APP_API_IMAGE_URL;
   // Responsive state for sidebar
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1000);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
@@ -49,6 +49,11 @@ function UserPage() {
     user: { name: '', email: '', profile_image: null }
   });
 
+  // const getImageUrl = (image) => {
+  //   if (!image) return null;
+  //   if (image.startsWith('http') || image.startsWith('data:')) return image;
+  //   return `${apiImage}/${image}`;
+  // };
   // Common Profile Image
   const [profileImage, setProfileImage] = useState(null);
 
@@ -83,6 +88,7 @@ function UserPage() {
         
         if (role === 'student') {
             fetchStudentProfile();
+            setProfileImage(userData.profile_image);
         } else if (role === 'umkm' || role === 'company') {
             setUserRole('umkm'); // standardize
             // Populate company data directly from user data (from /me)
@@ -95,6 +101,7 @@ function UserPage() {
                  deskripsi: userData.description || '', 
                  user: userData
             });
+            console.log(companyData);
             setProfileImage(userData.profile_image);
         }
       } catch (err) {
@@ -127,7 +134,8 @@ function UserPage() {
                year: yearVal,
                user: res.data.user || {}
            });
-           setProfileImage(res.data.user?.profile_image);
+          //  console.log(res.data);
+          //  setProfileImage(res.data.user?.profile_image);
         }
     } catch (err) {
         console.error(err);
@@ -258,7 +266,8 @@ function UserPage() {
   const getImageUrl = (imageName) => {
       if (!imageName) return null;
       if (imageName.startsWith('http')) return imageName;
-      return `http://localhost:8000/api/uploads/${imageName}`;
+      console.log(`${apiImage}/${imageName}`)
+      return `${apiImage}/${imageName}`;
   };
 
   return (

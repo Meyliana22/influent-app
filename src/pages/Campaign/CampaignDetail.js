@@ -654,10 +654,10 @@ function CampaignDetail() {
                 {campaign.campaign_category || 'No Category'}
               </Typography>
               <Chip
-                label={phase === 'closed' ? 'Closed' :
-                  phase === 'ongoing' ? 'Ongoing' :
-                  phase === 'awaiting-payout' ? 'Awaiting Payout' :
-                  phase === 'active' ? 'Active' :
+                label={phase === 'closed' ? 'Selesai' :
+                  phase === 'ongoing' ? 'Sedang Berjalan' :
+                  phase === 'awaiting-payout' ? 'Menunggu Pembayaran' :
+                  phase === 'active' ? 'Aktif' :
                   campaign.status}
                 sx={{
                   px: 2,

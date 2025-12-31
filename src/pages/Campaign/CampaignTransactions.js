@@ -200,6 +200,20 @@ function CampaignTransactions() {
     }
   };
 
+  const translateStatus = (status) => {
+    switch(status?.toLowerCase()) {
+      case 'success': return 'Berhasil';
+      case 'completed': return 'Selesai';
+      case 'paid': return 'Dibayar';
+      case 'pending': return 'Menunggu';
+      case 'failed': return 'Gagal';
+      case 'rejected': return 'Ditolak';
+      case 'refunded': return 'Dikembalikan';
+      case 'draft': return 'Draft';
+      default: return status || '-';
+    }
+  };
+
   const totalPaid = transactions
     .filter(t => t.normalizedStatus?.toLowerCase() === 'completed' || t.normalizedStatus?.toLowerCase() === 'paid' || t.normalizedStatus?.toLowerCase() === 'success')
     .reduce((sum, t) => sum + (parseFloat(t.normalizedAmount) || 0), 0);
@@ -313,7 +327,7 @@ function CampaignTransactions() {
                   count: transactions.filter(t => t.status?.toLowerCase() === 'paid' || t.status?.toLowerCase() === 'success').length
                 },
                 {
-                  title: 'Total Direfund',
+                  title: 'Total Dikembalikan',
                   value: `Rp ${totalRefunded.toLocaleString('id-ID')}`,
                   IconComponent: UndoIcon,
                   color: '#f59e0b',
@@ -363,7 +377,7 @@ function CampaignTransactions() {
                 <Box sx={{ flex: 1, minWidth: isMobile ? '100%' : 300 }}>
                   <TextField
                     fullWidth
-                    placeholder="Cari transaksi (ID, Campaign, Influencer)..."
+                    placeholder="Cari transaksi..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     size="medium"
@@ -381,8 +395,8 @@ function CampaignTransactions() {
                     onChange={(e) => setFilterStatus(e.target.value)}
                   >
                     <MenuItem value="all">Semua Status</MenuItem>
-                    <MenuItem value="Paid">Paid</MenuItem>
-                    <MenuItem value="Refunded">Refunded</MenuItem>
+                    <MenuItem value="Paid">Dibayar</MenuItem>
+                    <MenuItem value="Refunded">Dikembalikan</MenuItem>
                   </Select>
                 </FormControl>
               </Stack>
@@ -405,7 +419,7 @@ function CampaignTransactions() {
                   ) : (
                     <>
                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>ID</TableCell>
-                      <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Campaign</TableCell>
+                      <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>kampanye</TableCell>
                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Nominal</TableCell>
                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Status</TableCell>
                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Tanggal</TableCell>
@@ -445,7 +459,7 @@ function CampaignTransactions() {
                              </TableCell>
                              <TableCell sx={{ py: 2.5, pl: 3 }}>
                                <Chip 
-                                 label={wd.status} 
+                                 label={translateStatus(wd.status)} 
                                  sx={{ 
                                    fontSize: 12, 
                                    fontWeight: 600, 
@@ -486,7 +500,7 @@ function CampaignTransactions() {
                               </TableCell>
                               <TableCell sx={{ py: 2.5, pl: 3 }}>
                                 <Chip 
-                                  label={trx.normalizedStatus} 
+                                  label={translateStatus(trx.normalizedStatus)} 
                                   sx={{ 
                                     fontSize: 12, 
                                     fontWeight: 600, 
@@ -581,7 +595,7 @@ function CampaignTransactions() {
           <DialogContent sx={{ pt: 4, pb: 2.5, px: 4, bgcolor: '#f7fafc' }}>
             <Grid container spacing={3} sx={{ mb: 2.5 }}>
               <Grid item xs={12} sm={6}>
-                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Campaign</Typography>
+                <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Kampanye</Typography>
                 <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1a1f36' }}>
                   {selectedTransaction.normalizedCampaign || '-'}
                 </Typography>
@@ -613,7 +627,7 @@ function CampaignTransactions() {
               <Grid item xs={12} sm={6}>
                 <Typography sx={{ fontSize: 13.5, color: '#6c757d', mb: 0.5, fontWeight: 500 }}>Status</Typography>
                 <Chip 
-                  label={selectedTransaction.normalizedStatus} 
+                  label={translateStatus(selectedTransaction.normalizedStatus)} 
                   sx={{ 
                     fontSize: 13, 
                     fontWeight: 700, 

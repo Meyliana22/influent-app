@@ -31,7 +31,7 @@ function ViewApplicants() {
   const [filter, setFilter] = useState('');
   const [stats, setStats] = useState({ total: 0, pending: 0, accepted: 0, rejected: 0, selected: 0 });
   const [isLoading, setIsLoading] = useState(false);
-  
+  const apiImage = process.env.REACT_APP_API_IMAGE_URL;
   // Responsive state for sidebar
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1000);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
@@ -47,7 +47,12 @@ function ViewApplicants() {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-  
+    const getBannerUrl = (image) => {
+     if (!image) return null;
+     if (image.startsWith('http') || image.startsWith('data:')) return image;
+     console.log(`${apiImage}/${image}`);
+     return `${apiImage}/${image}`;
+  };
   // Modal states
   const [showModal, setShowModal] = useState(false);
   const [modalConfig, setModalConfig] = useState({
@@ -424,7 +429,7 @@ function ViewApplicants() {
                   {campaign.banner_image ? (
                     <Box 
                       component="img" 
-                      src={campaign.banner_image} 
+                    src={getBannerUrl(campaign.banner_image)}
                       alt={campaign.title}
                       sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />

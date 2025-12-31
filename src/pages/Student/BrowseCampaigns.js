@@ -33,7 +33,7 @@ import Button from '@mui/material/Button';
 
 import { useToast } from '../../hooks/useToast';
 
-const API_BASE_URL = 'http://localhost:8000/api/uploads';
+const API_BASE_URL = process.env.REACT_APP_API_IMAGE_URL
 
 const getImageUrl = (imageName) => {
   console.log(`${API_BASE_URL}/${imageName}`);
@@ -195,7 +195,19 @@ function BrowseCampaigns() {
         border: '1px solid #cbd5e0'
       }
     };
+
     return styles[status?.toLowerCase()] || styles['inactive'];
+  };
+
+  // Translate status helper
+  const translateStatus = (status) => {
+    switch(status?.toLowerCase()) {
+      case 'active': return 'Aktif';
+      case 'inactive': return 'Tidak Aktif';
+      case 'completed': return 'Selesai';
+      case 'closed': return 'Selesai';
+      default: return status;
+    }
   };
 
   // Filter campaigns based on search and filters
@@ -526,7 +538,7 @@ function BrowseCampaigns() {
                 return (
                   <Paper key={campaign.campaign_id} elevation={0} sx={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', transition: 'all 0.3s', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', cursor: 'pointer', height: '100%', '&:hover': { boxShadow: '0 8px 24px rgba(0,0,0,0.12)', transform: 'translateY(-4px)' } }}>
                     <Box sx={{ background: campaign.banner_image ? `url(${getImageUrl(campaign.banner_image)}) center/cover` : '#6E00BE', height: '160px', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', p: '12px', position: 'relative' }}>
-                      <Box sx={{ ...statusStyle, p: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize' }}>{campaign.status}</Box>
+                      <Box sx={{ ...statusStyle, p: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize' }}>{translateStatus(campaign.status)}</Box>
 
                       {campaign.rating && (
                         <Box sx={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(255,255,255,0.95)', p: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', fontWeight: 600 }}>
@@ -693,7 +705,7 @@ function BrowseCampaigns() {
 
                 <Box sx={{ mb: '16px' }}>
                   <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Status</Typography>
-                  <Typography sx={{ mt: '4px', fontSize: '1rem', fontWeight: 700, textTransform: 'capitalize', color: selectedCampaign.status === 'active' ? '#155724' : '#6c757d' }}>{selectedCampaign.status}</Typography>
+                  <Typography sx={{ mt: '4px', fontSize: '1rem', fontWeight: 700, textTransform: 'capitalize', color: selectedCampaign.status === 'active' ? '#155724' : '#6c757d' }}>{translateStatus(selectedCampaign.status)}</Typography>
                 </Box>
 
                 <Box sx={{ mb: '16px' }}>

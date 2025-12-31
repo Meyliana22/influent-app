@@ -57,7 +57,11 @@ const ReviewSubmissions = () => {
   const [reviewNotes, setReviewNotes] = useState('');
    const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filter, setFilter] = useState('all'); // all, pending, approved, rejected, revision_requested
-
+  const apiImage = process.env.REACT_APP_API_IMAGE_URL;
+  const getProfileImage = (url) => {
+    console.log(`${apiImage}/${url}`)
+    return `${apiImage}/${url}`
+  };
 
   useEffect(() => {
     loadData();
@@ -167,12 +171,12 @@ const ReviewSubmissions = () => {
       try {
           setIsLoading(true);
           await postSubmissionService.verifySubmission(postSubId, status);
-          showToast ? showToast(`Link ${status === 'verified' ? 'Verified' : 'Rejected'}`, status === 'verified' ? 'success' : 'warning') 
-                    : toast.success(`Link ${status}`);
+          showToast ? showToast(`Tautan ${status === 'verified' ? 'Terverifikasi' : 'Ditolak'}`, status === 'verified' ? 'success' : 'warning') 
+                    : toast.success(`Tautan ${status === 'verified' ? 'Terverifikasi' : 'Ditolak'}`);
           loadData();
       } catch (error) {
           console.error("Verify post error", error);
-          showToast ? showToast('Action failed', 'error') : toast.error('Action failed');
+          showToast ? showToast('Aksi gagal', 'error') : toast.error('Aksi gagal');
       } finally {
           setIsLoading(false);
       }
@@ -189,9 +193,22 @@ const ReviewSubmissions = () => {
     return statusColors[status] || 'default';
   };
 
+
+
+  const translateStatus = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'pending': return 'Menunggu';
+      case 'approved': return 'Disetujui';
+      case 'rejected': return 'Ditolak';
+      case 'revision_requested': return 'Revisi Diminta';
+      case 'verified': return 'Terverifikasi';
+      case 'draft': return 'Draft';
+      default: return status?.replace('_', ' ') || '-';
+    }
+  };
+
   const getStatusLabel = (status) => {
-    if (!status) return 'Unknown';
-    return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return translateStatus(status);
   };
 
   const filteredSubmissions = Array.isArray(submissions) 
@@ -238,7 +255,7 @@ const ReviewSubmissions = () => {
                 </IconButton>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
-                    Review Submissions
+                    Tinjau Pengajuan
                   </Typography>
                   <Typography variant="body1" sx={{ color: COLORS.textSecondary, mt: 0.5 }}>
                     {campaign?.title || 'Loading...'}
@@ -255,7 +272,7 @@ const ReviewSubmissions = () => {
                       {submissions.filter(s => s.status === 'pending' && s.submission_type !== 'draft').length}
                     </Typography>
                     <Typography variant="body2" sx={{ color: COLORS.textSecondary, fontSize: 13, fontWeight: 600 }}>
-                      Pending Review
+                      Menunggu Tinjauan
                     </Typography>
                   </Paper>
                 </Grid>
@@ -266,7 +283,7 @@ const ReviewSubmissions = () => {
                       {submissions.filter(s => s.status === 'approved').length}
                     </Typography>
                     <Typography variant="body2" sx={{ color: COLORS.textSecondary, fontSize: 13, fontWeight: 600 }}>
-                      Approved
+                      Disetujui
                     </Typography>
                   </Paper>
                 </Grid>
@@ -277,7 +294,7 @@ const ReviewSubmissions = () => {
                       {submissions.filter(s => s.status === 'revision_requested').length}
                     </Typography>
                     <Typography variant="body2" sx={{ color: COLORS.textSecondary, fontSize: 13, fontWeight: 600 }}>
-                      Revision Requested
+                      Revisi Diminta
                     </Typography>
                   </Paper>
                 </Grid>
@@ -288,7 +305,7 @@ const ReviewSubmissions = () => {
                       {submissions.filter(s => s.status === 'rejected').length}
                     </Typography>
                     <Typography variant="body2" sx={{ color: COLORS.textSecondary, fontSize: 13, fontWeight: 600 }}>
-                      Rejected
+                      Ditolak
                     </Typography>
                   </Paper>
                 </Grid>
@@ -313,7 +330,7 @@ const ReviewSubmissions = () => {
                       }
                     }}
                   >
-                    {status.replace('_', ' ')}
+                    {translateStatus(status)}
                   </Button>
                 ))}
               </Stack>
@@ -323,7 +340,7 @@ const ReviewSubmissions = () => {
                 <Paper elevation={0} sx={{ p: 6, textAlign: 'center', bgcolor: '#fff', border: '1px solid #e0e0e0', borderRadius: 2 }}>
                   <DescriptionIcon sx={{ fontSize: 64, color: COLORS.textSecondary, mb: 2 }} />
                   <Typography variant="h6" sx={{ color: COLORS.textPrimary, mb: 1, fontWeight: 600 }}>
-                    No submissions found
+                    Tidak ada pengajuan ditemukan
                   </Typography>
                 </Paper>
               ) : (
@@ -331,6 +348,7 @@ const ReviewSubmissions = () => {
                   {filteredSubmissions.map((submission) => {
                      // Check for 'User' (capitalized) which matches the provided JSON, fallback to 'user'
                      const student = submission.CampaignUser?.Student?.User || submission.CampaignUser?.Student?.user || submission.student?.user || {};
+                     console.log(student)
                      const studentProfile = submission.CampaignUser?.Student || submission.student || {};
                      return (
                       <Card 
@@ -348,8 +366,8 @@ const ReviewSubmissions = () => {
                         }}
                       >
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
-                          {/* Media Preview (First item) */}
-                          {(submission.content_url || (submission.submission_content && submission.submission_content[0]?.url)) && (
+                       
+                          {/* {(submission.content_url || (submission.submission_content && submission.submission_content[0]?.url)) && (
                             <Box 
                               sx={{ 
                                 width: { xs: '100%', md: 280 }, 
@@ -364,19 +382,21 @@ const ReviewSubmissions = () => {
                             >
                               <PlayIcon sx={{ fontSize: 48, color: '#bdbdbd' }} />
                             </Box>
-                          )}
+                          )} */}
       
-                          {/* Content */}
+                        
                           <Box sx={{ flex: 1, p: 3 }}>
                             {/* Student Info & Status */}
                             <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
                               <Stack direction="row" spacing={2} alignItems="center">
-                                <Avatar src={student.profile_picture} sx={{ bgcolor: '#6E00BE' }}>
+                                <Avatar src={getProfileImage(student.profile_image)} sx={{ bgcolor: '#6E00BE' }}>
                                   {student.name?.[0]?.toUpperCase() || 'S'}
                                 </Avatar>
                                 <Box>
                                   <Typography variant="h6" sx={{ fontWeight: 600, color: COLORS.textPrimary }}>
-                                    {student.name || 'Unknown Student'}
+                                  {/* <p>{student}</p> */}
+                                  
+                                    {student.name}
                                   </Typography>
                                   <Stack direction="row" spacing={1} alignItems="center">
                                     <InstagramIcon sx={{ fontSize: 16, color: COLORS.textSecondary }} />
@@ -442,7 +462,7 @@ const ReviewSubmissions = () => {
                             {submission.review_notes && (
                               <Box sx={{ mb: 2, p: 2, bgcolor: '#fff9e6', borderRadius: 1, borderLeft: '3px solid #ffa726' }}>
                                 <Typography variant="caption" sx={{ fontWeight: 700, color: '#f57c00', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                  Review Notes
+                                  Catatan Review
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: COLORS.textPrimary, mt: 0.5, lineHeight: 1.6 }}>
                                   {submission.review_notes}
@@ -461,7 +481,7 @@ const ReviewSubmissions = () => {
                                   color="success"
                                   sx={{ color: '#fff' }}
                                 >
-                                  Approve
+                                  Setujui
                                 </Button>
                                 <Button
                                   variant="outlined"
@@ -470,7 +490,7 @@ const ReviewSubmissions = () => {
                                   onClick={() => handleOpenReviewModal(submission, 'revision')}
                                   color="info"
                                 >
-                                  Request Revision
+                                  Minta Revisi
                                 </Button>
                                 <Button
                                   variant="outlined"
@@ -479,7 +499,7 @@ const ReviewSubmissions = () => {
                                   onClick={() => handleOpenReviewModal(submission, 'reject')}
                                   color="error"
                                 >
-                                  Reject
+                                  Tolak
                                 </Button>
                               </Stack>
                             )}
@@ -488,7 +508,7 @@ const ReviewSubmissions = () => {
                             {submission.status === 'approved' && (
                                 <Box sx={{ mt: 2, pt: 2, borderTop: '1px dashed #e0e0e0' }}>
                                     <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                                        Post Link Verification
+                                        Verifikasi Tautan Postingan
                                     </Typography>
                                     {submission.post_submission ? (
                                         <Box>
@@ -500,8 +520,8 @@ const ReviewSubmissions = () => {
                                                     </a>
                                                 </Typography>
                                                 <Chip 
-                                                    label={submission.post_submission.status} 
-                                                    color={submission.post_submission.status === 'verified' ? 'success' : submission.post_submission.status === 'rejected' ? 'error' : 'warning'}
+                                                    label={submission.post_submission.status === 'pending' ? 'Menunggu' : submission.post_submission.status === 'rejected' ? 'Ditolak' : 'Terverifikasi'} 
+                                                    color={submission.post_submission.status === 'pending' ? 'warning' : submission.post_submission.status === 'rejected' ? 'error' : 'success'}
                                                     size="small"
                                                     variant="outlined"
                                                 />
@@ -515,7 +535,7 @@ const ReviewSubmissions = () => {
                                                         size="small"
                                                         onClick={() => handleVerifyPost(submission.post_submission.id, 'verified')}
                                                     >
-                                                        Verify Link
+                                                        Verifikasi Tautan
                                                     </Button>
                                                     <Button 
                                                         variant="outlined" 
@@ -523,14 +543,14 @@ const ReviewSubmissions = () => {
                                                         size="small"
                                                         onClick={() => handleVerifyPost(submission.post_submission.id, 'rejected')}
                                                     >
-                                                        Reject Link
+                                                        Tolak Tautan
                                                     </Button>
                                                 </Stack>
                                             )}
                                         </Box>
                                     ) : (
                                         <Typography variant="body2" color="text.secondary" fontStyle="italic">
-                                            Student has not submitted the post link yet.
+                                            Siswa belum mengirimkan tautan postingan.
                                         </Typography>
                                     )}
                                 </Box>
@@ -554,15 +574,15 @@ const ReviewSubmissions = () => {
         fullWidth
       >
         <DialogTitle sx={{ fontWeight: 700 }}>
-          {reviewModal.action === 'approve' && 'Approve Submission'}
-          {reviewModal.action === 'reject' && 'Reject Submission'}
-          {reviewModal.action === 'revision' && 'Request Revision'}
+          {reviewModal.action === 'approve' && 'Setujui Pengajuan'}
+          {reviewModal.action === 'reject' && 'Tolak Pengajuan'}
+          {reviewModal.action === 'revision' && 'Minta Revisi'}
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2, color: COLORS.textSecondary }}>
-             {reviewModal.action === 'approve' && 'Approved submissions will notify the student.'}
-             {reviewModal.action === 'reject' && 'Please provide a reason for the rejection.'}
-             {reviewModal.action === 'revision' && 'Please provide details on what needs to be revised.'}
+             {reviewModal.action === 'approve' && 'Pengajuan yang disetujui akan menotifikasi siswa.'}
+             {reviewModal.action === 'reject' && 'Mohon berikan alasan penolakan.'}
+             {reviewModal.action === 'revision' && 'Mohon berikan detail revisi.'}
           </Typography>
           
           {(reviewModal.action === 'reject' || reviewModal.action === 'revision') && (
@@ -571,7 +591,7 @@ const ReviewSubmissions = () => {
                 required
                 multiline
                 rows={4}
-                label={reviewModal.action === 'revision' ? "Revision Notes" : "Rejection Reason"}
+                label={reviewModal.action === 'revision' ? "Catatan Revisi" : "Alasan Penolakan"}
                 value={reviewNotes}
                 onChange={(e) => setReviewNotes(e.target.value)}
                 sx={{ mt: 1 }}
@@ -583,7 +603,7 @@ const ReviewSubmissions = () => {
                fullWidth
                multiline
                rows={2}
-               label="Optional Notes"
+               label="Catatan Opsional"
                value={reviewNotes}
                onChange={(e) => setReviewNotes(e.target.value)}
                sx={{ mt: 1 }}
@@ -592,7 +612,7 @@ const ReviewSubmissions = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={handleCloseReviewModal}>
-            Cancel
+            Batal
           </Button>
           <Button 
             variant="contained"
@@ -607,7 +627,7 @@ const ReviewSubmissions = () => {
             }
             sx={{ color: '#fff' }}
           >
-            Confirm
+            Konfirmasi
           </Button>
         </DialogActions>
       </Dialog>

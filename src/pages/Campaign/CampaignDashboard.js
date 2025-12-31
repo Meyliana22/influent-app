@@ -150,7 +150,7 @@ function CampaignDashboard() {
 
   const statCards = [
     {
-      title: 'Campaign Berjalan',
+      title: 'Kampanye Berjalan',
       value: stats.ongoingCampaigns,
       icon: <TrendingUpIcon />,
       color: '#6E00BE', // Primary
@@ -174,7 +174,7 @@ function CampaignDashboard() {
       footer: 'Total kolaborator'
     },
     {
-      title: 'Campaign Selesai',
+      title: 'Kampanye Selesai',
       value: stats.completedCampaigns,
       icon: <CheckCircleOutlineIcon />,
       color: '#2563eb', // Blue
@@ -203,7 +203,7 @@ function CampaignDashboard() {
                 Halo, {userName} 👋
               </Typography>
               <Typography variant="body1" sx={{ color: '#64748b' }}>
-                Pantau performa campaign dan kelola kolaborasi Anda hari ini.
+                Pantau performa kampanye dan kelola kolaborasi Anda hari ini.
               </Typography>
             </Box>
             <Button
@@ -225,7 +225,7 @@ function CampaignDashboard() {
                 }
               }}
             >
-              Buat Campaign Baru
+              Buat Kampanye Baru
             </Button>
           </Box>
 
@@ -283,7 +283,7 @@ function CampaignDashboard() {
           <Box sx={{ mb: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
-                Activity Terbaru
+                Aktifitas Terbaru
               </Typography>
               <Button 
                 endIcon={<ArrowForwardIcon />}
@@ -306,12 +306,12 @@ function CampaignDashboard() {
                 <Box sx={{ mb: 2, display: 'inline-flex', p: 2, borderRadius: '50%', bgcolor: '#e0e7ff', color: '#6366f1' }}>
                   <CampaignIcon sx={{ fontSize: 40 }} />
                 </Box>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>Belum ada campaign</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>Belum ada kampanye</Typography>
                 <Typography variant="body2" sx={{ color: '#64748b', mb: 3 }}>
-                  Mulai perjalanan Anda dengan membuat campaign pertama.
+                  Mulai perjalanan Anda dengan membuat kampanye pertama.
                 </Typography>
                 <Button variant="outlined" onClick={() => navigate('/campaign-create')} sx={{ borderRadius: '10px' }}>
-                  Buat Campaign
+                  Buat Kampanye
                 </Button>
               </Paper>
             ) : (

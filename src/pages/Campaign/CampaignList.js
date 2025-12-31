@@ -357,10 +357,10 @@ function CampaignList() {
             <Stack direction="row" alignItems="center" justifyContent="space-between" mb={4}>
                <Box>
                   <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e293b', letterSpacing: '-0.5px' }}>
-                     Daftar Campaign
+                     Daftar Kampanye
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5 }}>
-                     Kelola semua campaign aktif dan draft anda disini
+                     Kelola semua kampanye aktif dan draf anda disini
                   </Typography>
                </Box>
                
@@ -380,7 +380,7 @@ function CampaignList() {
                   '&:hover': { bgcolor: '#5a009e', boxShadow: 'none' }
                 }}
               >
-                + Buat Campaign
+                + Buat Kampanye
               </Button>
             </Stack>
 
@@ -389,7 +389,7 @@ function CampaignList() {
                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField
                      fullWidth
-                     placeholder="Cari berdasarkan judul campaign..."
+                     placeholder="Cari berdasarkan judul kampanye..."
                      value={search}
                      onChange={e => setSearch(e.target.value)}
                      size="small"
@@ -438,15 +438,15 @@ function CampaignList() {
             {/* Campaign Cards */}
             {isLoading ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography sx={{ color: '#94a3b8' }}>Memuat campaign...</Typography>
+                <Typography sx={{ color: '#94a3b8' }}>Memuat Kampanye...</Typography>
               </Box>
             ) : currentCampaigns.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 12, bgcolor: '#fff', borderRadius: 4, border: '1px solid #e2e8f0' }}>
                  <Box sx={{ mb: 2, display: 'inline-flex', p: 2, bgcolor: '#f1f5f9', borderRadius: '50%' }}>
                      <CampaignIcon sx={{ fontSize: 40, color: '#94a3b8' }} />
                  </Box>
-                <Typography sx={{ color: '#1e293b', fontWeight: 600, fontSize: 16 }}>Belum ada campaign</Typography>
-                <Typography sx={{ color: '#64748b', fontSize: 14 }}>Buat campaign pertama anda sekarang</Typography>
+                <Typography sx={{ color: '#1e293b', fontWeight: 600, fontSize: 16 }}>Belum ada Kampanye</Typography>
+                <Typography sx={{ color: '#64748b', fontSize: 14 }}>Buat kampanye pertama anda sekarang</Typography>
               </Box>
             ) : currentCampaigns.map(campaign => (
               <Card
@@ -551,7 +551,7 @@ function CampaignList() {
                                •
                             </Typography>
                             <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
-                               {campaign.min_followers ? `${parseInt(campaign.min_followers).toLocaleString('id-ID')}+` : '0'} Followers
+                               {campaign.min_followers ? `${parseInt(campaign.min_followers).toLocaleString('id-ID')}+` : '0'} Pengikut
                             </Typography>
                          </Stack>
                       </Stack>
@@ -621,7 +621,7 @@ function CampaignList() {
                                   onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/review-submissions`); }}
                                   sx={{ flex: 1, bgcolor: '#6E00BE', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#5a009e' } }}
                                >
-                                  Review
+                                  Tinjauan
                                </Button>
                                {(campaign.status.toLowerCase() === 'active' && campaign.end_date && new Date(campaign.end_date) < new Date()) && (
                                  <Button

@@ -353,6 +353,18 @@ function ManageCampaigns() {
     }
   };
 
+  const translateStatus = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'active': return 'Aktif';
+      case 'admin_review': return 'Ditinjau Admin';
+      case 'pending_payment': return 'Menunggu Pembayaran';
+      case 'completed': return 'Selesai';
+      case 'cancelled': return 'Dibatalkan';
+      case 'rejected': return 'Ditolak';
+      default: return status?.replace('_', ' ') || 'Draft';
+    }
+  };
+
   const stats = {
     total: campaigns.length,
     active: campaigns.filter(c => c.status?.toLowerCase() === 'active').length,
@@ -402,7 +414,7 @@ function ManageCampaigns() {
                   }
                 }}
               >
-                Refresh
+                Muat Ulang
               </Button>
               <Button
                 variant="contained"
@@ -542,6 +554,7 @@ function ManageCampaigns() {
                 <MenuItem value="pending_payment">Menunggu Pembayaran</MenuItem>
                 <MenuItem value="completed">Selesai</MenuItem>
                 <MenuItem value="cancelled">Dibatalkan</MenuItem>
+                <MenuItem value="rejected">Ditolak</MenuItem>
               </Select>
             </Stack>
           </Box>
@@ -630,7 +643,7 @@ function ManageCampaigns() {
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={campaign.status?.replace('_', ' ') || 'draft'}
+                                label={translateStatus(campaign.status)}
                                 size="small"
                                 sx={{
                                   bgcolor: statusColors.bg,
