@@ -143,6 +143,7 @@ const MyApplications = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'accepted': return 'success';
+      case 'paid': return 'success';
       case 'rejected': return 'error';
       case 'cancelled': return 'default';
       case 'pending': return 'warning';
@@ -153,6 +154,7 @@ const MyApplications = () => {
   const translateStatus = (status) => {
     switch (status?.toLowerCase()) {
       case 'accepted': return 'Diterima';
+      case 'paid': return 'Dibayar';
       case 'rejected': return 'Ditolak';
       case 'cancelled': return 'Dibatalkan';
       case 'pending': return 'Menunggu';

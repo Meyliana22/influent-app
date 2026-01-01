@@ -242,6 +242,16 @@ export const adminStudentService = {
       method: 'DELETE'
     });
     return response.json();
+  },
+
+  // Verify student
+  verifyStudent: async (data) => {
+    const response = await authFetch(`${API_BASE_URL}/admin/verify-student`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return response.json();
   }
 };
 

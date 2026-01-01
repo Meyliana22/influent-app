@@ -40,7 +40,11 @@ import {
   School as StudentIcon,
   Business as CompanyIcon,
   AdminPanelSettings as AdminIcon,
-  Warning as WarningIcon
+  Warning as WarningIcon,
+  VerifiedUser as VerifyIcon,
+  Close as CloseIcon,
+  CheckCircle as ApproveIcon,
+  Cancel as RejectIcon
 } from '@mui/icons-material';
 import adminService from '../../services/adminService';
 
@@ -78,6 +82,15 @@ function ManageUsers() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Verification Modal State
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [verificationData, setVerificationData] = useState(null);
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  
+  // Rejection Modal State
+  const [showRejectionDialog, setShowRejectionDialog] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -233,7 +246,65 @@ function ManageUsers() {
       case 'active': return 'Aktif';
       case 'inactive': return 'Tidak Aktif';
       case 'suspended': return 'Ditangguhkan';
+      case 'pending': return 'Menunggu Verifikasi';
       default: return status;
+    }
+  };
+
+  const handleVerifyClick = (user) => {
+    console.log(user)
+    setVerificationData(user);
+    setShowVerifyModal(true);
+  };
+  
+  const handleRejectClick = () => {
+    setRejectionReason('');
+    setShowRejectionDialog(true);
+  };
+
+  const handleConfirmReject = () => {
+    if (!rejectionReason.trim()) {
+      setError('Alasan penolakan wajib diisi');
+      return;
+    }
+    setShowRejectionDialog(false);
+    handleVerifySubmit('reject', rejectionReason);
+  };
+
+  const handleVerifySubmit = async (action, rejectionReason = '') => {
+    try {
+      setSubmitting(true);
+      
+      // We need student ID. Check where it is in verificationData
+      // Structure might be user.student or similar. 
+      // Fallback: send user_id if student_id is not found, backend might handle it.
+      const studentId = verificationData.student?.id || verificationData.student?._id || verificationData.student?.student_id || verificationData.student_id;
+      const userId = verificationData._id || verificationData.id || verificationData.user_id || verificationData.userId;
+      
+      console.log('Verifying user:', userId, 'with action:', action);
+      console.log('Verification Data:', verificationData);
+
+      const payload = {
+        student_id: studentId,
+        userId: userId,
+        action: action,
+        reason: rejectionReason
+      };
+      
+      console.log('Sending payload:', payload);
+
+      await adminService.students.verifyStudent(payload);
+      
+      setSuccessMessage(`Mahasiswa berhasil ${action === 'approve' ? 'diverifikasi' : 'ditolak'}`);
+      setShowVerifyModal(false);
+      setVerificationData(null);
+      loadUsers(); // Refresh list
+      
+    } catch (err) {
+      console.error("Error verifying student:", err);
+      setError(err.message || "Verifikasi gagal");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -493,6 +564,19 @@ function ManageUsers() {
                                 >
                                   <DeleteIcon fontSize="small" />
                                 </IconButton>
+                                {user.role === 'student' && (
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => handleVerifyClick(user)}
+                                      title="Verifikasi Mahasiswa"
+                                      sx={{
+                                        color: '#059669',
+                                        '&:hover': { bgcolor: 'rgba(5, 150, 105, 0.1)' }
+                                      }}
+                                    >
+                                      <VerifyIcon fontSize="small" />
+                                    </IconButton>
+                                )}
                               </Stack>
                             </TableCell>
                           </TableRow>
@@ -637,6 +721,171 @@ function ManageUsers() {
                 }}
               >
                 {submitting ? <CircularProgress size={24} /> : 'Hapus'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+          {/* Verification Modal */}
+          <Dialog
+             open={showVerifyModal}
+             onClose={() => !submitting && setShowVerifyModal(false)}
+             maxWidth="md"
+             fullWidth
+          >
+             <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" fontWeight={700}>Verifikasi Mahasiswa</Typography>
+                <IconButton onClick={() => setShowVerifyModal(false)} disabled={submitting}>
+                   <CloseIcon />
+                </IconButton>
+             </DialogTitle>
+             <DialogContent dividers>
+                {verificationLoading ? (
+                   <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                      <CircularProgress />
+                   </Box>
+                ) : verificationData ? (
+                   <Stack spacing={3}>
+                      {/* Personal Info */}
+                      <Box>
+                         <Typography variant="subtitle1" fontWeight={700} gutterBottom>Informasi Pribadi</Typography>
+                         <Table size="small">
+                            <TableBody>
+                               <TableRow>
+                                  <TableCell sx={{ fontWeight: 600, width: '30%' }}>Nama</TableCell>
+                                  <TableCell>{verificationData.name || '-'}</TableCell>
+                               </TableRow>
+                               <TableRow>
+                                  <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+                                  <TableCell>{verificationData.email || '-'}</TableCell>
+                               </TableRow>
+                               <TableRow>
+                                  <TableCell sx={{ fontWeight: 600 }}>Universitas</TableCell>
+                                  <TableCell>{verificationData.Student?.university || '-'}</TableCell>
+                               </TableRow>
+                               <TableRow>
+                                  <TableCell sx={{ fontWeight: 600 }}>Jurusan</TableCell>
+                                  <TableCell>{verificationData.Student?.major || '-'}</TableCell>
+                               </TableRow>
+                               <TableRow>
+                                  <TableCell sx={{ fontWeight: 600 }}>No. Telepon</TableCell>
+                                  <TableCell>{verificationData.Student?.phone_number || '-'}</TableCell>
+                               </TableRow>
+                               <TableRow>
+                                  <TableCell sx={{ fontWeight: 600 }}>Instagram</TableCell>
+                                  <TableCell>
+                                    {verificationData.Student?.instagram_username || '-'}
+                                    {(verificationData.Student?.instagram_profile_link) && (
+                                      <a 
+                                        href={verificationData.Student?.instagram_profile_link} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        style={{ marginLeft: '8px', color: '#1e40af', textDecoration: 'none', fontSize: '12px' }}
+                                      >
+                                        (Link)
+                                      </a>
+                                    )}
+                                  </TableCell>
+                               </TableRow>
+                               <TableRow>
+                                  <TableCell sx={{ fontWeight: 600 }}>Followers</TableCell>
+                                  <TableCell>{verificationData.Student?.instagram_followers_count || '-'}</TableCell>
+                               </TableRow>
+                               <TableRow>
+                                  <TableCell sx={{ fontWeight: 600 }}>Domisili</TableCell>
+                                  <TableCell>{verificationData.Student?.domicile || '-'}</TableCell>
+                               </TableRow>
+                               <TableRow>
+                                  <TableCell sx={{ fontWeight: 600 }}>Jenis Kelamin</TableCell>
+                                  <TableCell>{verificationData.Student?.gender || '-'}</TableCell>
+                               </TableRow>
+                               <TableRow>
+                                  <TableCell sx={{ fontWeight: 600 }}>Umur</TableCell>
+                                  <TableCell>{verificationData.Student?.age || '-'}</TableCell>
+                               </TableRow>
+                            </TableBody>
+                         </Table>
+                      </Box>
+
+                      {/* KTM Image */}
+                      <Box>
+                         <Typography variant="subtitle1" fontWeight={700} gutterBottom>Foto KTM</Typography>
+                         <Box sx={{ 
+                            width: '100%', 
+                            height: 300, 
+                            bgcolor: '#f1f5f9', 
+                            borderRadius: 2, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            border: '1px solid #e2e8f0'
+                         }}>
+                            {(verificationData.Student?.ktm_image_url) ? (
+                               <img 
+                                 src={process.env.REACT_APP_API_IMAGE_URL + '/' + (verificationData.Student?.ktm_image_url)} 
+                                 alt="KTM" 
+                                 style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
+                               />
+                            ) : (
+                               <Typography color="text.secondary">Tidak ada foto KTM</Typography>
+                            )}
+                         </Box>
+                      </Box>
+                   </Stack>
+                ) : (
+                   <Typography align="center" color="error">Gagal memuat data mahasiswa</Typography>
+                )}
+             </DialogContent>
+             <DialogActions sx={{ p: 2, gap: 1 }}>
+                <Button 
+                   variant="outlined" 
+                   color="error"
+                   startIcon={<RejectIcon />}
+                   onClick={handleRejectClick}
+                   disabled={submitting || verificationLoading}
+                >
+                   Tolak
+                </Button>
+                <Button 
+                   variant="contained" 
+                   color="success"
+                   startIcon={<ApproveIcon />}
+                   onClick={() => handleVerifySubmit('approve')}
+                   disabled={submitting || verificationLoading}
+                >
+                   Setujui
+                </Button>
+             </DialogActions>
+          </Dialog>
+
+          {/* Rejection Reason Dialog */}
+          <Dialog
+            open={showRejectionDialog}
+            onClose={() => setShowRejectionDialog(false)}
+            maxWidth="xs"
+            fullWidth
+          >
+            <DialogTitle sx={{ fontWeight: 700 }}>Alasan Penolakan</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="reason"
+                label="Alasan Penolakan"
+                type="text"
+                fullWidth
+                multiline
+                rows={4}
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Jelaskan mengapa verifikasi ditolak..."
+              />
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button onClick={() => setShowRejectionDialog(false)} color="inherit">
+                Batal
+              </Button>
+              <Button onClick={handleConfirmReject} variant="contained" color="error">
+                Tolak Verifikasi
               </Button>
             </DialogActions>
           </Dialog>

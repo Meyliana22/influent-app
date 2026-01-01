@@ -121,23 +121,7 @@ const ApplicantCard = ({
             </Avatar>
             
             {/* Star Favorite Button */}
-            {applicant.status !== 'Rejected' && (
-              <IconButton
-                onClick={() => onToggleFavorite && onToggleFavorite(applicant)}
-                sx={{ 
-                  bgcolor: isFavorite ? '#fff7ed' : 'transparent',
-                  color: isFavorite ? '#f59e0b' : '#94a3b8',
-                  '&:hover': { bgcolor: isFavorite ? '#ffedd5' : '#f1f5f9' }
-                }}
-              >
-                {isFavorite ? <StarIcon /> : <StarBorderIcon />}
-              </IconButton>
-            )}
-            {isFavorite && (
-              <Typography variant="caption" sx={{ color: '#f59e0b', fontWeight: 600, mt: 0.5 }}>
-                Favorit
-              </Typography>
-            )}
+          
           </Box>
 
           {/* Main Content */}

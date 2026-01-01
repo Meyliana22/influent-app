@@ -16,9 +16,13 @@ import {
   DialogActions,
   Stack,
   Avatar,
-  IconButton,
   Tooltip,
-  CircularProgress
+  IconButton,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText
 } from '@mui/material';
 import {
   CheckCircle as ApproveIcon,
@@ -35,6 +39,7 @@ import { COLORS } from '../../constants/colors';
 import workSubmissionService from '../../services/workSubmissionService';
 import postSubmissionService from '../../services/postSubmissionService';
 import campaignService from '../../services/campaignService';
+import applicantService from '../../services/applicantService';
 import { useToast } from '../../hooks/useToast';
 import { Sidebar, Topbar } from '../../components/common';
 
@@ -56,7 +61,10 @@ const ReviewSubmissions = () => {
   const [reviewModal, setReviewModal] = useState({ open: false, action: null });
   const [reviewNotes, setReviewNotes] = useState('');
    const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [filter, setFilter] = useState('all'); // all, pending, approved, rejected, revision_requested
+  const [filter, setFilter] = useState('all'); // all, pending, approved, rejected, revision_requested, not_submitted
+  const [acceptedStudents, setAcceptedStudents] = useState([]);
+  const [notSubmittedStudents, setNotSubmittedStudents] = useState([]);
+  const [progressStats, setProgressStats] = useState({ submitted: 0, total: 0 });
   const apiImage = process.env.REACT_APP_API_IMAGE_URL;
   const getProfileImage = (url) => {
     console.log(`${apiImage}/${url}`)
@@ -80,7 +88,50 @@ const ReviewSubmissions = () => {
       const submissionsRes = await workSubmissionService.getCampaignSubmissions(campaignId);
       const submissionsData = submissionsRes.data || submissionsRes || [];
       
+      // Load accepted applicants to calculate "Not Submitted"
+      const applicantsRes = await applicantService.getCampaignApplicants(campaignId);
+      const allApplicants = applicantsRes.data || applicantsRes || [];
+      
+      // Filter for accepted/approved students
+      const accepted = allApplicants.filter(a => 
+        (a.application_status && (a.application_status.toLowerCase() === 'accepted' || a.application_status.toLowerCase() === 'approved'))
+      );
+      setAcceptedStudents(accepted);
 
+      // Identify students who have submitted
+      const submittedStudentIds = new Set();
+      console.log(submissionsData)
+      submissionsData.forEach(sub => {
+         // Try to find the student ID associated with this submission
+         // Check CampaignUser -> Student -> id
+         // Also handle potential inconsistencies in API structure
+         console.log(sub.CampaignUser)
+         const sId = sub.CampaignUser?.Student?.user_id || sub.student_id;
+         console.log(sId)
+         if (sId) submittedStudentIds.add(sId);
+      });
+      console.log(submittedStudentIds)
+
+      // Filter accepted students who are NOT in submittedStudentIds
+      const notSubmitted = accepted.filter(app => {
+         // The applicant object usually has `student_id` directly or within `Student` object
+         const appStudentId = app.Student?.id || app.student?.id || app.student_id;
+         // If we can't find an ID, we assume they haven't submitted to be safe
+         // But we should verify we are getting a valid student ID from app
+         return appStudentId && !submittedStudentIds.has(appStudentId);
+      });
+      
+      setNotSubmittedStudents(notSubmitted);
+      
+      // Progress Stats
+      // User requested total to be from campaign.influencer_count
+      console.log(campaignData  )
+      const totalTarget = campaignData.data.influencer_count || accepted.length; // Fallback to accepted length if 0 or null
+      
+      setProgressStats({
+         submitted: submittedStudentIds.size,
+         total: totalTarget
+      });
 
       // Enrich approved submissions with Post Submission data
       const enrichedSubmissions = await Promise.all(submissionsData.map(async (sub) => {
@@ -211,7 +262,9 @@ const ReviewSubmissions = () => {
     return translateStatus(status);
   };
 
-  const filteredSubmissions = Array.isArray(submissions) 
+  const filteredSubmissions = filter === 'not_submitted' 
+    ? notSubmittedStudents // Special case: return array so checks pass, but we render differently below
+    : Array.isArray(submissions) 
     ? submissions.filter(sub => {
         // Exclude drafts from Company view usually, but if needed show them different
         if (sub.submission_type === 'draft') return false; 
@@ -263,48 +316,171 @@ const ReviewSubmissions = () => {
                 </Box>
               </Stack>
 
+              {/* Payment Info Box */}
+              <Paper 
+                elevation={0}
+                sx={{ 
+                  p: 3, 
+                  mb: 4, 
+                  bgcolor: '#f8fafc', 
+                  border: '1px solid #e2e8f0', 
+                  borderRadius: 3
+                }}
+              >
+                <Grid container spacing={2} alignItems="center">
+                   <Grid item xs={12} md={7}>
+                      <Typography variant="subtitle1" fontWeight={700} color={COLORS.textPrimary} gutterBottom>
+                        Informasi Pembayaran
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Typography variant="body2" color={COLORS.textSecondary}>
+                           Pembayaran dapat dilakukan setelah <Box component="span" sx={{ fontWeight: 600, color: COLORS.textPrimary }}>{campaign?.end_date ? new Date(campaign.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}</Box>
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>
+                           * Pastikan semua konten direview sebelum pembayaran dibuka otomatis
+                        </Typography>
+                      </Box>
+                   </Grid>
+                   <Grid item xs={12} md={5} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                      <Box sx={{ 
+                        display: 'inline-block',
+                        p: 2,
+                        bgcolor: '#fff',
+                        borderRadius: 2,
+                        border: '1px solid #e2e8f0',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                      }}>
+                        <Typography variant="body2" color={COLORS.textSecondary} gutterBottom>
+                          Total Progress
+                        </Typography>
+                        <Typography variant="h4" fontWeight={700} color={COLORS.primary} sx={{ lineHeight: 1 }}>
+                           {progressStats.submitted}<span style={{ fontSize: '18px', color: '#94a3b8', fontWeight: 500 }}>/{progressStats.total}</span>
+                        </Typography>
+                        <Typography variant="caption" color={COLORS.textSecondary} sx={{ mt: 0.5, display: 'block' }}>
+                          Siswa sudah submit
+                        </Typography>
+                      </Box>
+                   </Grid>
+                </Grid>
+              </Paper>
+
               {/* Stats Overview */}
-              <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Paper elevation={0} sx={{ p: 2.5, textAlign: 'center', bgcolor: '#fff', border: '1px solid #e0e0e0', borderRadius: 2 }}>
-                    <ScheduleIcon sx={{ fontSize: 32, color: '#ed6c02', mb: 1 }} />
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
-                      {submissions.filter(s => s.status === 'pending' && s.submission_type !== 'draft').length}
+              <Grid container spacing={2} sx={{ mb: 4 }}>
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Paper 
+                    onClick={() => setFilter('not_submitted')}
+                    elevation={0} 
+                    sx={{ 
+                      p: 2.5, 
+                      cursor: 'pointer',
+                      bgcolor: filter === 'not_submitted' ? '#f3e8ff' : '#fff', 
+                      border: '1px solid',
+                      borderColor: filter === 'not_submitted' ? '#d8b4fe' : '#e2e8f0', 
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': { borderColor: '#d8b4fe', transform: 'translateY(-2px)' }
+                    }}
+                  >
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.primary, mb: 0.5 }}>
+                      {notSubmittedStudents.length}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: COLORS.textSecondary, fontSize: 13, fontWeight: 600 }}>
-                      Menunggu Tinjauan
+                    <Typography variant="body2" sx={{ color: filter === 'not_submitted' ? '#6b21a8' : COLORS.textSecondary, fontWeight: 600 }}>
+                      Belum Submit
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Paper elevation={0} sx={{ p: 2.5, textAlign: 'center', bgcolor: '#fff', border: '1px solid #e0e0e0', borderRadius: 2 }}>
-                    <ApproveIcon sx={{ fontSize: 32, color: '#2e7d32', mb: 1 }} />
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
+
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Paper 
+                    onClick={() => setFilter('pending')}
+                    elevation={0} 
+                    sx={{ 
+                      p: 2.5, 
+                      cursor: 'pointer',
+                      bgcolor: filter === 'pending' ? '#fff7ed' : '#fff', 
+                      border: '1px solid',
+                      borderColor: filter === 'pending' ? '#fdba74' : '#e2e8f0', 
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': { borderColor: '#fdba74', transform: 'translateY(-2px)' }
+                    }}
+                  >
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#ea580c', mb: 0.5 }}>
+                      {submissions.filter(s => s.status === 'pending' && s.submission_type !== 'draft').length}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: filter === 'pending' ? '#9a3412' : COLORS.textSecondary, fontWeight: 600 }}>
+                      Menunggu
+                    </Typography>
+                  </Paper>
+                </Grid>
+
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Paper 
+                    onClick={() => setFilter('approved')}
+                    elevation={0} 
+                    sx={{ 
+                      p: 2.5, 
+                      cursor: 'pointer',
+                      bgcolor: filter === 'approved' ? '#f0fdf4' : '#fff', 
+                      border: '1px solid',
+                      borderColor: filter === 'approved' ? '#86efac' : '#e2e8f0', 
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': { borderColor: '#86efac', transform: 'translateY(-2px)' }
+                    }}
+                  >
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#16a34a', mb: 0.5 }}>
                       {submissions.filter(s => s.status === 'approved').length}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: COLORS.textSecondary, fontSize: 13, fontWeight: 600 }}>
+                    <Typography variant="body2" sx={{ color: filter === 'approved' ? '#15803d' : COLORS.textSecondary, fontWeight: 600 }}>
                       Disetujui
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Paper elevation={0} sx={{ p: 2.5, textAlign: 'center', bgcolor: '#fff', border: '1px solid #e0e0e0', borderRadius: 2 }}>
-                    <RevisionIcon sx={{ fontSize: 32, color: '#0288d1', mb: 1 }} />
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
+
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Paper 
+                    onClick={() => setFilter('revision_requested')}
+                    elevation={0} 
+                    sx={{ 
+                      p: 2.5, 
+                      cursor: 'pointer',
+                      bgcolor: filter === 'revision_requested' ? '#eff6ff' : '#fff', 
+                      border: '1px solid',
+                      borderColor: filter === 'revision_requested' ? '#93c5fd' : '#e2e8f0', 
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': { borderColor: '#93c5fd', transform: 'translateY(-2px)' }
+                    }}
+                  >
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#2563eb', mb: 0.5 }}>
                       {submissions.filter(s => s.status === 'revision_requested').length}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: COLORS.textSecondary, fontSize: 13, fontWeight: 600 }}>
-                      Revisi Diminta
+                    <Typography variant="body2" sx={{ color: filter === 'revision_requested' ? '#1e40af' : COLORS.textSecondary, fontWeight: 600 }}>
+                      Revisi
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Paper elevation={0} sx={{ p: 2.5, textAlign: 'center', bgcolor: '#fff', border: '1px solid #e0e0e0', borderRadius: 2 }}>
-                    <RejectIcon sx={{ fontSize: 32, color: '#d32f2f', mb: 1 }} />
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
+
+                <Grid item xs={6} sm={4} md={2.4}>
+                  <Paper 
+                    onClick={() => setFilter('rejected')}
+                    elevation={0} 
+                    sx={{ 
+                      p: 2.5, 
+                      cursor: 'pointer',
+                      bgcolor: filter === 'rejected' ? '#fef2f2' : '#fff', 
+                      border: '1px solid',
+                      borderColor: filter === 'rejected' ? '#fca5a5' : '#e2e8f0', 
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      '&:hover': { borderColor: '#fca5a5', transform: 'translateY(-2px)' }
+                    }}
+                  >
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#dc2626', mb: 0.5 }}>
                       {submissions.filter(s => s.status === 'rejected').length}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: COLORS.textSecondary, fontSize: 13, fontWeight: 600 }}>
+                    <Typography variant="body2" sx={{ color: filter === 'rejected' ? '#991b1b' : COLORS.textSecondary, fontWeight: 600 }}>
                       Ditolak
                     </Typography>
                   </Paper>
@@ -313,7 +489,7 @@ const ReviewSubmissions = () => {
 
               {/* Filter Tabs */}
               <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
-                {['all', 'pending', 'approved', 'revision_requested', 'rejected'].map((status) => (
+                {['all', 'pending', 'approved', 'revision_requested', 'rejected', 'not_submitted'].map((status) => (
                   <Button
                     key={status}
                     variant={filter === status ? 'contained' : 'outlined'}
@@ -330,7 +506,7 @@ const ReviewSubmissions = () => {
                       }
                     }}
                   >
-                    {translateStatus(status)}
+                    {status === 'not_submitted' ? 'Belum Submit' : translateStatus(status)}
                   </Button>
                 ))}
               </Stack>
@@ -340,9 +516,56 @@ const ReviewSubmissions = () => {
                 <Paper elevation={0} sx={{ p: 6, textAlign: 'center', bgcolor: '#fff', border: '1px solid #e0e0e0', borderRadius: 2 }}>
                   <DescriptionIcon sx={{ fontSize: 64, color: COLORS.textSecondary, mb: 2 }} />
                   <Typography variant="h6" sx={{ color: COLORS.textPrimary, mb: 1, fontWeight: 600 }}>
-                    Tidak ada pengajuan ditemukan
+                    {filter === 'not_submitted' 
+                       ? 'Semua siswa (diterima) sudah mengumpulkan tugas!' 
+                       : 'Tidak ada pengajuan ditemukan'}
                   </Typography>
                 </Paper>
+              ) : filter === 'not_submitted' ? (
+                // Not Submitted List
+                <Stack spacing={2}>
+                   {notSubmittedStudents.map((app) => {
+                      const student = app.Student?.User || app.User || app.user || {};
+                      const studentProfile = app.Student || app.student || {};
+                      return (
+                        <Card 
+                           key={app.id} 
+                           elevation={0}
+                           sx={{ 
+                              p: 3,
+                              border: '1px solid #e0e0e0',
+                              borderRadius: 2,
+                              '&:hover': { boxShadow: 2 }
+                           }}
+                        >
+                           <Stack direction="row" alignItems="center" spacing={2}>
+                              <Avatar src={getProfileImage(student.profile_image)} sx={{ bgcolor: '#bdbdbd' }}>
+                                 {student.name?.[0]?.toUpperCase() || 'S'}
+                              </Avatar>
+                              <Box sx={{ flex: 1 }}>
+                                 <Typography variant="h6" fontWeight={600} color={COLORS.textPrimary}>
+                                    {student.name}
+                                 </Typography>
+                                 <Typography variant="body2" color={COLORS.textSecondary}>
+                                    {studentProfile.university || studentProfile.major || '-'}
+                                 </Typography>
+                                 <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: COLORS.textSecondary, fontSize: 13 }}>
+                                       <InstagramIcon sx={{ fontSize: 16 }} />
+                                       {studentProfile.instagram_username || '-'}
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: COLORS.textSecondary, fontSize: 13 }}>
+                                       <ScheduleIcon sx={{ fontSize: 16 }} />
+                                       Diterima pada {new Date(app.updated_at || app.created_at).toLocaleDateString()}
+                                    </Box>
+                                 </Stack>
+                              </Box>
+                              <Chip label="Belum Submit" color="default" size="small" sx={{ fontWeight: 600 }} />
+                           </Stack>
+                        </Card>
+                      );
+                   })}
+                </Stack>
               ) : (
                 <Stack spacing={2}>
                   {filteredSubmissions.map((submission) => {
@@ -420,9 +643,7 @@ const ReviewSubmissions = () => {
                                   <ScheduleIcon sx={{ fontSize: 16 }} />
                                   {new Date(submission.created_at).toLocaleDateString()}
                                 </Typography>
-                                <Typography variant="body2" sx={{ textTransform: 'capitalize', color: COLORS.textSecondary }}>
-                                  Platform: <b>{submission.platform}</b>
-                                </Typography>
+                              
                             </Stack>
 
                             {/* Links List */}

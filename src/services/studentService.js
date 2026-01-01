@@ -84,6 +84,22 @@ const studentService = {
       console.error("Error connecting Instagram:", error);
       throw error;
     }
+  },
+
+  uploadKtm: async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('ktm', file);
+
+      const response = await authFetch(`${API_BASE_URL}/students/upload-ktm`, {
+        method: 'POST',
+        body: formData,
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error("Error uploading KTM:", error);
+      throw error;
+    }
   }
 };
 

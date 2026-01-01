@@ -10,7 +10,7 @@ import { useToast } from '../../hooks/useToast';
 import authService from '../../services/authService';
 import studentService from '../../services/studentService';
 import companyService from '../../services/companyService';
-import { Avatar, IconButton, Badge, Divider } from '@mui/material';
+import { Avatar, IconButton, Badge, Divider, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import PersonIcon from '@mui/icons-material/Person';
 import LockIcon from '@mui/icons-material/Lock';
@@ -35,7 +35,13 @@ function UserPage() {
     gpa: '',
     year: '',
     phone_number: '',
-    instagram: '',
+    instagram_username: '',
+    domicile: '',
+    age: '',
+    gender: '',
+    instagram_profile_link: '',
+    content_category: '',
+    instagram_followers_count: '',
     user: { name: '', email: '', profile_image: null }
   });
 
@@ -129,11 +135,12 @@ function UserPage() {
              const date = new Date(res.data.year);
              yearVal = date.toISOString().split('T')[0];
            }
-           setStudentData({
+           setStudentData(prev => ({
+               ...prev,
                ...res.data,
                year: yearVal,
                user: res.data.user || {}
-           });
+           }));
           //  console.log(res.data);
           //  setProfileImage(res.data.user?.profile_image);
         }
@@ -196,7 +203,13 @@ function UserPage() {
                 year: studentData.year,
                 phone_number: studentData.phone_number,
                 gpa: studentData.gpa,
-                instagram: studentData.instagram
+                instagram_username: studentData.instagram_username,
+                domicile: studentData.domicile,
+                age: parseInt(studentData.age, 10),
+                gender: studentData.gender,
+                instagram_profile_link: studentData.instagram_profile_link,
+                content_category: studentData.content_category,
+                instagram_followers_count: parseInt(studentData.instagram_followers_count, 10)
             };
             // Use user_id from fetched data (similar to company logic)
             console.log(studentData);
@@ -435,7 +448,32 @@ function UserPage() {
                                     <Input label="GPA / IPK" type="number" value={studentData.gpa} onChange={(e) => handleStudentChange('gpa', e.target.value)} />
                                     <Input label="No. Telepon" value={studentData.phone_number} onChange={(e) => handleStudentChange('phone_number', e.target.value)} />
                                 </div>
-                                <Input label="Instagram" value={studentData.instagram} onChange={(e) => handleStudentChange('instagram', e.target.value)} placeholder="@username" />
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                   <Input label="Instagram Username" value={studentData.instagram_username} onChange={(e) => handleStudentChange('instagram_username', e.target.value)} placeholder="@username" />
+                                   <Input label="Followers Instagram" type="number" value={studentData.instagram_followers_count} onChange={(e) => handleStudentChange('instagram_followers_count', e.target.value)} placeholder="Contoh: 1000" />
+                                </div>
+                                
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                   <Input label="Domisili" value={studentData.domicile} onChange={(e) => handleStudentChange('domicile', e.target.value)} placeholder="Contoh: Jakarta Selatan" />
+                                   <Input label="Umur" type="number" value={studentData.age} onChange={(e) => handleStudentChange('age', e.target.value)} />
+                                </div>
+
+                                <FormControl fullWidth>
+                                    <InputLabel id="gender-select-label">Jenis Kelamin</InputLabel>
+                                    <Select
+                                        labelId="gender-select-label"
+                                        value={studentData.gender}
+                                        label="Jenis Kelamin"
+                                        onChange={(e) => handleStudentChange('gender', e.target.value)}
+                                        sx={{ borderRadius: '12px' }}
+                                    >
+                                        <MenuItem value="Laki-laki">Laki-laki</MenuItem>
+                                        <MenuItem value="Perempuan">Perempuan</MenuItem>
+                                    </Select>
+                                </FormControl>
+
+                                <Input label="Link Profil Instagram" value={studentData.instagram_profile_link} onChange={(e) => handleStudentChange('instagram_profile_link', e.target.value)} placeholder="https://instagram.com/username" />
+                                <Input label="Kategori Konten" value={studentData.content_category} onChange={(e) => handleStudentChange('content_category', e.target.value)} placeholder="Contoh: Lifestyle, Tech" />
                             </div>
                           </>
                       ) : (

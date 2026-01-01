@@ -10,7 +10,6 @@ import { COLORS } from '../../constants/colors';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PeopleIcon from '@mui/icons-material/People';
-import StarIcon from '@mui/icons-material/Star';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -123,9 +122,9 @@ function ViewApplicants() {
         // Extract user data from the 'user' field in the response
         const userData = app.user || {};
         
-        // Note: The provided API response doesn't seem to have nested 'student' details 
-        // (like followers, engagement, niche). We'll try to use what's available or default.
-        const studentData = app.student || userData.student || {}; 
+        // Note: The provided API response usually has 'Student' or 'student' details 
+        // We'll try to use what's available or default.
+        const studentData = app.Student || app.student || userData.student || {}; 
         
         return {
           id: app.id,
@@ -134,10 +133,10 @@ function ViewApplicants() {
           influencerName: userData.name || 'Unknown',
           fullName: userData.name || 'Unknown',
           // Defaulting missing fields that aren't in the basic user object
-          location: studentData.location || userData.location || '-',
+          location: studentData.domicile || studentData.location || userData.location || '-',
           age: studentData.age || userData.age || 0,
           gender: studentData.gender || userData.gender || '-',
-          followers: studentData.follower_count || userData.follower_count || 0,
+          followers: studentData.instagram_followers_count || studentData.follower_count || userData.follower_count || 0,
           engagementRate: studentData.engagement_rate || userData.engagement_rate || 0,
           status: app.application_status ? 
                   (app.application_status.toLowerCase() === 'pending' ? 'Pending' : 
@@ -146,9 +145,9 @@ function ViewApplicants() {
                    app.application_status) : 'Pending',
           appliedDate: app.applied_at || app.created_at || new Date().toISOString(),
           bio: studentData.bio || userData.bio || '',
-          instagram: studentData.instagram_username || userData.instagram_username || '',
+          instagram: studentData.instagram_username || studentData.instagram || userData.instagram_username || '',
           email: userData.email || '',
-          phone: studentData.phone || userData.phone || '',
+          phone: studentData.phone_number || studentData.phone || userData.phone || '',
           niche: [], // Niche category not present in basic user object
           notes: app.application_notes || '',
           profileImage: userData.profile_image || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
@@ -501,7 +500,7 @@ function ViewApplicants() {
             {/* Statistics Cards */}
             <Paper elevation={0} sx={{ p: 3, bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: 2, mb: 4 }}>
               <Grid container spacing={3}>
-                <Grid item xs={6} sm={4} md={2.4}>
+                <Grid item xs={6} sm={6} md={3}>
                   <Stack direction="row" spacing={1.5} alignItems="center">
                     <Box sx={{ 
                       width: 48, 
@@ -524,30 +523,8 @@ function ViewApplicants() {
                     </Box>
                   </Stack>
                 </Grid>
-                <Grid item xs={6} sm={4} md={2.4}>
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <Box sx={{ 
-                      width: 48, 
-                      height: 48, 
-                      borderRadius: '12px', 
-                      bgcolor: '#fff7ed', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center' 
-                    }}>
-                      <StarIcon sx={{ fontSize: 24, color: '#6E00BE' }} />
-                    </Box>
-                    <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
-                        {stats.selected}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>
-                        Terpilih
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Grid>
-                <Grid item xs={6} sm={4} md={2.4}>
+
+                <Grid item xs={6} sm={6} md={3}>
                   <Stack direction="row" spacing={1.5} alignItems="center">
                     <Box sx={{ 
                       width: 48, 
@@ -570,7 +547,8 @@ function ViewApplicants() {
                     </Box>
                   </Stack>
                 </Grid>
-                <Grid item xs={6} sm={4} md={2.4}>
+
+                <Grid item xs={6} sm={6} md={3}>
                   <Stack direction="row" spacing={1.5} alignItems="center">
                     <Box sx={{ 
                       width: 48, 
@@ -593,7 +571,8 @@ function ViewApplicants() {
                     </Box>
                   </Stack>
                 </Grid>
-                <Grid item xs={6} sm={4} md={2.4}>
+
+                <Grid item xs={6} sm={6} md={3}>
                   <Stack direction="row" spacing={1.5} alignItems="center">
                     <Box sx={{ 
                       width: 48, 
@@ -661,10 +640,6 @@ function ViewApplicants() {
                   <MenuItem value="Pending">
                     <HourglassEmptyIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#64748b' }} />
                     Menunggu
-                  </MenuItem>
-                  <MenuItem value="Selected">
-                    <StarIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#f59e0b' }} />
-                    Terpilih
                   </MenuItem>
                   <MenuItem value="Accepted">
                     <CheckCircleIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#10b981' }} />

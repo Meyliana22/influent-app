@@ -566,7 +566,7 @@ function BrowseCampaigns() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {/* <AttachMoneyIcon sx={{ fontSize: '1.2rem', color: '#6E00BE' }} /> */}
                           <Box>
-                            <Typography sx={{ fontSize: '0.75rem', color: '#6c757d' }}>Harga</Typography>
+                            <Typography sx={{ fontSize: '0.75rem', color: '#6c757d' }}>Pembayaran</Typography>
                             <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a1f36' }}>{campaign.price_per_post ? `Rp ${Number(campaign.price_per_post).toLocaleString('id-ID')}` : 'TBD'}</Typography>
                           </Box>
                         </Box>

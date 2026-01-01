@@ -9,7 +9,8 @@ import {
   Chip,
   Divider,
   Avatar,
-  Link
+  Link,
+  Stack
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -17,7 +18,17 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon,
   LinkOutlined as LinkIcon,
-  ContentCopy as CopyIcon
+  ContentCopy as CopyIcon,
+  Description as DescriptionIcon,
+  Person as PersonIcon,
+  LocationOn as LocationOnIcon,
+  Cake as CakeIcon,
+  Woman as WomanIcon,
+  Man as ManIcon,
+  CalendarToday as CalendarTodayIcon,
+  ContactPhone as ContactPhoneIcon,
+  Brush as BrushIcon,
+  Handshake as HandshakeIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 
@@ -81,10 +92,10 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
           >
             {applicant.fullName.charAt(0)}
           </Avatar>
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5, color: '#333' }}>
+          <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5, color: '#fff' }}>
             {applicant.fullName}
           </Typography>
-          <Typography variant="body1" sx={{ color: '#667eea', fontWeight: 500, mb: 1 }}>
+          <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 500, mb: 1 }}>
             @{applicant.influencerName}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -93,7 +104,7 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
                 key={idx}
                 label={n}
                 size="small"
-                sx={{ bgcolor: 'white', fontWeight: 500 }}
+                sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 500 }}
               />
             ))}
           </Box>
@@ -138,10 +149,13 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
         <Box sx={{ p: 3 }}>
           {/* Bio */}
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#333' }}>
-              📝 Bio
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+            <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+               <DescriptionIcon sx={{ color: '#667eea', fontSize: 20 }} />
+               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#333' }}>
+                 Bio
+               </Typography>
+            </Stack>
+            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, pl: 3.5 }}>
               {applicant.bio}
             </Typography>
           </Box>
@@ -150,41 +164,51 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
 
           {/* Personal Info */}
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: '#333' }}>
-              👤 Informasi Personal
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+             <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+               <PersonIcon sx={{ color: '#667eea', fontSize: 20 }} />
+               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#333' }}>
+                 Informasi Personal
+               </Typography>
+            </Stack>
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, pl: 3.5 }}>
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Lokasi
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  📍 {applicant.location}
-                </Typography>
+                <Stack direction="row" spacing={0.5} alignItems="center" mt={0.5}>
+                   <LocationOnIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
+                   <Typography variant="body2" sx={{ fontWeight: 500 }}>{applicant.location}</Typography>
+                </Stack>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Usia
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  🎂 {applicant.age} tahun
-                </Typography>
+                 <Stack direction="row" spacing={0.5} alignItems="center" mt={0.5}>
+                   <CakeIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
+                   <Typography variant="body2" sx={{ fontWeight: 500 }}>{applicant.age} tahun</Typography>
+                </Stack>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Jenis Kelamin
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {applicant.gender === 'Female' ? '👩' : '👨'} {applicant.gender}
-                </Typography>
+                <Stack direction="row" spacing={0.5} alignItems="center" mt={0.5}>
+                   {applicant.gender === 'Female' ? <WomanIcon sx={{ fontSize: 16, color: '#ec4899' }} /> : <ManIcon sx={{ fontSize: 16, color: '#3b82f6' }} />}
+                   <Typography variant="body2" sx={{ fontWeight: 500 }}>{applicant.gender}</Typography>
+                </Stack>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Tanggal Melamar
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  📅 {new Date(applicant.appliedDate).toLocaleDateString('id-ID')}
-                </Typography>
+                <Stack direction="row" spacing={0.5} alignItems="center" mt={0.5}>
+                   <CalendarTodayIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
+                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                     {new Date(applicant.appliedDate).toLocaleDateString('id-ID')}
+                   </Typography>
+                </Stack>
               </Box>
             </Box>
           </Box>
@@ -193,10 +217,14 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
 
           {/* Contact Info */}
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: '#333' }}>
-              📞 Kontak
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+               <ContactPhoneIcon sx={{ color: '#667eea', fontSize: 20 }} />
+               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#333' }}>
+                 Kontak
+               </Typography>
+            </Stack>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pl: 3.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <EmailIcon sx={{ color: '#666', fontSize: 20 }} />
                 <Typography variant="body2" sx={{ flex: 1 }}>
@@ -250,26 +278,32 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
             <>
               <Divider sx={{ my: 2 }} />
               <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: '#333' }}>
-                  🎨 Portfolio
-                </Typography>
-                <Link
-                  href={applicant.portfolioLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    textDecoration: 'none',
-                    color: '#667eea',
-                    fontWeight: 500,
-                    '&:hover': { textDecoration: 'underline' }
-                  }}
-                >
-                  <LinkIcon fontSize="small" />
-                  Lihat Portfolio
-                </Link>
+                <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                   <BrushIcon sx={{ color: '#667eea', fontSize: 20 }} />
+                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#333' }}>
+                     Portfolio
+                   </Typography>
+                </Stack>
+                
+                <Box sx={{ pl: 3.5 }}>
+                  <Link
+                    href={applicant.portfolioLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      textDecoration: 'none',
+                      color: '#667eea',
+                      fontWeight: 500,
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    <LinkIcon fontSize="small" />
+                    Lihat Portfolio
+                  </Link>
+                </Box>
               </Box>
             </>
           )}
@@ -279,10 +313,13 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
             <>
               <Divider sx={{ my: 2 }} />
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: '#333' }}>
-                  🤝 Kolaborasi Brand Sebelumnya
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                   <HandshakeIcon sx={{ color: '#667eea', fontSize: 20 }} />
+                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#333' }}>
+                     Kolaborasi Brand Sebelumnya
+                   </Typography>
+                </Stack>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', pl: 3.5 }}>
                   {applicant.previousBrands.map((brand, idx) => (
                     <Chip
                       key={idx}

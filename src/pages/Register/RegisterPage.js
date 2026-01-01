@@ -16,7 +16,11 @@ import {
   CircularProgress,
   Stepper,
   Step,
-  StepLabel
+  StepLabel,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select 
 } from '@mui/material';
 import {
   Visibility,
@@ -31,7 +35,13 @@ import {
   VpnKey,
   CalendarMonth,
   Grade,
-  Instagram
+  People as PeopleIcon,
+  Instagram,
+  Home,
+  Wc,
+  Category,
+  CloudUpload,
+  Badge
 } from '@mui/icons-material';
 import authService from '../../services/authService';
 import studentService from '../../services/studentService';
@@ -42,7 +52,7 @@ function RegisterPage() {
   const location = useLocation();
   const { role } = useParams();
   const { showToast } = useToast();
-  const [step, setStep] = useState('register'); // register, otp, onboarding
+  const [step, setStep] = useState('register'); // register, otp, onboarding, upload_ktm
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   
   // Initialize role based on URL param or pathname
@@ -57,6 +67,7 @@ function RegisterPage() {
     if (step === 'register') setActiveStepIndex(0);
     else if (step === 'otp') setActiveStepIndex(1);
     else if (step === 'onboarding') setActiveStepIndex(2);
+    else if (step === 'upload_ktm') setActiveStepIndex(3);
   }, [step]);
   
   const [formData, setFormData] = useState({
@@ -71,7 +82,15 @@ function RegisterPage() {
     major: '',
     year: '',
     gpa: '',
-    instagram_username: '' 
+    instagram_username: '',
+    // New Fields
+    domicile: '',
+    age: '',
+    gender: '',
+    instagram_profile_link: '',
+    content_category: '',
+    instagram_followers_count: '',
+    ktmFile: null
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -127,7 +146,7 @@ function RegisterPage() {
       formData: {
         username: formData.username,
         email: formData.email,
-        phone: formData.phone
+        phone_number: formData.phone
       }
     };
     sessionStorage.setItem('registrationState', JSON.stringify(stateToSave));
@@ -204,7 +223,9 @@ function RegisterPage() {
   };
 
   // Dynamic steps based on role
-  const steps = userRole === 'umkm' ? ['Daftar', 'Verifikasi'] : ['Daftar', 'Verifikasi', 'Profil'];
+  const steps = userRole === 'umkm' 
+    ? ['Daftar', 'Verifikasi'] 
+    : ['Daftar', 'Verifikasi', 'Profil', 'Upload KTM'];
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
@@ -267,23 +288,32 @@ function RegisterPage() {
   const handleOnboarding = async (e) => {
     e.preventDefault();
     console.log("handleOnboarding triggered");
-    console.log("Current State:", { userRole, formData });
     
     setIsLoading(true);
     try {
       if (userRole === 'influencer') {
+        // Step 3: Update Profile
         const payload = {
           university: formData.university,
           major: formData.major,
           year: formData.year,
           gpa: formData.gpa,
-          instagram_username: formData.instagram_username,
+          instagram_username: formData.instagram_username, // Keeping original field if backend still uses it, or map to new logic
+          domicile: formData.domicile,
+          age: parseInt(formData.age, 10),
+          gender: formData.gender,
+          instagram_profile_link: formData.instagram_profile_link,
+          content_category: formData.content_category,
+          instagram_followers_count: parseInt(formData.instagram_followers_count, 10),
           phone_number: formData.phone
         };
-        console.log("Sending Influencer Payload:", payload);
+        console.log("Sending Influencer Profile Payload:", payload);
         
         await studentService.createProfile(payload);
-      } else if (userRole === 'umkm') {
+        showToast("Profil berhasil disimpan!", "success");
+        setStep('upload_ktm'); // Move to Step 4
+
+      } else if (userRole === 'umkm') { // UMKM finishes here
         const payload = {
           business_name: formData.companyName,
           phone_number: formData.phone
@@ -291,19 +321,47 @@ function RegisterPage() {
         console.log("Sending UMKM Payload:", payload);
 
         await companyService.createProfile(payload);
+        showToast("Registrasi Selesai!", "success");
+        sessionStorage.removeItem('registrationState');
+        setTimeout(() => {
+            navigate('/campaign/dashboard');
+        }, 500);
       }
-      
-      console.log("Profile created successfully");
-      showToast("Setup profil berhasil!", "success");
-      sessionStorage.removeItem('registrationState');
-      setTimeout(() => {
-        navigate(userRole === 'umkm' ? '/campaign/dashboard' : '/student/dashboard');
-      }, 500);
     } catch (error) {
        console.error("Error in handleOnboarding:", error);
        setErrorMsg("Gagal menyimpan profil: " + (error.message || "Unknown error"));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleUploadKtm = async (e) => {
+    e.preventDefault();
+    if (!formData.ktmFile) {
+        setErrorMsg("Silakan pilih file KTM terlebih dahulu");
+        return;
+    }
+
+    setIsLoading(true);
+    try {
+        await studentService.uploadKtm(formData.ktmFile);
+        showToast("Registrasi Selesai!", "success");
+        sessionStorage.removeItem('registrationState');
+        setTimeout(() => {
+            navigate('/student/dashboard');
+        }, 500);
+    } catch (error) {
+        console.error("Error uploading KTM:", error);
+        setErrorMsg("Gagal mengupload KTM: " + (error.message || "Unknown error"));
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        setFormData({ ...formData, ktmFile: file });
     }
   };
 
@@ -334,7 +392,12 @@ function RegisterPage() {
             }}
           >
              <IconButton 
-              onClick={() => step === 'register' ? navigate('/') : setStep(step === 'onboarding' ? 'otp' : 'register')}
+              onClick={() => {
+                if (step === 'register') navigate('/');
+                else if (step === 'otp') setStep('register');
+                else if (step === 'onboarding') setStep('otp');
+                else if (step === 'upload_ktm') setStep('onboarding');
+              }}
               sx={{ 
                 position: 'absolute', 
                 top: 20, 
@@ -354,6 +417,7 @@ function RegisterPage() {
                  {step === 'register' && 'Buat akun baru untuk memulai'}
                  {step === 'otp' && `Masukkan kode OTP yang dikirim ke email Anda`}
                  {step === 'onboarding' && 'Lengkapi informasi Anda untuk melanjutkan'}
+                 {step === 'upload_ktm' && 'Upload foto KTM Anda untuk verifikasi'}
               </Typography>
             </Box>
 
@@ -586,12 +650,147 @@ function RegisterPage() {
               </form>
             )}
 
-            {/* Step 3: Onboarding Form */}
-            {step === 'onboarding' && (
+             {/* Step 3: Profiling Form */}
+             {step === 'onboarding' && (
               <form onSubmit={handleOnboarding}>
                 <Stack spacing={3}>
                   {userRole === 'influencer' ? (
                     <>
+                    {/* New Fields */}
+                    <TextField
+                      fullWidth
+                      label="Domisili"
+                      name="domicile"
+                      value={formData.domicile}
+                      onChange={handleChange}
+                      required
+                      placeholder="Contoh: Jakarta Selatan"
+                      disabled={isLoading}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&.Mui-focused fieldset': { borderColor: '#6E00BE' },
+                          '&:hover fieldset': { borderColor: '#6E00BE' }
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': { color: '#6E00BE' }
+                      }}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start"><Home sx={{ color: '#6E00BE' }} /></InputAdornment>,
+                        sx: { borderRadius: '12px' }
+                      }}
+                    />
+
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <TextField
+                           fullWidth
+                           label="Umur"
+                           name="age"
+                           type="number"
+                           value={formData.age}
+                           onChange={handleChange}
+                           required
+                           disabled={isLoading}
+                           sx={{
+                               '& .MuiOutlinedInput-root': {
+                                 '&.Mui-focused fieldset': { borderColor: '#6E00BE' },
+                                 '&:hover fieldset': { borderColor: '#6E00BE' }
+                               },
+                               '& .MuiInputLabel-root.Mui-focused': { color: '#6E00BE' }
+                           }}
+                           InputProps={{
+                               startAdornment: <InputAdornment position="start"><CalendarMonth sx={{ color: '#6E00BE' }} /></InputAdornment>,
+                               sx: { borderRadius: '12px' }
+                           }}
+                        />
+                         <FormControl fullWidth required>
+                            <InputLabel id="gender-label" sx={{ '&.Mui-focused': { color: '#6E00BE' } }}>Jenis Kelamin</InputLabel>
+                            <Select
+                                labelId="gender-label"
+                                name="gender"
+                                value={formData.gender}
+                                label="Jenis Kelamin"
+                                onChange={handleChange}
+                                disabled={isLoading}
+                                sx={{
+                                    borderRadius: '12px',
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6E00BE' },
+                                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#6E00BE' }
+                                }}
+                                startAdornment={<InputAdornment position="start"><Wc sx={{ color: '#6E00BE', ml: 1 }} /></InputAdornment>}
+                            >
+                                <MenuItem value="Laki-laki">Laki-laki</MenuItem>
+                                <MenuItem value="Perempuan">Perempuan</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+
+                    <TextField
+                      fullWidth
+                      label="Link Profil Instagram"
+                      name="instagram_profile_link"
+                      value={formData.instagram_profile_link}
+                      onChange={handleChange}
+                      required
+                      placeholder="https://instagram.com/username"
+                      disabled={isLoading}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&.Mui-focused fieldset': { borderColor: '#6E00BE' },
+                          '&:hover fieldset': { borderColor: '#6E00BE' }
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': { color: '#6E00BE' }
+                      }}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start"><Instagram sx={{ color: '#6E00BE' }} /></InputAdornment>,
+                        sx: { borderRadius: '12px' }
+                      }}
+                    />
+
+                    <TextField
+                      fullWidth
+                      label="Jumlah Followers Instagram"
+                      name="instagram_followers_count"
+                      type="number"
+                      value={formData.instagram_followers_count}
+                      onChange={handleChange}
+                      required
+                      placeholder="Contoh: 1000"
+                      disabled={isLoading}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&.Mui-focused fieldset': { borderColor: '#6E00BE' },
+                          '&:hover fieldset': { borderColor: '#6E00BE' }
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': { color: '#6E00BE' }
+                      }}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start"><PeopleIcon sx={{ color: '#6E00BE' }} /></InputAdornment>,
+                        sx: { borderRadius: '12px' }
+                      }}
+                    />
+
+                    <TextField
+                      fullWidth
+                      label="Kategori Konten"
+                      name="content_category"
+                      value={formData.content_category}
+                      onChange={handleChange}
+                      required
+                      placeholder="Contoh: Lifestyle"
+                      disabled={isLoading}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&.Mui-focused fieldset': { borderColor: '#6E00BE' },
+                          '&:hover fieldset': { borderColor: '#6E00BE' }
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': { color: '#6E00BE' }
+                      }}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start"><Category sx={{ color: '#6E00BE' }} /></InputAdornment>,
+                        sx: { borderRadius: '12px' }
+                      }}
+                    />
+
+                    {/* Existing Fields (Retained) */}
                     <TextField
                       fullWidth
                       label="Nama Universitas"
@@ -746,10 +945,86 @@ function RegisterPage() {
                       '&:hover': { bgcolor: '#5a009e' }
                     }}
                   >
-                    {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Simpan Profil'}
+                    {isLoading ? <CircularProgress size={24} color="inherit" /> : (userRole === 'influencer' ? 'Lanjut' : 'Simpan Profil')}
                   </Button>
                 </Stack>
               </form>
+             )}
+
+            {/* Step 4: Upload KTM */}
+            {step === 'upload_ktm' && (
+                <form onSubmit={handleUploadKtm}>
+                    <Stack spacing={4} alignItems="center">
+                        <Box sx={{
+                            width: '100%',
+                            height: 200,
+                            border: '2px dashed #6E00BE',
+                            borderRadius: '16px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            bgcolor: 'rgba(110, 0, 190, 0.05)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': { bgcolor: 'rgba(110, 0, 190, 0.1)' }
+                        }}>
+                             <input
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                id="ktm-file-upload"
+                                type="file"
+                                onChange={handleFileChange}
+                              />
+                             <label htmlFor="ktm-file-upload" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                 {formData.ktmFile ? (
+                                    <Box sx={{ textAlign: 'center' }}>
+                                        <Badge badgeContent="✓" color="success">
+                                            <CloudUpload sx={{ fontSize: 48, color: '#6E00BE', mb: 1 }} />
+                                        </Badge>
+                                        <Typography variant="body1" fontWeight={600}>
+                                            {formData.ktmFile.name}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                            Klik untuk mengganti
+                                        </Typography>
+                                    </Box>
+                                 ) : (
+                                    <>
+                                        <CloudUpload sx={{ fontSize: 48, color: '#6E00BE', mb: 1 }} />
+                                        <Typography variant="h6" color="#6E00BE" fontWeight={600}>
+                                            Upload Foto KTM
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Klik atau drag file ke sini
+                                        </Typography>
+                                    </>
+                                 )}
+                             </label>
+                        </Box>
+                        
+                        <Button
+                            fullWidth
+                            size="large"
+                            type="submit"
+                            variant="contained"
+                            disabled={isLoading || !formData.ktmFile}
+                            sx={{
+                              bgcolor: '#6E00BE',
+                              color: '#fff',
+                              py: 1.5,
+                              borderRadius: '12px',
+                              fontWeight: 700,
+                              textTransform: 'none',
+                              fontSize: '1rem',
+                              boxShadow: '0 8px 20px rgba(110, 0, 190, 0.4)',
+                              '&:hover': { bgcolor: '#5a009e' }
+                            }}
+                        >
+                            {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Selesai & Masuk Dashboard'}
+                        </Button>
+                    </Stack>
+                </form>
             )}
             
             {step === 'register' && (
