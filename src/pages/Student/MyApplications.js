@@ -19,11 +19,22 @@ import {
   TableRow,
   IconButton,
   Tooltip,
+  Card,
+  Stack,
+  Divider,
+  Grid
 } from '@mui/material';
 import { 
   Visibility as VisibilityIcon, 
   Cancel as CancelIcon,
-  Assignment as AssignmentIcon
+  Assignment as AssignmentIcon,
+  Campaign,
+  CalendarToday,
+  MonetizationOn,
+  Description,
+  Group,
+  CheckCircle,
+  AccessTime
 } from '@mui/icons-material';
 import * as campaignService from '../../services/campaignService';
 import { useToast } from '../../hooks/useToast';
@@ -315,150 +326,203 @@ const MyApplications = () => {
               isOpen={showDetailModal}
               onClose={() => setShowDetailModal(false)}
               title={selectedCampaign.title || 'Detail Kampanye'}
-              // maxWidth="lg"
-              // Note: The common/Modal component might handle props differently. 
-              // If it doesn't support maxWidth directly, it might be fine or need sx props.
-              // Assuming compatibility or wrapping children in Box.
+              maxWidth="lg"
             >
-              <Box sx={{ maxHeight: '70vh', overflowY: 'auto', p: 1 }}>
+              <Box sx={{ maxHeight: '75vh', overflowY: 'auto', p: 1 }}>
                 {/* Banner Image */}
                 {selectedCampaign.banner_image && (
-                  <Box sx={{ width: '100%', height: '200px', background: `url(${getImageUrl(selectedCampaign.banner_image)}) center/cover`, borderRadius: '12px', mb: '24px' }} />
+                  <Box 
+                    sx={{ 
+                      width: '100%', 
+                      height: '240px', 
+                      background: `url(${getImageUrl(selectedCampaign.banner_image)}) center/cover`, 
+                      borderRadius: '16px', 
+                      mb: 4,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                    }} 
+                  />
                 )}
 
-                {/* Campaign Details Grid */}
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: '24px', mb: '24px' }}>
-                  {/* Left Column */}
-                  <Box>
-                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Informasi Produk</Typography>
-
-                    {selectedCampaign.has_product && (
-                      <>
-                        <Box sx={{ mb: '16px' }}>
-                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Nama Produk</Typography>
-                          <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>{selectedCampaign.product_name}</Typography>
-                        </Box>
-
-                        <Box sx={{ mb: '16px' }}>
-                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Nilai Produk</Typography>
-                          <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>Rp {Number(selectedCampaign.product_value).toLocaleString('id-ID')}</Typography>
-                        </Box>
-
-                        <Box sx={{ mb: '16px' }}>
-                          <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Deskripsi</Typography>
-                          <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5 }}>{selectedCampaign.product_desc}</Typography>
-                        </Box>
-                      </>
-                    )}
-
-                    <Box sx={{ mb: '16px' }}>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Kategori</Typography>
-                      <Typography sx={{ mt: '4px', fontSize: '1rem', color: '#1a1f36', fontWeight: 600 }}>{selectedCampaign.campaign_category}</Typography>
-                    </Box>
-
+                <Stack spacing={4}>
+                  {/* 1. Header Section */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
                     <Box>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Kategori Influencer</Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px', mt: '8px' }}>
-                        {parseInfluencerCategory(selectedCampaign.influencer_category).map((cat, idx) => (
-                          <Box key={idx} sx={{ background: '#f3e5f5', color: '#6E00BE', px: '12px', py: '6px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{cat}</Box>
-                        ))}
-                      </Box>
-                    </Box>
-                  </Box>
-
-                  {/* Right Column */}
-                  <Box>
-                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Detail Kampanye</Typography>
-
-                    <Box sx={{ mb: '16px' }}>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Harga Per Postingan</Typography>
-                      <Typography sx={{ mt: '4px', fontSize: '1.2rem', color: '#6E00BE', fontWeight: 700 }}>Rp {Number(selectedCampaign.price_per_post).toLocaleString('id-ID')}</Typography>
-                    </Box>
-
-                    <Box sx={{ mb: '16px' }}>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Status</Typography>
-                      <Typography sx={{ mt: '4px', fontSize: '1rem', fontWeight: 700, textTransform: 'capitalize', color: selectedCampaign.status === 'active' ? '#155724' : '#6c757d' }}>{translateStatus(selectedCampaign.status)}</Typography>
-                    </Box>
-
-                    <Box sx={{ mb: '16px' }}>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Tanggal</Typography>
-                      <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36' }}>
-                          Mulai: {selectedCampaign.start_date && new Date(selectedCampaign.start_date).toLocaleDateString('id-ID')}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.95rem', color: '#1a1f36' }}>
-                          Selesai: {selectedCampaign.end_date && new Date(selectedCampaign.end_date).toLocaleDateString('id-ID')}
-                      </Typography>
-                       <Typography sx={{ fontSize: '0.95rem', color: '#d32f2f', fontWeight: 600, mt: 0.5 }}>
-                          Batas Waktu Pengiriman: {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID') : 'N/A'}
-                      </Typography>
-                    </Box>
-
-                    <Box>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Persyaratan</Typography>
-                      <Box sx={{ mt: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
-                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Min Pengikut: </Typography>
-                          <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.min_followers?.toLocaleString('id-ID') || 'N/A'}</Typography>
-                        </Box>
-                        <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
-                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Jenis Kelamin: </Typography>
-                          <Typography component="span" sx={{ color: '#6c757d' }}>{selectedCampaign.selected_gender || 'Semua'}</Typography>
-                        </Box>
-                        <Box sx={{ background: '#f7fafc', p: '8px 12px', borderRadius: '8px', fontSize: '0.9rem' }}>
-                          <Typography component="span" sx={{ fontWeight: 600, color: '#1a1f36' }}>Usia: </Typography>
-                          <Typography component="span" sx={{ color: '#6c757d' }}>
-                            {(() => {
-                               if (!selectedCampaign.selected_age) return 'Semua';
-                               try {
-                                  let parsed = selectedCampaign.selected_age;
-                                  if (typeof parsed === 'string' && (parsed.startsWith('[') || parsed.startsWith('"'))) {
-                                     parsed = JSON.parse(parsed);
-                                     if (typeof parsed === 'string' && parsed.startsWith('[')) {
-                                         parsed = JSON.parse(parsed);
-                                     }
-                                  }
-                                  return Array.isArray(parsed) ? parsed.join(', ') : parsed;
-                               } catch (e) {
-                                  return selectedCampaign.selected_age;
-                               }
-                            })()}
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                          <Chip 
+                            label={selectedCampaign.campaign_category || 'General'} 
+                            size="small" 
+                            sx={{ bgcolor: '#f3e5f5', color: '#6E00BE', fontWeight: 600 }} 
+                          />
+                          <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#cbd5e1' }} />
+                          <Typography variant="body2" sx={{ color: '#64748b' }}>
+                            {selectedCampaign.type || 'Campaign'}
                           </Typography>
-                        </Box>
-                      </Box>
+                      </Stack>
+                      <Typography variant="h4" sx={{ fontWeight: 800, color: '#1e293b', lineHeight: 1.3 }}>
+                        {selectedCampaign.title}
+                      </Typography>
                     </Box>
+
+                    <Stack alignItems="flex-end" spacing={1}>
+                       <Chip
+                          label={translateStatus(selectedCampaign.status)}
+                          sx={{
+                            bgcolor: getStatusColor(selectedCampaign.status) === 'success' ? '#dcfce7' : '#f1f5f9',
+                            color: getStatusColor(selectedCampaign.status) === 'success' ? '#15803d' : '#64748b',
+                            fontWeight: 700,
+                            border: '1px solid',
+                            borderColor: getStatusColor(selectedCampaign.status) === 'success' ? '#bbf7d0' : '#e2e8f0',
+                          }}
+                       />
+                       <Typography variant="h5" sx={{ fontWeight: 800, color: '#6E00BE' }}>
+                          Rp {Number(selectedCampaign.price_per_post).toLocaleString('id-ID')}
+                          <Typography component="span" variant="body2" sx={{ color: '#64748b', fontWeight: 500, ml: 0.5 }}>/ post</Typography>
+                       </Typography>
+                    </Stack>
                   </Box>
-                </Box>
 
-                {/* Guidelines */}
-                {(selectedCampaign.content_guidelines || selectedCampaign.caption_guidelines) && (
-                  <Box sx={{ mb: '24px' }}>
-                    <Typography sx={{ m: 0, mb: '12px', color: '#1a1f36', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Panduan</Typography>
+                  {/* 2. Main Content Grid */}
+                  <Grid container spacing={3} alignItems="stretch">
+                    {/* Row 1: Product/Desc & Requirements */}
+                    <Grid item xs={12} md={selectedCampaign.has_product ? 6 : 7}>
+                       <Card variant="outlined" sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', height: '100%' }}>
+                          <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                               {selectedCampaign.has_product ? <MonetizationOn sx={{ fontSize: 18, color: '#64748b' }} /> : <Description sx={{ fontSize: 18, color: '#64748b' }} />}
+                               <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>
+                                  {selectedCampaign.has_product ? 'Informasi Produk' : 'Detail Kampanye'}
+                               </Typography>
+                            </Stack>
+                          </Box>
+                          <Box sx={{ p: 2.5 }}>
+                             <Stack spacing={3}>
+                                {selectedCampaign.has_product ? (
+                                   <>
+                                     <Box>
+                                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: 0.5, mb: 0.5, display: 'block' }}>NAMA PRODUK</Typography>
+                                        <Typography variant="h6" sx={{ color: '#1e293b', fontWeight: 700 }}>{selectedCampaign.product_name}</Typography>
+                                     </Box>
+                                     <Box>
+                                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: 0.5, mb: 0.5, display: 'block' }}>NILAI PRODUK</Typography>
+                                        <Typography variant="body1" sx={{ color: '#1e293b', fontWeight: 600 }}>Rp {Number(selectedCampaign.product_value).toLocaleString('id-ID')}</Typography>
+                                     </Box>
+                                     <Divider sx={{ borderStyle: 'dashed' }} />
+                                     <Box>
+                                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: 0.5, mb: 0.5, display: 'block' }}>DESKRIPSI</Typography>
+                                        <Typography variant="body2" sx={{ color: '#334155', lineHeight: 1.6 }}>{selectedCampaign.product_desc}</Typography>
+                                     </Box>
+                                   </>
+                                ) : (
+                                   <Box>
+                                      <Typography variant="body2" sx={{ color: '#334155', lineHeight: 1.6 }}>{selectedCampaign.description || 'Tidak ada deskripsi tambahan.'}</Typography>
+                                   </Box>
+                                )}
+                             </Stack>
+                          </Box>
+                       </Card>
+                    </Grid>
 
-                    {selectedCampaign.content_guidelines && (
-                      <Box sx={{ mb: '12px' }}>
-                        <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Panduan Konten</Typography>
-                        <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{selectedCampaign.content_guidelines}</Typography>
-                      </Box>
-                    )}
+                    <Grid item xs={12} md={selectedCampaign.has_product ? 6 : 5}>
+                       <Card variant="outlined" sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', height: '100%' }}>
+                          <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                               <Group sx={{ fontSize: 18, color: '#64748b' }} />
+                               <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Kriteria Influencer</Typography>
+                            </Stack>
+                          </Box>
+                          <Box sx={{ p: 2.5 }}>
+                             <Stack spacing={2}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, bgcolor: '#f8fafc', borderRadius: '12px' }}>
+                                   <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>Min. Followers</Typography>
+                                   <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 700 }}>{selectedCampaign.min_followers?.toLocaleString('id-ID') || '-'}</Typography>
+                                </Box>
+                                <Divider sx={{ borderStyle: 'dashed' }} />
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, bgcolor: '#f8fafc', borderRadius: '12px' }}>
+                                   <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>Jenis Kelamin</Typography>
+                                   <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 700 }}>{selectedCampaign.selected_gender || 'Semua'}</Typography>
+                                </Box>
+                                <Divider sx={{ borderStyle: 'dashed' }} />
+                                <Box>
+                                   <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, mb: 1, display: 'block' }}>KATEGORI</Typography>
+                                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                      {parseInfluencerCategory(selectedCampaign.influencer_category).map((cat, idx) => (
+                                         <Chip key={idx} label={cat} size="small" sx={{ bgcolor: '#fff', border: '1px solid #e2e8f0', fontWeight: 600 }} />
+                                      ))}
+                                   </Box>
+                                </Box>
+                             </Stack>
+                          </Box>
+                       </Card>
+                    </Grid>
 
-                    {selectedCampaign.caption_guidelines && (
-                      <Box>
-                        <Typography sx={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: 600 }}>Panduan Caption</Typography>
-                        <Typography sx={{ mt: '4px', fontSize: '0.95rem', color: '#1a1f36', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{selectedCampaign.caption_guidelines}</Typography>
-                      </Box>
-                    )}
-                  </Box>
-                )}
-                
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-                    <Button 
-                      onClick={() => setShowDetailModal(false)}
-                      variant="contained"
-                      sx={{ bgcolor: '#6E00BE', '&:hover': { bgcolor: '#5a009e' } }}
-                    >
-                      Tutup
-                    </Button>
-                </Box>
+                    {/* Row 2: Timeline & Guidelines */}
+                    <Grid item xs={12} md={6}>
+                       <Card variant="outlined" sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', height: '100%' }}>
+                          <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                               <CalendarToday sx={{ fontSize: 18, color: '#64748b' }} />
+                               <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Timeline Campaign</Typography>
+                            </Stack>
+                          </Box>
+                          <Box sx={{ p: 2.5 }}>
+                             <Stack spacing={2}>
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                   <Box sx={{ p: 1, borderRadius: '8px', bgcolor: '#eff6ff', color: '#3b82f6', height: 'fit-content' }}>
+                                      <Campaign sx={{ fontSize: 20 }} />
+                                   </Box>
+                                   <Box>
+                                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 0.5 }}>PERIODE</Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a' }}>
+                                         {selectedCampaign.start_date && new Date(selectedCampaign.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} -{' '}
+                                         {selectedCampaign.end_date && new Date(selectedCampaign.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                      </Typography>
+                                   </Box>
+                                </Box>
+                                <Divider sx={{ borderStyle: 'dashed' }} />
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                   <Box sx={{ p: 1, borderRadius: '8px', bgcolor: '#fef2f2', color: '#ef4444', height: 'fit-content' }}>
+                                      <AccessTime sx={{ fontSize: 20 }} />
+                                   </Box>
+                                   <Box>
+                                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 0.5 }}>DEADLINE PENGIRIMAN</Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a' }}>
+                                         {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Tidak Ditentukan'}
+                                      </Typography>
+                                   </Box>
+                                </Box>
+                             </Stack>
+                          </Box>
+                       </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                       <Card variant="outlined" sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', height: '100%' }}>
+                          <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                               <AssignmentIcon sx={{ fontSize: 18, color: '#64748b' }} />
+                               <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Brief & Guideline</Typography>
+                            </Stack>
+                          </Box>
+                          <Box sx={{ p: 2.5 }}>
+                             <Stack spacing={2}>
+                                <Box>
+                                   <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, mb: 0.5, display: 'block' }}>KONTEN</Typography>
+                                   <Typography variant="body2" sx={{ color: '#334155', lineHeight: 1.5, bgcolor: '#f8fafc', p: 1.5, borderRadius: '8px', border: '1px dashed #e2e8f0' }}>
+                                      {selectedCampaign.content_guidelines || '-'}
+                                   </Typography>
+                                </Box>
+                                <Box>
+                                   <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, mb: 0.5, display: 'block' }}>CAPTION</Typography>
+                                   <Typography variant="body2" sx={{ color: '#334155', lineHeight: 1.5, bgcolor: '#f8fafc', p: 1.5, borderRadius: '8px', border: '1px dashed #e2e8f0' }}>
+                                      {selectedCampaign.caption_guidelines || '-'}
+                                   </Typography>
+                                </Box>
+                             </Stack>
+                          </Box>
+                       </Card>
+                    </Grid>
+                  </Grid>
+                </Stack>
               </Box>
             </Modal>
           )}

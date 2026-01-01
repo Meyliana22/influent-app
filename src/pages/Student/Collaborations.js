@@ -43,7 +43,12 @@ import {
   TrendingUp,
   Star,
   ChatBubble,
-  AccountBalanceWallet
+  AccountBalanceWallet,
+  Campaign,
+  CalendarToday,
+  MonetizationOn,
+  Description,
+  Assignment
 } from '@mui/icons-material';
 import { COLORS } from '../../constants/colors';
 import SubmitWork from './SubmitWork';
@@ -402,16 +407,9 @@ function Collaborations() {
         Kembali ke Daftar
       </Button>
 
-      <Card
-        sx={{
-          borderRadius: '16px',
-          border: 'none',
-          background: 'linear-gradient(135deg, #f5f3ff 0%, #faf8ff 100%)',
-          mb: 3,
-        }}
-      >
-        <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2.5, mb: 3 }}>
+      <Stack spacing={3}>
+         {/* 1. Header Section */}
+         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2.5 }}>
             <Avatar
               src={collab.brandLogo}
               alt={collab.brand}
@@ -424,17 +422,21 @@ function Collaborations() {
               }}
             />
             <Box sx={{ flex: 1 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: 700,
-                    color: '#1a1a2e',
-                    mb: 1,
-                  }}
-                >
-                  {collab.title}
-                </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e293b', mb: 0.5 }}>
+                    {collab.title}
+                  </Typography>
+                   <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
+                        {collab.brand}
+                      </Typography>
+                      <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#cbd5e1' }} />
+                      <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
+                        {collab.type}
+                      </Typography>
+                   </Stack>
+                </Box>
                 <Chip
                   label={
                     collab.status === 'upcoming' ? 'Akan Datang' :
@@ -442,153 +444,152 @@ function Collaborations() {
                   }
                   sx={{
                     background: 
-                      collab.status === 'upcoming' ? '#ff9800' :
-                      collab.status === 'ongoing' ? '#6E00BE' : 
-                      '#2d8659',
-                    color: '#fff',
-                    fontWeight: 600,
-                    ml: 2,
+                      collab.status === 'upcoming' ? '#fff7ed' :
+                      collab.status === 'ongoing' ? '#eff6ff' : 
+                      '#f0fdf4',
+                    color: 
+                      collab.status === 'upcoming' ? '#c2410c' :
+                      collab.status === 'ongoing' ? '#1d4ed8' : 
+                      '#15803d',
+                    fontWeight: 700,
+                    border: '1px solid',
+                    borderColor:
+                      collab.status === 'upcoming' ? '#ffedd5' :
+                      collab.status === 'ongoing' ? '#dbeafe' : 
+                      '#dcfce7',
                   }}
                 />
               </Box>
-              <Typography variant="body2" sx={{ color: '#6c757d', mb: 1 }}>
-                {collab.brand} · {collab.type}
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#4a4a4a', mt: 1 }}>
-                {collab.description}
-              </Typography>
             </Box>
-          </Box>
+         </Box>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  sx={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    color: '#6c757d',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    mb: 0.8,
-                  }}
-                >
-                  Periode Kampanye
-                </Typography>
-                <Typography sx={{ color: '#1a1a2e', fontWeight: 600 }}>
-                  {new Date(collab.startDate).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })} -{' '}
-                  {new Date(collab.endDate).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </Typography>
-              </Box>
-
-              <Box>
-                <Typography
-                  sx={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    color: '#6c757d',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    mb: 0.8,
-                  }}
-                >
-                  Kompensasi
-                </Typography>
-                <Typography sx={{ color: '#6E00BE', fontWeight: 700, fontSize: '1.3rem' }}>
-                  {collab.compensation}
-                </Typography>
-              </Box>
+         {/* 2. Main Content Grid */}
+         <Grid container spacing={3} alignItems="stretch">
+            {/* Left Col: Detail Dokumen */}
+            <Grid item xs={12} md={7}>
+               <Card variant="outlined" sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', height: '100%' }}>
+                  <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                       <Description sx={{ fontSize: 18, color: '#64748b' }} />
+                       <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Detail Kampanye</Typography>
+                    </Stack>
+                  </Box>
+                  <Box sx={{ p: 2.5 }}>
+                     <Stack spacing={3}>
+                        <Box>
+                           <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: 0.5, mb: 1, display: 'block' }}>DESKRIPSI</Typography>
+                           <Typography variant="body2" sx={{ color: '#334155', lineHeight: 1.6 }}>
+                              {collab.description}
+                           </Typography>
+                        </Box>
+                        <Box>
+                           <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: 0.5, mb: 1, display: 'block' }}>PERSYARATAN</Typography>
+                           <Box sx={{ p: 2, bgcolor: '#f1f5f9', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                              <Stack spacing={1}>
+                                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                                   <Assignment sx={{ fontSize: 18, color: '#6E00BE', mt: 0.3 }} />
+                                   <Typography variant="body2" sx={{ color: '#334155', lineHeight: 1.5, fontWeight: 500 }}>
+                                      {collab.requirements}
+                                   </Typography>
+                                </Box>
+                              </Stack>
+                           </Box>
+                        </Box>
+                     </Stack>
+                  </Box>
+               </Card>
             </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <Box>
-                <Typography
-                  sx={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    color: '#6c757d',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    mb: 0.8,
-                  }}
-                >
-                  Persyaratan
-                </Typography>
-                <Typography sx={{ color: '#1a1a2e', lineHeight: 1.7 }}>
-                  {collab.requirements}
-                </Typography>
-              </Box>
-            </Grid>
+            {/* Right Col: Timeline & Compensation */}
+            <Grid item xs={12} md={5}>
+               <Stack spacing={3} sx={{ height: '100%' }}>
+                  <Card variant="outlined" sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', flex: 1 }}>
+                     <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                           <CalendarToday sx={{ fontSize: 18, color: '#64748b' }} />
+                           <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Timeline</Typography>
+                        </Stack>
+                     </Box>
+                     <Box sx={{ p: 2.5 }}>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                             <Box sx={{ p: 1, borderRadius: '8px', bgcolor: '#eff6ff', color: '#3b82f6', height: 'fit-content' }}>
+                               <Campaign sx={{ fontSize: 20 }} />
+                             </Box>
+                             <Box>
+                               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 0.5 }}>PERIODE</Typography>
+                               <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a' }}>
+                                  {new Date(collab.startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} -{' '}
+                                  {new Date(collab.endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                               </Typography>
+                             </Box>
+                        </Box>
+                     </Box>
+                  </Card>
 
-            <Grid item xs={12}>
-              <Box>
-                <Typography
-                  sx={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    color: '#6c757d',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    mb: 0.8,
-                  }}
-                >
-                  Deskripsi
-                </Typography>
-                <Typography sx={{ color: '#1a1a2e', lineHeight: 1.7 }}>
-                  {collab.description}
-                </Typography>
-              </Box>
+                  <Card variant="outlined" sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', bgcolor: '#F3F0FF', borderColor: '#E9D5FF' }}>
+                     <Box sx={{ p: 3, textAlign: 'center' }}>
+                        <Typography variant="caption" sx={{ color: '#6B21A8', fontWeight: 700, letterSpacing: 1 }}>KOMPENSASI</Typography>
+                        <Stack direction="row" justifyContent="center" alignItems="center" spacing={1} sx={{ mt: 1 }}>
+                           <MonetizationOn sx={{ color: '#6E00BE', fontSize: 24 }} />
+                           <Typography variant="h5" sx={{ fontWeight: 800, color: '#6E00BE' }}>
+                             {collab.compensation}
+                           </Typography>
+                        </Stack>
+                     </Box>
+                  </Card>
+               </Stack>
             </Grid>
-          </Grid>
+         </Grid>
 
+         {/* 3. Actions */}
           {collab.status === 'ongoing' && (
-            <Box sx={{ mt: 3, display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
-              <Button
-                variant="contained"
-                onClick={handleSubmitWorkClick}
-                sx={{
-                  background: '#6E00BE',
-                  color: '#fff',
-                  fontWeight: 700,
-                  flex: 1,
-                  py: 1.5,
-                  borderRadius: '12px',
-                  '&:hover': {
-                    backgroundColor: 'rgba(110, 0, 190, 0.05)',
-                  },
-                }}
-              >
-                Kirim Pekerjaan
-              </Button>
-              <Button
-                variant="outlined"
-                sx={{
-                  borderColor: '#6E00BE',
-                  color: '#6E00BE',
-                  fontWeight: 700,
-                  flex: 1,
-                  py: 1.5,
-                  borderRadius: '12px',
-                  '&:hover': {
-                    backgroundColor: 'rgba(110, 0, 190, 0.05)',
-                    borderColor: '#6E00BE',
-                  },
-                }}
-              >
-                Pesan Merek
-              </Button>
-            </Box>
+            <Paper 
+              elevation={0}
+              sx={{ 
+                p: 2, 
+                mt: 2, 
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                bgcolor: '#fff'
+              }}
+            >
+               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<ChatBubble />}
+                    sx={{
+                      flex: 1,
+                      py: 1.5,
+                      borderRadius: '10px',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      borderColor: '#e2e8f0',
+                      color: '#475569',
+                      '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
+                    }}
+                  >
+                    Pesan Merek
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<Assignment />}
+                    onClick={handleSubmitWorkClick}
+                    sx={{
+                      flex: 1,
+                      py: 1.5,
+                      borderRadius: '10px',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      bgcolor: '#6E00BE',
+                      '&:hover': { bgcolor: '#5a009e' }
+                    }}
+                  >
+                    Kirim Pekerjaan
+                  </Button>
+               </Stack>
+            </Paper>
           )}
-        </CardContent>
-      </Card>
+      </Stack>
     </Box>
   );
 

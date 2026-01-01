@@ -50,11 +50,12 @@ function PaymentConfirmation() {
 
   const calculateCosts = () => {
     if (!campaign)
-      return { total: 0, pricePerInfluencer: 0, influencerCount: 0 };
+      return { total: 0, pricePerInfluencer: 0, influencerCount: 0, adminFee: 0 };
     const pricePerInfluencer = parseFloat(campaign.price_per_post) || 0;
     const influencerCount = parseInt(campaign.influencer_count) || 1;
-    const total = pricePerInfluencer * influencerCount;
-    return { total, pricePerInfluencer, influencerCount };
+    const adminFee = 5000;
+    const total = (pricePerInfluencer * influencerCount) + adminFee;
+    return { total, pricePerInfluencer, influencerCount, adminFee };
   };
   const formatDate = (dateString) => {
     if (!dateString) return "-";
@@ -107,7 +108,7 @@ function PaymentConfirmation() {
     <Box sx={{ bgcolor: COLORS.background, minHeight: '100vh', pb: 6, fontFamily: 'Montserrat, Arial, sans-serif' }}>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <Box sx={{ ml: !isMobile ? 32.5 : 0, flex: 1 }}>
-        <Navbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+      
         <Container maxWidth="md" sx={{ pt: 6, pb: 6 }}>
           <Paper elevation={3} sx={{ borderRadius: 5, boxShadow: 6, p: { xs: 2, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden' }}>
             <Stack direction="row" alignItems="center" spacing={2} mb={3}>
@@ -155,6 +156,10 @@ function PaymentConfirmation() {
                   <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 1.5, borderTop: '1px dashed #ddd' }}>
                     <Typography sx={{ color: COLORS.textSecondary, fontSize: 14 }}>Biaya per Influencer</Typography>
                     <Typography fontWeight={600} sx={{ color: COLORS.textPrimary, fontSize: 16 }}>{formatCurrency(costs.pricePerInfluencer)}</Typography>
+                  </Stack>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 1.5, borderTop: '1px dashed #ddd' }}>
+                    <Typography sx={{ color: COLORS.textSecondary, fontSize: 14 }}>Biaya Layanan Platform</Typography>
+                    <Typography fontWeight={600} sx={{ color: COLORS.textPrimary, fontSize: 16 }}>{formatCurrency(costs.adminFee)}</Typography>
                   </Stack>
                 </Stack>
               </Box>

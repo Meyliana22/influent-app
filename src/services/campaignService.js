@@ -271,7 +271,7 @@ export const createCampaign = async (campaignData) => {
         ? JSON.stringify(campaignData.referenceFiles)
         : null,
       status:campaignData.status == "draft" ? "draft" : "admin_review", // Default to inactive (unpaid)
-      contentTypes:
+      content_types:
         campaignData.contentItems && campaignData.contentItems.length > 0
           ? JSON.stringify(
               campaignData.contentItems.map((item) => ({
@@ -354,7 +354,7 @@ export const updateCampaign = async (campaignId, campaignData) => {
         ? JSON.stringify(campaignData.referenceFiles)
         : null,
       status: campaignData.status || "inactive", // Default to inactive (unpaid)
-      contentTypes:
+      content_types:
         campaignData.contentItems && campaignData.contentItems.length > 0
           ? JSON.stringify(
               campaignData.contentItems.map((item) => ({

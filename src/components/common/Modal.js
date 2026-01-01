@@ -31,6 +31,7 @@ const Modal = ({
   cancelText = 'Batal',
   variant = 'default',
   showActions = true,
+  maxWidth,
 }) => {
   const getConfirmVariant = () => {
     switch (variant) {
@@ -47,7 +48,7 @@ const Modal = ({
     <Dialog
       open={isOpen}
       onClose={onClose}
-      maxWidth="sm"
+      maxWidth={typeof maxWidth === 'string' ? maxWidth : 'sm'}
       fullWidth
       PaperProps={{
         sx: {

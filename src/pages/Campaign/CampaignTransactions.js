@@ -60,6 +60,7 @@ function CampaignTransactions() {
   // Data State
   const [transactions, setTransactions] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
+  const [refunds, setRefunds] = useState([]);
   const [balance, setBalance] = useState({ current_balance: 0 });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -137,6 +138,9 @@ function CampaignTransactions() {
       } else if (activeTab === 2) {
         const response = await withdrawalService.getMyWithdrawals(params);
         setWithdrawals(response.data?.withdrawals || []);
+      } else if (activeTab === 3) {
+        const response = await transactionService.getRefunds(params);
+        setRefunds(response.data || {}); // Response might be { transactions: [], meta: ... }
       }
       
     } catch (error) {
@@ -311,6 +315,7 @@ function CampaignTransactions() {
               <Tab label="Riwayat Pembayaran" sx={{ textTransform: 'none', fontWeight: 600, fontSize: 15 }} />
               <Tab label="Riwayat Distribusi" sx={{ textTransform: 'none', fontWeight: 600, fontSize: 15 }} />
               <Tab label="Riwayat Penarikan" sx={{ textTransform: 'none', fontWeight: 600, fontSize: 15 }} />
+              <Tab label="Riwayat Pengembalian" sx={{ textTransform: 'none', fontWeight: 600, fontSize: 15 }} />
             </Tabs>
           </Paper>
 
@@ -416,6 +421,14 @@ function CampaignTransactions() {
                        <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Status</TableCell>
                        <TableCell align="right" sx={{ py: 2, pr: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Jumlah</TableCell>
                     </>
+                  ) : activeTab === 3 ? (
+                    <>
+                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Tanggal</TableCell>
+                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Kampanye</TableCell>
+                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Keterangan</TableCell>
+                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Status</TableCell>
+                       <TableCell align="right" sx={{ py: 2, pr: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Jumlah</TableCell>
+                    </>
                   ) : (
                     <>
                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>ID</TableCell>
@@ -475,6 +488,53 @@ function CampaignTransactions() {
                              </TableCell>
                           </TableRow>
                         ))
+                      )
+                    ) : activeTab === 3 ? (
+                      // Refunds Table Body
+                      (!refunds.transactions || refunds.transactions.length === 0) ? (
+                        <TableRow>
+                          <TableCell colSpan={5} align="center" sx={{ py: 5, color: '#6c757d' }}>
+                            Tidak ada riwayat pengembalian dana
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        refunds.transactions.map((ref, index) => {
+                          // Extract campaign title from description if possible
+                          let campaignTitle = '-';
+                          if (ref.description && ref.description.includes('campaign:')) {
+                             campaignTitle = ref.description.split('campaign:')[1].trim();
+                          }
+                          
+                          return (
+                          <TableRow key={ref.transaction_id || index} sx={{ borderBottom: '1px solid #e2e8f0' }}>
+                             <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, color: '#1a1f36' }}>
+                               {formatDate(ref.created_at)}
+                             </TableCell>
+                             <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, color: '#1a1f36' }}>
+                               {campaignTitle}
+                             </TableCell>
+                             <TableCell sx={{ py: 2.5, pl: 3, fontSize: 14, color: '#1a1f36' }}>
+                               {ref.description || 'Pengembalian Dana'}
+                             </TableCell>
+                             <TableCell sx={{ py: 2.5, pl: 3 }}>
+                               <Chip 
+                                 label="Dikembalikan" 
+                                 sx={{ 
+                                   fontSize: 12, 
+                                   fontWeight: 600, 
+                                   borderRadius: 1.5,
+                                   textTransform: 'capitalize',
+                                   bgcolor: '#fef3c7', 
+                                   color: '#92400e' 
+                                 }} 
+                               />
+                             </TableCell>
+                             <TableCell align="right" sx={{ py: 2.5, pr: 3, fontSize: 14, fontWeight: 700, color: '#1a1f36' }}>
+                               {formatCurrency(parseFloat(ref.amount))}
+                             </TableCell>
+                          </TableRow>
+                          );
+                        })
                       )
                     ) : (
                       // Transactions Table Body

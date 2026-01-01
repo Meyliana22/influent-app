@@ -220,12 +220,12 @@ function NotificationsPage() {
         }
       } else if (userRole === 'company') {
         if (title.includes('disetujui') || title.includes('approved')) {
-          navigate('/campaigns');
+          navigate('/campaigns/list');
         } else if (title.includes('ditolak') || title.includes('rejected')) {
           if (notif.reference_id) {
             navigate(`/campaign-edit/${notif.reference_id}`);
           } else {
-            navigate('/campaigns');
+            navigate('/campaigns/list');
           }
         } else if (notif.reference_type === 'campaign' && notif.reference_id) {
           if (title.includes('payment') || title.includes('pembayaran')) {

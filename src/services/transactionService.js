@@ -66,6 +66,17 @@ const transactionService = {
       console.error("Error fetching my payments:", error);
       throw error;
     }
+  },
+
+  getRefunds: async (params = {}) => {
+    try {
+      const queryParams = new URLSearchParams(params);
+      const response = await authFetch(`${API_BASE_URL}/transactions/refunds?${queryParams}`);
+      return await handleResponse(response);
+    } catch (error) {
+      console.error("Error fetching refunds:", error);
+      throw error;
+    }
   }
 };
 

@@ -1,5 +1,6 @@
 import CampaignList from './pages/Campaign/CampaignList';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './components/common/ProtectedRoute';
 import LandingPage from './pages/Landing/LandingPage';
 import CampaignCreate from './pages/Campaign/CampaignCreate';
 import ViewApplicants from './pages/Campaign/ViewApplicants';
@@ -80,44 +81,49 @@ function App() {
             <Route path="/auth/instagram/callback" element={<InstagramCallback />} />
 
 
-            <Route path="/campaigns/list" element={<CampaignList />} />
-            <Route path="/campaign-create" element={<CampaignCreate />} />
-            <Route path="/campaign-edit/:id" element={<CampaignCreate />} />
-            <Route path="/campaign/:id/payment" element={<PaymentConfirmation />} />
-            <Route path="/campaign/:id/payment-success" element={<PaymentSuccess />} />
-            <Route path="/success" element={<PaymentSuccess />} />
-            <Route path="/campaign/:campaignId/applicants" element={<ViewApplicants />} />
-            <Route path="/campaign/:campaignId/select-applicants" element={<SelectApplicants />} />
-            <Route path="/campaign/:campaignId/review-submissions" element={<ReviewSubmissions />} />
-            <Route path="/campaign/:campaignId/report" element={<CampaignReport />} />
-            <Route path="/campaign/:id/detail" element={<CampaignCreate />} />
-            <Route path="/campaign/:id/transactions" element={<CampaignTransactions />} />
-            <Route path="/campaign/transactions" element={<CampaignTransactions />} />
-            <Route path="/transactions" element={<CampaignTransactions />} />
+            {/* Company Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['company']} />}>
+              <Route path="/campaigns/list" element={<CampaignList />} />
+              <Route path="/campaign-create" element={<CampaignCreate />} />
+              <Route path="/campaign-edit/:id" element={<CampaignCreate />} />
+              <Route path="/campaign/:id/payment" element={<PaymentConfirmation />} />
+              <Route path="/campaign/:id/payment-success" element={<PaymentSuccess />} />
+              <Route path="/success" element={<PaymentSuccess />} />
+              <Route path="/campaign/:campaignId/applicants" element={<ViewApplicants />} />
+              <Route path="/campaign/:campaignId/select-applicants" element={<SelectApplicants />} />
+              <Route path="/campaign/:campaignId/review-submissions" element={<ReviewSubmissions />} />
+              <Route path="/campaign/:campaignId/report" element={<CampaignReport />} />
+              <Route path="/campaign/:id/detail" element={<CampaignCreate />} />
+              <Route path="/campaign/:id/transactions" element={<CampaignTransactions />} />
+              <Route path="/campaign/transactions" element={<CampaignTransactions />} />
+              <Route path="/transactions" element={<CampaignTransactions />} />
+              <Route path="/campaign/dashboard" element={<CampaignDashboard />} />
+            </Route>
             
             {/* Admin Routes */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<ManageUsers />} />
-            <Route path="/admin/campaigns" element={<ManageCampaigns />} />
-            <Route path="/admin/transactions" element={<AdminTransactions />} />
-            <Route path="/admin/withdrawals" element={<ManageWithdrawals />} />
-            <Route path="/admin/reports" element={<Reports />} />
-            <Route path="/admin/review-submissions" element={<AdminReviewSubmissions />} />
+            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<ManageUsers />} />
+              <Route path="/admin/campaigns" element={<ManageCampaigns />} />
+              <Route path="/admin/transactions" element={<AdminTransactions />} />
+              <Route path="/admin/withdrawals" element={<ManageWithdrawals />} />
+              <Route path="/admin/reports" element={<Reports />} />
+              <Route path="/admin/review-submissions" element={<AdminReviewSubmissions />} />
+            </Route>
             
-            {/* UMKM Routes */}
-            <Route path="/campaign/dashboard" element={<CampaignDashboard />} />
+
             {/* <Route path="/campaign/campaigns" element={<CampaignList />} /> */}
             
             {/* Student Routes */}
-            <Route path="/student/dashboard" element={<StudentDashboard />} />
-            <Route path="/student/browse-campaigns" element={<BrowseCampaigns />} />
-            <Route path="/student/my-applications" element={<MyApplications />} />
-            <Route path="/student/campaign/:id/work" element={<CampaignWorkPage />} />
-
-
-            <Route path="/student/profile" element={<StudentProfile />} />
-            <Route path="/student/collaborations" element={<Collaborations />} />
-            <Route path="/student/transactions" element={<Transactions />} />
+            <Route element={<ProtectedRoute allowedRoles={['student']} />}>
+              <Route path="/student/dashboard" element={<StudentDashboard />} />
+              <Route path="/student/browse-campaigns" element={<BrowseCampaigns />} />
+              <Route path="/student/my-applications" element={<MyApplications />} />
+              <Route path="/student/campaign/:id/work" element={<CampaignWorkPage />} />
+              <Route path="/student/profile" element={<StudentProfile />} />
+              <Route path="/student/collaborations" element={<Collaborations />} />
+              <Route path="/student/transactions" element={<Transactions />} />
+            </Route>
             
             <Route path="/" element={<LandingPage />} />
           </Routes>

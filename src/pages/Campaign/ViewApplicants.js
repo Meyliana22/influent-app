@@ -468,7 +468,7 @@ function ViewApplicants() {
 
                   <Stack direction="row" flexWrap="wrap" gap={3} sx={{ mb: 1.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 14, color: '#64748b' }}>
-                       <strong>Harga:</strong> {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(campaign.price_per_post || 0)} / posting
+                       <strong>Harga:</strong> Rp {(campaign.price_per_post || 0).toLocaleString('id-ID')} / posting
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 14, color: '#64748b' }}>
                        <strong>Batas Waktu:</strong> {campaign.submission_deadline ? new Date(campaign.submission_deadline).toLocaleDateString('id-ID') : '-'}

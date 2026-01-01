@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Container, Stack, Card, Typography, Button, TextField, Select, MenuItem, InputAdornment, IconButton, Menu, Dialog, DialogTitle, DialogContent, DialogActions, Chip, Paper } from '@mui/material';
+import { Box, Container, Stack, Card, Typography, Button, TextField, Select, MenuItem, InputAdornment, IconButton, Menu, Dialog, DialogTitle, DialogContent, DialogActions, Chip, Paper, List, ListItem, ListItemAvatar, ListItemText, Avatar, CircularProgress } from '@mui/material';
 import Sidebar from '../../components/common/Sidebar';
 import Topbar from '../../components/common/Topbar';
 import SearchIcon from '@mui/icons-material/Search';
 import PeopleIcon from '@mui/icons-material/People';
 import { BarChart3 } from 'lucide-react';
 import campaignService from '../../services/campaignService';
+import applicantService from '../../services/applicantService';
 import FaceIcon from '@mui/icons-material/Face';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
@@ -117,20 +118,105 @@ function CampaignList() {
      setShowConfirmDialog(true);
   };
 
-  const handleDistributePayment = (campaignId) => {
-    setConfirmTitle("Distribusi Pembayaran");
-    setConfirmMessage("Apakah Anda yakin ingin mendistribusikan pembayaran kepada semua influencer yang memenuhi syarat untuk campaign ini?");
-    setOnConfirm(() => async () => {
-      try {
-        await campaignService.distributePayment(campaignId);
-        toast.success("Pembayaran berhasil didistribusikan!");
-        loadData();
-      } catch (error) {
-        console.error("Payment distribution failed:", error);
-        toast.error("Gagal mendistribusikan pembayaran");
-      }
-    });
-    setShowConfirmDialog(true);
+  const handleDistributePayment = async (campaignId) => {
+    // Show initial loading state or just fetch immediately
+    // Using a temporary title while fetching if needed, or better: separate async function
+    
+    try {
+        setIsLoading(true);
+        const response = await applicantService.getCampaignApplicants(campaignId);
+        const applicants = Array.isArray(response) ? response : (response.data || []);
+        
+        // Filter for accepted/approved/completed
+        const recipients = applicants.filter(app => 
+            ['accepted', 'approved', 'completed'].includes(app.application_status?.toLowerCase())
+        );
+
+        const apiImage = process.env.REACT_APP_API_IMAGE_URL;
+        
+        setConfirmTitle("Distribusi Pembayaran");
+        
+        // Create the content with the list
+        const content = (
+            <Box>
+                <Typography sx={{ color: '#64748b', mb: 2 }}>
+                    Apakah Anda yakin ingin mendistribusikan pembayaran kepada <b>{recipients.length} influencer</b> terpilih?
+                </Typography>
+                
+                {recipients.length > 0 ? (
+                    <Box sx={{ bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                        <List dense sx={{ maxHeight: 240, overflowY: 'auto', py: 0 }}>
+                            {recipients.map((app, index) => {
+                                const user = app.user || app.student || {};
+                                const photo = user.photo_profile ? 
+                                    (user.photo_profile.startsWith('http') ? user.photo_profile : `${apiImage}/${user.photo_profile}`) 
+                                    : null;
+                                    
+                                return (
+                                    <React.Fragment key={app.id || index}>
+                                        <ListItem alignItems="flex-start" sx={{ px: 2, py: 1.5 }}>
+                                            <ListItemAvatar sx={{ minWidth: 48 }}>
+                                                <Avatar src={photo} alt={user.name} sx={{ width: 36, height: 36, border: '1px solid #e2e8f0' }}>
+                                                    {user.name?.charAt(0)}
+                                                </Avatar>
+                                            </ListItemAvatar>
+                                            <ListItemText 
+                                                primary={
+                                                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                                        {user.name || 'Unknown User'}
+                                                    </Typography>
+                                                }
+                                                secondary={
+                                                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                                        Bank: {user.bank_name || '-'} • {user.account_number || '-'}
+                                                    </Typography>
+                                                }
+                                            />
+                                        </ListItem>
+                                        {index < recipients.length - 1 && <Box sx={{ borderBottom: '1px solid #f1f5f9', mx: 2 }} />}
+                                    </React.Fragment>
+                                );
+                            })}
+                        </List>
+                        <Box sx={{ p: 1.5, bgcolor: '#f1f5f9', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b' }}>Total Penerima</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#6E00BE' }}>{recipients.length} Orang</Typography>
+                        </Box>
+                    </Box>
+                ) : (
+                    <Box sx={{ p: 2, bgcolor: '#fee2e2', borderRadius: 2, color: '#dc2626' }}>
+                        <Typography variant="body2" fontWeight={600}>
+                            ⚠️ Tidak ada influencer yang valid untuk dibayar.
+                        </Typography>
+                    </Box>
+                )}
+            </Box>
+        );
+
+        setConfirmMessage(content);
+        
+        setOnConfirm(() => async () => {
+          if (recipients.length === 0) {
+             toast.error("Tidak ada penerima pembayaran yang valid");
+             return;
+          }
+          try {
+            await campaignService.distributePayment(campaignId);
+            toast.success("Pembayaran berhasil didistribusikan!");
+            loadData();
+          } catch (error) {
+            console.error("Payment distribution failed:", error);
+            toast.error("Gagal mendistribusikan pembayaran");
+          }
+        });
+        
+        setShowConfirmDialog(true);
+    } catch (error) {
+        console.error("Error fetching recipients:", error);
+        toast.error("Gagal memuat data penerima");
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const handleCompleteCampaign = (campaignId) => {
@@ -705,9 +791,13 @@ function CampaignList() {
       <Dialog open={showConfirmDialog} onClose={() => setShowConfirmDialog(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontWeight: 700, color: '#1e293b' }}>{confirmTitle}</DialogTitle>
         <DialogContent>
-          <Typography sx={{ color: '#64748b' }}>
-            {confirmMessage}
-          </Typography>
+          <Box sx={{ color: '#64748b' }}>
+            {typeof confirmMessage === 'string' ? (
+                 <Typography>{confirmMessage}</Typography>
+            ) : (
+                confirmMessage
+            )}
+          </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setShowConfirmDialog(false)} sx={{ color: '#64748b', fontWeight: 600 }}>Batal</Button>
