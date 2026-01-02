@@ -45,7 +45,7 @@ const ApplicantCard = ({
   // Status configuration for Material UI with custom flat styling
   const getProfileImage = (profileImage) => {
     if (profileImage) {
-      return `${apiImage}/${profileImage}`;
+      return `${profileImage}`;
     }
     // return 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png';
   };

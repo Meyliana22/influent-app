@@ -44,9 +44,8 @@ const theme = createTheme({
 const API_BASE_URL = 'http://localhost:8000/api/uploads';
 
 const getImageUrl = (imageName) => {
-  if (!imageName) return null;
-  if (imageName.startsWith('http')) return imageName;
-  return `${API_BASE_URL}/${imageName}`;
+
+  return `${imageName}`;
 };
 
 function StudentProfile() {

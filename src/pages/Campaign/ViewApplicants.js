@@ -47,10 +47,8 @@ function ViewApplicants() {
     };
   }, []);
     const getBannerUrl = (image) => {
-     if (!image) return null;
-     if (image.startsWith('http') || image.startsWith('data:')) return image;
-     console.log(`${apiImage}/${image}`);
-     return `${apiImage}/${image}`;
+    
+     return `${image}`;
   };
   // Modal states
   const [showModal, setShowModal] = useState(false);

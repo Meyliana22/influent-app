@@ -509,7 +509,7 @@ function CampaignCreate() {
                        <Grid container spacing={2} sx={{ mt: 0 }}>
                           <Grid item xs={12} sm={8}>
                              <TextField 
-                               label="Nama Produk *" 
+                               label="Nama Produk " 
                                fullWidth 
                                required
                                size="small"
@@ -521,7 +521,7 @@ function CampaignCreate() {
                           </Grid>
                           <Grid item xs={12} sm={4}>
                              <TextField 
-                               label="Nilai Produk *" 
+                               label="Nilai Produk " 
                                fullWidth 
                                required
                                size="small"
@@ -785,8 +785,9 @@ function CampaignCreate() {
 
                 {!isFree && (
                    <TextField 
-                      label="Fee Per Influencer"
+                      label="Pembayaran Per Influencer"
                       fullWidth
+                      required
                       value={formatCurrency(price_per_post)}
                       onChange={e => setPricePerPost(e.target.value)}
                       InputProps={{ startAdornment: <InputAdornment position="start">Rp</InputAdornment> }}

@@ -68,7 +68,7 @@ const ReviewSubmissions = () => {
   const apiImage = process.env.REACT_APP_API_IMAGE_URL;
   const getProfileImage = (url) => {
     console.log(`${apiImage}/${url}`)
-    return `${apiImage}/${url}`
+    return `${url}`
   };
 
   useEffect(() => {

@@ -420,9 +420,8 @@ function CampaignList() {
 
   // Helper to format banner URL
   const getBannerUrl = (image) => {
-     if (!image) return null;
-     if (image.startsWith('http') || image.startsWith('data:')) return image;
-     return `${apiImage}/${image}`;
+
+     return `${image}`;
   };
 
   return (

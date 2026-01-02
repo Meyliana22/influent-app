@@ -277,10 +277,7 @@ function UserPage() {
   const TopbarComponent = userRole === 'student' ? Topbar : UMKMTopbar;
 
   const getImageUrl = (imageName) => {
-      if (!imageName) return null;
-      if (imageName.startsWith('http')) return imageName;
-      console.log(`${apiImage}/${imageName}`)
-      return `${apiImage}/${imageName}`;
+    return `${imageName}`;
   };
 
   return (
