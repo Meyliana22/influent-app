@@ -28,7 +28,10 @@ import {
   useTheme,
   useMediaQuery,
   Divider,
-  Grid
+  Grid,
+  Menu,
+  ListItemIcon,
+  ListItemText
 } from '@mui/material';
 import {
   Campaign as CampaignIcon,
@@ -51,7 +54,8 @@ import {
   Group,
   MonetizationOn,
   Description,
-  Assignment
+  Assignment,
+  MoreVert as MoreVertIcon
 } from '@mui/icons-material';
 import { Sidebar, Topbar } from '../../components/common';
 import adminService from '../../services/adminService';
@@ -162,6 +166,30 @@ function ManageCampaigns() {
   }; 
 
 
+  const isCampaingEditable = (campaign) => {
+      return campaign.status !== 'rejected' && campaign.status !== 'completed';
+  };
+
+  // Menu state
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [menuSelectedCampaign, setMenuSelectedCampaign] = useState(null);
+
+  const handleMenuOpen = (event, campaign) => {
+    setMenuAnchorEl(event.currentTarget);
+    setMenuSelectedCampaign(campaign);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+    setMenuSelectedCampaign(null);
+  };
+
+  const handleMenuAction = (action) => {
+    if (menuSelectedCampaign) {
+      action(menuSelectedCampaign);
+    }
+    handleMenuClose();
+  };
   const loadCampaigns = async () => {
     try {
       setLoading(true);
@@ -328,6 +356,55 @@ function ManageCampaigns() {
     } catch (err) {
       console.error('Error updating campaign:', err);
       setError(err.message || 'Gagal memperbarui kampanye');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Check if campaign is active but expired
+  const isCampaignExpired = (campaign) => {
+    if (!campaign || !campaign.status || !campaign.end_date) return false;
+    
+    // Check status case-insensitive
+    if (campaign.status.toLowerCase() !== 'active') return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endDate = new Date(campaign.end_date);
+    
+    // Debug log
+    // console.log(`Checking expiry for ${campaign.title}: End=${endDate}, Today=${today}, Expired=${endDate < today}`);
+    
+    return endDate < today;
+  };
+
+  const handleCompleteCampaign = async (campaignId) => {
+    try {
+      setSubmitting(true);
+      await adminService.campaigns.completeCampaign(campaignId);
+      setSuccessMessage('Campaign berhasil diselesaikan!');
+      setShowDetailModal(false);
+      loadCampaigns();
+    } catch (err) {
+      console.error('Error completing campaign:', err);
+      setError(err.message || 'Gagal menyelesaikan kampanye');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDistributePayment = async (campaignId) => {
+     if (!window.confirm('Apakah Anda yakin ingin mendistribusikan pembayaran ke semua influencer?')) return;
+     
+    try {
+      setSubmitting(true);
+      await adminService.campaigns.distributePayment(campaignId);
+      setSuccessMessage('Pembayaran berhasil didistribusikan ke semua influencer!');
+      setShowDetailModal(false);
+      loadCampaigns();
+    } catch (err) {
+      console.error('Error distributing payment:', err);
+      setError(err.message || 'Gagal mendistribusikan pembayaran');
     } finally {
       setSubmitting(false);
     }
@@ -704,18 +781,7 @@ function ManageCampaigns() {
                               </Typography>
                             </TableCell>
                             <TableCell>
-                              <Stack direction="row" spacing={1} justifyContent="center">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleViewDetail(campaign)}
-                                    sx={{
-                                      color: '#6E00BE',
-                                      '&:hover': { bgcolor: 'rgba(110, 0, 190, 0.1)' }
-                                    }}
-                                    title="Lihat Detail"
-                                  >
-                                    <ViewIcon fontSize="small" />
-                                  </IconButton>
+                                  <Stack direction="row" spacing={1} justifyContent="center">
                                   {campaign.status === 'admin_review' && (
                                     <>
                                       <IconButton
@@ -745,27 +811,55 @@ function ManageCampaigns() {
                                       </IconButton>
                                     </>
                                   )}
+                                    {/* Action: Complete Campaign (If Active & Expired) */}
+                                    {campaign.status?.toLowerCase() === 'active' && isCampaignExpired(campaign) && (
+                                       <Button
+                                          size="small"
+                                          variant="contained"
+                                          onClick={() => handleCompleteCampaign(campaign.campaign_id)}
+                                          startIcon={<CompletedIcon />}
+                                          sx={{
+                                             bgcolor: '#5b21b6',
+                                             color: '#fff',
+                                             textTransform: 'none',
+                                             fontSize: 12,
+                                             fontWeight: 600,
+                                             minWidth: 'auto',
+                                             px: 1,
+                                             '&:hover': { bgcolor: '#4c1d95' }
+                                          }}
+                                       >
+                                          Selesai
+                                       </Button>
+                                    )}
+
+                                    {/* Action: Distribute Payment (If Completed) */}
+                                    {campaign.status === 'completed' && (
+                                       <Button
+                                          size="small"
+                                          variant="contained"
+                                          onClick={() => handleDistributePayment(campaign.campaign_id)}
+                                          startIcon={<MonetizationOn />}
+                                          sx={{
+                                             bgcolor: '#059669',
+                                             color: '#fff',
+                                             textTransform: 'none',
+                                             fontSize: 12,
+                                             fontWeight: 600,
+                                             minWidth: 'auto',
+                                             px: 1,
+                                             '&:hover': { bgcolor: '#047857' }
+                                          }}
+                                       >
+                                          Bayar
+                                       </Button>
+                                    )}
+                               
                                   <IconButton
                                     size="small"
-                                    onClick={() => handleEditClick(campaign)}
-                                    sx={{
-                                      color: '#ed8936',
-                                      '&:hover': { bgcolor: 'rgba(237, 137, 54, 0.1)' }
-                                    }}
-                                    title="Edit Kampanye"
+                                    onClick={(e) => handleMenuOpen(e, campaign)}
                                   >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleDeleteClick(campaign)}
-                                    sx={{
-                                      color: '#ef4444',
-                                      '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
-                                    }}
-                                    title="Hapus Kampanye"
-                                  >
-                                    <DeleteIcon fontSize="small" />
+                                    <MoreVertIcon fontSize="small" />
                                   </IconButton>
                               </Stack>
                             </TableCell>
@@ -1113,6 +1207,7 @@ function ManageCampaigns() {
                   </Button>
                 </>
               )}
+              
             </DialogActions>
           </Dialog>
 
@@ -1605,6 +1700,37 @@ function ManageCampaigns() {
               </Button>
             </DialogActions>
           </Dialog>
+            {/* Campaign Actions Menu */}
+           <Menu
+            anchorEl={menuAnchorEl}
+            open={Boolean(menuAnchorEl)}
+            onClose={handleMenuClose}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+           >
+            <MenuItem onClick={() => handleMenuAction(handleViewDetail)}>
+              <ListItemIcon>
+                <ViewIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Lihat Detail</ListItemText>
+            </MenuItem>
+            
+            {menuSelectedCampaign && isCampaingEditable(menuSelectedCampaign) && (
+              <MenuItem onClick={() => handleMenuAction(handleEditClick)}>
+                <ListItemIcon>
+                  <EditIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Edit</ListItemText>
+              </MenuItem>
+            )}
+
+            <MenuItem onClick={() => handleMenuAction(handleDeleteClick)}>
+              <ListItemIcon>
+                <DeleteIcon fontSize="small" color="error" />
+              </ListItemIcon>
+              <ListItemText sx={{ color: 'error.main' }}>Hapus</ListItemText>
+            </MenuItem>
+           </Menu>
         </Box>
       </Box>
     </Box>

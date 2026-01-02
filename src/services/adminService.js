@@ -12,7 +12,7 @@ export const adminUserService = {
     if (params.page) queryParams.append('page', params.page);
     if (params.limit) queryParams.append('limit', params.limit);
     
-    const response = await authFetch(`${API_BASE_URL}/users?${queryParams}`);
+    const response = await authFetch(`${API_BASE_URL}/users?sort=created_at&order=desc${queryParams}`);
     return response.json();
   },
 
@@ -86,6 +86,25 @@ export const adminCampaignService = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cancellation_reason: reason })
+    });
+    return response.json();
+  },
+
+  // Complete campaign
+  completeCampaign: async (id) => {
+    const response = await authFetch(`${API_BASE_URL}/campaigns/${id}/complete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return response.json();
+  },
+
+  // Distribute payment
+  distributePayment: async (id) => {
+    const response = await authFetch(`${API_BASE_URL}/campaign-payments/pay-all`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaign_id: id })
     });
     return response.json();
   },

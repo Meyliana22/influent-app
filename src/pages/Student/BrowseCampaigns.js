@@ -40,10 +40,10 @@ import { useToast } from '../../hooks/useToast';
 
 const API_BASE_URL = process.env.REACT_APP_API_IMAGE_URL
 
-const getImageUrl = (imageName) => {
-  console.log(`${API_BASE_URL}/${imageName}`);
-  return `${API_BASE_URL}/${imageName}`;
-};
+// const getImageUrl = (imageName) => {
+ 
+//   return `${imageName}`;
+// };
 
 function BrowseCampaigns() {
   const navigate = useNavigate();
@@ -146,6 +146,25 @@ function BrowseCampaigns() {
       'Lifestyle & Travel': FlightIcon
     };
     return icons[category] || CampaignIcon;
+  };
+
+  // Helper to safely parse reference images
+  const parseReferenceImages = (images) => {
+    if (!images) return [];
+    try {
+      let parsed = images;
+      // Handle double stringification
+      if (typeof parsed === 'string' && (parsed.startsWith('"') || parsed.startsWith("'"))) {
+         parsed = JSON.parse(parsed);
+      }
+      if (typeof parsed === 'string') {
+        parsed = JSON.parse(parsed);
+      }
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      console.warn('Failed to parse reference images:', e);
+      return [];
+    }
   };
 
   // Get all unique campaign categories
@@ -543,7 +562,7 @@ function BrowseCampaigns() {
 
                 return (
                   <Paper key={campaign.campaign_id} elevation={0} sx={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', transition: 'all 0.3s', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', cursor: 'pointer', height: '100%', '&:hover': { boxShadow: '0 8px 24px rgba(0,0,0,0.12)', transform: 'translateY(-4px)' } }}>
-                    <Box sx={{ background: campaign.banner_image ? `url(${getImageUrl(campaign.banner_image)}) center/cover` : '#6E00BE', height: '160px', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', p: '12px', position: 'relative' }}>
+                    <Box sx={{ background: campaign.banner_image ? `url(${campaign.banner_image}) center/cover` : '#6E00BE', height: '160px', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', p: '12px', position: 'relative' }}>
                       <Box sx={{ ...statusStyle, p: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize' }}>{translateStatus(campaign.status)}</Box>
 
                       {campaign.rating && (
@@ -663,7 +682,7 @@ function BrowseCampaigns() {
                   sx={{ 
                     width: '100%', 
                     height: { xs: '160px', md: '240px' }, 
-                    background: `url(${getImageUrl(selectedCampaign.banner_image)}) center/cover`, 
+                    background: `url(${selectedCampaign.banner_image}) center/cover`, 
                     borderRadius: '16px', 
                     mb: 3,
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
@@ -846,6 +865,37 @@ function BrowseCampaigns() {
                     </Stack>
                   </Box>
                 </Card>
+              </Grid>
+
+              <Grid item xs={12}>
+                  {parseReferenceImages(selectedCampaign.reference_images).length > 0 && (
+                    <Card variant="outlined" sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', mt: 3, mb: 1 }}>
+                       <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                         <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Referensi Visual</Typography>
+                       </Box>
+                       <Box sx={{ p: 2.5, display: 'flex', gap: 2, overflowX: 'auto', pb: 3 }}>
+                          {parseReferenceImages(selectedCampaign.reference_images).map((img, idx) => (
+                             <Box 
+                               key={idx} 
+                               component="img"
+                               src={img}
+                               alt={`Reference ${idx + 1}`}
+                               sx={{ 
+                                 width: 120, 
+                                 height: 120, 
+                                 objectFit: 'cover', 
+                                 borderRadius: '8px',
+                                 border: '1px solid #e2e8f0',
+                                 flexShrink: 0,
+                                 cursor: 'pointer',
+                                 '&:hover': { transform: 'scale(1.02)' }
+                               }}
+                               onClick={() => window.open(img, '_blank')}
+                             />
+                          ))}
+                       </Box>
+                    </Card>
+                  )}
               </Grid>
 
               {/* Row 3: Stats */}

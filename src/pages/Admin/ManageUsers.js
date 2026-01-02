@@ -821,7 +821,7 @@ function ManageUsers() {
                          }}>
                             {(verificationData.Student?.ktm_image_url) ? (
                                <img 
-                                 src={process.env.REACT_APP_API_IMAGE_URL + '/' + (verificationData.Student?.ktm_image_url)} 
+                                 src={verificationData.Student?.ktm_image_url} 
                                  alt="KTM" 
                                  style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
                                />

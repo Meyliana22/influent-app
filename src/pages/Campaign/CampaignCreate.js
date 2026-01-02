@@ -414,6 +414,11 @@ function CampaignCreate() {
          // image state holds the File object
          await campaignService.uploadBanner(resultId, image);
       }
+
+      // Upload Reference Files if exist
+      if (referenceFiles && referenceFiles.length > 0 && resultId) {
+         await campaignService.uploadCampaignReferences(resultId, referenceFiles);
+      }
       
       navigate('/campaigns/list');
     } catch (error) {
