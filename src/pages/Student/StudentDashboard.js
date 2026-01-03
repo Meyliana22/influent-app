@@ -123,14 +123,7 @@ function StudentDashboard() {
       iconColor: '#b45309',
       description: 'Dari kolaborasi'
     },
-    {
-      title: 'Rating Rata-rata',
-      value: `${stats.averageRating}`,
-      IconComponent: RatingIcon,
-      bgColor: '#fecdd3',
-      iconColor: '#be123c',
-      description: 'Dari kolaborator'
-    }
+
   ];
 
   return (

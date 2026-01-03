@@ -773,7 +773,7 @@ function BrowseCampaigns() {
                         </Box>
                         <Divider sx={{ borderStyle: 'dashed' }} />
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" sx={{ color: '#64748b' }}>Min. Followers</Typography>
+                          <Typography variant="body2" sx={{ color: '#64748b' }}>Min. Pengikut</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a' }}>
                             {(selectedCampaign.min_followers || 0).toLocaleString()}
                           </Typography>
@@ -809,20 +809,20 @@ function BrowseCampaigns() {
               <Grid item xs={12} md={6}>
                  <Card variant="outlined" sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', height: '100%' }}>
                     <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
-                      <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Brief & Guideline</Typography>
+                      <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Panduan & Aturan</Typography>
                     </Box>
                     <Box sx={{ p: 2.5 }}>
                       <Stack spacing={3}>
                         <Box>
-                          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: 0.5, mb: 1, display: 'block' }}>GUIDELINE KONTEN</Typography>
+                          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: 0.5, mb: 1, display: 'block' }}>PANDUAN KONTEN</Typography>
                           <Typography variant="body2" sx={{ color: '#334155', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
                             {selectedCampaign.content_guidelines || 'Tidak ada panduan spesifik.'}
                           </Typography>
                         </Box>
                           <Box>
-                          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: 0.5, mb: 1, display: 'block' }}>GUIDELINE CAPTION</Typography>
+                          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: 0.5, mb: 1, display: 'block' }}>PANDUAN CAPTION</Typography>
                           <Typography variant="body2" sx={{ color: '#334155', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                            {selectedCampaign.caption_guidelines || 'Tidak ada panduan spesifik.'}
+                            {selectedCampaign.caption_guidelines || 'Tidak ada aturan spesifik.'}
                           </Typography>
                         </Box>
                       </Stack>
@@ -833,7 +833,7 @@ function BrowseCampaigns() {
               <Grid item xs={12} md={6}>
                 <Card variant="outlined" sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', height: '100%' }}>
                   <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
-                    <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Timeline</Typography>
+                    <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Tenggat Waktu</Typography>
                   </Box>
                   <Box sx={{ p: 2.5 }}>
                     <Stack spacing={2.5}>
@@ -842,7 +842,7 @@ function BrowseCampaigns() {
                             <CampaignIcon fontSize="small" />
                           </Box>
                           <Box>
-                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 0.5 }}>PERIODE CAMPAIGN</Typography>
+                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 0.5 }}>PERIODE KAMPANYE</Typography>
                             <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a' }}>
                               {selectedCampaign.start_date ? new Date(selectedCampaign.start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'}) : '-'} 
                               {' - '}
@@ -856,7 +856,7 @@ function BrowseCampaigns() {
                             <CalendarTodayIcon fontSize="small" />
                           </Box>
                           <Box>
-                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 0.5 }}>DEADLINE REGISTRASI</Typography>
+                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 0.5 }}>TENGGAT WAKTU REGISTRASI</Typography>
                             <Typography variant="body2" sx={{ fontWeight: 600, color: '#e11d48' }}>
                               {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-'}
                             </Typography>

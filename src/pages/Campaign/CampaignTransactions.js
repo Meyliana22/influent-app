@@ -350,26 +350,27 @@ function CampaignTransactions() {
               ].map((stat, index) => (
                 <Paper
                   key={index}
+                  elevation={0}
                   sx={{
                     flex: 1,
                     minWidth: 0,
                     bgcolor: '#fff',
                     borderRadius: 2,
-                    p: 3,
+                    p: 2,
                     border: '1px solid #e2e8f0',
                     display: 'flex',
-                    flexDirection: 'column',
+                    alignItems: 'center',
                     justifyContent: 'space-between',
                   }}
                 >
-                  <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                    <Box sx={{ width: 48, height: 48, borderRadius: 1.5, bgcolor: stat.bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <stat.IconComponent sx={{ fontSize: 28, color: stat.color }} />
-                    </Box>
-                  </Stack>
-                  <Typography sx={{ fontSize: 13, color: '#6c757d', mb: 1, fontFamily: 'Inter, sans-serif' }}>{stat.title}</Typography>
-                  <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1a1f36', mb: 0.5, fontFamily: 'Inter, sans-serif' }}>{stat.value}</Typography>
-                  <Typography sx={{ fontSize: 12.5, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>{stat.count} transaksi</Typography>
+                  <Box>
+                     <Typography sx={{ fontSize: 13, color: '#6c757d', mb: 0.5, fontFamily: 'Inter, sans-serif' }}>{stat.title}</Typography>
+                     <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1a1f36', mb: 0.2, fontFamily: 'Inter, sans-serif' }}>{stat.value}</Typography>
+                     <Typography sx={{ fontSize: 11, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>{stat.count} transaksi</Typography>
+                  </Box>
+                  <Box sx={{ width: 40, height: 40, borderRadius: 1.5, bgcolor: stat.bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <stat.IconComponent sx={{ fontSize: 22, color: stat.color }} />
+                  </Box>
                 </Paper>
               ))}
             </Box>
@@ -432,7 +433,7 @@ function CampaignTransactions() {
                   ) : (
                     <>
                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>ID</TableCell>
-                      <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>kampanye</TableCell>
+                      <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Kampanye</TableCell>
                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Nominal</TableCell>
                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Status</TableCell>
                       <TableCell sx={{ py: 2, pl: 3, fontSize: 13, fontWeight: 700, color: '#6c757d' }}>Tanggal</TableCell>

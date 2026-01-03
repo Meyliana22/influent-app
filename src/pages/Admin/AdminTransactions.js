@@ -262,7 +262,7 @@ function AdminTransactions() {
           {/* Header */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1 }}>
-              Manajemen Transaksi
+              Kelola Transaksi
             </Typography>
             <Typography variant="body1" sx={{ color: '#64748b' }}>
               Lihat dan kelola semua transaksi platform

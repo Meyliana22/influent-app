@@ -558,8 +558,8 @@ function ChatPage() {
               color: 'text.secondary'
             }}>
                <Typography variant="h1" sx={{ opacity: 0.2 }}>💬</Typography>
-               <Typography variant="h5" sx={{ mt: 2 }}>Pilih Chat</Typography>
-               <Typography variant="body1">Pilih teman chat di sebelah kiri untuk memulai.</Typography>
+               <Typography variant="h5" sx={{ mt: 2 }}>Pilih Pesan</Typography>
+               <Typography variant="body1">Pilih untuk melihat riwayat percakapan.</Typography>
             </Box>
           )}
 

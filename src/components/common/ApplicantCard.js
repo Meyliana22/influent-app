@@ -51,32 +51,32 @@ const ApplicantCard = ({
   };
   const getStatusConfig = (status) => {
     const configs = {
-      'Pending': { 
+      'Menunggu': { 
         bgcolor: '#f1f5f9', 
         color: '#64748b', 
         icon: <HourglassEmptyIcon style={{ fontSize: 16 }} />, 
-        label: 'Menunggu Review' 
+        label: 'Menunggu' 
       },
-      'Selected': { 
+      'Terpilih': { 
         bgcolor: '#fff7ed', 
         color: '#f97316', 
         icon: <StarIcon style={{ fontSize: 16 }} />, 
         label: 'Terpilih' 
       },
-      'Accepted': { 
+      'Diterima': { 
         bgcolor: '#ecfdf5', 
         color: '#10b981', 
         icon: <CheckCircleIcon style={{ fontSize: 16 }} />, 
         label: 'Diterima' 
       },
-      'Rejected': { 
+      'Ditolak': { 
         bgcolor: '#fef2f2', 
         color: '#ef4444', 
         icon: <CancelIcon style={{ fontSize: 16 }} />, 
         label: 'Ditolak' 
       }
     };
-    return configs[status] || configs['Pending'];
+    return configs[status] || configs['Menunggu'];
   };
 
   const statusConfig = getStatusConfig(applicant.status);
@@ -295,7 +295,7 @@ const ApplicantCard = ({
             {/* Action Buttons - Conditional */}
             {showActions && (
               <Box sx={{ borderTop: '1px solid #f1f5f9', pt: 2 }}>
-                {applicant.status === 'Pending' && (
+                {applicant.status === 'Menunggu' && (
                   <Stack direction="row" spacing={1.5}>
                     <MuiButton
                       variant="contained"
@@ -328,7 +328,7 @@ const ApplicantCard = ({
                   </Stack>
                 )}
 
-                {applicant.status === 'Selected' && (
+                {applicant.status === 'Terpilih' && (
                   <MuiButton
                     variant="outlined"
                     onClick={() => onCancel(applicant.id)}
@@ -345,7 +345,7 @@ const ApplicantCard = ({
                   </MuiButton>
                 )}
 
-                {applicant.status === 'Accepted' && (
+                {applicant.status === 'Diterima' && (
                   <Box 
                     sx={{ 
                       bgcolor: '#ecfdf5',
@@ -362,7 +362,7 @@ const ApplicantCard = ({
                   </Box>
                 )}
 
-                {applicant.status === 'Rejected' && (
+                {applicant.status === 'Ditolak' && (
                   <Box 
                     sx={{ 
                       bgcolor: '#fef2f2',

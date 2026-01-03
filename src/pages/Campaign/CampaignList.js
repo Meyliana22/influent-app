@@ -104,7 +104,7 @@ function CampaignList() {
 
   const handleDeleteCampaign = (campaignId) => {
      setConfirmTitle("Hapus Campaign");
-     setConfirmMessage("Apakah Anda yakin ingin menghapus campaign draft ini? Tindakan ini tidak dapat dibatalkan.");
+     setConfirmMessage("Apakah Anda yakin ingin menghapus campaign draf ini? Tindakan ini tidak dapat dibatalkan.");
      setOnConfirm(() => async () => {
        try {
          await campaignService.deleteCampaign(campaignId);
@@ -279,29 +279,29 @@ function CampaignList() {
       badge: { bg: '#fff7ed', color: '#c2410c' }, // Orange
       text: 'Ditinjau Admin',
       alert: { bg: '#fff7ed', border: '#fdba74', color: '#c2410c', icon: HourglassEmptyIcon,
-        title: 'Menunggu Review Admin', 
-        message: 'Campaign Anda sedang direview oleh tim admin. Anda akan dinotifikasi setelah disetujui.' }
+        title: 'Menunggu Ulasan Admin', 
+        message: 'Kampanye Anda sedang diulas oleh tim admin. Anda akan dinotifikasi setelah disetujui.' }
     },
     pending_payment: {
       badge: { bg: '#eff6ff', color: '#1d4ed8' }, // Blue
       text: 'Menunggu Pembayaran',
       alert: { bg: '#eff6ff', border: '#93c5fd', color: '#1d4ed8', icon: CreditCardIcon,
-        title: 'Campaign Disetujui! Selesaikan Pembayaran', 
-        message: 'Campaign Anda telah disetujui admin. Klik "Bayar Sekarang" untuk mengaktifkan campaign.' }
+        title: 'Kampanye Disetujui! Selesaikan Pembayaran', 
+        message: 'Kampanye Anda telah disetujui admin. Klik "Bayar Sekarang" untuk mengaktifkan kampanye.' }
     },
     cancelled: {
       badge: { bg: '#fef2f2', color: '#b91c1c' }, // Red
       text: 'Dibatalkan',
       alert: { bg: '#fef2f2', border: '#fca5a5', color: '#b91c1c', icon: CancelIcon,
-        title: 'Campaign Dibatalkan', 
-        message: 'Campaign dibatalkan.' }
+        title: 'Kampanye Dibatalkan', 
+        message: 'Kampanye dibatalkan.' }
     },
     active: {
       badge: { bg: '#f0fdf4', color: '#15803d' }, // Green
       text: 'Aktif',
       alert: { bg: '#f0fdf4', border: '#86efac', color: '#15803d', icon: RocketLaunchIcon,
-        title: 'Campaign Sedang Berjalan', 
-        message: 'Campaign aktif dan dapat diapply oleh mahasiswa. Monitor aplikasi dan review hasil kerja.' },
+        title: 'Kampanye Sedang Berjalan', 
+        message: 'Kampanye aktif dan dapat dilamar oleh mahasiswa. Monitor aplikasi dan tinjauan hasil kerja.' },
       subStatus: {
         registration_open: 'Pendaftaran Dibuka', student_selection: 'Seleksi Mahasiswa',
         student_confirmation: 'Konfirmasi Mahasiswa', content_submission: 'Pengumpulan Konten',
@@ -320,8 +320,8 @@ function CampaignList() {
             const hasRefund = campaign.refund_amount && campaign.refund_amount > 0;
             const completedDate = campaign.completed_at ? new Date(campaign.completed_at).toLocaleDateString('id-ID') : 'tanggal tidak tersedia';
             return hasRefund 
-              ? `Campaign telah selesai pada ${completedDate}. Dana telah dicairkan kepada mahasiswa. Silakan cek dana pengembalian Anda.`
-              : `Campaign telah selesai. Dana telah dicairkan kepada mahasiswa.`;
+              ? `Kampanye telah selesai pada ${completedDate}. Dana telah dicairkan kepada mahasiswa. Silakan cek dana pengembalian Anda.`
+              : `Kampanye telah selesai. Dana telah dicairkan kepada mahasiswa.`;
           }
         }
       }
@@ -330,29 +330,29 @@ function CampaignList() {
       badge: { bg: '#faf5ff', color: '#7e22ce' }, // Purple
       text: 'Selesai',
       alert: { bg: '#faf5ff', border: '#d8b4fe', color: '#7e22ce', icon: CheckCircleIcon,
-        title: 'Campaign Selesai', 
-        message: (campaign) => `Campaign ${campaign.title} telah resmi selesai. Terima kasih telah mempercayakan kolaborasi Anda kepada InfluEnt.` }
+        title: 'Kampanye Selesai', 
+        message: (campaign) => `Kampanye ${campaign.title} telah resmi selesai. Terima kasih telah mempercayakan kolaborasi Anda kepada influencer.` }
     },
     paid: {
       badge: { bg: '#f0fdf4', color: '#16a34a' }, // Green-600
       text: 'Terbayar',
       alert: { bg: '#f0fdf4', border: '#86efac', color: '#16a34a', icon: CheckCircleIcon,
         title: 'Pembayaran Selesai', 
-        message: (campaign) => `Pembayaran untuk campaign ${campaign.title} telah berhasil didistribusikan kepada semua influencer.` }
+        message: (campaign) => `Pembayaran untuk kampanye ${campaign.title} telah berhasil didistribusikan kepada semua influencer.` }
     },
     draft: {
       badge: { bg: '#f1f5f9', color: '#475569' }, // Slate
-      text: 'Draft',
+      text: 'Draf',
       alert: { bg: '#f8fafc', border: '#e2e8f0', color: '#64748b', icon: CampaignIcon,
-        title: 'Campaign Draft', 
-        message: 'Campaign ini masih dalam status draft. Silakan lengkapi pembayaran atau publish untuk memulai.' }
+        title: 'Kampanye Draf', 
+        message: 'Kampanye ini masih dalam status draf. Silakan lengkapi pembayaran atau publish untuk memulai.' }
     },
     archived: {
       badge: { bg: '#f8fafc', color: '#64748b' }, // Gray
       text: '🗂️ Diarsipkan',
       alert: { bg: '#f8fafc', border: '#e2e8f0', color: '#64748b', icon: ArchiveIcon,
-        title: 'Campaign Diarsipkan', 
-        message: 'Campaign ini telah diarsipkan dan tidak akan muncul di daftar utama.' }
+        title: 'Kampanye Diarsipkan', 
+        message: 'Kampanye ini telah diarsipkan dan tidak akan muncul di daftar utama.' }
     }
   };
 
@@ -511,7 +511,7 @@ function CampaignList() {
                      <MenuItem value="active">Aktif</MenuItem>
                      <MenuItem value="admin_review">Ditinjau Admin</MenuItem>
                      <MenuItem value="pending_payment">Menunggu Pembayaran</MenuItem>
-                     <MenuItem value="draft">Draft</MenuItem>
+                     <MenuItem value="draft">Draf</MenuItem>
                      <MenuItem value="completed">Selesai</MenuItem>
                      <MenuItem value="paid">Terbayar</MenuItem>
                      <MenuItem value="cancelled">Dibatalkan</MenuItem>
@@ -674,7 +674,7 @@ function CampaignList() {
                                '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
                             }}
                          >
-                            {campaign.status?.toLowerCase() === 'draft' ? 'Edit Campaign' : 'Lihat Detail'}
+                            {campaign.status?.toLowerCase() === 'draft' ? 'Ubah Kampanye' : 'Lihat Detail'}
                          </Button>
  
                          {/* Specific Action Buttons based on status */}
@@ -706,7 +706,7 @@ function CampaignList() {
                                   onClick={e => { e.stopPropagation(); navigate(`/campaign/${campaign.campaign_id}/review-submissions`); }}
                                   sx={{ flex: 1, bgcolor: '#6E00BE', color: '#fff', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { bgcolor: '#5a009e' } }}
                                >
-                                  Tinjauan
+                                  Pekerjaan
                                </Button>
                                {(campaign.status.toLowerCase() === 'active' && campaign.end_date && new Date(campaign.end_date) < new Date()) && (
                                  <Button
@@ -769,15 +769,15 @@ function CampaignList() {
       >
         <MenuItem onClick={() => handleArchiveClick(campaigns.find(c => c.campaign_id === menuCampaignId))} sx={{ fontSize: 14 }}>
           <ArchiveIcon sx={{ fontSize: 18, mr: 1.5, color: '#64748b' }} />
-          Arsipkan Campaign
+          Arsipkan Kampanye
         </MenuItem>
       </Menu>
 
       <Dialog open={showArchiveModal} onClose={() => setShowArchiveModal(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-        <DialogTitle sx={{ fontWeight: 700, color: '#1e293b' }}>Arsipkan Campaign?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, color: '#1e293b' }}>Arsipkan Kampanye?</DialogTitle>
         <DialogContent>
           <Typography sx={{ color: '#64748b' }}>
-            Campaign "{selectedCampaign?.title}" akan dipindahkan ke arsip.
+            Kampanye "{selectedCampaign?.title}" akan dipindahkan ke arsip.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>

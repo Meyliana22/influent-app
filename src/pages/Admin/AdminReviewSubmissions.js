@@ -276,7 +276,7 @@ const AdminReviewSubmissions = () => {
               sx={{ borderBottom: 1, borderColor: 'divider' }}
             >
               <Tab label={`Menunggu Tinjauan (${pendingSubmissions.length})`} />
-              <Tab label={`Sudah Di Tinjau (${reviewedSubmissions.length})`} />
+              <Tab label={`Sudah Ditinjau (${reviewedSubmissions.length})`} />
             </Tabs>
           </Paper>
 

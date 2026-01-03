@@ -122,14 +122,6 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
               Pengikut
             </Typography>
           </Box>
-          <Box sx={{ flex: 1, p: 2, textAlign: 'center', borderRight: '1px solid #e0e0e0' }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#4caf50' }}>
-              {applicant.engagementRate}%
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Engagement
-            </Typography>
-          </Box>
           <Box sx={{ flex: 1, p: 2, textAlign: 'center' }}>
             <Chip
               label={applicant.status}

@@ -55,8 +55,8 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
       case 'umkm':
         return [
           { icon: DashboardIcon, label: 'Dasbor', path: '/campaign/dashboard' },
-          { icon: ListIcon, label: 'Kampanye', path: '/campaigns/list' },
-          { icon: TransactionsIcon, label: 'Transaksi', path: '/campaign/transactions' },
+          { icon: ListIcon, label: 'Daftar Kampanye', path: '/campaigns/list' },
+          { icon: TransactionsIcon, label: 'Riwayat Transaksi', path: '/campaign/transactions' },
           { icon: ChatIcon, label: 'Pesan', path: '/chat' },
         ];
       case 'admin':
@@ -65,8 +65,8 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
           { icon: PeopleIcon, label: 'Kelola Pengguna', path: '/admin/users' },
           { icon: CampaignIcon, label: 'Kelola Kampanye', path: '/admin/campaigns' },
           { icon: GavelIcon, label: 'Tinjau Pengajuan', path: '/admin/review-submissions' },
-          { icon: TransactionsIcon, label: 'ManajemenTransaksi', path: '/admin/transactions' },
-          { icon: AccountBalanceWalletIcon, label: 'Manajemen Penarikan', path: '/admin/withdrawals' },
+          { icon: TransactionsIcon, label: 'Kelola Transaksi', path: '/admin/transactions' },
+          { icon: AccountBalanceWalletIcon, label: 'Kelola Penarikan', path: '/admin/withdrawals' },
           // { icon: BarChartIcon, label: 'Laporan', path: '/admin/reports' },
           { icon: ChatIcon, label: 'Pesan', path: '/chat' },
         ];

@@ -176,7 +176,7 @@ const MyApplications = () => {
       case 'paid': return 'Dibayar';
       case 'rejected': return 'Ditolak';
       case 'cancelled': return 'Dibatalkan';
-      case 'pending': return 'Menunggu';
+      case 'pending': return 'Menunggu Konfirmasi';
       case 'active': return 'Aktif';
       case 'inactive': return 'Tidak Aktif';
       case 'completed': return 'Selesai';
@@ -203,8 +203,8 @@ const MyApplications = () => {
       >
         <Container maxWidth="lg">
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, borderLeft: '5px solid #6E00BE', pl: 2 }}>
-              Lamaran Saya
+            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, pl: 2 }}>
+              Kolaborasi Saya
             </Typography>
             <Typography variant="body1" color="textSecondary">
               Lacak status lamaran kampanye Anda

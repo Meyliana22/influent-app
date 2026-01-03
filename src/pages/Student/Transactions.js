@@ -196,7 +196,7 @@ function Transactions() {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
               <Box>
                 <Typography variant="h4" fontWeight="900" color="text.primary" gutterBottom>
-                  Dompet Saya
+                  Transaksi Saya
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
                   Kelola pendapatan dan penarikan Anda
@@ -207,7 +207,7 @@ function Transactions() {
                 onClick={fetchData}
                 variant="outlined"
               >
-                Segarkan
+                Muat Ulang
               </Button>
             </Box>
 

@@ -323,7 +323,7 @@ function LandingPage() {
           <Grid container spacing={4} justifyContent="center">
              {[
                { icon: accountIcon, title: "1. Buat Akun", text: "Daftar instan sebagai UMKM atau Mahasiswa dengan verifikasi cepat." },
-               { icon: searchIcon, title: "2. Eksplorasi kampanye", text: "Temukan atau buat kampanye yang sesuai dengan preferensi dan target audience yang sesuai." },
+               { icon: searchIcon, title: "2. Eksplorasi kampanye", text: "Temukan atau buat kampanye yang sesuai dengan preferensi dan target audiens yang sesuai." },
                { icon: collabIcon, title: "3. Mulai kolaborasi", text: "Jalin kerjasama, pantau performa, dan selesaikan pembayaran dengan aman." }
              ].map((step, index) => (
                 <Grid item xs={12} md={8} key={index}>
@@ -487,7 +487,7 @@ function LandingPage() {
             <Grid item xs={12} md={2}>
                <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ mb: 1, fontSize: '0.9rem' }}>Platform</Typography>
                <Stack spacing={0.5}>
-                 {['Tentang Kami', 'Cara Kerja', 'Mengapa Influent?', 'Biaya'].map((text, idx) => (
+                 {['Tentang Kami', 'Cara Kerja', 'Mengapa Influent?'].map((text, idx) => (
                    <Link key={idx} href="#" color="text.secondary" underline="none" sx={{ '&:hover': { color: '#6E00BE' }, fontSize: '0.85rem' }}>
                      {text}
                    </Link>
@@ -513,7 +513,7 @@ function LandingPage() {
           </Grid>
           
           <Box sx={{ borderTop: '1px solid #eee', mt: 3, pt: 2, textAlign: 'center' }}>
-             <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>© 2025 Influent. All rights reserved.</Typography>
+             <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>© 2025 Influent. Semua hak dilindungi.</Typography>
           </Box>
         </Container>
       </Box>

@@ -52,7 +52,7 @@ const getStatusConfig = (status) => {
       borderColor: '#fcd34d'
     },
     'draft': {
-      label: 'Draft',
+      label: 'Draf',
       color: '#4b5563',
       bgColor: '#f3f4f6',
       borderColor: '#d1d5db'
@@ -232,7 +232,7 @@ function CampaignDashboard() {
           {/* Stats Grid */}
           <Box sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(4, 1fr)' },
             gap: 2.5,
             mb: 5
           }}>
@@ -291,7 +291,7 @@ function CampaignDashboard() {
           <Box sx={{ mb: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
-                Aktifitas Terbaru
+                Aktivitas Terbaru
               </Typography>
               <Button 
                 endIcon={<ArrowForwardIcon />}

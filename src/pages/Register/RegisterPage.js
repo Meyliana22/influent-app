@@ -225,7 +225,7 @@ function RegisterPage() {
   // Dynamic steps based on role
   const steps = userRole === 'umkm' 
     ? ['Daftar', 'Verifikasi'] 
-    : ['Daftar', 'Verifikasi', 'Profil', 'Upload KTM'];
+    : ['Daftar', 'Verifikasi', 'Profil', 'Unggah KTM'];
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();

@@ -32,7 +32,8 @@ import {
   Instagram as InstagramIcon,
   Schedule as ScheduleIcon,
   Description as DescriptionIcon,
-  PlayCircle as PlayIcon
+  PlayCircle as PlayIcon,
+  Launch as LaunchIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { COLORS } from '../../constants/colors';
@@ -253,7 +254,7 @@ const ReviewSubmissions = () => {
       case 'rejected': return 'Ditolak';
       case 'revision_requested': return 'Revisi Diminta';
       case 'verified': return 'Terverifikasi';
-      case 'draft': return 'Draft';
+      case 'draft': return 'Draf';
       default: return status?.replace('_', ' ') || '-';
     }
   };
@@ -308,7 +309,7 @@ const ReviewSubmissions = () => {
                 </IconButton>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
-                    Tinjau Pengajuan
+                    Tinjau Pekerjaan
                   </Typography>
                   <Typography variant="body1" sx={{ color: COLORS.textSecondary, mt: 0.5 }}>
                     {campaign?.title || 'Loading...'}
@@ -327,8 +328,8 @@ const ReviewSubmissions = () => {
                   borderRadius: 3
                 }}
               >
-                <Grid container spacing={2} alignItems="center">
-                   <Grid item xs={12} md={7}>
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="flex-start" justifyContent="space-between">
+                   <Box sx={{ flex: 1 }}>
                       <Typography variant="subtitle1" fontWeight={700} color={COLORS.textPrimary} gutterBottom>
                         Informasi Pembayaran
                       </Typography>
@@ -340,152 +341,91 @@ const ReviewSubmissions = () => {
                            * Pastikan semua konten direview sebelum pembayaran dibuka otomatis
                         </Typography>
                       </Box>
-                   </Grid>
-                   <Grid item xs={12} md={5} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                      <Box sx={{ 
-                        display: 'inline-block',
-                        p: 2,
-                        bgcolor: '#fff',
-                        borderRadius: 2,
-                        border: '1px solid #e2e8f0',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-                      }}>
-                        <Typography variant="body2" color={COLORS.textSecondary} gutterBottom>
-                          Total Progress
-                        </Typography>
-                        <Typography variant="h4" fontWeight={700} color={COLORS.primary} sx={{ lineHeight: 1 }}>
-                           {progressStats.submitted}<span style={{ fontSize: '18px', color: '#94a3b8', fontWeight: 500 }}>/{progressStats.total}</span>
-                        </Typography>
-                        <Typography variant="caption" color={COLORS.textSecondary} sx={{ mt: 0.5, display: 'block' }}>
-                          Siswa sudah submit
-                        </Typography>
-                      </Box>
-                   </Grid>
-                </Grid>
+                   </Box>
+                   <Box sx={{ 
+                     display: 'inline-block',
+                     p: 2,
+                     minWidth: 200,
+                     bgcolor: '#fff',
+                     borderRadius: 2,
+                     border: '1px solid #e2e8f0',
+                     boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                   }}>
+                     <Typography variant="body2" color={COLORS.textSecondary} gutterBottom>
+                       Total Progres
+                     </Typography>
+                     <Typography variant="h4" fontWeight={700} color={COLORS.primary} sx={{ lineHeight: 1 }}>
+                        {progressStats.submitted}<span style={{ fontSize: '18px', color: '#94a3b8', fontWeight: 500 }}>/{progressStats.total}</span>
+                     </Typography>
+                     <Typography variant="caption" color={COLORS.textSecondary} sx={{ mt: 0.5, display: 'block' }}>
+                       Mahasiswa yang mengumpulkan
+                     </Typography>
+                   </Box>
+                </Stack>
               </Paper>
 
               {/* Stats Overview */}
-              <Grid container spacing={2} sx={{ mb: 4 }}>
-                <Grid item xs={6} sm={4} md={2.4}>
-                  <Paper 
-                    onClick={() => setFilter('not_submitted')}
-                    elevation={0} 
+              {/* Stats Overview */}
+              <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(5, 1fr)' }, 
+                gap: 2, 
+                mb: 4 
+              }}>
+                {[
+                  { id: 'not_submitted', label: 'Belum Mengumpulkan', value: notSubmittedStudents.length, icon: DescriptionIcon, color: '#7e22ce', bg: '#f3e8ff', border: '#d8b4fe' },
+                  { id: 'pending', label: 'Menunggu Ulasan', value: submissions.filter(s => s.status === 'pending' && s.submission_type !== 'draft').length, icon: ScheduleIcon, color: '#c2410c', bg: '#fff7ed', border: '#fdba74' },
+                  { id: 'approved', label: 'Disetujui', value: submissions.filter(s => s.status === 'approved').length, icon: ApproveIcon, color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
+                  { id: 'revision_requested', label: 'Perlu Revisi', value: submissions.filter(s => s.status === 'revision_requested').length, icon: RevisionIcon, color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd' },
+                  { id: 'rejected', label: 'Ditolak', value: submissions.filter(s => s.status === 'rejected').length, icon: RejectIcon, color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' }
+                ].map((stat) => (
+                  <Box 
+                    key={stat.id}
+                    onClick={() => setFilter(stat.id)}
                     sx={{ 
-                      p: 2.5, 
+                      p: 3, 
                       cursor: 'pointer',
-                      bgcolor: filter === 'not_submitted' ? '#f3e8ff' : '#fff', 
+                      bgcolor: '#fff', 
                       border: '1px solid',
-                      borderColor: filter === 'not_submitted' ? '#d8b4fe' : '#e2e8f0', 
-                      borderRadius: 2,
+                      borderColor: filter === stat.id ? stat.border : '#e2e8f0', 
+                      borderRadius: 5,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      minWidth: 0,
                       transition: 'all 0.2s',
-                      '&:hover': { borderColor: '#d8b4fe', transform: 'translateY(-2px)' }
+                      boxShadow: 0,
+                      '&:hover': { 
+                        borderColor: stat.border, 
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                        transform: 'translateY(-4px)' 
+                      }
                     }}
                   >
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.primary, mb: 0.5 }}>
-                      {notSubmittedStudents.length}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: filter === 'not_submitted' ? '#6b21a8' : COLORS.textSecondary, fontWeight: 600 }}>
-                      Belum Submit
-                    </Typography>
-                  </Paper>
-                </Grid>
-
-                <Grid item xs={6} sm={4} md={2.4}>
-                  <Paper 
-                    onClick={() => setFilter('pending')}
-                    elevation={0} 
-                    sx={{ 
-                      p: 2.5, 
-                      cursor: 'pointer',
-                      bgcolor: filter === 'pending' ? '#fff7ed' : '#fff', 
-                      border: '1px solid',
-                      borderColor: filter === 'pending' ? '#fdba74' : '#e2e8f0', 
-                      borderRadius: 2,
-                      transition: 'all 0.2s',
-                      '&:hover': { borderColor: '#fdba74', transform: 'translateY(-2px)' }
-                    }}
-                  >
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#ea580c', mb: 0.5 }}>
-                      {submissions.filter(s => s.status === 'pending' && s.submission_type !== 'draft').length}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: filter === 'pending' ? '#9a3412' : COLORS.textSecondary, fontWeight: 600 }}>
-                      Menunggu
-                    </Typography>
-                  </Paper>
-                </Grid>
-
-                <Grid item xs={6} sm={4} md={2.4}>
-                  <Paper 
-                    onClick={() => setFilter('approved')}
-                    elevation={0} 
-                    sx={{ 
-                      p: 2.5, 
-                      cursor: 'pointer',
-                      bgcolor: filter === 'approved' ? '#f0fdf4' : '#fff', 
-                      border: '1px solid',
-                      borderColor: filter === 'approved' ? '#86efac' : '#e2e8f0', 
-                      borderRadius: 2,
-                      transition: 'all 0.2s',
-                      '&:hover': { borderColor: '#86efac', transform: 'translateY(-2px)' }
-                    }}
-                  >
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#16a34a', mb: 0.5 }}>
-                      {submissions.filter(s => s.status === 'approved').length}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: filter === 'approved' ? '#15803d' : COLORS.textSecondary, fontWeight: 600 }}>
-                      Disetujui
-                    </Typography>
-                  </Paper>
-                </Grid>
-
-                <Grid item xs={6} sm={4} md={2.4}>
-                  <Paper 
-                    onClick={() => setFilter('revision_requested')}
-                    elevation={0} 
-                    sx={{ 
-                      p: 2.5, 
-                      cursor: 'pointer',
-                      bgcolor: filter === 'revision_requested' ? '#eff6ff' : '#fff', 
-                      border: '1px solid',
-                      borderColor: filter === 'revision_requested' ? '#93c5fd' : '#e2e8f0', 
-                      borderRadius: 2,
-                      transition: 'all 0.2s',
-                      '&:hover': { borderColor: '#93c5fd', transform: 'translateY(-2px)' }
-                    }}
-                  >
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#2563eb', mb: 0.5 }}>
-                      {submissions.filter(s => s.status === 'revision_requested').length}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: filter === 'revision_requested' ? '#1e40af' : COLORS.textSecondary, fontWeight: 600 }}>
-                      Revisi
-                    </Typography>
-                  </Paper>
-                </Grid>
-
-                <Grid item xs={6} sm={4} md={2.4}>
-                  <Paper 
-                    onClick={() => setFilter('rejected')}
-                    elevation={0} 
-                    sx={{ 
-                      p: 2.5, 
-                      cursor: 'pointer',
-                      bgcolor: filter === 'rejected' ? '#fef2f2' : '#fff', 
-                      border: '1px solid',
-                      borderColor: filter === 'rejected' ? '#fca5a5' : '#e2e8f0', 
-                      borderRadius: 2,
-                      transition: 'all 0.2s',
-                      '&:hover': { borderColor: '#fca5a5', transform: 'translateY(-2px)' }
-                    }}
-                  >
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#dc2626', mb: 0.5 }}>
-                      {submissions.filter(s => s.status === 'rejected').length}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: filter === 'rejected' ? '#991b1b' : COLORS.textSecondary, fontWeight: 600 }}>
-                      Ditolak
-                    </Typography>
-                  </Paper>
-                </Grid>
-              </Grid>
+                     <Box sx={{ 
+                       width: 48, 
+                       height: 48, 
+                       borderRadius: 2, 
+                       bgcolor: stat.bg, 
+                       color: stat.color,
+                       display: 'flex',
+                       alignItems: 'center',
+                       justifyContent: 'center',
+                       flexShrink: 0
+                     }}>
+                        <stat.icon sx={{ fontSize: 24 }} />
+                     </Box>
+                     <Box>
+                        <Typography variant="h4" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2, mb: 0.5 }}>
+                          {stat.value}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontSize: 13, fontWeight: 600 }}>
+                           {stat.label}
+                        </Typography>
+                     </Box>
+                  </Box>
+                ))}
+              </Box>
 
               {/* Filter Tabs */}
               <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
@@ -506,7 +446,7 @@ const ReviewSubmissions = () => {
                       }
                     }}
                   >
-                    {status === 'not_submitted' ? 'Belum Submit' : translateStatus(status)}
+                    {status === 'not_submitted' ? 'Belum Mengumpulkan' : translateStatus(status)}
                   </Button>
                 ))}
               </Stack>
@@ -517,7 +457,7 @@ const ReviewSubmissions = () => {
                   <DescriptionIcon sx={{ fontSize: 64, color: COLORS.textSecondary, mb: 2 }} />
                   <Typography variant="h6" sx={{ color: COLORS.textPrimary, mb: 1, fontWeight: 600 }}>
                     {filter === 'not_submitted' 
-                       ? 'Semua siswa (diterima) sudah mengumpulkan tugas!' 
+                       ? 'Semua mahasiswa (diterima) sudah mengumpulkan tugas!' 
                        : 'Tidak ada pengajuan ditemukan'}
                   </Typography>
                 </Paper>
@@ -561,7 +501,7 @@ const ReviewSubmissions = () => {
                                     </Box>
                                  </Stack>
                               </Box>
-                              <Chip label="Belum Submit" color="default" size="small" sx={{ fontWeight: 600 }} />
+                               <Chip label="Belum Mengumpulkan" color="default" size="small" sx={{ fontWeight: 600 }} />
                            </Stack>
                         </Card>
                       );
@@ -579,13 +519,17 @@ const ReviewSubmissions = () => {
                         key={submission.submission_id || submission.id}
                         elevation={0}
                         sx={{ 
-                          border: '1px solid #e0e0e0',
-                          borderRadius: 2,
+                          mb: 3,
+                          border: '1px solid #f1f5f9',
+                          borderRadius: 4,
                           overflow: 'hidden',
-                          transition: 'all 0.2s',
+                          bgcolor: '#fff',
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
                           '&:hover': {
-                            boxShadow: 3,
-                            borderColor: '#bdbdbd'
+                            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                            transform: 'translateY(-4px)',
+                            borderColor: '#e2e8f0'
                           }
                         }}
                       >
@@ -632,9 +576,21 @@ const ReviewSubmissions = () => {
                               </Stack>
                               <Chip 
                                 label={getStatusLabel(submission.status)}
-                                color={getStatusColor(submission.status)}
-                                size="small"
-                                sx={{ fontWeight: 600 }}
+                                sx={{ 
+                                  fontWeight: 600, 
+                                  fontSize: '0.75rem',
+                                  height: 28,
+                                  bgcolor: getStatusColor(submission.status) === 'success' ? '#dcfce7' : 
+                                           getStatusColor(submission.status) === 'error' ? '#fee2e2' : 
+                                           getStatusColor(submission.status) === 'warning' ? '#ffedd5' : '#f1f5f9',
+                                  color: getStatusColor(submission.status) === 'success' ? '#166534' : 
+                                         getStatusColor(submission.status) === 'error' ? '#991b1b' : 
+                                         getStatusColor(submission.status) === 'warning' ? '#9a3412' : '#475569',
+                                  border: '1px solid',
+                                  borderColor: getStatusColor(submission.status) === 'success' ? '#86efac' : 
+                                               getStatusColor(submission.status) === 'error' ? '#fca5a5' : 
+                                               getStatusColor(submission.status) === 'warning' ? '#fdba74' : '#cbd5e1'
+                                }}
                               />
                             </Stack>
       
@@ -648,26 +604,69 @@ const ReviewSubmissions = () => {
                             </Stack>
 
                             {/* Links List */}
-                            <Box sx={{ mb: 2 }}>
+                            <Box sx={{ mb: 3 }}>
                                 {submission.submission_content && submission.submission_content.length > 0 ? (
                                    submission.submission_content.map((item, idx) => (
-                                      <Typography key={idx} variant="body2" sx={{ mb: 0.5 }}>
-                                         <span style={{ textTransform: 'capitalize', fontWeight: 'bold' }}>{item.content_type}</span>: <a href={item.url} target="_blank" rel="noopener noreferrer">{item.url}</a>
-                                      </Typography>
+                                      <Paper key={idx} elevation={0} sx={{ 
+                                        p: 1.5, 
+                                        mb: 1, 
+                                        bgcolor: '#f8fafc', 
+                                        border: '1px solid #e2e8f0', 
+                                        borderRadius: 2,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5
+                                      }}>
+                                          <Box sx={{ 
+                                            p: 0.5, 
+                                            borderRadius: 1, 
+                                            bgcolor: '#e0e7ff', 
+                                            color: '#4338ca',
+                                            display: 'flex'
+                                          }}>
+                                            <DescriptionIcon sx={{ fontSize: 18 }} />
+                                          </Box>
+                                          <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                                             <Typography variant="body2" sx={{ fontWeight: 600, textTransform: 'capitalize', color: '#1e293b' }}>
+                                                {item.content_type}
+                                             </Typography>
+                                             <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                                <Typography variant="caption" sx={{ color: '#6366f1', '&:hover': { textDecoration: 'underline' }, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                   {item.url}
+                                                </Typography>
+                                             </a>
+                                          </Box>
+                                          <LaunchIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
+                                      </Paper>
                                    ))
                                 ) : (
                                    submission.content_url && (
-                                     <Typography variant="body2">
-                                        Link: <a href={submission.content_url} target="_blank" rel="noopener noreferrer">{submission.content_url}</a>
-                                     </Typography>
+                                     <Paper elevation={0} sx={{ 
+                                       p: 1.5, 
+                                       bgcolor: '#f8fafc', 
+                                       border: '1px solid #e2e8f0', 
+                                       borderRadius: 2,
+                                       display: 'flex',
+                                       gap: 1.5
+                                     }}>
+                                        <Box sx={{ p: 0.5, borderRadius: 1, bgcolor: '#e0e7ff', color: '#4338ca' }}><DescriptionIcon sx={{ fontSize: 18 }} /></Box>
+                                        <Box sx={{ flex: 1 }}>
+                                           <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>Link Konten</Typography>
+                                            <a href={submission.content_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                                <Typography variant="caption" sx={{ color: '#6366f1' }}>{submission.content_url}</Typography>
+                                            </a>
+                                        </Box>
+                                     </Paper>
                                    )
                                 )}
                             </Box>
       
                             {/* Caption */}
+                            {/* Caption */}
                             {submission.caption && (
-                              <Box sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1, borderLeft: '3px solid #6E00BE' }}>
-                                <Typography variant="body2" sx={{ color: COLORS.textPrimary, fontStyle: 'italic', lineHeight: 1.6 }}>
+                              <Box sx={{ mb: 2, p: 2.5, bgcolor: '#fafafa', borderRadius: 3, border: '1px dashed #e2e8f0' }}>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, mb: 0.5, display: 'block' }}>CAPTION</Typography>
+                                <Typography variant="body2" sx={{ color: '#334155', fontStyle: 'italic', lineHeight: 1.7 }}>
                                   "{submission.caption}"
                                 </Typography>
                               </Box>
@@ -675,18 +674,22 @@ const ReviewSubmissions = () => {
   
                             {/* Hashtags */}
                             {submission.hashtags && (
-                               <Typography variant="body2" color="primary" sx={{ mb: 2 }}>
-                                  {Array.isArray(submission.hashtags) ? submission.hashtags.map(t => `#${t}`).join(' ') : submission.hashtags}
-                               </Typography>
+                               <Box sx={{ mb: 3 }}>
+                                  {Array.isArray(submission.hashtags) ? submission.hashtags.map((t, i) => (
+                                    <Chip key={i} label={`#${t}`} size="small" sx={{ mr: 0.5, mb: 0.5, bgcolor: '#f3e8ff', color: '#7e22ce', fontWeight: 500 }} />
+                                  )) : (
+                                    <Typography variant="body2" color="primary">{submission.hashtags}</Typography>
+                                  )}
+                               </Box>
                             )}
       
                             {/* Review Notes */}
                             {submission.review_notes && (
-                              <Box sx={{ mb: 2, p: 2, bgcolor: '#fff9e6', borderRadius: 1, borderLeft: '3px solid #ffa726' }}>
-                                <Typography variant="caption" sx={{ fontWeight: 700, color: '#f57c00', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                              <Box sx={{ mb: 3, p: 2.5, bgcolor: '#fff7ed', borderRadius: 3, border: '1px solid #fdba74' }}>
+                                <Typography variant="caption" sx={{ fontWeight: 700, color: '#c2410c', textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.5, display: 'block' }}>
                                   Catatan Review
                                 </Typography>
-                                <Typography variant="body2" sx={{ color: COLORS.textPrimary, mt: 0.5, lineHeight: 1.6 }}>
+                                <Typography variant="body2" sx={{ color: '#9a3412', lineHeight: 1.6 }}>
                                   {submission.review_notes}
                                 </Typography>
                               </Box>
@@ -772,7 +775,7 @@ const ReviewSubmissions = () => {
                                         </Box>
                                     ) : (
                                         <Typography variant="body2" color="text.secondary" fontStyle="italic">
-                                            Siswa belum mengirimkan tautan postingan.
+                                            Mahasiswa belum mengirimkan tautan postingan.
                                         </Typography>
                                     )}
                                 </Box>
@@ -802,7 +805,7 @@ const ReviewSubmissions = () => {
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2, color: COLORS.textSecondary }}>
-             {reviewModal.action === 'approve' && 'Pengajuan yang disetujui akan menotifikasi siswa.'}
+             {reviewModal.action === 'approve' && 'Pengajuan yang disetujui akan menotifikasi mahasiswa.'}
              {reviewModal.action === 'reject' && 'Mohon berikan alasan penolakan.'}
              {reviewModal.action === 'revision' && 'Mohon berikan detail revisi.'}
           </Typography>

@@ -309,7 +309,7 @@ function LoginPage() {
                 <TextField
                   fullWidth
                   label="Kata Sandi"
-                  placeholder="Masukkan Kata Sandi anda"
+                  placeholder="Masukkan kata sandi anda"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => {

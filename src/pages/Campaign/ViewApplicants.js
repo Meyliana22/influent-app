@@ -137,10 +137,10 @@ function ViewApplicants() {
           followers: studentData.instagram_followers_count || studentData.follower_count || userData.follower_count || 0,
           engagementRate: studentData.engagement_rate || userData.engagement_rate || 0,
           status: app.application_status ? 
-                  (app.application_status.toLowerCase() === 'pending' ? 'Pending' : 
-                   (app.application_status.toLowerCase() === 'accepted' || app.application_status.toLowerCase() === 'approved') ? 'Accepted' : 
-                   (app.application_status.toLowerCase() === 'rejected') ? 'Rejected' : 
-                   app.application_status) : 'Pending',
+                  (app.application_status.toLowerCase() === 'pending' ? 'Menunggu' : 
+                   (app.application_status.toLowerCase() === 'accepted' || app.application_status.toLowerCase() === 'approved') ? 'Diterima' : 
+                   (app.application_status.toLowerCase() === 'rejected') ? 'Ditolak' : 
+                   app.application_status) : 'Menunggu',
           appliedDate: app.applied_at || app.created_at || new Date().toISOString(),
           bio: studentData.bio || userData.bio || '',
           instagram: studentData.instagram_username || studentData.instagram || userData.instagram_username || '',
@@ -166,14 +166,14 @@ function ViewApplicants() {
 
       // Calculate statistics
       const total = transformedApplicants.length;
-      const pending = transformedApplicants.filter(a => a.status === 'Pending').length;
-      const accepted = transformedApplicants.filter(a => a.status === 'Accepted').length;
-      const rejected = transformedApplicants.filter(a => a.status === 'Rejected').length;
+      const pending = transformedApplicants.filter(a => a.status === 'Menunggu').length;
+      const accepted = transformedApplicants.filter(a => a.status === 'Diterima').length;
+      const rejected = transformedApplicants.filter(a => a.status === 'Ditolak').length;
       const selected = transformedApplicants.filter(a => a.isSelected === true).length;
       setStats({ total, pending, accepted, rejected, selected });
     } catch (error) {
       console.error('Failed to load data:', error);
-      toast.error('Gagal memuat data applicants');
+      toast.error('Gagal memuat data pelamar');
     } finally {
       setIsLoading(false);
     }
@@ -183,8 +183,8 @@ function ViewApplicants() {
   const handleAccept = (applicantId) => {
     const applicant = applicants.find(a => a.id === applicantId);
     setModalConfig({
-      title: 'Accept Applicant',
-      message: `Are you sure you want to accept ${applicant.fullName} (${applicant.influencerName}) for this campaign?`,
+      title: 'Terima Pelamar',
+      message: `Apakah Anda yakin ingin menerima ${applicant.fullName} (${applicant.influencerName}) untuk kampanye ini?`,
       action: () => confirmAccept(applicantId),
       variant: 'success'
     });
@@ -197,12 +197,12 @@ function ViewApplicants() {
       const response = await applicantService.acceptApplicant(applicantId, 'Applicant has been accepted');
       
       if (response.success) {
-        toast.success('Applicant berhasil diterima!');
+        toast.success('Pelamar berhasil diterima!');
         await loadData();
         setShowModal(false);
       } else {
         // Handle specific business logic errors from backend
-        const errorMessage = response.error || 'Gagal menerima applicant';
+        const errorMessage = response.error || 'Gagal menerima pelamar';
         toast.error(errorMessage);
         if (response.error && response.error.includes('influencer limit')) {
            // Optional: You could show a more specific modal here if needed
@@ -212,7 +212,7 @@ function ViewApplicants() {
     } catch (error) {
       console.error('Failed to accept applicant:', error);
       // Try to extract error message from response if available
-      const errMsg = error.response?.data?.error || error.message || 'Gagal menerima applicant';
+      const errMsg = error.response?.data?.error || error.message || 'Gagal menerima pelamar';
       toast.error(errMsg);
     } finally {
       setIsLoading(false);
@@ -223,8 +223,8 @@ function ViewApplicants() {
   const handleReject = (applicantId) => {
     const applicant = applicants.find(a => a.id === applicantId);
     setModalConfig({
-      title: 'Reject Applicant',
-      message: `Are you sure you want to reject ${applicant.fullName} (${applicant.influencerName})? This action can be reversed later.`,
+      title: 'Tolak Pelamar',
+      message: `Apakah Anda yakin ingin menolak ${applicant.fullName} (${applicant.influencerName})? Tindakan ini dapat dibatalkan nanti.`,
       action: () => confirmReject(applicantId),
       variant: 'danger'
     });
@@ -235,12 +235,12 @@ function ViewApplicants() {
     try {
       setIsLoading(true);
       await applicantService.rejectApplicant(applicantId, 'Thank you for your interest');
-      toast.success('Applicant berhasil ditolak');
+      toast.success('Pelamar berhasil ditolak');
       await loadData();
       setShowModal(false);
     } catch (error) {
       console.error('Failed to reject applicant:', error);
-      toast.error('Gagal menolak applicant');
+      toast.error('Gagal menolak pelamar');
     } finally {
       setIsLoading(false);
     }
@@ -250,8 +250,8 @@ function ViewApplicants() {
   const handleCancel = (applicantId) => {
     const applicant = applicants.find(a => a.id === applicantId);
     setModalConfig({
-      title: 'Revert to Pending',
-      message: `Do you want to move ${applicant.fullName} (${applicant.influencerName}) back to pending status?`,
+      title: 'Kembalikan ke Menunggu',
+      message: `Apakah Anda ingin mengembalikan status ${applicant.fullName} (${applicant.influencerName}) ke menunggu?`,
       action: () => confirmCancel(applicantId),
       variant: 'default'
     });
@@ -262,12 +262,12 @@ function ViewApplicants() {
     try {
       setIsLoading(true);
       await applicantService.reconsiderApplicant(applicantId);
-      toast.success('Applicant berhasil dikembalikan ke status pending');
+      toast.success('Status pelamar berhasil dikembalikan ke menunggu');
       await loadData();
       setShowModal(false);
     } catch (error) {
       console.error('Failed to reconsider applicant:', error);
-      toast.error('Gagal mengubah status applicant');
+      toast.error('Gagal mengubah status pelamar');
     } finally {
       setIsLoading(false);
     }
@@ -280,6 +280,22 @@ function ViewApplicants() {
     loadData();
     toast.success(newSelectionState ? `${applicant.fullName} ditandai sebagai favorit` : `${applicant.fullName} dihapus dari favorit`);
   };
+
+  const translateCampaignStatus = (status) => {
+    const statusMap = {
+      'active': 'Aktif',
+      'draft': 'Draf',
+      'completed': 'Selesai',
+      'pending_payment': 'Menunggu Pembayaran',
+      'admin_review': 'Ditinjau Admin',
+      'rejected': 'Ditolak',
+      'cancelled': 'Dibatalkan',
+      'archived': 'Diarsipkan',
+      'paid': 'Terbayar'
+    };
+    return statusMap[status?.toLowerCase()] || status;
+  };
+
 
   // Handle Show Detail
   const handleShowDetail = (applicant) => {
@@ -358,7 +374,7 @@ function ViewApplicants() {
     })
     .sort((a, b) => {
       // Sort priority: Selected > Pending > Accepted > Rejected
-      const statusPriority = { 'Pending': 1, 'Accepted': 2, 'Rejected': 3 };
+      const statusPriority = { 'Menunggu': 1, 'Diterima': 2, 'Ditolak': 3 };
       if (statusPriority[a.status] !== statusPriority[b.status]) {
         return statusPriority[a.status] - statusPriority[b.status];
       }
@@ -375,6 +391,41 @@ function ViewApplicants() {
       </Box>
     );
   }
+
+  const statCards = [
+    {
+      title: 'Total Pelamar',
+      value: stats.total,
+      IconComponent: PeopleIcon,
+      bgColor: '#e0e7ff',
+      iconColor: '#4c51bf',
+      description: 'Total seluruh pendaftar'
+    },
+    {
+      title: 'Menunggu Ulasan',
+      value: stats.pending,
+      IconComponent: HourglassEmptyIcon,
+      bgColor: '#f1f5f9',
+      iconColor: '#64748b',
+      description: 'Belum diproses'
+    },
+    {
+      title: 'Diterima',
+      value: stats.accepted,
+      IconComponent: CheckCircleIcon,
+      bgColor: '#dcfce7',
+      iconColor: '#15803d',
+      description: 'Siap kolaborasi'
+    },
+    {
+      title: 'Ditolak',
+      value: stats.rejected,
+      IconComponent: CancelIcon,
+      bgColor: '#fef2f2',
+      iconColor: '#b91c1c',
+      description: 'Tidak memenuhi kriteria'
+    }
+  ];
 
   return (
     <Box sx={{ display: 'flex', fontFamily: 'Inter, sans-serif' }}>
@@ -426,7 +477,7 @@ function ViewApplicants() {
                   {campaign.banner_image ? (
                     <Box 
                       component="img" 
-                    src={getBannerUrl(campaign.banner_image)}
+                      src={getBannerUrl(campaign.banner_image)}
                       alt={campaign.title}
                       sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
@@ -453,7 +504,7 @@ function ViewApplicants() {
                         borderColor: campaign.status?.toLowerCase() === 'active' ? '#059669' : '#cbd5e1'
                       }}
                     >
-                      {campaign.status}
+                      {translateCampaignStatus(campaign.status)}
                     </Paper>
                   </Stack>
                   
@@ -496,105 +547,59 @@ function ViewApplicants() {
             </Paper>
 
             {/* Statistics Cards */}
-            <Paper elevation={0} sx={{ p: 3, bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: 2, mb: 4 }}>
-              <Grid container spacing={3}>
-                <Grid item xs={6} sm={6} md={3}>
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <Box sx={{ 
-                      width: 48, 
-                      height: 48, 
-                      borderRadius: '12px', 
-                      bgcolor: '#f0f9ff', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center' 
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: 3,
+              mb: 4
+            }}>
+              {statCards.map((stat, index) => {
+                const Icon = stat.IconComponent;
+                return (
+                  <Box
+                    key={index}
+                    sx={{
+                      background: '#fff',
+                      borderRadius: 5,
+                      p: 3,
+                      border: '1px solid #e2e8f0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      minWidth: 0,
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      cursor: 'pointer',
+                      boxShadow: 0,
+                      '&:hover': {
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                        transform: 'translateY(-4px)'
+                      }
+                    }}
+                  >
+                    <Box sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 2,
+                      bgcolor: stat.bgColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
                     }}>
-                      <PeopleIcon sx={{ fontSize: 24, color: '#6E00BE' }} />
+                      <Icon sx={{ fontSize: 24, color: stat.iconColor }} />
                     </Box>
                     <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
-                        {stats.total}
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2, mb: 0.5 }}>
+                        {stat.value}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>
-                        Total
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Grid>
-
-                <Grid item xs={6} sm={6} md={3}>
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <Box sx={{ 
-                      width: 48, 
-                      height: 48, 
-                      borderRadius: '12px', 
-                      bgcolor: '#f1f5f9', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center' 
-                    }}>
-                      <HourglassEmptyIcon sx={{ fontSize: 24, color: '#64748b' }} />
-                    </Box>
-                    <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
-                        {stats.pending}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>
-                        Menunggu
+                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 13, fontWeight: 500 }}>
+                        {stat.title}
                       </Typography>
                     </Box>
-                  </Stack>
-                </Grid>
-
-                <Grid item xs={6} sm={6} md={3}>
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <Box sx={{ 
-                      width: 48, 
-                      height: 48, 
-                      borderRadius: '12px', 
-                      bgcolor: '#ecfdf5', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center' 
-                    }}>
-                      <CheckCircleIcon sx={{ fontSize: 24, color: '#10b981' }} />
-                    </Box>
-                    <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
-                        {stats.accepted}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>
-                        Diterima
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Grid>
-
-                <Grid item xs={6} sm={6} md={3}>
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <Box sx={{ 
-                      width: 48, 
-                      height: 48, 
-                      borderRadius: '12px', 
-                      bgcolor: '#fef2f2', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center' 
-                    }}>
-                      <CancelIcon sx={{ fontSize: 24, color: '#ef4444' }} />
-                    </Box>
-                    <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>
-                        {stats.rejected}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>
-                        Ditolak
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Grid>
-              </Grid>
-            </Paper>
+                  </Box>
+                );
+              })}
+            </Box>
             
             {/* Search & Filter */}
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={4} flexWrap="wrap">
@@ -635,15 +640,15 @@ function ViewApplicants() {
                   }}
                 >
                   <MenuItem value="">Semua Status</MenuItem>
-                  <MenuItem value="Pending">
+                  <MenuItem value="Menunggu">
                     <HourglassEmptyIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#64748b' }} />
                     Menunggu
                   </MenuItem>
-                  <MenuItem value="Accepted">
+                  <MenuItem value="Diterima">
                     <CheckCircleIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#10b981' }} />
                     Diterima
                   </MenuItem>
-                  <MenuItem value="Rejected">
+                  <MenuItem value="Ditolak">
                     <CancelIcon sx={{ fontSize: 20, verticalAlign: 'middle', mr: 1, color: '#ef4444' }} />
                     Ditolak
                   </MenuItem>
@@ -653,7 +658,7 @@ function ViewApplicants() {
             
             {/* Results Count */}
             <Typography sx={{ mb: 2, fontSize: 15, color: '#64748b', fontWeight: 600 }}>
-              Menampilkan {filteredApplicants.length} dari {applicants.length} pendaftar
+              Menampilkan {filteredApplicants.length} dari {applicants.length} pelamar
             </Typography>
 
             {/* Applicants List */}
@@ -701,8 +706,8 @@ function ViewApplicants() {
               onClose={() => setShowModal(false)}
               title={modalConfig.title}
               onConfirm={modalConfig.action}
-              confirmText="Confirm"
-              cancelText="Cancel"
+              confirmText="Konfirmasi"
+              cancelText="Batal"
               variant={modalConfig.variant}
             >
               <Typography sx={{ fontSize: 16, lineHeight: 1.6, color: COLORS.textSecondary }}>

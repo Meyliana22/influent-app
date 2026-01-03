@@ -318,7 +318,7 @@ function ManageWithdrawals() {
           {/* Header */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1 }}>
-              Manajemen Penarikan
+              Kelola Penarikan
             </Typography>
             <Typography variant="body1" sx={{ color: '#64748b' }}>
               Tinjau dan proses permintaan penarikan
@@ -346,7 +346,7 @@ function ManageWithdrawals() {
                 icon: AccountBalanceIcon,
                 color: '#6E00BE',
                 bgColor: '#F3E5F5',
-                description: 'Semua request'
+                description: 'Semua permintaan penarikan'
               },
               {
                 title: 'Tertunda',

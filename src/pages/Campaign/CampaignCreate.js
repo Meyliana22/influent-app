@@ -134,7 +134,7 @@ function CampaignCreate() {
 
   // Constants
   const CATEGORY_OPTIONS = [
-    'Gaming', 'Gaya Hidup & Travel', 'Hiburan', 'Kecantikan & Fashion', 
+    'Game', 'Gaya Hidup & Travel', 'Hiburan', 'Kecantikan & Fashion', 
     'Keluarga & Parenting', 'Kesehatan & Olahraga', 'Makanan & Minuman', 'Teknologi'
   ];
   const CONTENT_TYPE_OPTIONS = [
@@ -143,7 +143,7 @@ function CampaignCreate() {
     { value: 'reels', label: 'Instagram Reels' },
     { value: 'video', label: 'Instagram Video' },
   ];
-  const AGE_OPTIONS = ['< 18 tahun', '18-24 tahun', '25-34 tahun', '35-49 tahun', '> 50 tahun'];
+  const AGE_OPTIONS = ['< 18', '18-24', '25-34', '35-49', '> 50'];
 
   // --- Helpers ---
   const formatCurrency = (val) => {
@@ -949,15 +949,15 @@ function CampaignCreate() {
        <Grid item xs={12} md={6}>
           <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, height: '100%', borderColor: '#e2e8f0' }}>
                 <Typography variant="h6" fontWeight={700} gutterBottom>
-                   Instruksi & Aturan
+                   Panduan & Aturan
                 </Typography>
              <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-                Berikan instruksi yang jelas agar konten influencer sesuai harapan.
+                Berikan Panduan yang jelas agar konten influencer sesuai harapan.
              </Typography>
 
              <Stack spacing={3}>
                 <TextField 
-                   label="Instruksi Visual / Foto / Video" 
+                   label="Panduan Visual / Foto / Video" 
                    multiline rows={4} 
                    fullWidth 
                    placeholder="Jelaskan tone warna, angle pengambilan gambar, pencahayaan, atau elemen yang wajib ada dalam foto/video."
@@ -967,10 +967,10 @@ function CampaignCreate() {
                    sx={{ bgcolor: '#f8fafc' }}
                 />
                 <TextField 
-                   label="Aturan Takarir & Tagar" 
+                   label="Panduan Caption & Hastag" 
                    multiline rows={4} 
                    fullWidth 
-                   placeholder="Jelaskan poin-poin yang harus dibahas di caption, hashtag wajib, dan akun yang harus di-tag."
+                   placeholder="Jelaskan poin-poin yang harus dibahas di Caption, Hastag wajib, dan akun yang harus di-tag."
                    value={caption_guidelines}
                    onChange={e => setCaptionGuidelines(e.target.value)}
                    disabled={isReadOnly}
