@@ -18,6 +18,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import NotificationBell from './NotificationBell';
+import authService from '../../services/authService';
 
 function Topbar({ onMenuClick = () => {} }) {
   const navigate = useNavigate();
@@ -30,6 +31,27 @@ function Topbar({ onMenuClick = () => {} }) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userName = user.name || 'User';
   const userRole = user.role || 'influencer';
+  
+  // State for profile image
+  const [profileImage, setProfileImage] = useState(user.profile_image || user.profile_picture || null);
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await authService.getCurrentUser();
+        const userData = res.data?.user || res.data || res;
+        if (userData.profile_image) {
+          setProfileImage(userData.profile_image);
+          // Optional: Update local storage to keep it fresh
+          const updatedUser = { ...user, profile_image: userData.profile_image };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      } catch (error) {
+        console.error("Failed to fetch user profile for topbar", error);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Get role label based on role
   const getRoleLabel = () => {
@@ -134,6 +156,7 @@ function Topbar({ onMenuClick = () => {} }) {
                 fontWeight: 700,
                 color: '#fff'
               }}
+              src={profileImage}
             >
               {userName.charAt(0).toUpperCase()}
             </Avatar>

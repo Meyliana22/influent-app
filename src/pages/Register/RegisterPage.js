@@ -160,7 +160,7 @@ function RegisterPage() {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      setErrorMsg("Password tidak sama");
+      setErrorMsg("Kata sandi tidak sama");
       return;
     }
     
@@ -518,7 +518,7 @@ function RegisterPage() {
                   />
                   <TextField
                     fullWidth
-                    label="Password"
+                    label="Kata Sandi"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
@@ -546,7 +546,7 @@ function RegisterPage() {
                   />
                   <TextField
                     fullWidth
-                    label="Konfirmasi Password"
+                    label="Konfirmasi Kata Sandi"
                     name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={formData.confirmPassword}

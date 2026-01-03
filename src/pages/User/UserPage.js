@@ -55,11 +55,12 @@ function UserPage() {
     user: { name: '', email: '', profile_image: null }
   });
 
-  // const getImageUrl = (image) => {
-  //   if (!image) return null;
-  //   if (image.startsWith('http') || image.startsWith('data:')) return image;
-  //   return `${apiImage}/${image}`;
-  // };
+  const [adminData, setAdminData] = useState({
+    name: '',
+    email: '',
+    user: { name: '', email: '', profile_image: null }
+  });
+
   // Common Profile Image
   const [profileImage, setProfileImage] = useState(null);
 
@@ -86,7 +87,6 @@ function UserPage() {
   const fetchUserData = async () => {
       try {
         const user = await authService.getCurrentUser();
-        console.log(user);
         // Handle nested structure from /auth/me response
         const userData = user.data?.user 
         const role = userData?.role
@@ -94,6 +94,13 @@ function UserPage() {
         
         if (role === 'student') {
             fetchStudentProfile();
+            setProfileImage(userData.profile_image);
+        } else if (role === 'admin') {
+            setAdminData({
+                name: userData.name || '',
+                email: userData.email || '',
+                user: userData
+            });
             setProfileImage(userData.profile_image);
         } else if (role === 'umkm' || role === 'company') {
             setUserRole('umkm'); // standardize
@@ -107,7 +114,6 @@ function UserPage() {
                  deskripsi: userData.description || '', 
                  user: userData
             });
-            console.log(companyData);
             setProfileImage(userData.profile_image);
         }
       } catch (err) {
@@ -273,8 +279,6 @@ function UserPage() {
   };
 
   // Render Logic
-  const SidebarComponent = userRole === 'student' ? Sidebar : UMKMSidebar;
-  const TopbarComponent = userRole === 'student' ? Topbar : UMKMTopbar;
 
   const getImageUrl = (imageName) => {
     return `${imageName}`;
@@ -284,7 +288,7 @@ function UserPage() {
     <div style={{ display: 'flex', fontFamily: "'Inter', sans-serif", background: '#f8fafc', minHeight: '100vh' }}>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
-      <div style={{ marginLeft: !isMobile ? '0' : '0', flex: 1, overflowX: 'hidden' }}>
+      <div style={{ marginLeft: !isMobile ? '260px' : '0', flex: 1, overflowX: 'hidden' }}>
         <Topbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
         
         <div style={{ marginTop: '72px', padding: '32px' }}>
@@ -296,7 +300,7 @@ function UserPage() {
                 Pengaturan Akun
               </h2>
               <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
-                Kelola informasi profil {userRole === 'student' ? 'Student' : 'Bisnis'} dan preferensi akun Anda.
+                Kelola informasi profil dan preferensi akun Anda.
               </p>
             </div>
 
@@ -336,10 +340,10 @@ function UserPage() {
                       </label>
                   </div>
                   <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', marginBottom: '4px' }}>
-                      {userRole === 'student' ? studentData.user?.name : companyData.user?.name || companyData.namaUsaha}
+                      {userRole === 'student' ? studentData.user?.name : userRole === 'admin' ? adminData.user?.name : companyData.user?.name || companyData.namaUsaha}
                   </h3>
                   <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
-                       {userRole === 'student' ? studentData.user?.email : companyData.user?.email}
+                       {userRole === 'student' ? studentData.user?.email : userRole === 'admin' ? adminData.user?.email : companyData.user?.email}
                   </p>
                 </Card>
 
@@ -348,7 +352,7 @@ function UserPage() {
                     {[
                       { id: 'profile', label: 'Profil Saya', icon: PersonIcon },
                       { id: 'password', label: 'Keamanan', icon: LockIcon },
-                      { id: 'notifications', label: 'Notifikasi', icon: NotificationsIcon },
+                      // { id: 'notifications', label: 'Notifikasi', icon: NotificationsIcon },
                     ].map(tab => {
                       const Icon = tab.icon;
                       const isActive = activeTab === tab.id;
@@ -361,8 +365,8 @@ function UserPage() {
                             padding: '12px 16px',
                             border: 'none',
                             borderRadius: '12px',
-                            background: isActive ? '#eff6ff' : 'transparent',
-                            color: isActive ? '#4f46e5' : '#64748b',
+                            background: isActive ? '#F3E5F5' : 'transparent',
+                            color: isActive ? '#6E00BE' : '#64748b',
                             fontWeight: isActive ? 600 : 500,
                             fontSize: '0.95rem',
                             cursor: 'pointer',
@@ -447,7 +451,7 @@ function UserPage() {
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                    <Input label="Instagram Username" value={studentData.instagram_username} onChange={(e) => handleStudentChange('instagram_username', e.target.value)} placeholder="@username" />
-                                   <Input label="Followers Instagram" type="number" value={studentData.instagram_followers_count} onChange={(e) => handleStudentChange('instagram_followers_count', e.target.value)} placeholder="Contoh: 1000" />
+                                   <Input label="Jumlah Pengikut Instagram" type="number" value={studentData.instagram_followers_count} onChange={(e) => handleStudentChange('instagram_followers_count', e.target.value)} placeholder="Contoh: 1000" />
                                 </div>
                                 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -473,6 +477,23 @@ function UserPage() {
                                 <Input label="Kategori Konten" value={studentData.content_category} onChange={(e) => handleStudentChange('content_category', e.target.value)} placeholder="Contoh: Lifestyle, Tech" />
                             </div>
                           </>
+                      ) : userRole === 'admin' ? (
+                        <>
+                          <div style={{ display: 'grid', gap: '20px' }}>
+                              <Input 
+                                label="Username" 
+                                value={adminData.name} 
+                                disabled 
+                                style={{ backgroundColor: '#f8fafc', color: '#94a3b8' }} 
+                              />
+                              <Input 
+                                label="Email" 
+                                value={adminData.email} 
+                                disabled 
+                                style={{ backgroundColor: '#f8fafc', color: '#94a3b8' }} 
+                              />
+                          </div>
+                        </>
                       ) : (
                           <>
                             <div style={{ display: 'grid', gap: '24px' }}>
@@ -503,7 +524,7 @@ function UserPage() {
                                             outline: 'none',
                                             transition: 'border-color 0.2s'
                                           }}
-                                          onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                                          onFocus={(e) => e.target.style.borderColor = '#6E00BE'}
                                           onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                                         />
                                     </div>
@@ -535,14 +556,14 @@ function UserPage() {
                         disabled={loading} 
                         style={{ 
                           padding: '12px 32px', 
-                          background: '#4f46e5', 
+                          background: '#6E00BE', 
                           border: 'none', 
                           borderRadius: '10px', 
                           color: '#fff', 
                           fontSize: '1rem', 
                           fontWeight: 600, 
                           cursor: 'pointer',
-                          boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.1), 0 2px 4px -1px rgba(79, 70, 229, 0.06)'
+                          boxShadow: '0 4px 6px -1px rgba(110, 0, 190, 0.1), 0 2px 4px -1px rgba(110, 0, 190, 0.06)'
                         }}
                       >
                         {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
@@ -562,7 +583,7 @@ function UserPage() {
                       <Input label="Konfirmasi Password Baru" type="password" value={passwordData.confirmPassword} onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)} />
                     </div>
                     <div style={{ marginTop: '32px' }}>
-                      <Button onClick={handleSavePassword} style={{ padding: '12px 24px', background: '#4f46e5', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600 }}>
+                      <Button onClick={handleSavePassword} style={{ padding: '12px 24px', background: '#6E00BE', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600 }}>
                         Update Password
                       </Button>
                     </div>
@@ -605,7 +626,7 @@ function UserPage() {
                                 left: 0,
                                 right: 0,
                                 bottom: 0,
-                                backgroundColor: notifPreferences[item.key] ? '#4f46e5' : '#cbd5e1',
+                                backgroundColor: notifPreferences[item.key] ? '#6E00BE' : '#cbd5e1',
                                 transition: '.4s',
                                 borderRadius: '34px'
                               }}

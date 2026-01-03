@@ -152,34 +152,34 @@ function CampaignDashboard() {
     {
       title: 'Kampanye Berjalan',
       value: stats.ongoingCampaigns,
-      icon: <TrendingUpIcon />,
+      IconComponent: TrendingUpIcon,
       color: '#6E00BE', // Primary
       bgColor: '#F3E5F5',
-      footer: 'Sedang aktif saat ini'
+      description: 'Sedang aktif saat ini'
     },
     {
       title: 'Total Pengeluaran (Bln Ini)',
       value: `Rp ${stats.totalSpendThisMonth.toLocaleString('id-ID')}`,
-      icon: <AttachMoneyIcon />,
+      IconComponent: AttachMoneyIcon,
       color: '#059669', // Green
       bgColor: '#d1fae5',
-      footer: 'Estimasi budget bulan ini'
+      description: 'Estimasi budget bulan ini'
     },
     {
       title: 'Influencer Terlibat',
       value: stats.influencersEngaged,
-      icon: <PeopleOutlineIcon />,
+      IconComponent: PeopleOutlineIcon,
       color: '#ea580c', // Orange
       bgColor: '#ffedd5',
-      footer: 'Total kolaborator'
+      description: 'Total kolaborator'
     },
     {
       title: 'Kampanye Selesai',
       value: stats.completedCampaigns,
-      icon: <CheckCircleOutlineIcon />,
+      IconComponent: CheckCircleOutlineIcon,
       color: '#2563eb', // Blue
       bgColor: '#dbeafe',
-      footer: 'Berhasil diselesaikan'
+      description: 'Berhasil diselesaikan'
     }
   ];
 
@@ -230,54 +230,62 @@ function CampaignDashboard() {
           </Box>
 
           {/* Stats Grid */}
-          <Grid container spacing={3} sx={{ mb: 5 }}>
-            {statCards.map((card, index) => (
-              <Grid item xs={12} sm={6} lg={3} key={index}>
-                <Paper
-                  elevation={0}
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: 2.5,
+            mb: 5
+          }}>
+            {statCards.map((stat, index) => {
+              const Icon = stat.IconComponent;
+              return (
+                <Box
+                  key={index}
                   sx={{
-                    p: 3,
-                    height: '100%',
-                    borderRadius: '20px',
-                    position: 'relative',
-                    overflow: 'hidden',
                     background: '#fff',
+                    borderRadius: 5,
+                    p: 3,
                     border: '1px solid #e2e8f0',
-                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    minWidth: 0,
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    cursor: 'pointer',
+                    boxShadow: 0,
                     '&:hover': {
-                      transform: 'translateY(-2px)',
-                      borderColor: '#cbd5e1'
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                      transform: 'translateY(-4px)'
                     }
                   }}
                 >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box sx={{ 
-                      p: 1.5, 
-                      borderRadius: '12px', 
-                      bgcolor: card.bgColor, 
-                      color: card.color,
-                      display: 'flex'
-                    }}>
-                      {React.cloneElement(card.icon, { sx: { fontSize: 24 } })}
-                    </Box>
+                  <Box sx={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: 2,
+                    bgcolor: stat.bgColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Icon sx={{ fontSize: 25, color: stat.color }} />
                   </Box>
-                  
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#1e293b', mb: 0.5 }}>
-                    {card.value}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500, mb: 2 }}>
-                    {card.title}
-                  </Typography>
-                  
-                  <Box sx={{ pt: 2, borderTop: '1px solid #f1f5f9' }}>
-                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500 }}>
-                      {card.footer}
+                  <Box>
+                    <Typography sx={{ fontSize: 14, color: '#6c757d', mb: 0.5, fontFamily: "'Inter', sans-serif" }}>
+                      {stat.title}
+                    </Typography>
+                    <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
+                      {stat.value}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: '#a0aec0', fontFamily: "'Inter', sans-serif" }}>
+                      {stat.description}
                     </Typography>
                   </Box>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
+                </Box>
+              );
+            })}
+          </Box>
 
           {/* Recent Campaigns Section */}
           <Box sx={{ mb: 2 }}>

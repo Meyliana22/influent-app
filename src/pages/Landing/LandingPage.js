@@ -62,7 +62,7 @@ function LandingPage() {
   };
 
   const navItems = [
-    { label: 'Tentang', href: '#tentang' },
+    { label: 'Tentang Kami', href: '#tentang' },
     { label: 'Cara Kerja', href: '#cara-kerja' },
     { label: 'Mengapa Influent?', href: '#mengapa' },
   ];
@@ -203,7 +203,6 @@ function LandingPage() {
                     <Button
                       variant="contained"
                       onClick={() => navigate('/register/umkm')}
-                      endIcon={<ArrowForwardIcon />}
                       sx={{
                         bgcolor: '#6E00BE',
                         color: '#fff',
@@ -324,8 +323,8 @@ function LandingPage() {
           <Grid container spacing={4} justifyContent="center">
              {[
                { icon: accountIcon, title: "1. Buat Akun", text: "Daftar instan sebagai UMKM atau Mahasiswa dengan verifikasi cepat." },
-               { icon: searchIcon, title: "2. Eksplorasi Campaign", text: "Temukan atau buat campaign yang sesuai dengan niche dan target audience." },
-               { icon: collabIcon, title: "3. Mulai Kolaborasi", text: "Jalin kerjasama, pantau performa, dan selesaikan pembayaran dengan aman." }
+               { icon: searchIcon, title: "2. Eksplorasi kampanye", text: "Temukan atau buat kampanye yang sesuai dengan preferensi dan target audience yang sesuai." },
+               { icon: collabIcon, title: "3. Mulai kolaborasi", text: "Jalin kerjasama, pantau performa, dan selesaikan pembayaran dengan aman." }
              ].map((step, index) => (
                 <Grid item xs={12} md={8} key={index}>
                   <Card 
@@ -388,10 +387,10 @@ function LandingPage() {
           </Box>
           <Grid container spacing={4}>
             {[
-              { icon: filterIcon, title: "Smart Filtering", text: "Filter canggih untuk menemukan influencer berdasarkan demografi, minat, dan engagement rate.", color: '#E3F2FD' },
-              { icon: paymentIcon, title: "Secure Payment", text: "Sistem Escrow menjamin keamanan dana hingga kewajiban kedua belah pihak terpenuhi.", color: '#F3E5F5' },
-              { icon: chatIcon, title: "Integrated Chat", text: "Komunikasi seamless tanpa perlu keluar platform. Diskusi brief dan revisi jadi lebih terorganisir.", color: '#E8F5E9' },
-              { icon: reviewIcon, title: "Trust System", text: "Review dan rating transparan membangun ekosistem kepercayaan yang solid.", color: '#FFF3E0' },
+              { icon: filterIcon, title: "Pencarian Mudah", text: "Temukan influencer yang sesuai dengan kategori usaha Anda.", color: '#E3F2FD' },
+              { icon: paymentIcon, title: "Pembayaran Aman", text: "Sistem Escrow menjamin keamanan dana hingga kewajiban kedua belah pihak terpenuhi.", color: '#F3E5F5' },
+              { icon: chatIcon, title: "Chat Terintegrasi", text: "Komunikasi lancar tanpa perlu keluar platform. Diskusi singkat dan revisi jadi lebih terorganisir.", color: '#E8F5E9' },
+              { icon: reviewIcon, title: "Sistem Kepercayaan", text: "Ulasan dan rating transparan membangun ekosistem kepercayaan yang solid.", color: '#FFF3E0' },
             ].map((item, index) => (
               <Grid item xs={12} md={6} key={index}>
                 <Card 
@@ -476,53 +475,36 @@ function LandingPage() {
       </Box>
 
       {/* Footer */}
-      <Box component="footer" sx={{ bgcolor: '#fff', color: '#2d3748', py: 8, borderTop: '1px solid #eee' }}>
+      <Box component="footer" sx={{ bgcolor: '#fff', color: '#2d3748', py: 3, borderTop: '1px solid #eee' }}>
         <Container maxWidth="lg">
-          <Grid container spacing={8}>
-            <Grid item xs={12} md={4}>
-               <Box component="img" src={logo} alt="Influent" sx={{ height: 32, mb: 3 }} />
-               <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.8, mb: 3 }}>
+          <Grid container spacing={4} justifyContent="space-between">
+            <Grid item xs={12} md={5}>
+               <Box component="img" src={logo} alt="Influent" sx={{ height: 24, mb: 1 }} />
+               <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5, mb: 1, fontSize: '0.85rem' }}>
                  Influent adalah platform pionir yang menghubungkan UMKM Indonesia dengan potensi tak terbatas dari mahasiswa berbakat untuk akselerasi digital.
                </Typography>
-               <Stack direction="row" spacing={2}>
-                 {/* Social Media Icons placeholders */}
-                 {[1, 2, 3].map((i) => (
-                   <Box key={i} sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', '&:hover': { bgcolor: '#6E00BE', color: '#fff' }, transition: 'all 0.2s' }}>
-                      <Box component="span" sx={{ fontSize: 14 }}>●</Box>
-                   </Box>
-                 ))}
-               </Stack>
             </Grid>
             <Grid item xs={12} md={2}>
-               <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ mb: 2 }}>Platform</Typography>
-               <Stack spacing={1.5}>
+               <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ mb: 1, fontSize: '0.9rem' }}>Platform</Typography>
+               <Stack spacing={0.5}>
                  {['Tentang Kami', 'Cara Kerja', 'Mengapa Influent?', 'Biaya'].map((text, idx) => (
-                   <Link key={idx} href="#" color="text.secondary" underline="none" sx={{ '&:hover': { color: '#6E00BE' } }}>
+                   <Link key={idx} href="#" color="text.secondary" underline="none" sx={{ '&:hover': { color: '#6E00BE' }, fontSize: '0.85rem' }}>
                      {text}
                    </Link>
                  ))}
                </Stack>
             </Grid>
-            {/* <Grid item xs={12} md={2}>
-               <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ mb: 2 }}>Dukungan</Typography>
-               <Stack spacing={1.5}>
-                 {['Pusat Bantuan', 'Syarat & Ketentuan', 'Kebijakan Privasi', 'Hubungi Kami'].map((text, idx) => (
-                   <Link key={idx} href="#" color="text.secondary" underline="none" sx={{ '&:hover': { color: '#6E00BE' } }}>
-                     {text}
-                   </Link>
-                 ))}
-               </Stack>
-            </Grid> */}
+
             <Grid item xs={12} md={4}>
-              <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ mb: 2 }}>Hubungi Kami</Typography>
-              <Stack spacing={2}>
-                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ width: 36, height: 36, borderRadius: '10px', bgcolor: 'rgba(110,0,190,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6E00BE' }}>
-                       <img src={emailIcon} alt="" style={{ width: 18 }} />
+              <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ mb: 1, fontSize: '0.9rem' }}>Hubungi Kami</Typography>
+              <Stack spacing={1}>
+                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 28, height: 28, borderRadius: '6px', bgcolor: 'rgba(110,0,190,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6E00BE' }}>
+                       <img src={emailIcon} alt="" style={{ width: 14 }} />
                     </Box>
                     <Box>
-                      <Typography variant="caption" color="text.secondary" display="block">Email</Typography>
-                      <Typography variant="body2" fontWeight={600}>info@influent.id</Typography>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.7rem' }}>Email</Typography>
+                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.85rem' }}>info@influent.id</Typography>
                     </Box>
                  </Box>
                  {/* Add more contacts similarly */}
@@ -530,8 +512,8 @@ function LandingPage() {
             </Grid>
           </Grid>
           
-          <Box sx={{ borderTop: '1px solid #eee', mt: 8, pt: 4, textAlign: 'center' }}>
-             <Typography variant="body2" color="text.secondary">© 2025 Influent. All rights reserved.</Typography>
+          <Box sx={{ borderTop: '1px solid #eee', mt: 3, pt: 2, textAlign: 'center' }}>
+             <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>© 2025 Influent. All rights reserved.</Typography>
           </Box>
         </Container>
       </Box>

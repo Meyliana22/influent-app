@@ -138,6 +138,7 @@ function ChatPage() {
             ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
           : "",
         unread: row.unreadCount || 0,
+        profileImage: row.otherUser?.profile_image || row.otherUser?.profile_picture || null,
         raw: row.room,
       }));
       setChatList(normalized);
@@ -311,7 +312,7 @@ function ChatPage() {
   const ChatListComponent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
       <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6" fontWeight="bold">Chats</Typography>
+        <Typography variant="h6" fontWeight="bold">Pesan</Typography>
         {/* Optional Search Bar */}
         <TextField
           variant="outlined"
@@ -343,7 +344,7 @@ function ChatPage() {
             }}
           >
             <ListItemAvatar>
-              <Avatar sx={{ bgcolor: theme.palette.primary.main }}>{chat.name.charAt(0)}</Avatar>
+              <Avatar sx={{ bgcolor: theme.palette.primary.main }} src={chat.profileImage}>{chat.name.charAt(0)}</Avatar>
             </ListItemAvatar>
             <ListItemText
               primary={
@@ -431,7 +432,7 @@ function ChatPage() {
                       <ArrowBackIcon />
                     </IconButton>
                   )}
-                  <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>{selectedChat.name.charAt(0)}</Avatar>
+                  <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }} src={selectedChat.profileImage}>{selectedChat.name.charAt(0)}</Avatar>
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="subtitle1" fontWeight="bold">{selectedChat.name}</Typography>
                     <Typography variant="caption" color="text.secondary">Online</Typography>
@@ -443,7 +444,7 @@ function ChatPage() {
                     startIcon={<ReportIcon />}
                     onClick={() => setShowReportPopup(true)}
                   >
-                    Report
+                    Laporkan
                   </Button>
                </Paper>
 
@@ -573,7 +574,7 @@ function ChatPage() {
       >
         <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>
            <WarningIcon color="error" sx={{ fontSize: 40, mb: 1, display: 'block', mx: 'auto' }} />
-           Report User
+           Laporkan Pengguna
         </DialogTitle>
         <DialogContent>
            <DialogContentText textAlign="center" sx={{ mb: 2 }}>

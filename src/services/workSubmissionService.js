@@ -152,6 +152,46 @@ export const updateWorkSubmission = async (id, data) => {
   }
 };
 
+/**
+ * Admin rejects the rejection (sends back to UMKM)
+ */
+export const adminRejectRejection = async (submissionId, notes) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/work-submissions/${submissionId}/reject-rejection`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ review_notes: notes }),
+    });
+    console.log(`Admin rejected rejection for submission ${submissionId}`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error admin rejecting rejection:", error);
+    throw error;
+  }
+};
+
+/**
+ * Admin approves the rejection (confirms rejection)
+ */
+export const adminApproveRejection = async (submissionId, notes) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/work-submissions/${submissionId}/approve-rejection`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ review_notes: notes }),
+    });
+    console.log(`Admin approved rejection for submission ${submissionId}`);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error admin approving rejection:", error);
+    throw error;
+  }
+};
+
 export default {
   getCampaignSubmissions,
   getSubmissionById,
@@ -160,5 +200,8 @@ export default {
   requestRevision,
   getRejectedSubmissions,
   createWorkSubmission,
+  createWorkSubmission,
   updateWorkSubmission,
+  adminRejectRejection,
+  adminApproveRejection,
 };

@@ -57,10 +57,10 @@ import { FaInstagram, FaQuestionCircle } from 'react-icons/fa';
 
 // Steps configuration
 const STEPS = [
-  'Detail Campaign',
-  'Kriteria Audience',
-  'Konten & Budget',
-  'Timeline & Brief'
+  'Detail Kampanye',
+  'Target Audiens',
+  'Konten & Anggaran',
+  'Jadwal & Panduan'
 ];
 
 function CampaignCreate() {
@@ -217,7 +217,7 @@ function CampaignCreate() {
         })
         .catch(err => {
           console.error(err);
-          showToast('Failed to load campaign', 'error');
+          showToast('Gagal memuat kampanye', 'error');
         })
         .finally(() => setLoading(false));
     }
@@ -227,19 +227,19 @@ function CampaignCreate() {
   const validateStep1 = () => {
      // Banner validation
      if (!image && !imagePreview) {
-        showToast('Banner Campaign wajib diupload', 'error');
+        showToast('Banner Kampanye wajib diunggah', 'error');
         return false;
      }
      if (!title.trim()) {
-        showToast('Judul Campaign harus diisi', 'error');
+        showToast('Judul Kampanye harus diisi', 'error');
         return false;
      }
      if (!campaignCategory) {
-        showToast('Kategori Campaign harus dipilih', 'error');
+        showToast('Kategori Kampanye harus dipilih', 'error');
         return false;
      }
      if (!productDesc.trim()) {
-        showToast('Deskripsi Campaign harus diisi', 'error');
+        showToast('Deskripsi Kampanye harus diisi', 'error');
         return false;
      }
      if (hasProduct) {
@@ -261,7 +261,7 @@ function CampaignCreate() {
         return false;
      }
      if (!min_followers) {
-        showToast('Minimal Followers harus diisi', 'error');
+        showToast('Minimal Pengikut harus diisi', 'error');
         return false;
      }
      return true;
@@ -269,7 +269,7 @@ function CampaignCreate() {
 
   const validateStep3 = () => {
      if (!isFree && !price_per_post) {
-        showToast('Fee per Influencer harus diisi', 'error');
+        showToast('Biaya per Influencer harus diisi', 'error');
         return false;
      }
      if (influencer_count < 1) return false;
@@ -401,12 +401,12 @@ function CampaignCreate() {
       if (isEditMode) {
          await campaignService.updateCampaign(id, payload);
          resultId = id;
-         showToast('Campaign updated successfully!', 'success');
+         showToast('Kampanye berhasil diperbarui!', 'success');
       } else {
          const res = await campaignService.createCampaign(payload);
          // Support multiple response formats just in case
          resultId = res.data?.campaign_id || res.campaign_id || res.id || res.data?.id; 
-         showToast('Campaign created successfully!', 'success');
+         showToast('Kampanye berhasil dibuat!', 'success');
       }
 
       // Upload Banner if new file exists
@@ -423,7 +423,7 @@ function CampaignCreate() {
       navigate('/campaigns/list');
     } catch (error) {
        console.error(error);
-       showToast('Error saving campaign', 'error');
+       showToast('Gagal menyimpan kampanye', 'error');
     } finally {
        setLoading(false);
     }
@@ -459,7 +459,7 @@ function CampaignCreate() {
               ) : (
                  <>
                     <CloudUploadIcon sx={{ fontSize: 48, color: '#94a3b8', mb: 2 }} />
-                    <Typography color="textSecondary" fontWeight={600}>Upload Banner *</Typography>
+                    <Typography color="textSecondary" fontWeight={600}>Unggah Foto *</Typography>
                     <Typography variant="caption" color="textSecondary">Wajib Diisi - JPG, PNG (Max 5MB)</Typography>
                  </>
               )}
@@ -476,7 +476,7 @@ function CampaignCreate() {
                  
                     <Grid item xs={12}>
                        <TextField 
-                         label="Judul Campaign" 
+                         label="Judul Kampanye" 
                          fullWidth 
                          required 
                          value={title} 
@@ -487,10 +487,10 @@ function CampaignCreate() {
                     </Grid>
                     <Grid item xs={12}>
                        <FormControl fullWidth required disabled={isReadOnly}>
-                          <InputLabel>Kategori Campaign</InputLabel>
+                          <InputLabel>Kategori Kampanye</InputLabel>
                           <Select 
                             value={campaignCategory} 
-                            label="Kategori Campaign"
+                            label="Kategori Kampanye"
                             onChange={e => setCampaignCategory(e.target.value)}
                           >
                              {CATEGORY_OPTIONS.map(opt => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
@@ -506,7 +506,7 @@ function CampaignCreate() {
                  <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, borderColor: '#e2e8f0' }}>
                     <FormControlLabel 
                       control={<Checkbox checked={hasProduct} onChange={e => setHasProduct(e.target.checked)} disabled={isReadOnly}/>}
-                      label={<Typography fontWeight={600} color="#475569">Campaign ini melibatkan pengiriman produk fisik/digital</Typography>}
+                      label={<Typography fontWeight={600} color="#475569">Kampanye ini melibatkan pengiriman produk fisik/digital</Typography>}
                       sx={{ mb: hasProduct ? 2 : 0 }}
                     />
                     
@@ -549,7 +549,7 @@ function CampaignCreate() {
                     rows={6}
                     fullWidth
                     required
-                    placeholder="Jelaskan detail campaign, tujuan, usp produk, atau pesan kunci yang ingin disampaikan..."
+                    placeholder="Jelaskan detail kampanye, tujuan, usp produk, atau pesan kunci yang ingin disampaikan..."
                     value={productDesc}
                     onChange={e => setProductDesc(e.target.value)}
                     disabled={isReadOnly}
@@ -594,7 +594,7 @@ function CampaignCreate() {
                 </Box>
 
                 <Box>
-                   <Typography variant="caption" fontWeight={600} gutterBottom sx={{ display: 'block', mb: 1 }}>Minimal Followers</Typography>
+                   <Typography variant="caption" fontWeight={600} gutterBottom sx={{ display: 'block', mb: 1 }}>Minimal Pengikut</Typography>
                    <TextField 
                       fullWidth
                       placeholder="Contoh: 10.000"
@@ -615,7 +615,7 @@ function CampaignCreate() {
              <Stack spacing={3}>
                 <Box>
                    <Typography variant="subtitle1" fontWeight={700} sx={{ color: '#1e293b' }}>
-                      Target Audience
+                      Audience
                    </Typography>
                    <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>
                       Siapa yang ingin Anda jangkau?
@@ -764,7 +764,7 @@ function CampaignCreate() {
 
           <Grid item xs={12} md={5}>
              <Paper sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 3, border: '1px solid #e2e8f0', position: 'sticky', top: 100 }}>
-                <Typography variant="h6" fontWeight={700} gutterBottom sx={{ color: '#1e293b' }}>Estimasi Budget</Typography>
+                <Typography variant="h6" fontWeight={700} gutterBottom sx={{ color: '#1e293b' }}>Estimasi Anggaran</Typography>
                 
                 <Box sx={{ mb: 3 }}>
                    <Typography variant="subtitle2" gutterBottom color="textSecondary">Jumlah Influencer</Typography>
@@ -784,7 +784,7 @@ function CampaignCreate() {
                 <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fff', borderRadius: 2, mb: 3 }}>
                     <FormControlLabel 
                        control={<Checkbox checked={isFree} onChange={e => setIsFree(e.target.checked)} disabled={isReadOnly}/>}
-                       label={<Typography variant="body2" fontWeight={600}>Campaign Barter (Tanpa Bayaran)</Typography>}
+                       label={<Typography variant="body2" fontWeight={600}>Kampanye Barter (Tanpa Bayaran)</Typography>}
                     />
                 </Paper>
 
@@ -809,7 +809,7 @@ function CampaignCreate() {
                        </Typography>
                     </Stack>
                     <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
-                       <Typography color="textSecondary">Admin Fee</Typography>
+                       <Typography color="textSecondary">Biaya Admin</Typography>
                        <Typography fontWeight={600} color="#334155">Rp 5.000</Typography>
                     </Stack>
                     <Paper elevation={0} sx={{ p: 2, bgcolor: '#eff6ff', borderRadius: 2 }}>
@@ -865,7 +865,7 @@ function CampaignCreate() {
           <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}>
              <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, borderColor: '#e2e8f0' }}>
                 <Typography variant="h6" fontWeight={700} gutterBottom>
-                   Timeline Campaign
+                   Jadwal Kampanye
                 </Typography>
                 
                 <Stack spacing={3} sx={{ mt: 2 }}>
@@ -873,7 +873,7 @@ function CampaignCreate() {
                       <Typography variant="caption" fontWeight={700} color="textSecondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Fase Registrasi & Submisi</Typography>
                       <Stack direction="column" spacing={3}>
                          <TextField 
-                             label="Deadline Registrasi Campaign" 
+                             label="Tenggat Waktu Registrasi Campaign" 
                              type="date" 
                              InputLabelProps={{shrink:true}} 
                              fullWidth 
@@ -889,7 +889,7 @@ function CampaignCreate() {
                              }
                          />
                          <TextField 
-                             label="Deadline Submit Konten" 
+                             label="Tenggat Waktu Submit Konten" 
                              type="date" 
                              InputLabelProps={{shrink:true}} 
                              fullWidth 
@@ -910,7 +910,7 @@ function CampaignCreate() {
                    <Box>
                       <Typography variant="caption" fontWeight={700} color="textSecondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Fase Akhir</Typography>
                       <TextField 
-                          label="Selesai Campaign" 
+                          label="Tenggat Waktu Selesai Campaign" 
                           type="date" 
                           InputLabelProps={{shrink:true}} 
                           fullWidth 
@@ -949,7 +949,7 @@ function CampaignCreate() {
        <Grid item xs={12} md={6}>
           <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, height: '100%', borderColor: '#e2e8f0' }}>
                 <Typography variant="h6" fontWeight={700} gutterBottom>
-                   Briefing & Guidelines
+                   Instruksi & Aturan
                 </Typography>
              <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
                 Berikan instruksi yang jelas agar konten influencer sesuai harapan.
@@ -957,7 +957,7 @@ function CampaignCreate() {
 
              <Stack spacing={3}>
                 <TextField 
-                   label="Guideline Visual / Foto / Video" 
+                   label="Instruksi Visual / Foto / Video" 
                    multiline rows={4} 
                    fullWidth 
                    placeholder="Jelaskan tone warna, angle pengambilan gambar, pencahayaan, atau elemen yang wajib ada dalam foto/video."
@@ -967,7 +967,7 @@ function CampaignCreate() {
                    sx={{ bgcolor: '#f8fafc' }}
                 />
                 <TextField 
-                   label="Guideline Caption & Hashtag" 
+                   label="Aturan Takarir & Tagar" 
                    multiline rows={4} 
                    fullWidth 
                    placeholder="Jelaskan poin-poin yang harus dibahas di caption, hashtag wajib, dan akun yang harus di-tag."
@@ -986,7 +986,7 @@ function CampaignCreate() {
                       sx={{ height: 100, borderStyle: 'dashed', borderWidth: 2, borderRadius: 2 }} 
                       disabled={isReadOnly}
                    >
-                      Drop file referensi atau Klik untuk Upload
+                      Upload referensi atau Klik untuk Upload
                       <input type="file" hidden multiple onChange={(e) => {
                          const files = Array.from(e.target.files);
                          setReferenceFiles(prev => [...prev, ...files]);
@@ -1030,7 +1030,7 @@ function CampaignCreate() {
                  <ArrowBackIcon />
               </IconButton>
               <Typography variant="h5" fontWeight={800} color="#1e293b">
-                 {isReadOnly ? 'Detail Campaign' : isEditMode ? 'Edit Campaign' : 'Buat Campaign Baru'}
+                 {isReadOnly ? 'Detail Kampanye' : isEditMode ? 'Edit Kampanye' : 'Buat Kampanye Baru'}
               </Typography>
            </Stack>
 
@@ -1077,10 +1077,10 @@ function CampaignCreate() {
                        !isReadOnly && (
                         <>
                            <Button variant="outlined" onClick={() => handleSave(true)} disabled={loading}>
-                              Simpan Draft
+                              Simpan Draf
                            </Button>
                            <Button variant="contained" onClick={() => handleSave(false)} disabled={loading} startIcon={<SaveIcon />} sx={{ px: 4, borderRadius: 2 }}>
-                              {loading ? 'Menyimpan...' : 'Submit Campaign'}
+                              {loading ? 'Menyimpan...' : 'Simpan Kampanye'}
                            </Button>
                         </>
                        )
@@ -1103,11 +1103,11 @@ function CampaignCreate() {
         fullWidth
       >
         <DialogTitle sx={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e293b' }}>
-           Simpan sebagai Draft?
+           Simpan sebagai Draf?
         </DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ color: '#64748b', fontSize: '1rem' }}>
-            Anda memiliki perubahan yang belum disimpan. Apakah Anda ingin menyimpan campaign ini sebagai draft untuk dilanjutkan nanti?
+            Anda memiliki perubahan yang belum disimpan. Apakah Anda ingin menyimpan campaign ini sebagai draf untuk dilanjutkan nanti?
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ p: 2, pt: 1 }}>
@@ -1139,7 +1139,7 @@ function CampaignCreate() {
                 '&:hover': { bgcolor: '#5a009e' }
              }}
           >
-            Simpan Draft
+            Simpan Draf
           </Button>
         </DialogActions>
       </Dialog>

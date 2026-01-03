@@ -4,12 +4,13 @@ import { Sidebar, Topbar } from '../../components/common';
 import { COLORS } from '../../constants/colors';
 import PersonIcon from '@mui/icons-material/Person';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PaymentIcon from '@mui/icons-material/Payment';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import ErrorIcon from '@mui/icons-material/Error';
+import InfoIcon from '@mui/icons-material/Info';
+import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import StarIcon from '@mui/icons-material/Star';
-import CampaignIcon from '@mui/icons-material/Campaign';
-import CancelIcon from '@mui/icons-material/Cancel';
 import { toast } from 'react-toastify';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -75,7 +76,8 @@ function NotificationsPage() {
       
       const mappedNotifs = notifsList.map(notif => ({
         id: notif.id || notif.notification_id, // handle both just in case
-        type: mapNotificationType(notif.type),
+        type: notif.type, // RAW type for consistent icon generation
+        category: getNotificationCategory(notif.type), // Mapped category for filtering
         originalType: notif.type,
         title: notif.title,
         message: notif.message,
@@ -109,7 +111,8 @@ function NotificationsPage() {
   }, []);
 
   // Map backend notification types to frontend types for icons
-  const mapNotificationType = (type) => {
+  // Map backend notification types to frontend categories for filtering
+  const getNotificationCategory = (type) => {
     // Customize this based on actual backend types
     const typeMap = {
       'application_accepted': 'approval',
@@ -136,37 +139,39 @@ function NotificationsPage() {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
-    if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffMins < 1) return 'Baru saja';
+    if (diffMins < 60) return `${diffMins} ${diffMins === 1 ? 'menit' : 'menit'} yang lalu`;
+    if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'jam' : 'jam'} yang lalu`;
+    if (diffDays === 1) return 'Kemarin';
+    if (diffDays < 7) return `${diffDays} hari yang lalu`;
     return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  const getIcon = (type) => {
-    switch(type) {
-      case 'applicant': return PersonIcon;
-      case 'approval': return CheckCircleIcon;
-      case 'payment': return PaymentIcon;
-      case 'content': return PhotoCameraIcon;
-      case 'system': return NotificationsIcon;
-      case 'campaign': return CampaignIcon;
-      case 'cancel': return CancelIcon;
-      default: return NotificationsIcon;
+  // Get notification icon based on type (exact match with NotificationBell.js)
+  const getNotificationIcon = (type, title = '') => {
+    const iconProps = { fontSize: 'small' };
+    
+    // Check title specific scenarios first if type is generic
+    const lowerTitle = (title || '').toLowerCase();
+    
+    if (lowerTitle.includes('approved') || lowerTitle.includes('disetujui')) {
+        return <CheckCircleIcon {...iconProps} sx={{ color: '#10b981' }} />; // Green
     }
-  };
+    if (lowerTitle.includes('rejected') || lowerTitle.includes('ditolak')) {
+        return <ErrorIcon {...iconProps} sx={{ color: '#ef4444' }} />; // Red
+    }
 
-  const getIconColor = (type) => {
-    switch(type) {
-      case 'applicant': return { bg: '#dbeafe', color: '#3b82f6' };
-      case 'approval': return { bg: '#d1fae5', color: '#10b981' };
-      case 'payment': return { bg: '#fef3c7', color: '#f59e0b' };
-      case 'content': return { bg: '#ede9fe', color: '#8b5cf6' };
-      case 'system': return { bg: '#e2e8f0', color: '#6c757d' };
-      case 'campaign': return { bg: '#fce7f3', color: '#ec4899' };
-      case 'cancel': return { bg: '#fee2e2', color: '#ef4444' };
-      default: return { bg: '#f7fafc', color: '#2d3748' };
+    switch (type) {
+      case 'campaign':
+        return <CampaignIcon {...iconProps} sx={{ color: '#6E00BE' }} />;
+      case 'payment':
+        return <MonetizationOnIcon {...iconProps} sx={{ color: '#f59e0b' }} />; // Amber
+      case 'violation':
+        return <ErrorIcon {...iconProps} sx={{ color: '#ef4444' }} />;
+      case 'system':
+        return <InfoIcon {...iconProps} sx={{ color: '#3b82f6' }} />; // Blue
+      default:
+        return <MailIcon {...iconProps} sx={{ color: '#64748b' }} />;
     }
   };
 
@@ -250,7 +255,7 @@ function NotificationsPage() {
     ? notifications 
     : filterType === 'unread'
     ? notifications.filter(n => !n.isRead)
-    : notifications.filter(n => n.type === filterType);
+    : notifications.filter(n => n.category === filterType);
 
   return (
     <Box sx={{ display: 'flex', background: '#f7fafc', minHeight: '100vh', height: '100vh' }}>
@@ -273,26 +278,12 @@ function NotificationsPage() {
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
                   <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ color: '#1a1f36', m: 0, fontWeight: 700, fontFamily: 'Inter, sans-serif' }}>
-                    Notifications
+                    Notifikasi
                   </Typography>
-                  {userRole && (
-                    <Box sx={{ 
-                      px: 1.5, 
-                      py: 0.5, 
-                      borderRadius: 1, 
-                      bgcolor: userRole === 'admin' ? '#fee2e2' : userRole === 'company' ? '#dbeafe' : '#e0e7ff',
-                      color: userRole === 'admin' ? '#dc2626' : userRole === 'company' ? '#2563eb' : '#4f46e5',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      fontFamily: 'Inter, sans-serif'
-                    }}>
-                      {userRole === 'admin' ? '👑 Admin' : userRole === 'company' ? '🏢 UMKM' : '👤 User'}
-                    </Box>
-                  )}
+              
                 </Box>
                 <Typography sx={{ fontSize: 15, color: '#6c757d', fontFamily: 'Inter, sans-serif' }}>
-                  {unreadCountBadge > 0 ? `You have ${unreadCountBadge} unread notifications` : 'All caught up!'}
+                  {unreadCountBadge > 0 ? `Anda memiliki ${unreadCountBadge} notifikasi belum dibaca` : 'Semua sudah dibaca!'}
                 </Typography>
               </Box>
             </Box>
@@ -314,7 +305,7 @@ function NotificationsPage() {
                 }}
                 variant="contained"
               >
-                Mark All as Read
+                Tandai Semua Dibaca
               </Button>
             )}
           </Box>
@@ -322,11 +313,11 @@ function NotificationsPage() {
           {/* Filter Tabs */}
           <Box sx={{ background: '#fff', borderRadius: 2, p: 2.5, mb: 3, border: '1px solid #e2e8f0', display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
             {[
-              { value: 'all', label: 'All', IconComponent: NotificationsIcon },
-              { value: 'unread', label: 'Unread', IconComponent: StarIcon },
-              { value: 'applicant', label: 'Applicants', IconComponent: PersonIcon },
-              { value: 'approval', label: 'Approvals', IconComponent: CheckCircleIcon },
-              { value: 'payment', label: 'Payments', IconComponent: PaymentIcon }
+              { value: 'all', label: 'Semua', IconComponent: NotificationsIcon },
+              { value: 'unread', label: 'Belum Dibaca', IconComponent: StarIcon },
+              { value: 'applicant', label: 'Pelamar', IconComponent: MailIcon },
+              { value: 'approval', label: 'Persetujuan', IconComponent: CheckCircleIcon },
+              { value: 'payment', label: 'Pembayaran', IconComponent: MonetizationOnIcon }
             ].map(filter => (
               <Button
                 key={filter.value}
@@ -367,7 +358,6 @@ function NotificationsPage() {
               </Box>
             ) : filteredNotifications.length > 0 ? (
               filteredNotifications.map((notif, index) => {
-                const iconStyle = getIconColor(notif.type);
                 return (
                   <Box
                     key={notif.id}
@@ -384,9 +374,20 @@ function NotificationsPage() {
                       '&:hover': { background: '#e0f2fe' }
                     }}
                   >
-                    {/* Icon */}
-                    <Box sx={{ width: 40, height: 40, borderRadius: 1.5, background: iconStyle.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {React.createElement(getIcon(notif.type), { sx: { fontSize: 20, color: iconStyle.color } })}
+                    {/* Icon - matching NotificationBell.js UI style */}
+                    <Box sx={{ 
+                      width: 40, 
+                      height: 40, 
+                      borderRadius: '50%', 
+                      background: '#fff', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      flexShrink: 0,
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                      border: '1px solid #f1f5f9'
+                    }}>
+                      {getNotificationIcon(notif.type, notif.title)}
                     </Box>
 
                     {/* Content */}
@@ -423,10 +424,10 @@ function NotificationsPage() {
               <Box sx={{ pt: 18, px: 3, textAlign: 'center', color: '#6c757d' }}>
                 <NotificationsIcon sx={{ fontSize: 38, mb: 2, opacity: 0.5 }} />
                 <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, color: '#1a1f36' }}>
-                  No Notifications
+                  Tidak Ada Notifikasi
                 </Typography>
                 <Typography sx={{ fontSize: 14 }}>
-                  All notifications will appear here
+                  Semua notifikasi akan muncul di sini
                 </Typography>
               </Box>
             )}

@@ -78,6 +78,8 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
         {/* Header Section with Avatar */}
         <Box sx={{ bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', p: 3, textAlign: 'center' }}>
           <Avatar
+            src={applicant.profileImage}
+            alt={applicant.fullName}
             sx={{
               width: 100,
               height: 100,
@@ -148,17 +150,7 @@ const ApplicantDetailModal = ({ isOpen, onClose, applicant }) => {
         {/* Details Section */}
         <Box sx={{ p: 3 }}>
           {/* Bio */}
-          <Box sx={{ mb: 3 }}>
-            <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-               <DescriptionIcon sx={{ color: '#667eea', fontSize: 20 }} />
-               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#333' }}>
-                 Bio
-               </Typography>
-            </Stack>
-            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, pl: 3.5 }}>
-              {applicant.bio}
-            </Typography>
-          </Box>
+      
 
           <Divider sx={{ my: 2 }} />
 

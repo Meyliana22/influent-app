@@ -134,7 +134,6 @@ function ManageWithdrawals() {
       .filter(w => (w.status || w.withdrawal_status) === 'completed')
       .reduce((sum, w) => sum + (parseInt(w.amount) || 0), 0)
   };
-  console.log(stats)
 
   // Filter withdrawals
   const filteredWithdrawals = withdrawals.filter(withdrawal => {
@@ -290,7 +289,6 @@ function ManageWithdrawals() {
   };
 
   const formatCurrency = (amount) => {
-    console.log(amount  )
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
@@ -335,71 +333,95 @@ function ManageWithdrawals() {
           )}
 
           {/* Statistics Cards */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, bgcolor: '#6E00BE', color: 'white' }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: 2.5,
+            mb: 4
+          }}>
+            {[
+              {
+                title: 'Total Permintaan',
+                value: stats.totalWithdrawals,
+                icon: AccountBalanceIcon,
+                color: '#6E00BE',
+                bgColor: '#F3E5F5',
+                description: 'Semua request'
+              },
+              {
+                title: 'Tertunda',
+                value: stats.pendingCount,
+                icon: HourglassEmptyIcon,
+                color: '#ea580c',
+                bgColor: '#ffedd5',
+                description: 'Menunggu proses'
+              },
+              {
+                title: 'Disetujui',
+                value: stats.approvedCount,
+                icon: CheckCircleIcon,
+                color: '#3b82f6',
+                bgColor: '#dbeafe',
+                description: 'Siap dibayar'
+              },
+              {
+                title: 'Total Dibayarkan',
+                value: formatCurrency(stats.totalAmount),
+                icon: TrendingUpIcon,
+                color: '#059669',
+                bgColor: '#d1fae5',
+                description: 'Sudah selesai'
+              }
+            ].map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <Box
+                  key={index}
+                  sx={{
+                    background: '#fff',
+                    borderRadius: 5,
+                    p: 3,
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    minWidth: 0,
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    cursor: 'pointer',
+                    boxShadow: 0,
+                    '&:hover': {
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                      transform: 'translateY(-4px)'
+                    }
+                  }}
+                >
+                  <Box sx={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: 2,
+                    bgcolor: stat.bgColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Icon sx={{ fontSize: 25, color: stat.color }} />
+                  </Box>
                   <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Permintaan
+                    <Typography sx={{ fontSize: 14, color: '#6c757d', mb: 0.5, fontFamily: "'Inter', sans-serif" }}>
+                      {stat.title}
                     </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      {stats.totalWithdrawals}
+                    <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
+                      {stat.value}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: '#a0aec0', fontFamily: "'Inter', sans-serif" }}>
+                      {stat.description}
                     </Typography>
                   </Box>
-                  <AccountBalanceIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-                </Stack>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, bgcolor: '#f59e0b', color: 'white' }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Tertunda
-                    </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      {stats.pendingCount}
-                    </Typography>
-                  </Box>
-                  <HourglassEmptyIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-                </Stack>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, bgcolor: '#3b82f6', color: 'white' }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Disetujui
-                    </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      {stats.approvedCount}
-                    </Typography>
-                  </Box>
-                  <CheckCircleIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-                </Stack>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, bgcolor: '#10b981', color: 'white' }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Dibayarkan
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                      {formatCurrency(stats.totalAmount)}
-                    </Typography>
-                  </Box>
-                  <TrendingUpIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-                </Stack>
-              </Paper>
-            </Grid>
-          </Grid>
+                </Box>
+              );
+            })}
+          </Box>
 
           {/* Filters and Actions */}
           <Paper sx={{ p: 3, mb: 3 }}>
@@ -577,6 +599,7 @@ function ManageWithdrawals() {
                   rowsPerPage={rowsPerPage}
                   onRowsPerPageChange={handleChangeRowsPerPage}
                   rowsPerPageOptions={[5, 10, 25, 50]}
+                  labelRowsPerPage="Baris per halaman"
                 />
               </>
             )}

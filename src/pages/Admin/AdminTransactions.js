@@ -211,6 +211,7 @@ function AdminTransactions() {
       case 'withdrawal': return 'Penarikan';
       case 'refund': return 'Pengembalian Dana';
       case 'payment': return 'Pembayaran';
+      case 'campaign_payment': return 'Pembayaran Kampanye';
       case 'topup': return 'Top Up';
       default: return category || '-';
     }
@@ -269,71 +270,95 @@ function AdminTransactions() {
           </Box>
 
           {/* Statistics Cards */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, bgcolor: '#6E00BE', color: 'white' }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 3,
+            mb: 4
+          }}>
+            {[
+              {
+                title: 'Total Transaksi',
+                value: stats.totalTransactions,
+                icon: AccountBalanceIcon,
+                color: '#6E00BE', // Dark Purple
+                bgColor: '#F3E5F5', // Light Purple
+                description: 'Semua transaksi'
+              },
+              {
+                title: 'Total Pendapatan',
+                value: formatCurrency(stats.totalRevenue),
+                icon: TrendingUpIcon,
+                color: '#059669', // Dark Green
+                bgColor: '#d1fae5', // Light Green
+                description: 'Pemasukan bersih'
+              },
+              {
+                title: 'Total Pengeluaran',
+                value: formatCurrency(stats.totalExpenses),
+                icon: PaymentIcon,
+                color: '#dc2626', // Dark Red
+                bgColor: '#fee2e2', // Light Red
+                description: 'Pembayaran keluar'
+              },
+              {
+                title: 'Tertunda',
+                value: stats.pendingCount,
+                icon: AccountBalanceIcon,
+                color: '#ea580c', // Dark Orange
+                bgColor: '#ffedd5', // Light Orange
+                description: 'Menunggu proses'
+              }
+            ].map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <Box
+                  key={index}
+                  sx={{
+                    background: '#fff',
+                    borderRadius: 5,
+                    p: 3,
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    minWidth: 0,
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    cursor: 'pointer',
+                    boxShadow: 0,
+                    '&:hover': {
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                      transform: 'translateY(-4px)'
+                    }
+                  }}
+                >
+                  <Box sx={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: 2,
+                    bgcolor: stat.bgColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Icon sx={{ fontSize: 25, color: stat.color }} />
+                  </Box>
                   <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Transaksi
+                    <Typography sx={{ fontSize: 14, color: '#6c757d', mb: 0.5, fontFamily: "'Inter', sans-serif" }}>
+                      {stat.title}
                     </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      {stats.totalTransactions}
+                    <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
+                      {stat.value}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: '#a0aec0', fontFamily: "'Inter', sans-serif" }}>
+                      {stat.description}
                     </Typography>
                   </Box>
-                  <AccountBalanceIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-                </Stack>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, bgcolor: '#10b981', color: 'white' }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Pendapatan
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                      {formatCurrency(stats.totalRevenue)}
-                    </Typography>
-                  </Box>
-                  <TrendingUpIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-                </Stack>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, bgcolor: '#ef4444', color: 'white' }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Total Pengeluaran
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                      {formatCurrency(stats.totalExpenses)}
-                    </Typography>
-                  </Box>
-                  <PaymentIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-                </Stack>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, bgcolor: '#f59e0b', color: 'white' }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 0.5 }}>
-                      Tertunda
-                    </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      {stats.pendingCount}
-                    </Typography>
-                  </Box>
-                  <AccountBalanceIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-                </Stack>
-              </Paper>
-            </Grid>
-          </Grid>
+                </Box>
+              );
+            })}
+          </Box>
 
           {/* Filters and Actions */}
           <Paper sx={{ p: 3, mb: 3 }}>
@@ -407,7 +432,7 @@ function AdminTransactions() {
                     onClick={loadTransactions}
                     disabled={loading}
                   >
-                    Muat Ula
+                    Muat Ulang
                   </Button>
                   <Button
                     variant="contained"
@@ -530,6 +555,7 @@ function AdminTransactions() {
                   rowsPerPage={rowsPerPage}
                   onRowsPerPageChange={handleChangeRowsPerPage}
                   rowsPerPageOptions={[5, 10, 25, 50]}
+                  labelRowsPerPage="Baris per halaman"
                 />
               </>
             )}

@@ -67,8 +67,8 @@ const ReviewSubmissions = () => {
   const [progressStats, setProgressStats] = useState({ submitted: 0, total: 0 });
   const apiImage = process.env.REACT_APP_API_IMAGE_URL;
   const getProfileImage = (url) => {
-    console.log(`${apiImage}/${url}`)
-    return `${url}`
+
+    return `${url}`;
   };
 
   useEffect(() => {
@@ -527,6 +527,7 @@ const ReviewSubmissions = () => {
                    {notSubmittedStudents.map((app) => {
                       const student = app.Student?.User || app.User || app.user || {};
                       const studentProfile = app.Student || app.student || {};
+                      console.log(student)
                       return (
                         <Card 
                            key={app.id} 

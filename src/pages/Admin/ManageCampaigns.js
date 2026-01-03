@@ -477,12 +477,15 @@ function ManageCampaigns() {
 
   const translateStatus = (status) => {
     switch (status?.toLowerCase()) {
-      case 'active': return 'Aktif';
-      case 'admin_review': return 'Ditinjau Admin';
-      case 'pending_payment': return 'Menunggu Pembayaran';
+     case 'active': return 'Aktif';
       case 'completed': return 'Selesai';
-      case 'cancelled': return 'Dibatalkan';
+      case 'pending': return 'Menunggu';
       case 'rejected': return 'Ditolak';
+      case 'draft': return 'Draf';
+      case 'pending_payment': return 'Menunggu Pembayaran';
+      case 'admin_review': return 'Diperiksa Admin';
+      case 'cancelled': return 'Dibatalkan';
+      case 'paid': return 'Dibayar';
       default: return status?.replace('_', ' ') || 'Draft';
     }
   };
@@ -533,22 +536,7 @@ function ManageCampaigns() {
               >
                 Muat Ulang
               </Button>
-              <Button
-                variant="contained"
-                startIcon={<TransactionsIcon />}
-                onClick={handleViewTransactions}
-                disabled={loadingTransactions}
-                sx={{
-                  bgcolor: '#10b981', // Keep independent green for transactions or make primary? Keeping green to distinguish.
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  boxShadow: 'none',
-                  '&:hover': { bgcolor: '#059669', boxShadow: 'none' }
-                }}
-              >
-                {loadingTransactions ? <CircularProgress size={20} /> : 'Lihat Transaksi'}
-              </Button>
+           
             </Stack>
           </Box>
 
@@ -573,43 +561,47 @@ function ManageCampaigns() {
           }}>
             {[
               { label: 'Total Kampanye', value: stats.total, IconComponent: CampaignIcon, bgColor: '#F3E5F5', iconColor: '#6E00BE' }, // Primary
-              { label: 'Aktif', value: stats.active, IconComponent: OngoingIcon, bgColor: '#d1fae5', iconColor: '#059669' },
-              { label: 'Selesai', value: stats.completed, IconComponent: CompletedIcon, bgColor: '#dbeafe', iconColor: '#1e40af' },
-              { label: 'Tertunda', value: stats.pending, IconComponent: ApplicantIcon, bgColor: '#fef3c7', iconColor: '#d97706' }
+              { label: 'Kampanye Aktif', value: stats.active, IconComponent: OngoingIcon, bgColor: '#d1fae5', iconColor: '#059669' },
+              { label: 'Kampanye Selesai', value: stats.completed, IconComponent: CompletedIcon, bgColor: '#dbeafe', iconColor: '#1e40af' },
+              { label: 'Kampanye Tertunda', value: stats.pending, IconComponent: ApplicantIcon, bgColor: '#fef3c7', iconColor: '#d97706' }
             ].map((stat, index) => (
               <Box
                 key={index}
                 sx={{
                   background: '#fff',
-                  borderRadius: 3,
+                  borderRadius: 5,
                   p: 3,
                   border: '1px solid #e2e8f0',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 2,
-                  transition: 'all 0.3s',
+                  minWidth: 0,
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  cursor: 'pointer',
+                  boxShadow: 0,
                   '&:hover': {
-                    borderColor: '#cbd5e0',
-                    transform: 'translateY(-2px)'
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                    transform: 'translateY(-4px)'
                   }
                 }}
               >
                 <Box sx={{
-                  width: 56,
-                  height: 56,
+                  width: 45,
+                  height: 45,
                   borderRadius: 2,
                   bgcolor: stat.bgColor,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  flexShrink: 0
                 }}>
-                  <stat.IconComponent sx={{ fontSize: 28, color: stat.iconColor }} />
+                  <stat.IconComponent sx={{ fontSize: 25, color: stat.iconColor }} />
                 </Box>
                 <Box>
-                  <Typography sx={{ fontSize: 14, color: '#6c757d', mb: 0.5 }}>
+                  <Typography sx={{ fontSize: 14, color: '#6c757d', mb: 0.5, fontFamily: "'Inter', sans-serif" }}>
                     {stat.label}
                   </Typography>
-                  <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1a1f36' }}>
+                  <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
                     {stat.value}
                   </Typography>
                 </Box>
@@ -722,7 +714,8 @@ function ManageCampaigns() {
                         <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Perusahaan</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Anggaran</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Dibuat</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Tanggal Dibuat</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14 }}>Tanggal Berakhir</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: '#1a1f36', fontSize: 14, textAlign: 'center' }}>Aksi</TableCell>
                       </TableRow>
                     </TableHead>
@@ -778,6 +771,15 @@ function ManageCampaigns() {
                                   month: 'short',
                                   day: 'numeric'
                                 })}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography sx={{ color: '#6c757d', fontSize: 14 }}>
+                                {campaign.end_date ? new Date(campaign.end_date).toLocaleDateString('id-ID', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                }) : '-'}
                               </Typography>
                             </TableCell>
                             <TableCell>

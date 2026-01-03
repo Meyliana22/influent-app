@@ -74,10 +74,10 @@ function LoginPage() {
     }
 
     if (!password) {
-      newErrors.password.push('Password tidak boleh kosong');
+      newErrors.password.push('Kata sandi tidak boleh kosong');
       hasError = true;
     } else if (password.length < 4) {
-      newErrors.password.push('Password minimal 4 karakter');
+      newErrors.password.push('Kata sandi minimal 4 karakter');
       hasError = true;
     }
 
@@ -99,13 +99,13 @@ function LoginPage() {
 
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Server error. Please try again later.');
+        throw new Error('Terjadi kesalahan server. Silakan coba lagi nanti.');
       }
 
       const data = await response.json();
 
       if (!response.ok) {
-        const error = new Error(data.message || 'Login failed');
+        const error = new Error(data.message || 'Gagal masuk');
         error.status = response.status;
         throw error;
       }
@@ -194,7 +194,7 @@ function LoginPage() {
             </Box>
          );
       } else {
-         setLoginError(error.message || 'Email atau password salah. Coba lagi.');
+         setLoginError(error.message || 'Email atau kata sandi salah. Coba lagi.');
       }
       
       showToast('Login gagal.', 'error');
@@ -212,11 +212,11 @@ function LoginPage() {
         console.log(data.data.url);
         window.location.href = data.data.url;
       } else {
-        throw new Error('Invalid authorization URL received');
+        throw new Error('URL otorisasi tidak valid');
       }
     } catch (error) {
       console.error('Instagram auth error:', error);
-      showToast('Failed to initialize Instagram login', 'error');
+      showToast('Gagal memulai login Instagram', 'error');
       setIsLoading(false);
     }
   };
@@ -308,8 +308,8 @@ function LoginPage() {
 
                 <TextField
                   fullWidth
-                  label="Password"
-                  placeholder="Masukkan password anda"
+                  label="Kata Sandi"
+                  placeholder="Masukkan Kata Sandi anda"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => {
@@ -344,7 +344,7 @@ function LoginPage() {
                 />
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <FormControlLabel
+                  {/* <FormControlLabel
                     control={
                       <Checkbox 
                         checked={rememberMe} 
@@ -353,7 +353,7 @@ function LoginPage() {
                       />
                     }
                     label={<Typography variant="body2" color="text.secondary">Ingat saya</Typography>}
-                  />
+                  /> */}
                   <Link 
                     component="button" 
                     type="button" 
@@ -361,7 +361,7 @@ function LoginPage() {
                     underline="hover" 
                     sx={{ color: '#6E00BE', fontWeight: 600, fontSize: '0.9rem' }}
                   >
-                    Lupa password?
+                    Lupa kata sandi?
                   </Link>
                 </Box>
 
@@ -396,7 +396,7 @@ function LoginPage() {
                     </Typography>
                   </Divider>
                 </Box>
-                
+{/*                 
                 <Button
                   fullWidth
                   size="large"
@@ -419,42 +419,50 @@ function LoginPage() {
                   }}
                 >
                   Login with Instagram
-                </Button>
+                </Button> */}
 
                 <Box sx={{ textAlign: 'center', mt: 3 }}>
-                   <Typography variant="body2" color="text.secondary">
-                     Belum punya akun?{' '}
-                   </Typography>
-                   <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 1 }}>
-                     <Button 
-                        variant="outlined" 
-                        size="small"
-                        onClick={() => navigate('/register/umkm')}
-                        sx={{ 
-                          borderRadius: '8px', 
-                          textTransform: 'none', 
-                          borderColor: '#6E00BE', 
-                          color: '#6E00BE',
-                          '&:hover': { borderColor: '#5a009e', bgcolor: 'rgba(110, 0, 190, 0.04)' }
-                        }}
-                     >
-                        Daftar UMKM
-                     </Button>
-                     <Button 
-                        variant="outlined" 
-                        size="small"
-                        onClick={() => navigate('/register/influencer')}
-                        sx={{ 
-                          borderRadius: '8px', 
-                          textTransform: 'none', 
-                          borderColor: '#6E00BE', 
-                          color: '#6E00BE',
-                          '&:hover': { borderColor: '#5a009e', bgcolor: 'rgba(110, 0, 190, 0.04)' } 
-                        }}
-                     >
-                        Daftar Influencer
-                     </Button>
-                   </Stack>
+                  <Typography variant="body2" color="text.secondary">
+                    Daftar sebagai UMKM?{' '}
+                    <Button 
+                      variant="text" 
+                      onClick={() => {
+                        navigate('/register/umkm');
+                        sessionStorage.removeItem('registrationState');
+                      }}
+                      sx={{ 
+                        fontWeight: 600, 
+                        color: '#6E00BE', 
+                        textTransform: 'none', 
+                        minWidth: 'auto', 
+                        p: 0,
+                        '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } 
+                      }}
+                    >
+                      Klik disini
+                    </Button>
+                  </Typography>
+
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Daftar sebagai Influencer?{' '}
+                    <Button 
+                      variant="text" 
+                      onClick={() => {
+                        navigate('/register/influencer');
+                        sessionStorage.removeItem('registrationState');
+                      }}
+                      sx={{ 
+                        fontWeight: 600, 
+                        color: '#6E00BE', 
+                        textTransform: 'none', 
+                        minWidth: 'auto', 
+                        p: 0,
+                        '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } 
+                      }}
+                    >
+                      Klik disini
+                    </Button>
+                  </Typography>
                 </Box>
               </Stack>
             </form>

@@ -62,11 +62,11 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
       case 'admin':
         return [
           { icon: DashboardIcon, label: 'Dasbor', path: '/admin/dashboard' },
-          { icon: PeopleIcon, label: 'Pengguna', path: '/admin/users' },
-          { icon: CampaignIcon, label: 'Kampanye', path: '/admin/campaigns' },
+          { icon: PeopleIcon, label: 'Kelola Pengguna', path: '/admin/users' },
+          { icon: CampaignIcon, label: 'Kelola Kampanye', path: '/admin/campaigns' },
           { icon: GavelIcon, label: 'Tinjau Pengajuan', path: '/admin/review-submissions' },
-          { icon: TransactionsIcon, label: 'Transaksi', path: '/admin/transactions' },
-          { icon: AccountBalanceWalletIcon, label: 'Penarikan', path: '/admin/withdrawals' },
+          { icon: TransactionsIcon, label: 'ManajemenTransaksi', path: '/admin/transactions' },
+          { icon: AccountBalanceWalletIcon, label: 'Manajemen Penarikan', path: '/admin/withdrawals' },
           // { icon: BarChartIcon, label: 'Laporan', path: '/admin/reports' },
           { icon: ChatIcon, label: 'Pesan', path: '/chat' },
         ];

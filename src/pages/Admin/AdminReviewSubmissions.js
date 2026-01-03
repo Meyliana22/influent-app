@@ -83,7 +83,7 @@ const AdminReviewSubmissions = () => {
       setSubmissions(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading submissions:', error);
-      toast.error('Gagal memuat data submissions');
+      toast.error('Gagal memuat data Pekerjaan');
     } finally {
       setIsLoading(false);
     }
@@ -109,21 +109,19 @@ const AdminReviewSubmissions = () => {
       
       if (reviewModal.action === 'approve_rejection') {
         // Admin approves UMKM's rejection - student doesn't get paid
-        // TODO: API call
-        // await workSubmissionService.adminApproveRejection(selectedSubmission.id, reviewNotes);
+        await workSubmissionService.adminRejectRejection(selectedSubmission.submission_id, reviewNotes);
         toast.success('Penolakan UMKM disetujui. Student tidak menerima pembayaran.');
       } else if (reviewModal.action === 'reject_rejection') {
         // Admin rejects UMKM's rejection - send back to UMKM for re-review
-        // TODO: API call
-        // await workSubmissionService.adminRejectRejection(selectedSubmission.id, reviewNotes);
-        toast.info('Penolakan UMKM ditolak. Submission dikembalikan ke UMKM untuk review ulang.');
+        await workSubmissionService.adminRejectRejection(selectedSubmission.submission_id, reviewNotes);
+        toast.info('Penolakan UMKM ditolak. Pekerjaan dikembalikan ke UMKM untuk tinjauan ulang.');
       }
       
       await loadData();
       handleCloseReviewModal();
     } catch (error) {
       console.error('Error submitting review:', error);
-      toast.error('Gagal melakukan review');
+      toast.error('Gagal melakukan tinjauan');
     } finally {
       setIsLoading(false);
     }
@@ -176,89 +174,99 @@ const AdminReviewSubmissions = () => {
       }}>
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <Box sx={{ mt: 9, bgcolor: '#f8f9fa', minHeight: 'calc(100vh - 72px)' }}>
-          <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, flexGrow: 1 }}>
+          <Container maxWidth="xl" sx={{ py: 4, px: 4, flexGrow: 1 }}>
           {/* Header */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary, mb: 1 }}>
-              Review Penolakan Submission
+              Tinjauan Penolakan Pekerjaan
             </Typography>
             <Typography variant="body1" sx={{ color: COLORS.textSecondary }}>
-              Review submission yang ditolak oleh UMKM dalam 1 hari kerja
+              Tinjau pekerjaan yang ditolak oleh UMKM dalam 1 hari kerja
             </Typography>
           </Box>
 
           {/* Stats */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} md={4}>
-              <Paper sx={{ p: 3, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ 
-                  p: 2, 
-                  borderRadius: 2, 
-                  bgcolor: '#fff3e0', 
-                  color: '#e65100',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <AssignmentIcon fontSize="large" />
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: 2.5,
+            mb: 4
+          }}>
+            {[
+              {
+                title: 'Menunggu Tinjauan',
+                value: pendingSubmissions.length,
+                icon: AssignmentIcon,
+                color: '#e65100',
+                bgColor: '#fff3e0',
+                description: 'Perlu tindakan'
+              },
+              {
+                title: 'Penolakan Disetujui',
+                value: reviewedSubmissions.filter(s => s.status === 'admin_approved').length,
+                icon: ApproveIcon,
+                color: '#2e7d32',
+                bgColor: '#e8f5e9',
+                description: 'Selesai diproses'
+              },
+              {
+                title: 'Dikembalikan',
+                value: reviewedSubmissions.filter(s => s.status === 'admin_rejected').length,
+                icon: RejectIcon,
+                color: '#1565c0',
+                bgColor: '#e3f2fd',
+                description: 'Ke UMKM'
+              }
+            ].map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <Box
+                  key={index}
+                  sx={{
+                    background: '#fff',
+                    borderRadius: 5,
+                    p: 3,
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    minWidth: 0,
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    cursor: 'pointer',
+                    boxShadow: 0,
+                    '&:hover': {
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                      transform: 'translateY(-4px)'
+                    }
+                  }}
+                >
+                  <Box sx={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: 2,
+                    bgcolor: stat.bgColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Icon sx={{ fontSize: 25, color: stat.color }} />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: 14, color: '#6c757d', mb: 0.5, fontFamily: "'Inter', sans-serif" }}>
+                      {stat.title}
+                    </Typography>
+                    <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
+                      {stat.value}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: '#a0aec0', fontFamily: "'Inter', sans-serif" }}>
+                      {stat.description}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
-                    {pendingSubmissions.length}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
-                    Menunggu Review
-                  </Typography>
-                </Box>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Paper sx={{ p: 3, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ 
-                  p: 2, 
-                  borderRadius: 2, 
-                  bgcolor: '#e8f5e9', 
-                  color: '#2e7d32',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <ApproveIcon fontSize="large" />
-                </Box>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
-                    {reviewedSubmissions.filter(s => s.status === 'admin_approved').length}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
-                    Penolakan Disetujui
-                  </Typography>
-                </Box>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Paper sx={{ p: 3, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ 
-                  p: 2, 
-                  borderRadius: 2, 
-                  bgcolor: '#e3f2fd', 
-                  color: '#1565c0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <RejectIcon fontSize="large" />
-                </Box>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.textPrimary }}>
-                    {reviewedSubmissions.filter(s => s.status === 'admin_rejected').length}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
-                    Dikembalikan
-                  </Typography>
-                </Box>
-              </Paper>
-            </Grid>
-          </Grid>
+              );
+            })}
+          </Box>
 
           {/* Tabs */}
           <Paper sx={{ mb: 3 }}>
@@ -268,7 +276,7 @@ const AdminReviewSubmissions = () => {
               sx={{ borderBottom: 1, borderColor: 'divider' }}
             >
               <Tab label={`Menunggu Tinjauan (${pendingSubmissions.length})`} />
-              <Tab label={`Sudah Direview (${reviewedSubmissions.length})`} />
+              <Tab label={`Sudah Di Tinjau (${reviewedSubmissions.length})`} />
             </Tabs>
           </Paper>
 
@@ -279,10 +287,10 @@ const AdminReviewSubmissions = () => {
                 <Paper sx={{ p: 6, textAlign: 'center' }}>
                   <AssignmentIcon sx={{ fontSize: 64, color: COLORS.textSecondary, mb: 2 }} />
                   <Typography variant="h6" sx={{ color: COLORS.textPrimary, mb: 1 }}>
-                    Tidak Ada Submission yang Perlu Direview
+                    Tidak Ada Pekerjaan yang Perlu Ditinjau
                   </Typography>
                   <Typography sx={{ color: COLORS.textSecondary }}>
-                    Semua penolakan UMKM sudah direview
+                    Semua Pekerjaan UMKM sudah ditinjau
                   </Typography>
                 </Paper>
               ) : (
@@ -308,7 +316,7 @@ const AdminReviewSubmissions = () => {
                                   <Box
                                     component="img"
                                     src={submission.content_url}
-                                    alt="Submission"
+                                    alt="Pekerjaan"
                                     sx={{
                                       width: '100%',
                                       height: 250,
@@ -339,7 +347,7 @@ const AdminReviewSubmissions = () => {
                                 )}
                                 {timeInfo.isUrgent && (
                                   <Chip
-                                    label="⚠️ URGENT - Mendekati Deadline"
+                                    label="⚠️ UI: MENDESAK - Mendekati Tenggat Waktu"
                                     color="error"
                                     size="small"
                                     sx={{ mt: 1, fontWeight: 600 }}
@@ -416,7 +424,7 @@ const AdminReviewSubmissions = () => {
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                       <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
-                                        Direview Pada
+                                        Ditinjau Pada
                                       </Typography>
                                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                         {formatDate(submission.reviewed_at)}
@@ -487,7 +495,7 @@ const AdminReviewSubmissions = () => {
                                   {submission.review_notes && (
                                     <Box sx={{ p: 2, bgcolor: '#ffebee', borderRadius: 1, border: '1px solid #ef5350' }}>
                                       <Typography variant="caption" sx={{ fontWeight: 600, color: '#c62828' }}>
-                                        Catatan Review:
+                                        Catatan Tinjauan:
                                       </Typography>
                                       <Typography variant="body2" sx={{ mt: 0.5, color: COLORS.textPrimary }}>
                                         {submission.review_notes}
@@ -539,7 +547,7 @@ const AdminReviewSubmissions = () => {
                     <TableCell><strong>Siswa</strong></TableCell>
                     <TableCell><strong>UMKM</strong></TableCell>
                     <TableCell><strong>Keputusan Admin</strong></TableCell>
-                    <TableCell><strong>Direview Pada</strong></TableCell>
+                    <TableCell><strong>Ditinjau Pada</strong></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -547,7 +555,7 @@ const AdminReviewSubmissions = () => {
                     <TableRow>
                       <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
                         <Typography sx={{ color: COLORS.textSecondary }}>
-                          Belum ada submission yang direview
+                          Belum ada pekerjaan yang ditinjau
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -618,7 +626,7 @@ const AdminReviewSubmissions = () => {
               </Typography>
               <ul style={{ color: COLORS.textSecondary, marginLeft: 20 }}>
                 <li>Student tidak akan menerima pembayaran</li>
-                <li>Status submission: Failed Job</li>
+                <li>Status pekerjaan: Failed Job</li>
                 <li>Dana dikembalikan ke UMKM</li>
               </ul>
               <TextField
@@ -640,8 +648,8 @@ const AdminReviewSubmissions = () => {
                 ℹ️ Dengan menolak penolakan UMKM:
               </Typography>
               <ul style={{ color: COLORS.textSecondary, marginLeft: 20 }}>
-                <li>Submission dikembalikan ke UMKM untuk review ulang</li>
-                <li>UMKM harus melakukan re-review</li>
+                <li>Pekerjaan dikembalikan ke UMKM untuk tinjauan ulang</li>
+                <li>UMKM harus melakukan peninjauan ulang</li>
                 <li>Student masih berpeluang mendapat pembayaran</li>
               </ul>
               <TextField

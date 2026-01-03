@@ -126,6 +126,30 @@ function AdminDashboard() {
     }
   };
 
+  const translateStatus = (status) => {
+    switch (status) {
+      case 'active': return 'Aktif';
+      case 'completed': return 'Selesai';
+      case 'pending': return 'Menunggu';
+      case 'rejected': return 'Ditolak';
+      case 'draft': return 'Draf';
+      case 'pending_payment': return 'Menunggu Pembayaran';
+      case 'admin_review': return 'Diperiksa Admin';
+      case 'cancelled': return 'Dibatalkan';
+      case 'paid': return 'Dibayar';
+      default: return status;
+    }
+  };
+
+  const translateRole = (role) => {
+    switch (role) {
+      case 'student': return 'Mahasiswa';
+      case 'company': return 'UMKM';
+      case 'admin': return 'Admin';
+      default: return role;
+    }
+  };
+
   const statCards = [
     {
       title: 'Total Pengguna',
@@ -240,7 +264,7 @@ function AdminDashboard() {
                 }
               }}
             >
-              Refresh
+              Muat Ulang
             </Button>
           </Box>
 
@@ -253,8 +277,8 @@ function AdminDashboard() {
 
           {/* Loading State */}
           {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-              <CircularProgress size={60} />
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+              <CircularProgress />
             </Box>
           ) : (
             <>
@@ -265,52 +289,56 @@ function AdminDashboard() {
                 gap: 3,
                 mb: 4
               }}>
-                {statCards.map((card, index) => (
-                  <Paper
-                    key={index}
-                    onClick={() => navigate(card.path)}
-                    sx={{
-                      p: 3,
-                      borderRadius: 3,
-                      border: '1px solid #e2e8f0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2,
-                      transition: 'all 0.3s',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                        transform: 'translateY(-4px)',
-                        borderColor: card.color
-                      }
-                    }}
-                  >
-                    <Box sx={{
-                      minWidth: 64,
-                      width: 64,
-                      height: 64,
-                      borderRadius: 2,
-                      bgcolor: card.bgColor,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <card.IconComponent sx={{ fontSize: 32, color: card.color }} />
+                {statCards.map((stat, index) => {
+                  const Icon = stat.IconComponent;
+                  return (
+                    <Box
+                      key={index}
+                      onClick={() => navigate(stat.path)}
+                      sx={{
+                        background: '#fff',
+                        borderRadius: 5,
+                        p: 3,
+                        border: '1px solid #e2e8f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        minWidth: 0,
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer',
+                        boxShadow: 0,
+                        '&:hover': {
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                          transform: 'translateY(-4px)'
+                        }
+                      }}
+                    >
+                      <Box sx={{
+                        width: 45,
+                        height: 45,
+                        borderRadius: 2,
+                        bgcolor: stat.bgColor,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <Icon sx={{ fontSize: 25, color: stat.color }} />
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontSize: 14, color: '#6c757d', mb: 0.5, fontFamily: "'Inter', sans-serif" }}>
+                          {stat.title}
+                        </Typography>
+                        <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1a1f36', fontFamily: "'Inter', sans-serif" }}>
+                          {stat.value}
+                        </Typography>
+                        <Typography sx={{ fontSize: 12, color: '#a0aec0', fontFamily: "'Inter', sans-serif" }}>
+                          {stat.subtitle}
+                        </Typography>
+                      </Box>
                     </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography sx={{ fontSize: 14, color: '#6c757d', mb: 0.5 }}>
-                        {card.title}
-                      </Typography>
-                      <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1a1f36', mb: 0.5 }}>
-                        {card.value}
-                      </Typography>
-                      <Typography sx={{ fontSize: 12, color: '#a0aec0' }}>
-                        {card.subtitle}
-                      </Typography>
-                    </Box>
-                    <ArrowForwardIcon sx={{ color: '#cbd5e0' }} />
-                  </Paper>
-                ))}
+                  );
+                })}
               </Box>
 
               {/* Recent Activity Grid */}
@@ -426,7 +454,7 @@ function AdminDashboard() {
                               {campaign.title}
                             </Typography>
                             <Chip
-                              label={campaign.status}
+                              label={translateStatus(campaign.status)}
                               size="small"
                               sx={{
                                 fontSize: 11,
@@ -516,7 +544,7 @@ function AdminDashboard() {
                             </Typography>
                           </Box>
                           <Chip
-                            label={user.role}
+                            label={translateRole(user.role)}
                             size="small"
                             sx={{
                               fontSize: 11,
