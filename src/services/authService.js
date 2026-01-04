@@ -365,6 +365,24 @@ const authService = {
   logout,
   getInstagramAuthUrl,
   loginWithInstagram,
+  updateUser: async (userId, userData) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to update user profile');
+    }
+
+    return await response.json();
+  },
 };
 
 export default authService;

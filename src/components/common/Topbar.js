@@ -28,24 +28,30 @@ function Topbar({ onMenuClick = () => {} }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const openMenu = Boolean(anchorEl);
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userName = user.name || 'User';
-  const userRole = user.role || 'influencer';
+  const initialUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const [userName, setUserName] = useState(initialUser.name || 'User');
+  const [userRole, setUserRole] = useState(initialUser.role || 'influencer');
   
   // State for profile image
-  const [profileImage, setProfileImage] = useState(user.profile_image || user.profile_picture || null);
+  const [profileImage, setProfileImage] = useState(initialUser.profile_image || initialUser.profile_picture || null);
 
   React.useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await authService.getCurrentUser();
         const userData = res.data?.user || res.data || res;
+        
+        // Update state with fresh data
+        if (userData.name) setUserName(userData.name);
+        if (userData.role) setUserRole(userData.role);
+        
         if (userData.profile_image) {
           setProfileImage(userData.profile_image);
-          // Optional: Update local storage to keep it fresh
-          const updatedUser = { ...user, profile_image: userData.profile_image };
-          localStorage.setItem('user', JSON.stringify(updatedUser));
         }
+        
+        // Update local storage to keep it fresh
+        const updatedUser = { ...initialUser, ...userData };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
       } catch (error) {
         console.error("Failed to fetch user profile for topbar", error);
       }

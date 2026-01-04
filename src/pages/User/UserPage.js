@@ -31,6 +31,7 @@ function UserPage() {
 
   // Profile Data States
   const [studentData, setStudentData] = useState({
+    name: '',
     university: '',
     major: '',
     gpa: '',
@@ -103,6 +104,7 @@ function UserPage() {
         setUserRole(role);
         
         if (role === 'student') {
+            setStudentData(prev => ({ ...prev, name: userData.name }));
             fetchStudentProfile();
             setProfileImage(userData.profile_image);
         } else if (role === 'admin') {
@@ -154,6 +156,7 @@ function UserPage() {
            setStudentData(prev => ({
                ...prev,
                ...res.data,
+               // name: res.data.user?.name || '', // Don't overwrite name from user data
                year: yearVal,
                user: res.data.user || {}
            }));
@@ -239,6 +242,7 @@ function UserPage() {
         setLoading(true);
         if (userRole === 'student') {
             const payload = {
+                name: studentData.name,
                 university: studentData.university,
                 major: studentData.major,
                 year: studentData.year,
@@ -258,6 +262,11 @@ function UserPage() {
             if (userId) {
               console.log("User ID found for student update:", userId);
                 await studentService.updateProfile(userId, payload);
+                
+                // Update User entity for name change
+                if (studentData.name) {
+                    await authService.updateUser(studentData.user.user_id || studentData.user.id || userId, { name: studentData.name });
+                }
             } else {
                  throw new Error("User ID not found for student update");
             }
@@ -487,6 +496,7 @@ function UserPage() {
                       {userRole === 'student' ? (
                           <>
                             <div style={{ display: 'grid', gap: '20px' }}>
+                                <Input label="Nama Lengkap" value={studentData.name} onChange={(e) => handleStudentChange('name', e.target.value)} />
                                 <Input label="Universitas" value={studentData.university} onChange={(e) => handleStudentChange('university', e.target.value)} />
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                     <Input label="Jurusan" value={studentData.major} onChange={(e) => handleStudentChange('major', e.target.value)} />
