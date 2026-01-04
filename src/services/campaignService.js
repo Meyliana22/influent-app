@@ -12,6 +12,12 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api
  */
 const handleResponse = async (response) => {
   const data = await response.json();
+  if (!response.ok) {
+    const error = new Error(data.message || response.statusText);
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
   return data;
 };
 

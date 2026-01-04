@@ -72,6 +72,8 @@ function BrowseCampaigns() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const [isVerified, setIsVerified] = useState(true);
+
   // Handle window resize for responsive design
   useEffect(() => {
     const handleResize = () => {
@@ -92,6 +94,13 @@ function BrowseCampaigns() {
         // Fetch all campaigns for frontend pagination
         const response = await campaignService.getCampaigns({ limit: 1000, offset: 0 }); // Use large limit to get all
         
+        // Check for 403 or unverified status if returned as data
+        if (response && (response.status === 403 || response.statusCode === 403 || (response.message && response.message.toLowerCase().includes('verif')))) {
+          setIsVerified(false);
+          setLoading(false);
+          return;
+        }
+
         let campaignsData = [];
         
         if (Array.isArray(response)) {
@@ -107,7 +116,12 @@ function BrowseCampaigns() {
         setLoading(false);
       } catch (err) {
         console.error('Failed to load campaigns:', err);
-        setCampaigns([]);
+        // Check if error matches 403 Forbidden
+        if (err.message?.includes('403') || err.status === 403 || err.toString().includes('403')) {
+          setIsVerified(false);
+        } else {
+          setCampaigns([]);
+        }
         setLoading(false);
       }
     };
@@ -335,6 +349,62 @@ function BrowseCampaigns() {
             </Typography>
           </Box>
 
+          {/* Unverified State */}
+          {!isVerified ? (
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '50vh',
+              textAlign: 'center',
+              maxWidth: '600px',
+              mx: 'auto',
+              mt: 4
+            }}>
+              <Box sx={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                bgcolor: '#FFF4E5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 3
+              }}>
+                {/* Fallback icon if Lock is not imported, but using standard shapes */}
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C14.2091 2 16 3.79086 16 6V10H17C18.1046 10 19 10.8954 19 12V20C19 21.1046 18.1046 22 17 22H7C5.89543 22 5 21.1046 5 20V12C5 10.8954 5.89543 10 7 10H8V6C8 3.79086 9.79086 2 12 2ZM12 4C10.8954 4 10 4.89543 10 6V10H14V6C14 4.89543 13.1046 4 12 4Z" fill="#F59E0B"/>
+                </svg>
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1f36', mb: 2 }}>
+                Akun Sedang Dalam Peninjauan
+              </Typography>
+              <Typography sx={{ color: '#64748b', mb: 4, lineHeight: 1.6 }}>
+                Mohon tunggu, data Anda sedang diverifikasi oleh admin. Kami akan memberitahu Anda segera setelah akun Anda disetujui agar Anda dapat mulai melamar kampanye.
+              </Typography>
+              <Button
+                variant="outlined"
+                onClick={() => window.location.reload()}
+                sx={{
+                  color: '#6E00BE',
+                  borderColor: '#6E00BE',
+                  textTransform: 'none',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  px: 4,
+                  py: 1,
+                  '&:hover': {
+                    borderColor: '#5a009e',
+                    bgcolor: 'rgba(110, 0, 190, 0.04)'
+                  }
+                }}
+              >
+                Cek Status
+              </Button>
+            </Box>
+          ) : (
+            <>
           {/* Search Bar - Full Width */}
           <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', mb: '20px' }}>
             <TextField
@@ -661,7 +731,8 @@ function BrowseCampaigns() {
               </Box>
             </Paper>
           )}
-        </Box>
+          </>
+          )}</Box>
       </Box>
 
       {/* Campaign Detail Modal */}
