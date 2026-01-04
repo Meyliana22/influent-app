@@ -465,7 +465,7 @@ function AdminDashboard() {
                             />
                           </Box>
                           <Typography sx={{ fontSize: 12, color: '#6c757d' }}>
-                            Anggaran: Rp {campaign.budget?.toLocaleString('id-ID')}
+                            Anggaran: Rp {(campaign.price_per_post * campaign.influencer_count)?.toLocaleString('id-ID')}
                           </Typography>
                         </Box>
                       ))}

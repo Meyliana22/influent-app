@@ -64,7 +64,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
           { icon: DashboardIcon, label: 'Dasbor', path: '/admin/dashboard' },
           { icon: PeopleIcon, label: 'Kelola Pengguna', path: '/admin/users' },
           { icon: CampaignIcon, label: 'Kelola Kampanye', path: '/admin/campaigns' },
-          { icon: GavelIcon, label: 'Tinjau Pengajuan', path: '/admin/review-submissions' },
+          { icon: GavelIcon, label: 'Tinjau Penolakan', path: '/admin/review-submissions' },
           { icon: TransactionsIcon, label: 'Kelola Transaksi', path: '/admin/transactions' },
           { icon: AccountBalanceWalletIcon, label: 'Kelola Penarikan', path: '/admin/withdrawals' },
           // { icon: BarChartIcon, label: 'Laporan', path: '/admin/reports' },

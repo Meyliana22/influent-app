@@ -1813,14 +1813,14 @@ function ManageCampaigns() {
               <ListItemText>Lihat Detail</ListItemText>
             </MenuItem>
             
-            {menuSelectedCampaign && isCampaingEditable(menuSelectedCampaign) && (
+            {/* {menuSelectedCampaign && isCampaingEditable(menuSelectedCampaign) && (
               <MenuItem onClick={() => handleMenuAction(handleEditClick)}>
                 <ListItemIcon>
                   <EditIcon fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>Edit</ListItemText>
               </MenuItem>
-            )}
+            )} */}
 
             <MenuItem onClick={() => handleMenuAction(handleDeleteClick)}>
               <ListItemIcon>

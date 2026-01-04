@@ -32,7 +32,7 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Edit as EditIcon,
+  Visibility as ViewIcon,
   Delete as DeleteIcon,
   Search as SearchIcon,
   Refresh as RefreshIcon,
@@ -76,9 +76,9 @@ function ManageUsers() {
   const [searchInput, setSearchInput] = useState('');
 
   // Modal states
-  const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('edit');
-  const [selectedUser, setSelectedUser] = useState(null);
+  // Modal states
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedViewUser, setSelectedViewUser] = useState(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -92,13 +92,7 @@ function ManageUsers() {
   const [showRejectionDialog, setShowRejectionDialog] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'student',
-    status: 'active'
-  });
+
 
   useEffect(() => {
     loadUsers();
@@ -137,17 +131,9 @@ function ManageUsers() {
     setPage(1); // Reset to first page on new search
   };
 
-  const handleEditUser = (user) => {
-    setModalMode('edit');
-    setSelectedUser(user);
-    setFormData({ 
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      status: user.status || 'active',
-      password: '' // Don't pre-fill password
-    });
-    setShowModal(true);
+  const handleViewUser = (user) => {
+    setSelectedViewUser(user);
+    setShowViewModal(true);
   };
 
   const handleDeleteClick = (user) => {
@@ -173,38 +159,7 @@ function ManageUsers() {
     }
   };
 
-  const handleSaveUser = async () => {
-    try {
-      setSubmitting(true);
-      setError(null);
 
-      if (!formData.name || !formData.email) {
-        setError('Nama dan email wajib diisi');
-        return;
-      }
-
-      const updateData = {
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        status: formData.status
-      };
-      
-      if (formData.password) {
-        updateData.password = formData.password;
-      }
-
-      await adminService.users.updateUser(selectedUser._id, updateData);
-      setSuccessMessage('Pengguna berhasil diperbarui');
-      setShowModal(false);
-      loadUsers();
-    } catch (err) {
-      console.error('Error saving user:', err);
-      setError(err.message || 'Gagal menyimpan pengguna');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const getRoleIcon = (role) => {
     switch (role) {
@@ -543,28 +498,28 @@ function ManageUsers() {
                               </Typography>
                             </TableCell>
                             <TableCell>
-                              <Stack direction="row" spacing={1} justifyContent="center">
-                                <IconButton
+                                <Stack direction="row" spacing={1} justifyContent="center">
+                                  <IconButton
                                     size="small"
-                                    onClick={() => handleEditUser(user)}
+                                    onClick={() => handleViewUser(user)}
                                     sx={{
                                       color: '#6E00BE',
                                       '&:hover': { bgcolor: 'rgba(110, 0, 190, 0.1)' }
                                     }}
                                   >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleDeleteClick(user)}
-                                  sx={{
-                                    color: '#ef4444',
-                                    '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
-                                  }}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                                {user.role === 'student' && (
+                                    <ViewIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDeleteClick(user)}
+                                    sx={{
+                                      color: '#ef4444',
+                                      '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' }
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                  {user.role === 'student' && user.status?.toLowerCase() !== 'active' && (
                                     <IconButton
                                       size="small"
                                       onClick={() => handleVerifyClick(user)}
@@ -576,8 +531,8 @@ function ManageUsers() {
                                     >
                                       <VerifyIcon fontSize="small" />
                                     </IconButton>
-                                )}
-                              </Stack>
+                                  )}
+                                </Stack>
                             </TableCell>
                           </TableRow>
                         );
@@ -600,87 +555,175 @@ function ManageUsers() {
             )}
           </Paper>
 
-          {/* Edit User Dialog */}
+          {/* View User Dialog */}
           <Dialog
-            open={showModal}
-            onClose={() => !submitting && setShowModal(false)}
-            maxWidth="sm"
+            open={showViewModal}
+            onClose={() => setShowViewModal(false)}
+            maxWidth="md"
             fullWidth
           >
-            <DialogTitle sx={{ fontWeight: 700, fontSize: 20 }}>
-              Edit Pengguna
+            <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6" fontWeight={700}>Detail Pengguna</Typography>
+              <IconButton onClick={() => setShowViewModal(false)}>
+                <CloseIcon />
+              </IconButton>
             </DialogTitle>
             <DialogContent dividers>
-              <Stack spacing={3} sx={{ pt: 1 }}>
-                <TextField
-                  label="Nama"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  fullWidth
-                  required
-                />
-                <TextField
-                  label="Email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  fullWidth
-                  required
-                />
-                <TextField
-                  label="Kata Sandi (kosongkan jika tidak ingin mengubah)"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  fullWidth
-                  placeholder="••••••••"
-                />
-                <FormControl fullWidth>
-                  <InputLabel>Peran</InputLabel>
-                  <Select
-                    value={formData.role}
-                    label="Peran"
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  >
-                    <MenuItem value="student">Mahasiswa</MenuItem>
-                    <MenuItem value="company">UMKM</MenuItem>
-                    <MenuItem value="admin">Admin</MenuItem>
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={formData.status}
-                    label="Status"
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  >
-                    <MenuItem value="active">Aktif</MenuItem>
-                    <MenuItem value="inactive">Tidak Aktif</MenuItem>
-                    <MenuItem value="suspended">Ditangguhkan</MenuItem>
-                  </Select>
-                </FormControl>
-              </Stack>
+              {selectedViewUser && (
+                <Stack spacing={3}>
+                  {/* Basic Info */}
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={700} gutterBottom>Informasi Akun</Typography>
+                    <Table size="small">
+                      <TableBody>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600, width: '30%' }}>Nama</TableCell>
+                          <TableCell>{selectedViewUser.name}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+                          <TableCell>{selectedViewUser.email}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>Peran</TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={translateRole(selectedViewUser.role)} 
+                              size="small"
+                              sx={{ fontWeight: 600 }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={translateStatus(selectedViewUser.status)} 
+                              size="small"
+                              sx={{ 
+                                bgcolor: getStatusColor(selectedViewUser.status).bg, 
+                                color: getStatusColor(selectedViewUser.status).color,
+                                fontWeight: 600 
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>Bergabung Pada</TableCell>
+                          <TableCell>
+                            {selectedViewUser.created_at || selectedViewUser.createdAt 
+                              ? new Date(selectedViewUser.created_at || selectedViewUser.createdAt).toLocaleDateString('id-ID', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                })
+                              : '-'}
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </Box>
+
+                  {/* Student Details */}
+                  {selectedViewUser.role === 'student' && selectedViewUser.Student && (
+                    <>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={700} gutterBottom>Detail Mahasiswa</Typography>
+                        <Table size="small">
+                          <TableBody>
+                            <TableRow>
+                              <TableCell sx={{ fontWeight: 600, width: '30%' }}>Universitas</TableCell>
+                              <TableCell>{selectedViewUser.Student.university || '-'}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell sx={{ fontWeight: 600 }}>Jurusan</TableCell>
+                              <TableCell>{selectedViewUser.Student.major || '-'}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell sx={{ fontWeight: 600 }}>No. Telepon</TableCell>
+                              <TableCell>{selectedViewUser.Student.phone_number || '-'}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell sx={{ fontWeight: 600 }}>Instagram</TableCell>
+                              <TableCell>
+                                {selectedViewUser.Student.instagram_username || '-'}
+                                {(selectedViewUser.Student.instagram_profile_link) && (
+                                  <a 
+                                    href={selectedViewUser.Student.instagram_profile_link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    style={{ marginLeft: '8px', color: '#1e40af', textDecoration: 'none', fontSize: '12px' }}
+                                  >
+                                    (Link)
+                                  </a>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell sx={{ fontWeight: 600 }}>Followers</TableCell>
+                              <TableCell>{selectedViewUser.Student.instagram_followers_count || '-'}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell sx={{ fontWeight: 600 }}>Domisili</TableCell>
+                              <TableCell>{selectedViewUser.Student.domicile || '-'}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell sx={{ fontWeight: 600 }}>Jenis Kelamin</TableCell>
+                              <TableCell>{selectedViewUser.Student.gender || '-'}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell sx={{ fontWeight: 600 }}>Umur</TableCell>
+                              <TableCell>{selectedViewUser.Student.age || '-'}</TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </Box>
+                      
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={700} gutterBottom>Foto KTM</Typography>
+                        <Box sx={{ 
+                          width: '100%', 
+                          height: 300, 
+                          bgcolor: '#f1f5f9', 
+                          borderRadius: 2, 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          overflow: 'hidden',
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          {(selectedViewUser.Student.ktm_image_url) ? (
+                            <img 
+                              src={selectedViewUser.Student.ktm_image_url} 
+                              alt="KTM" 
+                              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
+                            />
+                          ) : (
+                            <Typography color="text.secondary">Tidak ada foto KTM</Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </>
+                  )}
+                  
+                  {/* UMKM Details (Biasa Saja) */}
+                  {(selectedViewUser.role === 'umkm' || selectedViewUser.role === 'company') && (
+                     <Box>
+                        <Typography variant="subtitle1" fontWeight={700} gutterBottom>Detail UMKM</Typography>
+                        <Typography color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                          Tidak ada informasi tambahan ditampilkan untuk akun UMKM.
+                        </Typography>
+                     </Box>
+                  )}
+                </Stack>
+              )}
             </DialogContent>
             <DialogActions sx={{ p: 2 }}>
               <Button
-                onClick={() => setShowModal(false)}
-                disabled={submitting}
+                onClick={() => setShowViewModal(false)}
                 sx={{ textTransform: 'none' }}
               >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveUser}
-                variant="contained"
-                disabled={submitting}
-                sx={{
-                  bgcolor: '#6E00BE',
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  '&:hover': { bgcolor: '#5a009e' }
-                }}
-              >
-                {submitting ? <CircularProgress size={24} /> : 'Simpan Perubahan'}
+                Tutup
               </Button>
             </DialogActions>
           </Dialog>

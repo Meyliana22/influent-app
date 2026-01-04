@@ -318,10 +318,10 @@ export const adminAnalyticsService = {
     try {
       // Fetch data from multiple endpoints
       const [usersRes, campaignsRes, transactionsRes, withdrawalsRes] = await Promise.allSettled([
-        adminUserService.getAllUsers({ limit: 1 }).catch(() => ({ total: 0, users: [] })),
-        adminCampaignService.getAllCampaigns({ limit: 1 }).catch(() => ({ total: 0, campaigns: [] })),
-        adminTransactionService.getAllTransactions({ limit: 1 }).catch(() => ({ total: 0, transactions: [] })),
-        adminWithdrawalService.getAllWithdrawals({ limit: 1 }).catch(() => ({ total: 0, withdrawals: [] }))
+        adminUserService.getAllUsers().catch(() => ({ total: 0, users: [] })),
+        adminCampaignService.getAllCampaigns().catch(() => ({ total: 0, campaigns: [] })),
+        adminTransactionService.getAllTransactions().catch(() => ({ total: 0, transactions: [] })),
+        adminWithdrawalService.getAllWithdrawals().catch(() => ({ total: 0, withdrawals: [] }))
       ]);
 
       const users = usersRes.status === 'fulfilled' ? usersRes.value : { total: 0, users: [] };
@@ -329,20 +329,31 @@ export const adminAnalyticsService = {
       const transactions = transactionsRes.status === 'fulfilled' ? transactionsRes.value : { total: 0, transactions: [] };
       const withdrawals = withdrawalsRes.status === 'fulfilled' ? withdrawalsRes.value : { total: 0, withdrawals: [] };
 
-      // Handle different response structures
-      const totalUsers = users.total || (Array.isArray(users) ? users.length : 0);
-      const totalCampaigns = campaigns.total || (Array.isArray(campaigns) ? campaigns.length : 0);
-      const totalTransactions = transactions.total || (Array.isArray(transactions) ? transactions.length : 0);
-      
-      const withdrawalsList = Array.isArray(withdrawals) ? withdrawals : (withdrawals.withdrawals || withdrawals.data || []);
-      const pendingWithdrawals = withdrawalsList.filter(w => w.status === 'pending').length;
+      // Helper to extract array from various response structures
+      const extractArray = (data, key) => {
+        if (!data) return [];
+        if (Array.isArray(data)) return data;
+        if (Array.isArray(data.data)) return data.data;
+        if (data[key] && Array.isArray(data[key])) return data[key];
+        if (data.data && data.data[key] && Array.isArray(data.data[key])) return data.data[key];
+        return [];
+      };
+
+      const usersList = extractArray(users, 'users');
+      const campaignsList = extractArray(campaigns, 'campaigns');
+      const withdrawalsList = extractArray(withdrawals, 'withdrawals');
+      const transactionsList = extractArray(transactions, 'transactions');
 
       // Calculate detailed stats
-      const usersList = Array.isArray(users) ? users : (users.users || users.data || []);
+      const totalUsers = usersList.length;
+      const totalCampaigns = campaignsList.length;
+      const totalTransactions = transactionsList.length;
+
+      const pendingWithdrawals = withdrawalsList.filter(w => w.status === 'pending').length;
+      
       const totalStudents = usersList.filter(u => u.role === 'student').length;
       const totalCompanies = usersList.filter(u => u.role === 'umkm' || u.role === 'company').length;
 
-      const campaignsList = Array.isArray(campaigns) ? campaigns : (campaigns.campaigns || campaigns.data || []);
       const activeCampaigns = campaignsList.filter(c => c.status === 'active').length;
       const completedCampaigns = campaignsList.filter(c => c.status === 'completed').length;
       const pendingCampaigns = campaignsList.filter(c => c.status === 'pending' || c.status === 'draft').length;
@@ -350,8 +361,7 @@ export const adminAnalyticsService = {
       const approvedWithdrawals = withdrawalsList.filter(w => w.status === 'approved').length;
       const completedWithdrawals = withdrawalsList.filter(w => w.status === 'completed').length;
 
-      const transactionsList = Array.isArray(transactions) ? transactions : (transactions.transactions || transactions.data || []);
-      const totalRevenue = transactionsList.reduce((sum, t) => sum + (t.amount || 0), 0);
+      const totalRevenue = transactionsList.reduce((sum, t) => sum + (parseInt(t.amount) || 0), 0);
 
       return {
         totalUsers,
