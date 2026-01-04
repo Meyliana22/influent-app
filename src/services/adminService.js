@@ -3,6 +3,16 @@ import authFetch from './apiClient';
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
 
 // User Management
+// Helper to handle response
+const handleResponse = async (response) => {
+  const data = await response.json();
+  if (!response.ok) {
+    const error = (data && data.message) || response.statusText;
+    throw new Error(error);
+  }
+  return data;
+};
+
 export const adminUserService = {
   // Get all users with filters
   getAllUsers: async (params = {}) => {
@@ -13,13 +23,13 @@ export const adminUserService = {
     if (params.limit) queryParams.append('limit', params.limit);
     
     const response = await authFetch(`${API_BASE_URL}/users?sort=created_at&order=desc${queryParams}`);
-    return response.json();
+    return handleResponse(response);
   },
 
   // Get user by ID
   getUserById: async (id) => {
     const response = await authFetch(`${API_BASE_URL}/users/${id}`);
-    return response.json();
+    return handleResponse(response);
   },
 
   // Update user
@@ -29,7 +39,34 @@ export const adminUserService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    return response.json();
+    return handleResponse(response);
+  },
+
+  updateProfileImage: async (userId, imageFile) => {
+    try {
+      const formData = new FormData();
+      formData.append('profile_image', imageFile);
+
+      const response = await authFetch(`${API_BASE_URL}/upload/user/${userId}/profile`, {
+        method: 'POST',
+        body: formData,
+      });
+       return handleResponse(response);
+    } catch (error) {
+      console.error("Error updating profile image:", error);
+      throw error;
+    }
+  },
+
+  // Update profile (self)
+  updateProfile: async (id, data) => {
+    // Reusing updateUser logic for now, but explicit naming helps clarity
+    const response = await authFetch(`${API_BASE_URL}/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
   },
 
   // Delete user

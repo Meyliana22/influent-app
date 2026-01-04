@@ -432,7 +432,7 @@ const AdminReviewSubmissions = () => {
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                       <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
-                                        Harga per Post
+                                        Harga per Posting
                                       </Typography>
                                       <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.primary }}>
                                         Rp {parseInt(campaign.price_per_post || 0).toLocaleString('id-ID')}

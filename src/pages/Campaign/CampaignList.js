@@ -279,8 +279,8 @@ function CampaignList() {
       badge: { bg: '#fff7ed', color: '#c2410c' }, // Orange
       text: 'Ditinjau Admin',
       alert: { bg: '#fff7ed', border: '#fdba74', color: '#c2410c', icon: HourglassEmptyIcon,
-        title: 'Menunggu Ulasan Admin', 
-        message: 'Kampanye Anda sedang diulas oleh tim admin. Anda akan dinotifikasi setelah disetujui.' }
+        title: 'Menunggu Tinjauan Admin', 
+        message: 'Kampanye Anda sedang ditinjau oleh tim admin. Anda akan menerima notifikasi setelah disetujui.' }
     },
     pending_payment: {
       badge: { bg: '#eff6ff', color: '#1d4ed8' }, // Blue
@@ -291,10 +291,10 @@ function CampaignList() {
     },
     cancelled: {
       badge: { bg: '#fef2f2', color: '#b91c1c' }, // Red
-      text: 'Dibatalkan',
+      text: 'Ditolak',
       alert: { bg: '#fef2f2', border: '#fca5a5', color: '#b91c1c', icon: CancelIcon,
-        title: 'Kampanye Dibatalkan', 
-        message: 'Kampanye dibatalkan.' }
+        title: 'Kampanye Ditolak', 
+        message: 'Kampanye ditolak oleh admin.' }
     },
     active: {
       badge: { bg: '#f0fdf4', color: '#15803d' }, // Green
@@ -331,7 +331,7 @@ function CampaignList() {
       text: 'Selesai',
       alert: { bg: '#faf5ff', border: '#d8b4fe', color: '#7e22ce', icon: CheckCircleIcon,
         title: 'Kampanye Selesai', 
-        message: (campaign) => `Kampanye ${campaign.title} telah resmi selesai. Terima kasih telah mempercayakan kolaborasi Anda kepada influencer.` }
+        message: (campaign) => `Kampanye ${campaign.title} telah resmi selesai. Terima kasih telah mempercayakan kolaborasi Anda kepada Influent.` }
     },
     paid: {
       badge: { bg: '#f0fdf4', color: '#16a34a' }, // Green-600
@@ -345,7 +345,7 @@ function CampaignList() {
       text: 'Draf',
       alert: { bg: '#f8fafc', border: '#e2e8f0', color: '#64748b', icon: CampaignIcon,
         title: 'Kampanye Draf', 
-        message: 'Kampanye ini masih dalam status draf. Silakan lengkapi pembayaran atau publish untuk memulai.' }
+        message: 'Kampanye ini masih dalam status draf. Silakan lengkapi detail kampanye.' }
     },
     archived: {
       badge: { bg: '#f8fafc', color: '#64748b' }, // Gray

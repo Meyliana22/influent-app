@@ -84,7 +84,7 @@ const PaymentSuccess = () => {
 
           <Typography sx={{ color: COLORS.textSecondary, mb: 4 }}>
             {status === 'success' 
-              ? `Terima kasih! Pembayaran Anda untuk Order ID #${orderId} telah berhasil diverifikasi.` 
+              ? `Terima kasih! Pembayaran Anda untuk Order ID #${orderId} telah berhasil dibayar.` 
               : status === 'pending'
               ? `Mohon selesaikan pembayaran Anda untuk Order ID #${orderId}.`
               : `Maaf, pembayaran Anda untuk Order ID #${orderId} gagal. Silakan coba lagi.`}
@@ -96,7 +96,7 @@ const PaymentSuccess = () => {
               size="large"
               onClick={handleBackToCampaigns}
               sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#6E00BE',
                 color: 'white',
                 fontWeight: 600,
                 py: 1.5,
@@ -105,7 +105,7 @@ const PaymentSuccess = () => {
                 boxShadow: 2
               }}
             >
-              Kembali ke Campaign Saya
+              Kembali ke Kampanye Saya
             </Button>
           </Stack>
         </Paper>

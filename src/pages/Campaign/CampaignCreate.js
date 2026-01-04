@@ -138,8 +138,8 @@ function CampaignCreate() {
     'Keluarga & Parenting', 'Kesehatan & Olahraga', 'Makanan & Minuman', 'Teknologi'
   ];
   const CONTENT_TYPE_OPTIONS = [
-    { value: 'foto', label: 'Instagram Feed' },
-    { value: 'story', label: 'Instagram Story' },
+    { value: 'foto', label: 'Instagram Posting' },
+    { value: 'story', label: 'Instagram Cerita' },
     { value: 'reels', label: 'Instagram Reels' },
     { value: 'video', label: 'Instagram Video' },
   ];
@@ -549,7 +549,7 @@ function CampaignCreate() {
                     rows={6}
                     fullWidth
                     required
-                    placeholder="Jelaskan detail kampanye, tujuan, usp produk, atau pesan kunci yang ingin disampaikan..."
+                    placeholder="Jelaskan detail kampanye, tujuan, detail produk, atau pesan kunci yang ingin disampaikan..."
                     value={productDesc}
                     onChange={e => setProductDesc(e.target.value)}
                     disabled={isReadOnly}
@@ -623,7 +623,7 @@ function CampaignCreate() {
                 </Box>
 
                 <Box>
-                   <Typography variant="caption" fontWeight={600} gutterBottom sx={{ display: 'block', mb: 1 }}>Gender Audience</Typography>
+                   <Typography variant="caption" fontWeight={600} gutterBottom sx={{ display: 'block', mb: 1 }}>Target Audiens</Typography>
                    <RadioGroup row value={selectedGender} onChange={e => setSelectedGender(e.target.value)}>
                       <FormControlLabel value="all" control={<Radio disabled={isReadOnly}/>} label="Semua" />
                       <FormControlLabel value="female" control={<Radio disabled={isReadOnly}/>} label="Perempuan" />
@@ -967,10 +967,10 @@ function CampaignCreate() {
                    sx={{ bgcolor: '#f8fafc' }}
                 />
                 <TextField 
-                   label="Panduan Caption & Hastag" 
+                   label="Panduan Keterangan & Tagar" 
                    multiline rows={4} 
                    fullWidth 
-                   placeholder="Jelaskan poin-poin yang harus dibahas di Caption, Hastag wajib, dan akun yang harus di-tag."
+                   placeholder="Jelaskan poin-poin yang harus dibahas di Keterangan, Tagar wajib, dan akun yang harus tandai di foto/video."
                    value={caption_guidelines}
                    onChange={e => setCaptionGuidelines(e.target.value)}
                    disabled={isReadOnly}

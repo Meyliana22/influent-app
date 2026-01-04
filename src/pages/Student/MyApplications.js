@@ -203,7 +203,7 @@ const MyApplications = () => {
       >
         <Container maxWidth="lg">
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1, pl: 2 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1f36', mb: 1 }}>
               Kolaborasi Saya
             </Typography>
             <Typography variant="body1" color="textSecondary">
@@ -264,7 +264,7 @@ const MyApplications = () => {
                          </Typography>
                          {app.campaign?.price_per_post && (
                             <Typography variant="caption" color="textSecondary">
-                              Rp {Number(app.campaign.price_per_post).toLocaleString('id-ID')} / post
+                              Rp {Number(app.campaign.price_per_post).toLocaleString('id-ID')} / posting
                             </Typography>
                          )}
                       </TableCell>
@@ -353,13 +353,18 @@ const MyApplications = () => {
                 {/* Banner Image */}
                 {selectedCampaign.banner_image && (
                   <Box 
+                    component="img"
+                    src={getImageUrl(selectedCampaign.banner_image)}
+                    alt={selectedCampaign.title}
                     sx={{ 
                       width: '100%', 
-                      height: '240px', 
-                      background: `url(${getImageUrl(selectedCampaign.banner_image)}) center/cover`, 
+                      height: 'auto',
+                      maxHeight: '400px',
+                      objectFit: 'contain',
                       borderRadius: '16px', 
                       mb: 4,
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      bgcolor: '#f8fafc'
                     }} 
                   />
                 )}
@@ -370,13 +375,13 @@ const MyApplications = () => {
                     <Box>
                       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                           <Chip 
-                            label={selectedCampaign.campaign_category || 'General'} 
+                            label={selectedCampaign.campaign_category || 'Umum'} 
                             size="small" 
                             sx={{ bgcolor: '#f3e5f5', color: '#6E00BE', fontWeight: 600 }} 
                           />
                           <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#cbd5e1' }} />
                           <Typography variant="body2" sx={{ color: '#64748b' }}>
-                            {selectedCampaign.type || 'Campaign'}
+                            {selectedCampaign.type === 'Public' ? 'Publik' : 'Kampanye'}
                           </Typography>
                       </Stack>
                       <Typography variant="h4" sx={{ fontWeight: 800, color: '#1e293b', lineHeight: 1.3 }}>
@@ -397,7 +402,7 @@ const MyApplications = () => {
                        />
                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#6E00BE' }}>
                           Rp {Number(selectedCampaign.price_per_post).toLocaleString('id-ID')}
-                          <Typography component="span" variant="body2" sx={{ color: '#64748b', fontWeight: 500, ml: 0.5 }}>/ post</Typography>
+                          <Typography component="span" variant="body2" sx={{ color: '#64748b', fontWeight: 500, ml: 0.5 }}>/ posting</Typography>
                        </Typography>
                     </Stack>
                   </Box>
@@ -454,13 +459,13 @@ const MyApplications = () => {
                           <Box sx={{ p: 2.5 }}>
                              <Stack spacing={2}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, bgcolor: '#f8fafc', borderRadius: '12px' }}>
-                                   <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>Min. Followers</Typography>
+                                   <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>Min. Pengikut </Typography>
                                    <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 700 }}>{selectedCampaign.min_followers?.toLocaleString('id-ID') || '-'}</Typography>
                                 </Box>
                                 <Divider sx={{ borderStyle: 'dashed' }} />
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, bgcolor: '#f8fafc', borderRadius: '12px' }}>
-                                   <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>Jenis Kelamin</Typography>
-                                   <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 700 }}>{selectedCampaign.selected_gender || 'Semua'}</Typography>
+                                   <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>Jenis Kelamin </Typography>
+                                   <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 700 , ml:1 }}>{selectedCampaign.selected_gender === 'all' ? 'Semua' : selectedCampaign.selected_gender}</Typography>
                                 </Box>
                                 <Divider sx={{ borderStyle: 'dashed' }} />
                                 <Box>
@@ -482,7 +487,7 @@ const MyApplications = () => {
                           <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
                             <Stack direction="row" spacing={1} alignItems="center">
                                <CalendarToday sx={{ fontSize: 18, color: '#64748b' }} />
-                               <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Timeline Campaign</Typography>
+                               <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Linimasa Kampanye</Typography>
                             </Stack>
                           </Box>
                           <Box sx={{ p: 2.5 }}>
@@ -505,7 +510,7 @@ const MyApplications = () => {
                                       <AccessTime sx={{ fontSize: 20 }} />
                                    </Box>
                                    <Box>
-                                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 0.5 }}>DEADLINE PENGIRIMAN</Typography>
+                                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 0.5 }}>TENGGAT WAKTU</Typography>
                                       <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a' }}>
                                          {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Tidak Ditentukan'}
                                       </Typography>
@@ -521,7 +526,7 @@ const MyApplications = () => {
                           <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
                             <Stack direction="row" spacing={1} alignItems="center">
                                <AssignmentIcon sx={{ fontSize: 18, color: '#64748b' }} />
-                               <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Brief & Guideline</Typography>
+                               <Typography sx={{ fontWeight: 700, color: '#334155', fontSize: '0.875rem' }}>Panduan & Instruksi</Typography>
                             </Stack>
                           </Box>
                           <Box sx={{ p: 2.5 }}>
@@ -533,7 +538,7 @@ const MyApplications = () => {
                                    </Typography>
                                 </Box>
                                 <Box>
-                                   <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, mb: 0.5, display: 'block' }}>CAPTION</Typography>
+                                   <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, mb: 0.5, display: 'block' }}>KETERANGAN</Typography>
                                    <Typography variant="body2" sx={{ color: '#334155', lineHeight: 1.5, bgcolor: '#f8fafc', p: 1.5, borderRadius: '8px', border: '1px dashed #e2e8f0' }}>
                                       {selectedCampaign.caption_guidelines || '-'}
                                    </Typography>

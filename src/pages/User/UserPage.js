@@ -16,6 +16,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LockIcon from '@mui/icons-material/Lock';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import LogoutIcon from '@mui/icons-material/Logout';
+import adminService from '../../services/adminService';
 
 function UserPage() {
   const navigate = useNavigate();
@@ -57,9 +58,18 @@ function UserPage() {
 
   const [adminData, setAdminData] = useState({
     name: '',
+    name: '',
     email: '',
     user: { name: '', email: '', profile_image: null }
   });
+
+  // Handler for admin changes
+  const handleAdminChange = (field, value) => {
+    setAdminData(prev => ({
+        ...prev,
+        [field]: value
+    }));
+  };
 
   // Common Profile Image
   const [profileImage, setProfileImage] = useState(null);
@@ -181,7 +191,7 @@ function UserPage() {
               } else {
                   showToast('Gagal: ID User tidak ditemukan', 'error');
               }
-          } else {
+          } else if(userRole === 'company') {
               // Use user_id from fetched data
               const userId = companyData.user.user_id || companyData.user.id;
               if (userId) {
@@ -192,10 +202,35 @@ function UserPage() {
                  showToast('Gagal: ID User tidak ditemukan', 'error');
                  return;
               }
+          }else if (userRole === 'admin') {
+              let userId = adminData.user?.user_id || adminData.user?.id;
+              
+              // Fallback to localStorage if state id is missing
+              if (!userId) {
+                  try {
+                      const storedUser = JSON.parse(localStorage.getItem('user'));
+                      userId = storedUser?.user_id || storedUser?.id;
+                      console.log("Retrieved ID from localStorage:", userId);
+                  } catch (e) {
+                      console.error("Error parsing user from localStorage", e);
+                  }
+              }
+
+              console.log("Admin Upload - UserID:", userId, "AdminData:", adminData);
+
+              if (userId) {
+                  await adminService.users.updateProfileImage(userId, file);
+                  fetchUserData();
+              } else {
+                 console.error("User ID not found for upload. AdminData:", adminData);
+                 showToast('Gagal: ID User tidak ditemukan', 'error');
+                 return;
+              }
           }
           showToast('Foto profil berhasil diperbarui', 'success');
       } catch (error) {
-          showToast('Gagal upload foto', 'error');
+          console.error("Upload Error Details:", error);
+          showToast(`Gagal upload foto: ${error.message || 'Error tidak diketahui'}`, 'error');
       }
   };
 
@@ -226,10 +261,22 @@ function UserPage() {
             } else {
                  throw new Error("User ID not found for student update");
             }
+        } else if (userRole === 'admin') {
+             // Admin update
+             const userId = adminData.user.user_id || adminData.user.id;
+             if (!userId) { // fallback
+                 const stored = JSON.parse(localStorage.getItem('user'));
+                 if (stored) userId = stored.user_id || stored.id;
+             }
+             
+             if (userId) {
+                 await adminService.users.updateProfile(userId, { name: adminData.name });
+             } else {
+                 throw new Error("Admin ID not found");
+             }
         } else {
             const payload = {
                 business_name: companyData.namaUsaha,
-                owner_name: companyData.namaPemilik,
                 phone_number: companyData.noTelp,
                 address: companyData.alamat,
                 description: companyData.deskripsi
@@ -248,22 +295,22 @@ function UserPage() {
 
   const handleSavePassword = async () => {
     if (!passwordData.currentPassword || !passwordData.newPassword) {
-        showToast('Mohon isi semua field password', 'error');
+        showToast('Mohon isi semua field kata sandi', 'error');
         return;
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showToast('Password baru tidak cocok!', 'error');
+      showToast('Kata sandi baru tidak cocok!', 'error');
       return;
     }
 
     try {
         setLoading(true);
         await authService.changePassword(passwordData.currentPassword, passwordData.newPassword);
-        showToast('Password berhasil diubah!', 'success');
+        showToast('Kata sandi berhasil diubah!', 'success');
         setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
         console.error("Change password error:", error);
-        showToast(error.message || 'Gagal mengubah password', 'error');
+        showToast(error.message || 'Gagal mengubah kata sandi', 'error');
     } finally {
         setLoading(false);
     }
@@ -481,10 +528,9 @@ function UserPage() {
                         <>
                           <div style={{ display: 'grid', gap: '20px' }}>
                               <Input 
-                                label="Username" 
+                                label="Nama Lengkap" 
                                 value={adminData.name} 
-                                disabled 
-                                style={{ backgroundColor: '#f8fafc', color: '#94a3b8' }} 
+                                onChange={(e) => handleAdminChange('name', e.target.value)}
                               />
                               <Input 
                                 label="Email" 
@@ -498,51 +544,10 @@ function UserPage() {
                           <>
                             <div style={{ display: 'grid', gap: '24px' }}>
                                 <div>
-                                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    Detail Usaha
-                                  </label>
                                   <div style={{ display: 'grid', gap: '20px' }}>
                                     <Input label="Nama Usaha" value={companyData.namaUsaha} onChange={(e) => handleCompanyChange('namaUsaha', e.target.value)} />
-                                    <Input label="Alamat Lengkap" value={companyData.alamat} onChange={(e) => handleCompanyChange('alamat', e.target.value)} />
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '0.9rem' }}>
-                                          Deskripsi Usaha
-                                        </label>
-                                        <textarea
-                                          value={companyData.deskripsi}
-                                          onChange={(e) => handleCompanyChange('deskripsi', e.target.value)}
-                                          rows={4}
-                                          style={{
-                                            width: '100%',
-                                            padding: '12px 16px',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '10px',
-                                            fontSize: '0.95rem',
-                                            fontFamily: 'inherit',
-                                            resize: 'vertical',
-                                            boxSizing: 'border-box',
-                                            outline: 'none',
-                                            transition: 'border-color 0.2s'
-                                          }}
-                                          onFocus={(e) => e.target.style.borderColor = '#6E00BE'}
-                                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                                        />
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <hr style={{ border: 'none', borderTop: '1px solid #f1f5f9' }} />
-
-                                <div>
-                                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    Kontak Pemilik
-                                  </label>
-                                  <div style={{ display: 'grid', gap: '20px' }}>
-                                    <Input label="Nama Pemilik" value={companyData.namaPemilik} onChange={(e) => handleCompanyChange('namaPemilik', e.target.value)} />
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                        <Input label="Email Akun" value={companyData.email} disabled style={{ backgroundColor: '#f8fafc', color: '#94a3b8' }} />
-                                        <Input label="No. Telepon" value={companyData.noTelp} onChange={(e) => handleCompanyChange('noTelp', e.target.value)} />
-                                    </div>
+                                    <Input label="Email Akun" value={companyData.email} disabled style={{ backgroundColor: '#f8fafc', color: '#94a3b8' }} />
+                                    <Input label="Nomor Telepon" value={companyData.noTelp} onChange={(e) => handleCompanyChange('noTelp', e.target.value)} />
                                   </div>
                                 </div>
                             </div>
@@ -575,16 +580,16 @@ function UserPage() {
                 {activeTab === 'password' && (
                   <Card style={{ padding: '32px', border: '1px solid #e2e8f0', boxShadow: 'none', borderRadius: '16px' }}>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b', margin: '0 0 24px 0' }}>
-                      Keamanan & Password
+                      Keamanan & Kata Sandi
                     </h3>
                     <div style={{ display: 'grid', gap: '20px', maxWidth: '500px' }}>
-                      <Input label="Password Saat Ini" type="password" value={passwordData.currentPassword} onChange={(e) => handlePasswordChange('currentPassword', e.target.value)} />
-                      <Input label="Password Baru" type="password" value={passwordData.newPassword} onChange={(e) => handlePasswordChange('newPassword', e.target.value)} />
-                      <Input label="Konfirmasi Password Baru" type="password" value={passwordData.confirmPassword} onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)} />
+                      <Input label="Kata Sandi Saat Ini" type="password" value={passwordData.currentPassword} onChange={(e) => handlePasswordChange('currentPassword', e.target.value)} />
+                      <Input label="Kata Sandi Baru" type="password" value={passwordData.newPassword} onChange={(e) => handlePasswordChange('newPassword', e.target.value)} />
+                      <Input label="Konfirmasi Kata Sandi Baru" type="password" value={passwordData.confirmPassword} onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)} />
                     </div>
                     <div style={{ marginTop: '32px' }}>
                       <Button onClick={handleSavePassword} style={{ padding: '12px 24px', background: '#6E00BE', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600 }}>
-                        Update Password
+                        Ubah Kata Sandi
                       </Button>
                     </div>
                   </Card>

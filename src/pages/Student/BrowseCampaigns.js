@@ -609,7 +609,7 @@ function BrowseCampaigns() {
 
                     <Box sx={{ p: '12px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '8px' }}>
                       <Button onClick={() => handleViewDetails(campaign)} variant="outlined" sx={{ flex: 1, p: '10px 12px', background: '#f7fafc', border: '2px solid #e2e8f0', borderRadius: '8px', color: '#6E00BE', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', '&:hover': { background: '#e0e7ff', borderColor: '#6E00BE' } }}>Detail</Button>
-                      <Button onClick={() => handleApply(campaign)} sx={{ flex: 1, p: '10px 12px', background: '#6E00BE', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', opacity: campaign.status === 'active' ? 1 : 0.5, pointerEvents: campaign.status === 'active' ? 'auto' : 'none', '&:hover': { opacity: campaign.status === 'active' ? 0.95 : 0.5, background: '#5a009e' } }} disabled={campaign.status !== 'active'}>Lamar</Button>
+                      <Button onClick={() => handleApply(campaign)} sx={{ flex: 1, p: '10px 12px', background: '#6E00BE', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', opacity: campaign.status === 'active' ? 1 : 0.5, pointerEvents: campaign.status === 'active' ? 'auto' : 'none', '&:hover': { opacity: campaign.status === 'active' ? 0.95 : 0.5, background: '#5a009e' } }} disabled={campaign.status !== 'active'}>Daftar</Button>
                     </Box>
                   </Paper>
                 );
@@ -679,13 +679,18 @@ function BrowseCampaigns() {
             <Box sx={{ mb: 4 }}>
               {selectedCampaign.banner_image && (
                 <Box 
+                  component="img"
+                  src={selectedCampaign.banner_image}
+                  alt={selectedCampaign.title}
                   sx={{ 
                     width: '100%', 
-                    height: { xs: '160px', md: '240px' }, 
-                    background: `url(${selectedCampaign.banner_image}) center/cover`, 
+                    height: 'auto',
+                    maxHeight: '400px',
+                    objectFit: 'contain',
                     borderRadius: '16px', 
                     mb: 3,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    bgcolor: '#f8fafc'
                   }} 
                 />
               )}
@@ -717,7 +722,7 @@ function BrowseCampaigns() {
                 
                 <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
                   <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mb: 0.5 }}>
-                    FEE PER POSTINGAN
+                    PEMBAYARAN PER POSTINGAN
                   </Typography>
                   <Typography variant="h5" sx={{ fontWeight: 800, color: '#6E00BE' }}>
                     Rp {Number(selectedCampaign.price_per_post || 0).toLocaleString('id-ID')}
@@ -779,7 +784,7 @@ function BrowseCampaigns() {
                           </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" sx={{ color: '#64748b' }}>Target Gender</Typography>
+                          <Typography variant="body2" sx={{ color: '#64748b' }}>Target Jenis Kelamin</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a', textTransform: 'capitalize' }}>
                             {selectedCampaign.selected_gender === 'all' ? 'Semua' : selectedCampaign.selected_gender}
                           </Typography>

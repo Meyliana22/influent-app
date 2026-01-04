@@ -164,7 +164,7 @@ const CampaignWorkPage = () => {
                   inputs.push({
                       content_type: type.content_type,
                       url: '',
-                      label: `${type.content_type === 'foto' ? 'Feed Instagram' : (type.content_type || 'Post').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())} #${i+1}`
+                      label: `${type.content_type === 'foto' ? 'Posting Instagram' : (type.content_type || 'Post').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())} #${i+1}`
                   });
               }
           });
@@ -411,7 +411,7 @@ const CampaignWorkPage = () => {
              </Typography>
              {campaign?.caption_guidelines && (
                 <Box sx={{ bgcolor: '#f1f5f9', p: 2, borderRadius: 1 }}>
-                   <Typography variant="subtitle2" gutterBottom>Panduan Caption:</Typography>
+                   <Typography variant="subtitle2" gutterBottom>Panduan Keterangan:</Typography>
                    <Typography variant="body2">{campaign.caption_guidelines}</Typography>
                 </Box>
              )}
@@ -435,9 +435,9 @@ const CampaignWorkPage = () => {
 
           {/* Submissions Section */}
           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-             <Typography variant="h6" fontWeight={700}>Kiriman Saya</Typography>
+             <Typography variant="h6" fontWeight={700}>Pekerjaan Saya</Typography>
              <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate} sx={{ bgcolor: '#6E00BE' }}>
-               Kiriman Baru
+               Pekerjaan Baru
              </Button>
           </Stack>
 
@@ -571,7 +571,7 @@ const CampaignWorkPage = () => {
       {/* Submission Dialog */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
          <DialogTitle>
-            {viewMode ? 'Lihat Kiriman' : (editMode ? 'Edit Kiriman' : 'Buat Kiriman Baru')}
+            {viewMode ? 'Lihat Kiriman' : (editMode ? 'Edit Kiriman' : 'Unggah Kiriman Baru')}
             <IconButton
               onClick={handleCloseDialog}
               sx={{ position: 'absolute', right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}
@@ -622,26 +622,10 @@ const CampaignWorkPage = () => {
                 </Box>
             ))}
 
-             <Grid container spacing={2}>
-               <Grid item xs={12}>
-                 <FormControl fullWidth disabled={viewMode}>
-                    <InputLabel>Platform</InputLabel>
-                    <Select
-                      name="platform"
-                      value={formData.platform}
-                      label="Platform"
-                      onChange={handleInputChange}
-                    >
-                      <MenuItem value="instagram">Instagram</MenuItem>
-                      <MenuItem value="tiktok">TikTok</MenuItem>
-                      <MenuItem value="youtube">YouTube</MenuItem>
-                    </Select>
-                 </FormControl>
-               </Grid>
-             </Grid>
+        
 
              <TextField
-                label="Caption"
+                label="Keterangan"
                 name="caption"
                 value={formData.caption}
                 onChange={handleInputChange}
@@ -652,7 +636,7 @@ const CampaignWorkPage = () => {
              />
 
              <TextField
-                label="Hashtag"
+                label="Tagar"
                 name="hashtags"
                 value={formData.hashtags}
                 onChange={handleInputChange}

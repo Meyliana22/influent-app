@@ -134,7 +134,7 @@ function AdminDashboard() {
       case 'rejected': return 'Ditolak';
       case 'draft': return 'Draf';
       case 'pending_payment': return 'Menunggu Pembayaran';
-      case 'admin_review': return 'Diperiksa Admin';
+      case 'admin_review': return 'Ditinjau Admin';
       case 'cancelled': return 'Dibatalkan';
       case 'paid': return 'Dibayar';
       default: return status;

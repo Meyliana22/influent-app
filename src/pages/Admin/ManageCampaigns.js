@@ -928,8 +928,19 @@ function ManageCampaigns() {
                       <Grid item xs={12} md={6}>
                         <Stack spacing={2}>
                           <Box>
-                            <Typography sx={{ fontSize: 11, color: '#64748b', mb: 0.5, fontWeight: 700, letterSpacing: '0.5px' }}>KATEGORI CAMPAIGN</Typography>
-                            <Typography sx={{ fontWeight: 600, color: '#0f172a' }}>{selectedCampaign.campaign_category || '-'}</Typography>
+                            <Typography sx={{ fontSize: 11, color: '#64748b', mb: 0.5, fontWeight: 700, letterSpacing: '0.5px' }}>KATEGORI KAMPANYE</Typography>
+                            <Typography sx={{ fontWeight: 600, color: '#0f172a' }}>
+                              {{
+                                'Entertainment': 'Hiburan',
+                                'Fashion': 'Mode',
+                                'Beauty': 'Kecantikan',
+                                'Food & Beverage': 'Makanan & Minuman',
+                                'Health & Sport': 'Kesehatan & Olahraga',
+                                'Technology': 'Teknologi',
+                                'Travel': 'Perjalanan',
+                                'Lifestyle': 'Gaya Hidup'
+                              }[selectedCampaign.campaign_category] || selectedCampaign.campaign_category || '-'}
+                            </Typography>
                           </Box>
                           <Box>
                             <Typography sx={{ fontSize: 11, color: '#64748b', mb: 0.5, fontWeight: 700, letterSpacing: '0.5px' }}>KATEGORI INFLUENCER</Typography>
@@ -955,7 +966,7 @@ function ManageCampaigns() {
                       <Grid item xs={12} md={6}>
                         <Stack spacing={2}>
                           <Box>
-                            <Typography sx={{ fontSize: 11, color: '#64748b', mb: 0.5, fontWeight: 700, letterSpacing: '0.5px' }}>JUMLAH INFLUENCER & FEE</Typography>
+                            <Typography sx={{ fontSize: 11, color: '#64748b', mb: 0.5, fontWeight: 700, letterSpacing: '0.5px' }}>JUMLAH INFLUENCER & BIAYA</Typography>
                             <Typography sx={{ fontWeight: 600, color: '#0f172a' }}>
                               {selectedCampaign.influencer_count || 0} Influencer × Rp {(selectedCampaign.price_per_post || 0).toLocaleString('id-ID')}
                             </Typography>
@@ -1012,16 +1023,20 @@ function ManageCampaigns() {
                     <Box sx={{ p: 3 }}>
                       <Grid container spacing={3} sx={{ mb: 3 }}>
                         <Grid item xs={6} md={4}>
-                          <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px' }}>MINIMAL FOLLOWERS</Typography>
+                          <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px' }}>MINIMAL PENGIKUT</Typography>
                           <Typography sx={{ fontSize: 14, fontWeight: 600, mt: 0.5, color: '#0f172a' }}>
                             <Group sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'text-bottom', color: '#64748b' }} />
                             {(selectedCampaign.min_followers || 0).toLocaleString()}+
                           </Typography>
                         </Grid>
                         <Grid item xs={6} md={4}>
-                          <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px' }}>TARGET GENDER</Typography>
+                          <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px' }}>TARGET AUDIENS</Typography>
                           <Typography sx={{ fontSize: 14, fontWeight: 600, mt: 0.5, textTransform: 'capitalize', color: '#0f172a' }}>
-                            {selectedCampaign.selected_gender === 'all' ? 'Semua Gender' : selectedCampaign.selected_gender}
+                            {{
+                              'male': 'Laki-laki',
+                              'female': 'Perempuan',
+                              'all': 'Semua Gender'
+                            }[selectedCampaign.selected_gender] || selectedCampaign.selected_gender || 'Semua Gender'}
                           </Typography>
                         </Grid>
                         <Grid item xs={6} md={4}>
@@ -1055,12 +1070,37 @@ function ManageCampaigns() {
                           </Typography>
                           <Stack spacing={2}>
                             <Box>
-                              <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px' }}>TIPE KONTEN</Typography>
-                              <Typography sx={{ fontWeight: 600, color: '#0f172a' }}>Instagram Feed / Story / Reels</Typography> 
-                            </Box>
-                            <Box>
-                              <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px' }}>JUMLAH POST</Typography>
-                              <Typography sx={{ fontWeight: 600, color: '#0f172a' }}>1 Post per Influencer</Typography>
+                              <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px' }}>DETAIL KONTEN</Typography>
+                              {(() => {
+                                try {
+                                  const contentTypes = typeof selectedCampaign.content_types === 'string'
+                                    ? JSON.parse(selectedCampaign.content_types)
+                                    : selectedCampaign.content_types;
+                                  
+                                  if (!Array.isArray(contentTypes) || contentTypes.length === 0) {
+                                     return <Typography sx={{ fontWeight: 600, color: '#0f172a' }}>-</Typography>;
+                                  }
+
+                                  return (
+                                    <Stack spacing={1} mt={1}>
+                                      {contentTypes.map((item, idx) => (
+                                        <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#f1f5f9', p: 1.5, borderRadius: 1.5 }}>
+                                          <Stack direction="row" spacing={1} alignItems="center">
+                                            <Assignment fontSize="small" sx={{ color: '#64748b', fontSize: 16 }} />
+                                            <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#334155', textTransform: 'capitalize' }}>
+                                              {item.content_type}
+                                            </Typography>
+                                          </Stack>
+                                          <Chip label={`${item.post_count} Post`} size="small" sx={{ height: 24, fontSize: 11, fontWeight: 700, bgcolor: '#fff', border: '1px solid #e2e8f0' }} />
+                                        </Box>
+                                      ))}
+                                    </Stack>
+                                  );
+                                } catch (e) {
+                                  console.error("Error parsing content_types", e);
+                                  return <Typography sx={{ fontWeight: 600, color: '#0f172a' }}>-</Typography>;
+                                }
+                              })()}
                             </Box>
                           </Stack>
                         </Grid>
@@ -1075,7 +1115,7 @@ function ManageCampaigns() {
                               <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>{selectedCampaign.influencer_count || 0}</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <Typography sx={{ fontSize: 13, color: '#64748b' }}>Fee per Influencer</Typography>
+                              <Typography sx={{ fontSize: 13, color: '#64748b' }}>Pembayaran per Influencer</Typography>
                               <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>Rp {(selectedCampaign.price_per_post || 0).toLocaleString('id-ID')}</Typography>
                             </Box>
                             <Divider sx={{ my: 1, borderStyle: 'dashed' }} />
@@ -1094,7 +1134,7 @@ function ManageCampaigns() {
                   {/* Section E: Timeline Campaign */}
                   <Card variant="outlined" sx={{ overflow: 'hidden', borderRadius: 2, border: '1px solid #e2e8f0', boxShadow: 'none' }}>
                     <Box sx={{ bgcolor: '#f8fafc', px: 2, py: 1.5, borderBottom: '1px solid #e2e8f0' }}>
-                      <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#334155' }}>Timeline Campaign</Typography>
+                      <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#334155' }}>Linimasa Kampanye</Typography>
                     </Box>
                     <Box sx={{ p: 3 }}>
                       <Grid container spacing={2}>
@@ -1104,7 +1144,7 @@ function ManageCampaigns() {
                               <AccessTime fontSize="small" />
                             </Box>
                             <Box>
-                              <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px' }}>DEADLINE REGISTRASI</Typography>
+                              <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px' }}>TENGGAT WAKTU REGISTRASI</Typography>
                               <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#0f172a' }}>
                                 {selectedCampaign.submission_deadline ? new Date(selectedCampaign.submission_deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
                               </Typography>
@@ -1144,21 +1184,77 @@ function ManageCampaigns() {
                   {/* Section F: Brief & Guideline */}
                   <Card variant="outlined" sx={{ overflow: 'hidden', borderRadius: 2, border: '1px solid #e2e8f0', boxShadow: 'none' }}>
                     <Box sx={{ bgcolor: '#f8fafc', px: 2, py: 1.5, borderBottom: '1px solid #e2e8f0' }}>
-                      <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#334155' }}>Brief & Guideline</Typography>
+                      <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#334155' }}>PANDUAN & INSTRUKSI</Typography>
                     </Box>
                     <Box sx={{ p: 3 }}>
                       <Stack spacing={3}>
                         <Box>
-                          <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', mb: 1 }}>GUIDELINE FOTO / VIDEO</Typography>
+                          <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', mb: 1 }}>PANDUAN FOTO / VIDEO</Typography>
                           <Typography sx={{ fontSize: 14, color: '#334155', whiteSpace: 'pre-wrap', bgcolor: '#f8fafc', p: 2, borderRadius: 2, border: '1px solid #f1f5f9' }}>
                             {selectedCampaign.content_guidelines || 'Tidak ada panduan spesifik'}
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', mb: 1 }}>GUIDELINE CAPTION & HASHTAG</Typography>
+                          <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', mb: 1 }}>PANDUAN CAPTION & HASHTAG</Typography>
                           <Typography sx={{ fontSize: 14, color: '#334155', whiteSpace: 'pre-wrap', bgcolor: '#f8fafc', p: 2, borderRadius: 2, border: '1px solid #f1f5f9' }}>
                             {selectedCampaign.caption_guidelines || 'Tidak ada panduan spesifik'}
                           </Typography>
+                        </Box>
+                        
+                        <Box>
+                           <Typography sx={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', mb: 1.5 }}>REFERENSI VISUAL</Typography>
+                           {(() => {
+                              try {
+                                 const refImages = typeof selectedCampaign.reference_images === 'string'
+                                    ? JSON.parse(selectedCampaign.reference_images)
+                                    : (selectedCampaign.reference_images || []);
+                                 
+                                 if (!Array.isArray(refImages) || refImages.length === 0) {
+                                    return (
+                                      <Box sx={{ p: 3, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 2, border: '1px dashed #e2e8f0' }}>
+                                        <Typography sx={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>Tidak ada referensi gambar</Typography>
+                                      </Box>
+                                    );
+                                 }
+
+                                 return (
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                                       {refImages.map((imgUrl, idx) => (
+                                          <Box 
+                                             key={idx} 
+                                             sx={{ 
+                                                position: 'relative',
+                                                width: 100,
+                                                height: 100,
+                                                borderRadius: 2,
+                                                overflow: 'hidden',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                                border: '1px solid #e2e8f0',
+                                                cursor: 'pointer',
+                                                transition: 'transform 0.2s',
+                                                '&:hover': { transform: 'scale(1.02)' }
+                                             }}
+                                             onClick={() => window.open(imgUrl, '_blank')}
+                                          >
+                                            <Box
+                                              component="img"
+                                              src={imgUrl}
+                                              alt={`Reference ${idx + 1}`}
+                                              sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                              onError={(e) => {
+                                                e.target.onerror = null; 
+                                                e.target.src = 'https://via.placeholder.com/100?text=Error';
+                                              }}
+                                            />
+                                          </Box>
+                                       ))}
+                                    </Box>
+                                 );
+                              } catch (e) {
+                                 console.error("Error parsing reference_images", e);
+                                 return <Typography sx={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>Tidak ada referensi gambar</Typography>;
+                              }
+                           })()}
                         </Box>
                       </Stack>
                     </Box>
@@ -1192,7 +1288,7 @@ function ManageCampaigns() {
                       '&:hover': { bgcolor: '#fee2e2' }
                     }}
                   >
-                    Tolak Campaign
+                    Tolak Kampanye
                   </Button>
                   <Button
                     onClick={() => handleUpdateStatus(selectedCampaign.campaign_id, 'pending_payment')}

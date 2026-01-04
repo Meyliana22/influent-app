@@ -46,7 +46,7 @@ const getStatusConfig = (status) => {
       borderColor: '#60a5fa'
     },
     'admin_review': {
-      label: 'Review Admin',
+      label: 'Ditinjau Admin',
       color: '#d97706',
       bgColor: '#fef3c7',
       borderColor: '#fcd34d'
@@ -206,27 +206,7 @@ function CampaignDashboard() {
                 Pantau performa kampanye dan kelola kolaborasi Anda hari ini.
               </Typography>
             </Box>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => navigate('/campaign-create')}
-              sx={{
-                bgcolor: '#6E00BE', // Solid Color
-                color: '#fff',
-                px: 3,
-                py: 1.5,
-                borderRadius: '12px',
-                textTransform: 'none',
-                fontWeight: 600,
-                boxShadow: 'none',
-                '&:hover': {
-                   bgcolor: '#5a009e',
-                   boxShadow: 'none'
-                }
-              }}
-            >
-              Buat Kampanye Baru
-            </Button>
+          
           </Box>
 
           {/* Stats Grid */}
