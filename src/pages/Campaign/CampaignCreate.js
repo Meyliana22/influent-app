@@ -141,7 +141,6 @@ function CampaignCreate() {
     { value: 'foto', label: 'Instagram Posting' },
     { value: 'story', label: 'Instagram Cerita' },
     { value: 'reels', label: 'Instagram Reels' },
-    { value: 'video', label: 'Instagram Video' },
   ];
   const AGE_OPTIONS = ['< 18', '18-24', '25-34', '35-49', '> 50'];
 
@@ -986,7 +985,7 @@ function CampaignCreate() {
                       sx={{ height: 100, borderStyle: 'dashed', borderWidth: 2, borderRadius: 2 }} 
                       disabled={isReadOnly}
                    >
-                      Upload referensi atau Klik untuk Upload
+                      Unggah referensi atau Klik untuk Unggah
                       <input type="file" hidden multiple onChange={(e) => {
                          const files = Array.from(e.target.files);
                          setReferenceFiles(prev => [...prev, ...files]);

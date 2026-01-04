@@ -285,7 +285,7 @@ function AdminDashboard() {
               {/* Stats Cards */}
               <Box sx={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gridTemplateColumns: 'repeat(4, 1fr)',
                 gap: 3,
                 mb: 4
               }}>

@@ -328,7 +328,7 @@ function ChatPage() {
       <List sx={{ flex: 1, overflowY: 'auto', p: 0 }}>
         {chatList.length === 0 && !chatListLoading && (
            <Box p={3} textAlign="center">
-             <Typography variant="body2" color="text.secondary">Tidak ada chat</Typography>
+             <Typography variant="body2" color="text.secondary">Tidak ada pesan</Typography>
            </Box>
         )}
         {chatList.map((chat) => (
