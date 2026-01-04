@@ -171,7 +171,7 @@ function RegisterPage() {
         email: formData.email,
         password: formData.password,
         role: userRole === 'umkm' ? 'company' : 'student',
-        phone: formData.phone || undefined
+        phone_number: formData.phone || undefined
       };
       
       await authService.register(payload);
@@ -252,22 +252,11 @@ function RegisterPage() {
 
         // For UMKM: Auto-create profile and finish (Skip Step 3)
         if (currentRole === 'umkm') {
-            try {
-                await companyService.createProfile({
-                    business_name: formData.username, // Use the name from Step 1 as Business Name
-                    phone_number: formData.phone
-                });
-                showToast("Registrasi Selesai!", "success");
-                sessionStorage.removeItem('registrationState');
-                setTimeout(() => {
-                    navigate('/campaign/dashboard');
-                }, 500);
-            } catch (profileError) {
-                console.error(profileError);
-                // Even if profile creation fails slightly, try to redirect or show error
-                showToast("Gagal menyimpan profil otomatis", "warning");
+            showToast("Registrasi Selesai!", "success");
+            sessionStorage.removeItem('registrationState');
+            setTimeout(() => {
                 navigate('/campaign/dashboard');
-            }
+            }, 500);
         } else {
             // For Influencer: Proceed to Step 3 (Onboarding)
             setStep('onboarding');
