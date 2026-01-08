@@ -166,11 +166,6 @@ function CampaignList() {
                                                         {user.name || 'Unknown User'}
                                                     </Typography>
                                                 }
-                                                secondary={
-                                                    <Typography variant="caption" sx={{ color: '#64748b' }}>
-                                                        Bank: {user.bank_name || '-'} • {user.account_number || '-'}
-                                                    </Typography>
-                                                }
                                             />
                                         </ListItem>
                                         {index < recipients.length - 1 && <Box sx={{ borderBottom: '1px solid #f1f5f9', mx: 2 }} />}
