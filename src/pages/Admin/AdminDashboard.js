@@ -390,7 +390,7 @@ function AdminDashboard() {
                         >
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                             <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#1a1f36' }}>
-                              {withdrawal.userId?.name || 'Unknown User'}
+                              {withdrawal.user?.name || 'Unknown User'}
                             </Typography>
                             <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#f59e0b' }}>
                               Rp {withdrawal.amount?.toLocaleString('id-ID')}
