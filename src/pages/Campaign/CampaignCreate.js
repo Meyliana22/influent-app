@@ -230,8 +230,8 @@ function CampaignCreate() {
         return false;
      }
 
-     if (image && image.type !== 'image/png') {
-        showToast('Format gambar tidak didukung. Harap unggah gambar tipe PNG. (image/png)', 'error');
+     if (image && !['image/png', 'image/jpeg', 'image/jpg'].includes(image.type)) {
+        showToast('Format gambar tidak didukung. Harap unggah gambar tipe PNG atau JPG.', 'error');
         return false;
      }
      if (!title.trim()) {
