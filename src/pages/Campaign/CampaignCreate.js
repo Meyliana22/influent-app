@@ -229,6 +229,11 @@ function CampaignCreate() {
         showToast('Banner Kampanye wajib diunggah', 'error');
         return false;
      }
+
+     if (image && image.type !== 'image/png') {
+        showToast('Format gambar tidak didukung. Harap unggah gambar tipe PNG. (image/png)', 'error');
+        return false;
+     }
      if (!title.trim()) {
         showToast('Judul Kampanye harus diisi', 'error');
         return false;
@@ -614,7 +619,7 @@ function CampaignCreate() {
              <Stack spacing={3}>
                 <Box>
                    <Typography variant="subtitle1" fontWeight={700} sx={{ color: '#1e293b' }}>
-                      Audience
+                      Audiens
                    </Typography>
                    <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>
                       Siapa yang ingin Anda jangkau?
@@ -883,7 +888,7 @@ function CampaignCreate() {
                              inputProps={{ min: minRegDate }}
                              helperText={
                                 <Typography variant="caption" color="textSecondary" sx={{ display:'block', mt:0.5, lineHeight:1.3 }}>
-                                   Beri jarak waktu yang cukup untuk: Admin melakukan approval, Proses pembayaran oleh UMKM, dan Influencer mendaftar campaign.
+                                   Beri jarak waktu yang cukup untuk: Admin melakukan tinjauan, Proses pembayaran oleh UMKM, dan Influencer mendaftar kampanye.
                                 </Typography>
                              }
                          />
@@ -959,7 +964,7 @@ function CampaignCreate() {
                    label="Panduan Visual / Foto / Video" 
                    multiline rows={4} 
                    fullWidth 
-                   placeholder="Jelaskan tone warna, angle pengambilan gambar, pencahayaan, atau elemen yang wajib ada dalam foto/video."
+                   placeholder="Jelaskan cara pengambilan gambar, pencahayaan, atau elemen yang wajib ada dalam foto/video."
                    value={content_guidelines}
                    onChange={e => setContentGuidelines(e.target.value)}
                    disabled={isReadOnly}
