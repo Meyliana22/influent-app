@@ -694,6 +694,21 @@ const ReviewSubmissions = () => {
                                 </Typography>
                               </Box>
                             )}
+
+                            {/* Admin Review Notes */}
+                            {submission.admin_review_notes && (
+                              <Box sx={{ mb: 3, p: 2.5, bgcolor: '#f3e5f5', borderRadius: 3, border: '1px solid #ce93d8' }}>
+                                <Typography variant="caption" sx={{ fontWeight: 700, color: '#7b1fa2', textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.5, display: 'block' }}>
+                                  Catatan Review Admin (Override)
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#6a1b9a', lineHeight: 1.6 }}>
+                                  {submission.admin_review_notes}
+                                </Typography>
+                                <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#8e24aa', fontStyle: 'italic' }}>
+                                  * Keputusan penolakan Anda telah ditinjau dan diubah oleh Admin.
+                                </Typography>
+                              </Box>
+                            )}
       
                             {/* Actions */}
                             {submission.status === 'pending' && (

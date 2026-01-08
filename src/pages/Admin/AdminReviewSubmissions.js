@@ -312,11 +312,11 @@ const AdminReviewSubmissions = () => {
                             <Grid container spacing={3}>
                               {/* Left: Media */}
                               <Grid item xs={12} md={4}>
-                                {submission.content_url ? (
+                                {campaign.banner_image ? (
                                   <Box
                                     component="img"
-                                    src={submission.content_url}
-                                    alt="Pekerjaan"
+                                    src={campaign.banner_image}
+                                    alt="Campaign Banner"
                                     sx={{
                                       width: '100%',
                                       height: 250,
@@ -341,7 +341,7 @@ const AdminReviewSubmissions = () => {
                                     }}
                                   >
                                     <Typography sx={{ color: COLORS.textSecondary }}>
-                                      Tidak Ada Gambar
+                                      Tidak Ada Banner
                                     </Typography>
                                   </Box>
                                 )}
@@ -413,6 +413,49 @@ const AdminReviewSubmissions = () => {
                                   <Divider />
 
                                   {/* Submission Info */}
+                                  {/* Submission Content Links */}
+                                  <Box sx={{ mb: 2 }}>
+                                    <Typography variant="caption" sx={{ color: COLORS.textSecondary, fontWeight: 600 }}>
+                                      Link Konten (Bukti Tayang)
+                                    </Typography>
+                                    <Box sx={{ mt: 1 }}>
+                                      {(() => {
+                                        let contentList = [];
+                                        try {
+                                            if (Array.isArray(submission.submission_content)) {
+                                                contentList = submission.submission_content;
+                                            } else if (typeof submission.submission_content === 'string') {
+                                                contentList = JSON.parse(submission.submission_content);
+                                            }
+                                        } catch (e) {
+                                            console.error("Error parsing submission content", e);
+                                        }
+
+                                        if (contentList && contentList.length > 0) {
+                                            return (
+                                                <Stack spacing={1}>
+                                                    {contentList.map((item, idx) => (
+                                                        <Paper key={idx} variant="outlined" sx={{ p: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden' }}>
+                                                                <Chip label={item.content_type || 'Content'} size="small" color="primary" variant="outlined" />
+                                                                <Typography variant="body2" noWrap component="a" href={item.url} target="_blank" rel="noopener noreferrer" sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+                                                                    {item.url}
+                                                                </Typography>
+                                                            </Box>
+                                                            <Button size="small" variant="text" href={item.url} target="_blank" rel="noopener noreferrer" startIcon={<ViewIcon />}>
+                                                                Lihat
+                                                            </Button>
+                                                        </Paper>
+                                                    ))}
+                                                </Stack>
+                                            );
+                                        } else {
+                                            return <Typography variant="body2" color="textSecondary">-</Typography>;
+                                        }
+                                      })()}
+                                    </Box>
+                                  </Box>
+
                                   <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
                                       <Typography variant="caption" sx={{ color: COLORS.textSecondary }}>
