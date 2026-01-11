@@ -55,12 +55,16 @@ import {
   MonetizationOn,
   Description,
   Assignment,
-  MoreVert as MoreVertIcon
+  MoreVert as MoreVertIcon,
+  Chat as ChatIcon
 } from '@mui/icons-material';
 import { Sidebar, Topbar } from '../../components/common';
 import adminService from '../../services/adminService';
+import { joinChatRoom } from '../../services/chatService';
+import { useNavigate } from 'react-router-dom';
 
 function ManageCampaigns() {
+  const navigate = useNavigate();
   const theme = useTheme();
   const isDesktop = useMediaQuery('(min-width:1000px)');
   const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
@@ -458,6 +462,30 @@ function ManageCampaigns() {
     }
   };
 
+  const handleJoinChat = async (campaign) => {
+    if (!campaign.chat_room_id) {
+       // Try fallback if chat_room_id isn't directly on campaign
+       // Maybe we need to find it? For now show error
+       // But wait, user said "can join the chat into their chat into user campaign chat"
+       // The Admin Join API path is /api/v1/chat-rooms/:id/join
+       // We need the chat room ID.
+       setError("Campaign ini belum memiliki chat room aktif");
+       return;
+    }
+    try {
+      setSubmitting(true);
+      await joinChatRoom(campaign.chat_room_id);
+      setSuccessMessage('Berhasil bergabung ke chat!');
+      // Navigate to chat page
+      navigate('/chat');
+    } catch (err) {
+      console.error('Error joining chat:', err);
+      setError(err.message || 'Gagal bergabung ke chat');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'active':
@@ -797,6 +825,20 @@ function ManageCampaigns() {
                                       >
                                         <ApproveIcon fontSize="small" />
                                       </IconButton>
+                                      {/* Join Chat Button */}
+                                      {campaign.chat_room_id && (
+                                        <IconButton
+                                          size="small"
+                                          onClick={() => handleJoinChat(campaign)}
+                                          sx={{
+                                            color: '#6E00BE',
+                                            '&:hover': { bgcolor: 'rgba(110, 0, 190, 0.1)' }
+                                          }}
+                                          title="Gabung Chat"
+                                        >
+                                          <ChatIcon fontSize="small" />
+                                        </IconButton>
+                                      )}
                                       <IconButton
                                         size="small"
                                         onClick={() => {

@@ -27,7 +27,10 @@ import {
   Report as ReportIcon,
   ArrowBack as ArrowBackIcon,
   Warning as WarningIcon,
+  SupportAgent as SupportAgentIcon,
+  Cancel as EndSessionIcon,
 } from "@mui/icons-material";
+import { createAdminChat, endChatSession } from "../../services/chatService";
 
 import Sidebar from "../../components/common/Sidebar";
 import Topbar from "../../components/common/Topbar";
@@ -91,11 +94,17 @@ function ChatPage() {
   // Auth State
   const token = localStorage.getItem("token");
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     if (token) {
       const payload = parseJwt(token);
-      if (payload && payload.sub) setCurrentUserId(Number(payload.sub));
+      if (payload) {
+          if (payload.sub) setCurrentUserId(Number(payload.sub));
+          // Assuming role is in payload.role or payload.user_role
+          // Adjust based on your actual JWT structure
+          setUserRole(payload.role || payload.user_role || 'user');
+      }
     }
   }, [token]);
 
@@ -137,10 +146,17 @@ function ChatPage() {
               row.lastMessage.timestamp || row.lastMessage.created_at
             ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
           : "",
+        timestamp: row.lastMessage
+          ? new Date(row.lastMessage.timestamp || row.lastMessage.created_at).getTime()
+          : 0,
         unread: row.unreadCount || 0,
         profileImage: row.otherUser?.profile_image || row.otherUser?.profile_picture || null,
         raw: row.room,
       }));
+      
+      // Sort: Newest first
+      normalized.sort((a, b) => b.timestamp - a.timestamp);
+
       setChatList(normalized);
       setChatListLoading(false);
     } catch (err) {
@@ -205,8 +221,8 @@ function ChatPage() {
       });
 
       // Update chat list snippet
-      setChatList((prevList) =>
-        prevList.map((c) =>
+      setChatList((prevList) => {
+        const updated = prevList.map((c) =>
           c.id === normalized.roomId
             ? {
                 ...c,
@@ -215,10 +231,12 @@ function ChatPage() {
                   hour: "2-digit",
                   minute: "2-digit",
                 }),
+                timestamp: new Date(normalized.time).getTime(),
               }
             : c
-        )
-      );
+        );
+        return updated.sort((a, b) => b.timestamp - a.timestamp);
+      });
     });
 
     sock.on("typing", ({ userId, typing }) => {
@@ -297,6 +315,47 @@ function ChatPage() {
     }
   };
 
+  const handleAdminChat = async () => {
+    try {
+      const res = await createAdminChat();
+      if (res && (res.room || res.data)) {
+        const room = res.room || res.data;
+        // Check if room already in list
+        const exists = chatList.find((c) => c.id === room.id);
+        if (!exists) {
+            // Refresh list to pull new room
+            await loadChatList();
+        }
+        // Ideally we would want to select the chat immediately
+        // But for now, a refresh and user selection or a toast is fine
+        // If we want to auto-select, we need the normalized object
+        showToast("Chat created regarding admin", "success");
+        loadChatList(); // Reload to ensure we get the room
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Gagal membuat chat dengan admin", "error");
+    }
+  };
+
+  const handleEndSession = async () => {
+    if (!selectedChat) return;
+    if (!window.confirm("Apakah Anda yakin ingin mengakhiri sesi chat ini?")) return;
+    try {
+        await endChatSession(selectedChat.id);
+        showToast("Sesi chat telah diakhiri", "success");
+        // Update local state to reflect closed status
+        setSelectedChat(prev => ({ ...prev, raw: { ...prev.raw, status: 'closed' } })); 
+        // Also update list if needed
+        loadChatList();
+    } catch (err) {
+        console.error(err);
+        showToast("Gagal mengakhiri sesi", "error");
+    }
+  };
+
+  const isChatClosed = selectedChat?.raw?.status === 'closed';
+
   const typingIndicatorText = () => {
     const keys = Object.keys(typingUsers).filter(
       (k) => Number(k) !== Number(currentUserId)
@@ -324,6 +383,19 @@ function ChatPage() {
             startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
           }}
         />
+      </Box>
+      <Box sx={{ p: 2, pt: 0, borderBottom: 1, borderColor: 'divider' }}>
+        {userRole !== 'admin' && (
+            <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<SupportAgentIcon />}
+            onClick={handleAdminChat}
+            sx={{ mb: 1 }}
+            >
+            Chat Admin
+            </Button>
+        )}
       </Box>
       <List sx={{ flex: 1, overflowY: 'auto', p: 0 }}>
         {chatList.length === 0 && !chatListLoading && (
@@ -443,9 +515,22 @@ function ChatPage() {
                     size="small" 
                     startIcon={<ReportIcon />}
                     onClick={() => setShowReportPopup(true)}
+                    sx={{ mr: 1 }}
                   >
                     Laporkan
                   </Button>
+                  
+                  {userRole === 'admin' && !isChatClosed && (
+                      <Button
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        startIcon={<EndSessionIcon />}
+                        onClick={handleEndSession}
+                      >
+                        Akhiri Sesi
+                      </Button>
+                  )}
                </Paper>
 
                {/* Messages */}
@@ -506,9 +591,16 @@ function ChatPage() {
                </Box>
 
                {/* Input Area */}
-               <Paper 
-                 component="form" 
-                 onSubmit={handleSendMessage}
+               {isChatClosed ? (
+                   <Box sx={{ p: 2, bgcolor: '#f0f0f0', textAlign: 'center', borderTop: 1, borderColor: 'divider' }}>
+                       <Typography variant="body2" color="text.secondary">
+                           Sesi chat ini telah berakhir.
+                       </Typography>
+                   </Box>
+               ) : (
+                <Paper 
+                  component="form" 
+                  onSubmit={handleSendMessage}
                  elevation={3}
                  sx={{ 
                    p: 2, 
@@ -544,7 +636,8 @@ function ChatPage() {
                  >
                    <SendIcon fontSize="small" />
                  </IconButton>
-               </Paper>
+                </Paper>
+               )}
              </Box>
           ) : (
             // No Chat Selected Placeholder

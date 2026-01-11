@@ -325,10 +325,10 @@ function NotificationsPage() {
                 sx={{
                   py: 1.25,
                   px: 2.5,
-                  border: filterType === filter.value ? 'none' : '2px solid #6573c333',
+                  border: filterType === filter.value ? 'none' : `2px solid ${COLORS.primary}33`, // 20% opacity
                   borderRadius: 1.25,
-                  background: filterType === filter.value ? '#6573c3' : '#fff',
-                  color: filterType === filter.value ? '#fff' : '#6573c3',
+                  background: filterType === filter.value ? COLORS.primary : '#fff',
+                  color: filterType === filter.value ? '#fff' : COLORS.primary,
                   fontWeight: filterType === filter.value ? 600 : 500,
                   fontFamily: 'Inter, sans-serif',
                   display: 'flex',
@@ -338,8 +338,8 @@ function NotificationsPage() {
                   textTransform: 'none',
                   transition: 'all 0.2s',
                   '&:hover': {
-                    background: filterType === filter.value ? '#4b5bb7' : '#f0f4ff',
-                    color: filterType === filter.value ? '#fff' : '#4b5bb7'
+                    background: filterType === filter.value ? COLORS.primary : `${COLORS.primary}11`, // 70-ish opacity equivalent or just light tint
+                    color: filterType === filter.value ? '#fff' : COLORS.primary
                   }
                 }}
                 variant={filterType === filter.value ? 'contained' : 'outlined'}

@@ -49,7 +49,66 @@ export const getMyChatRooms = async () => {
     }
 };
 
+/**
+ * Create a chat with an admin
+ */
+export const createAdminChat = async () => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/chat-rooms/admin`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error creating admin chat:", error);
+    throw error;
+  }
+};
+
+/**
+ * Join an existing chat room
+ * @param {number} roomId 
+ */
+export const joinChatRoom = async (roomId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/chat-rooms/${roomId}/join`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error joining chat room:", error);
+    throw error;
+  }
+};
+
+/**
+ * End a chat session
+ * @param {number} roomId 
+ */
+export const endChatSession = async (roomId) => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/chat-rooms/${roomId}/end`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Error ending chat session:", error);
+    throw error;
+  }
+};
+
 export default {
   createChatRoom,
-  getMyChatRooms
+  getMyChatRooms,
+  createAdminChat,
+  joinChatRoom,
+  endChatSession
 };
