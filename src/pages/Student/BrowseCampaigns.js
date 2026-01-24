@@ -147,17 +147,27 @@ function BrowseCampaigns() {
     }
   }, [campaigns]);
 
+  // Fixed category list
+  const CATEGORIES = [
+    'Kecantikan & Fashion',
+    'Teknologi',
+    'Makanan & Minuman',
+    'Keluarga & Parenting',
+    'Hiburan',
+    'Kesehatan & Olahraga',
+    'Gaya Hidup & Travel'
+  ];
+
   // Get category icon
   const getCategoryIcon = (category) => {
     const icons = {
-      'Beauty & Fashion': FaceIcon,
-      'Gaming': SportsEsportsIcon,
-      'Technology': PhoneAndroidIcon,
-      'Food & Beverages': RestaurantIcon,
-      'Family & Parenting': FamilyRestroomIcon,
-      'Entertainment': MovieIcon,
-      'Health & Sport': FitnessCenterIcon,
-      'Lifestyle & Travel': FlightIcon
+      'Kecantikan & Fashion': FaceIcon,
+      'Teknologi': PhoneAndroidIcon,
+      'Makanan & Minuman': RestaurantIcon,
+      'Keluarga & Parenting': FamilyRestroomIcon,
+      'Hiburan': MovieIcon,
+      'Kesehatan & Olahraga': FitnessCenterIcon,
+      'Gaya Hidup & Travel': FlightIcon
     };
     return icons[category] || CampaignIcon;
   };
@@ -181,15 +191,9 @@ function BrowseCampaigns() {
     }
   };
 
-  // Get all unique campaign categories
+  // Get all unique campaign categories (Now returns fixed list)
   const getCampaignCategories = () => {
-    const categories = new Set();
-    campaigns.forEach(c => {
-      if (c.campaign_category) {
-        categories.add(c.campaign_category);
-      }
-    });
-    return Array.from(categories).sort();
+    return CATEGORIES;
   };
 
   // Helper to safely parse influencer categories
@@ -209,14 +213,9 @@ function BrowseCampaigns() {
     return [];
   };
 
-  // Get all unique influencer categories
+  // Get all unique influencer categories (Now returns fixed list)
   const getInfluencerCategories = () => {
-    const categories = new Set();
-    campaigns.forEach(c => {
-      const cats = parseInfluencerCategory(c.influencer_category);
-      cats.forEach(cat => categories.add(cat));
-    });
-    return Array.from(categories).sort();
+    return CATEGORIES;
   };
 
   // Get status badge style
