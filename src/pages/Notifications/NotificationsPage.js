@@ -365,7 +365,7 @@ function NotificationsPage() {
                     sx={{
                       p: 2.5,
                       borderBottom: index < filteredNotifications.length - 1 ? '1px solid #e2e8f0' : 'none',
-                      background: notif.isRead ? '#fff' : '#f0f9ff',
+                      background: notif.isRead ? '#fff' : '#f5f3ff',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
                       display: 'flex',

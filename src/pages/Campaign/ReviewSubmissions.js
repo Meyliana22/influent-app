@@ -338,7 +338,7 @@ const ReviewSubmissions = () => {
                            Pembayaran dapat dilakukan setelah <Box component="span" sx={{ fontWeight: 600, color: COLORS.textPrimary }}>{campaign?.end_date ? new Date(campaign.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}</Box>
                         </Typography>
                         <Typography variant="caption" sx={{ color: '#64748b' }}>
-                           * Pastikan semua konten direview sebelum pembayaran dibuka otomatis
+                           * Pastikan semua konten diulas sebelum pembayaran dibuka otomatis
                         </Typography>
                       </Box>
                    </Box>
