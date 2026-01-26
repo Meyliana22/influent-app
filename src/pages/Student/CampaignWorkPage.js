@@ -424,7 +424,7 @@ const CampaignWorkPage = () => {
                        {requiredContentTypes.map((item, idx) => (
                           <Chip 
                              key={idx}
-                             label={`${item.post_count || 1}x ${item.content_type === 'foto' ? 'Instagram Feed' : (item.content_type || 'Post').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}`}
+                             label={`${item.post_count || 1}x ${item.content_type === 'foto' ? 'Postingan' : (item.content_type || 'Post').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}`}
                              sx={{ bgcolor: '#e0e7ff', color: '#4338ca', fontWeight: 600 }}
                           />
                        ))}

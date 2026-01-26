@@ -138,8 +138,8 @@ function CampaignCreate() {
     'Keluarga & Parenting', 'Kesehatan & Olahraga', 'Makanan & Minuman', 'Teknologi'
   ];
   const CONTENT_TYPE_OPTIONS = [
-    { value: 'foto', label: 'Instagram Posting' },
-    { value: 'story', label: 'Instagram Cerita' },
+    { value: 'posting', label: 'Instagram Posting' },
+    { value: 'cerita', label: 'Instagram Cerita' },
     { value: 'reels', label: 'Instagram Reels' },
   ];
   const AGE_OPTIONS = ['< 18', '18-24', '25-34', '35-49', '> 50'];

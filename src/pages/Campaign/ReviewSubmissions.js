@@ -368,7 +368,7 @@ const ReviewSubmissions = () => {
               {/* Stats Overview */}
               <Box sx={{ 
                 display: 'grid', 
-                gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(5, 1fr)' }, 
+                gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(4, 1fr)' }, 
                 gap: 2, 
                 mb: 4 
               }}>
@@ -376,7 +376,7 @@ const ReviewSubmissions = () => {
                   { id: 'not_submitted', label: 'Belum Mengumpulkan', value: notSubmittedStudents.length, icon: DescriptionIcon, color: '#7e22ce', bg: '#f3e8ff', border: '#d8b4fe' },
                   { id: 'pending', label: 'Menunggu Ulasan', value: submissions.filter(s => s.status === 'pending' && s.submission_type !== 'draft').length, icon: ScheduleIcon, color: '#c2410c', bg: '#fff7ed', border: '#fdba74' },
                   { id: 'approved', label: 'Disetujui', value: submissions.filter(s => s.status === 'approved').length, icon: ApproveIcon, color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
-                  { id: 'revision_requested', label: 'Perlu Revisi', value: submissions.filter(s => s.status === 'revision_requested').length, icon: RevisionIcon, color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd' },
+                  // { id: 'revision_requested', label: 'Perlu Revisi', value: submissions.filter(s => s.status === 'revision_requested').length, icon: RevisionIcon, color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd' },
                   { id: 'rejected', label: 'Ditolak', value: submissions.filter(s => s.status === 'rejected').length, icon: RejectIcon, color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' }
                 ].map((stat) => (
                   <Box 
@@ -429,7 +429,7 @@ const ReviewSubmissions = () => {
 
               {/* Filter Tabs */}
               <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
-                {['all', 'pending', 'approved', 'revision_requested', 'rejected', 'not_submitted'].map((status) => (
+                {['all', 'pending', 'approved', 'rejected', 'not_submitted'].map((status) => (
                   <Button
                     key={status}
                     variant={filter === status ? 'contained' : 'outlined'}
@@ -687,7 +687,7 @@ const ReviewSubmissions = () => {
                             {submission.review_notes && (
                               <Box sx={{ mb: 3, p: 2.5, bgcolor: '#fff7ed', borderRadius: 3, border: '1px solid #fdba74' }}>
                                 <Typography variant="caption" sx={{ fontWeight: 700, color: '#c2410c', textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.5, display: 'block' }}>
-                                  Catatan Review
+                                  Catatan Ulasan
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: '#9a3412', lineHeight: 1.6 }}>
                                   {submission.review_notes}
@@ -699,7 +699,7 @@ const ReviewSubmissions = () => {
                             {submission.admin_review_notes && (
                               <Box sx={{ mb: 3, p: 2.5, bgcolor: '#f3e5f5', borderRadius: 3, border: '1px solid #ce93d8' }}>
                                 <Typography variant="caption" sx={{ fontWeight: 700, color: '#7b1fa2', textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.5, display: 'block' }}>
-                                  Catatan Review Admin (Override)
+                                  Catatan Ulasan Admin 
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: '#6a1b9a', lineHeight: 1.6 }}>
                                   {submission.admin_review_notes}
@@ -723,7 +723,7 @@ const ReviewSubmissions = () => {
                                 >
                                   Setujui
                                 </Button>
-                                <Button
+                                {/* <Button
                                   variant="outlined"
                                   size="medium"
                                   startIcon={<RevisionIcon />}
@@ -731,7 +731,7 @@ const ReviewSubmissions = () => {
                                   color="info"
                                 >
                                   Minta Revisi
-                                </Button>
+                                </Button> */}
                                 <Button
                                   variant="outlined"
                                   size="medium"

@@ -103,12 +103,12 @@ function CampaignList() {
   };
 
   const handleDeleteCampaign = (campaignId) => {
-     setConfirmTitle("Hapus Campaign");
-     setConfirmMessage("Apakah Anda yakin ingin menghapus campaign draf ini? Tindakan ini tidak dapat dibatalkan.");
+     setConfirmTitle("Hapus Kampanye");
+     setConfirmMessage("Apakah Anda yakin ingin menghapus kampanye ini? Tindakan ini tidak dapat dibatalkan.");
      setOnConfirm(() => async () => {
        try {
          await campaignService.deleteCampaign(campaignId);
-         toast.success("Campaign berhasil dihapus");
+         toast.success("Kampanye berhasil dihapus");
          loadData();
        } catch (error) {
          console.error("Error deleting campaign:", error);

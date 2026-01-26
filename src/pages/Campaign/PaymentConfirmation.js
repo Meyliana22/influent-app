@@ -127,7 +127,7 @@ function PaymentConfirmation() {
             </Stack>
             <Box sx={{ bgcolor: COLORS.backgroundLight, borderRadius: 3, mb: 3, p: 2 }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 2, color: COLORS.textPrimary, borderBottom: '2px solid #6E00BE', pb: 1 }}>
-                Draft Kampanye
+                Draf Kampanye
               </Typography>
               <Stack spacing={1.5}>
                 <Stack direction="row" justifyContent="space-between">

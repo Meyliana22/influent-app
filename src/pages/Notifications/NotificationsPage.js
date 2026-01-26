@@ -371,7 +371,7 @@ function NotificationsPage() {
                       display: 'flex',
                       gap: 2,
                       alignItems: 'center',
-                      '&:hover': { background: '#e0f2fe' }
+                      '&:hover': { background: COLORS.primaryLight }
                     }}
                   >
                     {/* Icon - matching NotificationBell.js UI style */}
@@ -407,7 +407,7 @@ function NotificationsPage() {
                           {notif.title}
                         </Typography>
                         {!notif.isRead && (
-                          <Box sx={{ width: 7.5, height: 7.5, borderRadius: '50%', background: '#3b82f6', ml: 1 }} />
+                          <Box sx={{ width: 7.5, height: 7.5, borderRadius: '50%', background: COLORS.primary, ml: 1 }} />
                         )}
                       </Box>
                       <Typography sx={{ mb: 1, color: '#6c757d', fontSize: 14, lineHeight: 1.5, fontFamily: 'Inter, sans-serif' }}>

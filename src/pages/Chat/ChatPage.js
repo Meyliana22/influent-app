@@ -329,12 +329,12 @@ function ChatPage() {
         // Ideally we would want to select the chat immediately
         // But for now, a refresh and user selection or a toast is fine
         // If we want to auto-select, we need the normalized object
-        showToast("Chat created regarding admin", "success");
+        showToast("Ruang pesan dengan pusat bantuan berhasil dibuat", "success");
         loadChatList(); // Reload to ensure we get the room
       }
     } catch (err) {
       console.error(err);
-      showToast("Gagal membuat chat dengan admin", "error");
+      showToast("Gagal membuat pesan dengan pusat bantuan", "error");
     }
   };
 
@@ -393,7 +393,7 @@ function ChatPage() {
             onClick={handleAdminChat}
             sx={{ mb: 1 }}
             >
-            Chat Admin
+            Pusat Bantuan
             </Button>
         )}
       </Box>
@@ -509,16 +509,7 @@ function ChatPage() {
                     <Typography variant="subtitle1" fontWeight="bold">{selectedChat.name}</Typography>
                     <Typography variant="caption" color="text.secondary">Online</Typography>
                   </Box>
-                  <Button 
-                    variant="outlined" 
-                    color="error" 
-                    size="small" 
-                    startIcon={<ReportIcon />}
-                    onClick={() => setShowReportPopup(true)}
-                    sx={{ mr: 1 }}
-                  >
-                    Laporkan
-                  </Button>
+                
                   
                   {userRole === 'admin' && !isChatClosed && (
                       <Button
