@@ -215,16 +215,16 @@ function CampaignList() {
   };
 
   const handleCompleteCampaign = (campaignId) => {
-    setConfirmTitle("Selesaikan Campaign");
-    setConfirmMessage("Apakah Anda yakin ingin menyelesaikan campaign ini? Pastikan semua deliverables sudah diterima.");
+    setConfirmTitle("Selesaikan Kampanye");
+    setConfirmMessage("Apakah Anda yakin ingin menyelesaikan kampanye ini? Pastikan semua deliverables sudah diterima.");
     setOnConfirm(() => async () => {
        try {
           await campaignService.completeCampaign(campaignId);
-          toast.success("Campaign berhasil diselesaikan!");
+          toast.success("Kampanye berhasil diselesaikan!");
           loadData();
        } catch (error) {
           console.error("Error completing campaign:", error);
-          toast.error("Gagal menyelesaikan campaign");
+          toast.error("Gagal menyelesaikan kampanye");
        }
     });
     setShowConfirmDialog(true);
