@@ -5,7 +5,7 @@ import { COLORS } from '../../constants/colors';
 function SubmitButton({ 
   isLoading = false, 
   text = 'Submit', 
-  loadingText = 'Loading...', 
+  loadingText = 'Menunggu...', 
   type = 'submit',
   onClick = null,
   fullWidth = true,

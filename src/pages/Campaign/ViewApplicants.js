@@ -344,14 +344,14 @@ function ViewApplicants() {
 
       await chatService.createChatRoom(payload);
 
-      toast.success('Chat started! Redirecting...');
+      toast.success('Pesan berhasil dibuat!');
       
       // 2. Navigate to Chat Page
       navigate('/chat');
       
     } catch (error) {
       console.error('Error starting chat:', error);
-      toast.error('Gagal memulai chat');
+      toast.error('Gagal membuat pesan');
     } finally {
       setIsLoading(false);
     }

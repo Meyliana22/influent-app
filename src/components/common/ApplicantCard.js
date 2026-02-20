@@ -288,7 +288,7 @@ const ApplicantCard = ({
                 }}
                 disabled={!applicant.userId}
               >
-                Chat
+                Pesan
               </MuiButton>
             </Stack>
 
